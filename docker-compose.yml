@@ -1,0 +1,58 @@
+version: '3'
+
+services:
+  db:
+    container_name: nestjs-microservice-mongo
+    image: mongo
+    env_file:
+      - .env
+    ports:
+      - '27017:27017'
+    volumes:
+      - nestjs-microservice-mongo:/data/db
+  postgres:
+    container_name: nestjs-microservice-postgres
+    image: postgres
+    env_file:
+      - .env
+    ports:
+      - '5432:5432'
+    volumes:
+      - nestjs-microservice-postgres:/data/postgres
+    restart: unless-stopped
+  elasticsearch:
+    container_name: nestjs-microservice-elasticsearch
+    image: elasticsearch:7.11.2
+    ports:
+      - '9200:9200'
+      - '9300:9300'
+    environment:
+      - node.name=elasticsearch
+      - cluster.name=es-docker-cluster
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms1024m -Xmx1024m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+  kibana:
+    container_name: nestjs-microservice-kibana
+    image: kibana:7.11.2
+    ports:
+      - '5601:5601'
+    environment:
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+      ELASTICSEARCH_HOSTS: '["http://elasticsearch:9200"]'
+  redis:
+    container_name: nestjs-microservice-redis
+    image: 'redis:alpine'
+    volumes:
+      - nestjs-microservice-redis:/data
+    ports:
+      - 6379:6379
+
+volumes:
+  nestjs-microservice-mongo:
+  nestjs-microservice-postgres:
+  nestjs-microservice-redis:
