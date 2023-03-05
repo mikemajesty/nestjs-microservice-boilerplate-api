@@ -69,12 +69,6 @@ export const SwagggerResponse = {
       route: 'api/users/:id',
       message: 'userNotFound',
       description: 'user not found.'
-    }),
-    500: Swagger.defaultResponseError({
-      status: 404,
-      route: 'api/users/:id',
-      message: 'userDeleteUsecaseError',
-      description: 'delete failed.'
     })
   },
   list: {

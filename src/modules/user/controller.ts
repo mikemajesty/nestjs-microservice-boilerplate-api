@@ -83,7 +83,6 @@ export class UserController {
   @ApiParam({ name: 'id', required: true })
   @ApiResponse(SwagggerResponse.delete[200])
   @ApiResponse(SwagggerResponse.delete[404])
-  @ApiResponse(SwagggerResponse.delete[500])
   async delete(@Param() input: UserDeleteInput): UserDeleteOutput {
     const model = UserDeleteSchema.parse(input);
     return await this.userDeleteUsecase.execute(model);
