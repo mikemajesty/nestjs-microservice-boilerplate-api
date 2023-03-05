@@ -31,6 +31,7 @@
     "@nestjs/typeorm": "^9.0.1",
     "axios": "^1.3.0",
     "axios-retry": "^3.4.0",
+    "class-validator": "^0.14.0",
     "colorette": "^2.0.19",
     "convert-pino-request-to-curl": "^0.0.28",
     "jsonwebtoken": "^9.0.0",
