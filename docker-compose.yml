@@ -20,6 +20,8 @@ services:
     volumes:
       - nestjs-microservice-postgres:/data/postgres
     restart: unless-stopped
+    networks:
+      - postgres-network
   elasticsearch:
     container_name: nestjs-microservice-elasticsearch
     image: elasticsearch:7.11.2
@@ -51,8 +53,21 @@ services:
       - nestjs-microservice-redis:/data
     ports:
       - 6379:6379
+  pgadmin:
+    image: dpage/pgadmin4
+    env_file:
+      - .env
+    ports:
+      - "16543:80"
+    depends_on:
+      - postgres
+    networks:
+      - postgres-network
 
 volumes:
   nestjs-microservice-mongo:
   nestjs-microservice-postgres:
   nestjs-microservice-redis:
+networks: 
+  postgres-network:
+    driver: bridge
