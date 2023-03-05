@@ -2,19 +2,19 @@
   "editor.tabSize": 2,
   "editor.codeActionsOnSave": {
     "source.fixAll": true,
-    "source.organizeImports": true,
+    "source.organizeImports": false,
   },
   "[typescript]": {
     "editor.codeActionsOnSave": {
       "source.fixAll": true,
-      "source.organizeImports": true
+      "source.organizeImports": false
     },
     "editor.formatOnSave": true,
   },
   "[javascript]": {
     "editor.codeActionsOnSave": {
       "source.fixAll": true,
-      "source.organizeImports": true
+      "source.organizeImports": false
     },
     "editor.formatOnSave": true,
   },
