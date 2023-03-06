@@ -1,24 +1,24 @@
 {
   "editor.tabSize": 2,
   "editor.codeActionsOnSave": {
-    "source.fixAll": true,
+    "source.fixAll": false,
     "source.organizeImports": false,
   },
   "[typescript]": {
     "editor.codeActionsOnSave": {
-      "source.fixAll": true,
+      "source.fixAll": false,
       "source.organizeImports": false
     },
-    "editor.formatOnSave": true,
+    "editor.formatOnSave": false,
   },
   "[javascript]": {
     "editor.codeActionsOnSave": {
-      "source.fixAll": true,
+      "source.fixAll": false,
       "source.organizeImports": false
     },
-    "editor.formatOnSave": true,
+    "editor.formatOnSave": false,
   },
-  "editor.formatOnSave": true,
+  "editor.formatOnSave": false,
   "javascript.format.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces": false,
   "typescript.format.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces": false,
 }

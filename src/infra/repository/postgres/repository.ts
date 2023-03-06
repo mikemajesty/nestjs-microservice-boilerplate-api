@@ -1,12 +1,13 @@
 import { BaseEntity, FindOneOptions, FindOptionsWhere, Repository, SaveOptions } from 'typeorm';
 
 import { ApiInternalServerException } from '@/utils/exception';
+import { Entity } from '@/utils/postgres';
 
 import { IRepository } from '../adapter';
 import { CreatedModel, RemovedModel, UpdatedModel } from '../types';
 
-export class PostgresRepository<T extends BaseEntity & { id: string }> implements Partial<IRepository<T>> {
-  constructor(readonly repository: Repository<T>) {}
+export class PostgresRepository<T extends BaseEntity & Entity> implements Partial<IRepository<T>> {
+  constructor(readonly repository: Repository<T & Entity>) {}
 
   isConnected(): Promise<void> {
     const connected = this.repository.manager.connection.isInitialized;

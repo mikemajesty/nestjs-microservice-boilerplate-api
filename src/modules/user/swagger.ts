@@ -10,7 +10,7 @@ const entity = {
   roles: [UserRole.USER]
 };
 
-const entityFull = { ...entity, deletedAt: '<deletedAt>', createdAt: '<createdAt>' };
+const entityFull = { ...entity, deletedAt: '<deletedAt>', createdAt: '<createdAt>', updatedAt: '<updatedAt>' };
 
 export const SwagggerResponse = {
   create: {
@@ -29,7 +29,7 @@ export const SwagggerResponse = {
   update: {
     200: Swagger.defaultResponseJSON({
       status: 200,
-      json: entity,
+      json: entityFull,
       description: 'user updated.'
     }),
     404: Swagger.defaultResponseError({
@@ -82,6 +82,6 @@ export const SwagggerResponse = {
 
 export const SwagggerRequest = {
   createBody: Swagger.defaultRequestJSON({ ...entity, id: undefined }),
-  updateBody: Swagger.defaultRequestJSON(entity),
+  updateBody: Swagger.defaultRequestJSON({ ...entity, id: '<id>' }),
   listQuery: Swagger.defaultApiQueryOptions({ example: 'limit=10&page=1', name: 'pagination', required: false })
 };

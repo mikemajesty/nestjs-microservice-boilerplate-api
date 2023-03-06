@@ -27,7 +27,7 @@ export class UserRepository extends MongoRepository<UserDocument> implements IUs
 
   async paginate({ limit, page, filter }: UserListInput): Promise<UserListOutput> {
     convertMongoFilter<UserDocument>([filter]);
-    const users = await this.entity.paginate(filter, { page, limit });
+    const users = await this.entity.paginate({ ...filter, deletedAt: null }, { page, limit });
 
     return { docs: users.docs.map((u) => u.toObject({ virtuals: true })), limit, page, total: users.totalDocs };
   }

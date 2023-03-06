@@ -23,8 +23,6 @@ export class SecretsService extends ConfigService implements ISecretsAdapter {
     'POSTGRES_HOST'
   )}:${this.get('POSTGRES_PORT')}/${this.get('POSTGRES_DATABASE')}`;
 
-  POSTGRES_SCHEMA = this.get('POSTGRES_SCHEMA');
-
   MONGO_URL = this.get('MONGO_URL');
 
   ELK_URL = this.get('ELK_URL');
@@ -49,10 +47,4 @@ export class SecretsService extends ConfigService implements ISecretsAdapter {
   };
 
   BUCKET_ENV = this.get('BUCKET_ENV');
-
-  aws = {
-    region: this.get('AWS_BUCKET_REGION'),
-    accessKey: this.get('AWS_BUCKET_ACCESS_KEY_ID'),
-    secretkey: this.get('AWS_BUCKET_SECRET_ACCESS_KEY')
-  };
 }

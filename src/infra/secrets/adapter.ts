@@ -14,7 +14,6 @@ export abstract class ISecretsAdapter {
   KIBANA_URL: string;
 
   POSTGRES_URL: string;
-  POSTGRES_SCHEMA: string;
 
   REDIS_URL: string;
 
@@ -34,11 +33,5 @@ export abstract class ISecretsAdapter {
     pass: string;
     host: string;
     port: number;
-  };
-
-  aws: {
-    region: string;
-    accessKey: string;
-    secretkey: string;
   };
 }
