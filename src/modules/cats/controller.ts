@@ -1,15 +1,24 @@
-import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
+import { ApiBearerAuth, ApiBody, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { UserRole } from '@/core/user/entity/user';
 import { Roles } from '@/utils/decorators/role.decorator';
 
-import { ICatsCreateAdapter, ICatsGetByIDAdapter, ICatsListAdapter, ICatsUpdateAdapter } from './adaptet';
+import {
+  ICatsCreateAdapter,
+  ICatsDeleteAdapter,
+  ICatsGetByIDAdapter,
+  ICatsListAdapter,
+  ICatsUpdateAdapter
+} from './adaptet';
 import { SwagggerRequest, SwagggerResponse } from './swagger';
 import {
   CatsCreateInput,
   CatsCreateOutput,
   CatsCreateSchema,
+  CatsDeleteInput,
+  CatsDeleteOutput,
+  CatsDeleteSchema,
   CatsGetByIDInput,
   CatsGetByIDOutput,
   CatsGetByIdSchema,
@@ -30,7 +39,8 @@ export class CatsController {
     private readonly catsCreate: ICatsCreateAdapter,
     private readonly catsUpdate: ICatsUpdateAdapter,
     private readonly catsGetByID: ICatsGetByIDAdapter,
-    private readonly catsList: ICatsListAdapter
+    private readonly catsList: ICatsListAdapter,
+    private readonly catsDelete: ICatsDeleteAdapter
   ) {}
 
   @Post('/cats')
@@ -60,9 +70,19 @@ export class CatsController {
   }
 
   @Get('/cats')
+  @ApiQuery(SwagggerRequest.listQuery)
   @ApiResponse(SwagggerResponse.list[200])
   async list(@Query() input: CatsListInput): CatsListOutput {
     const model = CatsListSchema.parse(input);
     return await this.catsList.execute(model);
+  }
+
+  @Delete('/cats/:id')
+  @ApiParam({ name: 'id', required: true })
+  @ApiResponse(SwagggerResponse.delete[200])
+  @ApiResponse(SwagggerResponse.delete[404])
+  async delete(@Param() input: CatsDeleteInput): CatsDeleteOutput {
+    const model = CatsDeleteSchema.parse(input);
+    return await this.catsDelete.execute(model);
   }
 }

@@ -1,7 +1,6 @@
 import { z } from 'zod';
 
-import { withID } from '@/utils/entity';
-import { Entity } from '@/utils/postgres';
+import { IEntity, withID } from '@/utils/entity';
 
 const ID = z.string().uuid();
 const Name = z.string().trim().min(1).max(200);
@@ -23,7 +22,9 @@ export const CatsEntitySchema = z.object({
 
 type Cat = z.infer<typeof CatsEntitySchema>;
 
-export class CatsEntity extends Entity {
+export class CatsEntity implements IEntity {
+  id: string;
+
   name: string;
 
   breed: string;
@@ -32,9 +33,15 @@ export class CatsEntity extends Entity {
 
   deletedAt?: Date;
 
+  createdAt: Date;
+
+  updatedAt: Date;
+
   constructor(entity: Cat) {
-    if (!entity) return;
-    super();
     Object.assign(this, CatsEntitySchema.parse(withID(entity)));
+  }
+
+  setDelete() {
+    this.deletedAt = new Date();
   }
 }

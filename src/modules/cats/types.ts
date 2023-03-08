@@ -36,3 +36,9 @@ export const CatsListSchema = PaginationSchema;
 
 export type CatsListInput = PaginationInput;
 export type CatsListOutput = Promise<{ docs: Schema[] } & PaginationOutput>;
+
+export const CatsDeleteSchema = CatsEntitySchema.pick({
+  id: true
+});
+export type CatsDeleteInput = z.infer<typeof CatsDeleteSchema>;
+export type CatsDeleteOutput = Promise<Schema>;

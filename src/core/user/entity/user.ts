@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { withID } from '@/utils/entity';
+import { IEntity, withID } from '@/utils/entity';
 
 const ID = z.string().uuid();
 const ClientId = z.string().trim().min(1).max(200);
@@ -34,7 +34,7 @@ type User = z.infer<typeof UserEntitySchema>;
 
 type Organization = z.infer<typeof Organization>;
 
-export class UserEntity {
+export class UserEntity implements IEntity {
   id: string;
 
   clientId: string;
@@ -45,14 +45,13 @@ export class UserEntity {
 
   roles: UserRole[];
 
-  createdAt?: Date;
+  createdAt: Date;
 
-  updatedAt?: Date;
+  updatedAt: Date;
 
   deletedAt?: Date;
 
   constructor(entity: User) {
-    if (!entity) return;
     Object.assign(this, UserEntitySchema.parse(withID(entity)));
   }
 

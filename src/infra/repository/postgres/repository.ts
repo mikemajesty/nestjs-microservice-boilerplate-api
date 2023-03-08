@@ -1,13 +1,13 @@
 import { BaseEntity, FindOneOptions, FindOptionsWhere, Repository, SaveOptions } from 'typeorm';
 
+import { IEntity } from '@/utils/entity';
 import { ApiInternalServerException } from '@/utils/exception';
-import { Entity } from '@/utils/postgres';
 
 import { IRepository } from '../adapter';
 import { CreatedModel, RemovedModel, UpdatedModel } from '../types';
 
-export class PostgresRepository<T extends BaseEntity & Entity> implements Partial<IRepository<T>> {
-  constructor(readonly repository: Repository<T & Entity>) {}
+export class PostgresRepository<T extends BaseEntity & IEntity> implements Partial<IRepository<T>> {
+  constructor(readonly repository: Repository<T & IEntity>) {}
 
   isConnected(): Promise<void> {
     const connected = this.repository.manager.connection.isInitialized;
@@ -22,16 +22,18 @@ export class PostgresRepository<T extends BaseEntity & Entity> implements Partia
 
   async findById(id: string): Promise<T> {
     return await this.repository.findOne({
-      where: { id }
+      where: { id, deletedAt: null }
     } as FindOneOptions<T>);
   }
 
   async findAll(): Promise<T[]> {
-    return await this.repository.find();
+    return await this.repository.find({
+      where: { deletedAt: null }
+    } as FindOneOptions<T>);
   }
 
   async find<TQuery = FindOptionsWhere<T> | FindOptionsWhere<T>[]>(filter: TQuery): Promise<T[]> {
-    return await this.repository.findBy(filter as FindOptionsWhere<T> | FindOptionsWhere<T>[]);
+    return await this.repository.findBy({ ...filter, deletedAt: null } as FindOptionsWhere<T> | FindOptionsWhere<T>[]);
   }
 
   async remove<TQuery = FindOptionsWhere<T> | number | number[]>(filter: TQuery): Promise<RemovedModel> {
@@ -40,7 +42,9 @@ export class PostgresRepository<T extends BaseEntity & Entity> implements Partia
   }
 
   async findOne<TQuery = FindOneOptions<T>>(filter: TQuery): Promise<T> {
-    return await this.repository.findOne(filter);
+    return await this.repository.findOne({
+      where: { ...filter, deletedAt: null }
+    } as FindOneOptions<T>);
   }
 
   async updateOne<TQuery = FindOptionsWhere<T>, TOptions = object>(

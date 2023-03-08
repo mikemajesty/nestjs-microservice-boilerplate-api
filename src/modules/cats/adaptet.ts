@@ -1,6 +1,8 @@
 import {
   CatsCreateInput,
   CatsCreateOutput,
+  CatsDeleteInput,
+  CatsDeleteOutput,
   CatsGetByIDInput,
   CatsGetByIDOutput,
   CatsListInput,
@@ -23,4 +25,8 @@ export abstract class ICatsGetByIDAdapter {
 
 export abstract class ICatsListAdapter {
   abstract execute(input: CatsListInput): Promise<CatsListOutput>;
+}
+
+export abstract class ICatsDeleteAdapter {
+  abstract execute(input: CatsDeleteInput): Promise<CatsDeleteOutput>;
 }

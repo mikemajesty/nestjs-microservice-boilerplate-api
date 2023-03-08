@@ -34,7 +34,7 @@ export const SwagggerResponse = {
     200: Swagger.defaultResponseJSON({
       status: 200,
       json: entityFull,
-      description: 'cat founded.'
+      description: 'cat found.'
     }),
     404: Swagger.defaultResponseError({
       status: 404,
@@ -47,7 +47,7 @@ export const SwagggerResponse = {
     200: Swagger.defaultResponseJSON({
       status: 200,
       json: entityFull,
-      description: 'cat founded.'
+      description: 'cat found.'
     }),
     404: Swagger.defaultResponseError({
       status: 404,
@@ -67,5 +67,6 @@ export const SwagggerResponse = {
 
 export const SwagggerRequest = {
   createBody: Swagger.defaultRequestJSON({ ...entity, id: undefined }),
-  updateBody: Swagger.defaultRequestJSON({ ...entity, id: '<id>' })
+  updateBody: Swagger.defaultRequestJSON({ ...entity, id: '<id>' }),
+  listQuery: Swagger.defaultApiQueryOptions({ example: 'limit=10&page=1', name: 'pagination', required: false })
 };

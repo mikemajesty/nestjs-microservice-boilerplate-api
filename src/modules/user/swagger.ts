@@ -49,7 +49,7 @@ export const SwagggerResponse = {
     200: Swagger.defaultResponseJSON({
       status: 200,
       json: entityFull,
-      description: 'user founded.'
+      description: 'user found.'
     }),
     404: Swagger.defaultResponseError({
       status: 404,
@@ -62,7 +62,7 @@ export const SwagggerResponse = {
     200: Swagger.defaultResponseJSON({
       status: 200,
       json: entityFull,
-      description: 'user founded.'
+      description: 'user found.'
     }),
     404: Swagger.defaultResponseError({
       status: 404,

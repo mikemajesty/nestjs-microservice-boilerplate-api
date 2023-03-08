@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { CatsEntity } from '@/core/cats/entity/cats';
 import { ICatsRepository } from '@/core/cats/repository/cats';
 import { CatsCreateUsecase } from '@/core/cats/use-cases/cats-create';
+import { CatsDeleteUsecase } from '@/core/cats/use-cases/cats-delete';
 import { CatsListUsecase } from '@/core/cats/use-cases/cats-list';
 import { CatsUpdateUsecase } from '@/core/cats/use-cases/cats-update';
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
@@ -12,7 +13,13 @@ import { TokenModule } from '@/libs/auth';
 import { IsLoggedMiddleware } from '@/utils/middlewares/is-logged.middleware';
 
 import { CatsGetByIdUsecase } from './../../core/cats/use-cases/user-getByID';
-import { ICatsCreateAdapter, ICatsGetByIDAdapter, ICatsListAdapter, ICatsUpdateAdapter } from './adaptet';
+import {
+  ICatsCreateAdapter,
+  ICatsDeleteAdapter,
+  ICatsGetByIDAdapter,
+  ICatsListAdapter,
+  ICatsUpdateAdapter
+} from './adaptet';
 import { CatsController } from './controller';
 import { CatsRepository } from './repository';
 import { CatsSchema } from './schema';
@@ -46,6 +53,11 @@ import { CatsSchema } from './schema';
     {
       provide: ICatsListAdapter,
       useFactory: (repository: ICatsRepository) => new CatsListUsecase(repository),
+      inject: [ICatsRepository]
+    },
+    {
+      provide: ICatsDeleteAdapter,
+      useFactory: (repository: ICatsRepository) => new CatsDeleteUsecase(repository),
       inject: [ICatsRepository]
     }
   ],
