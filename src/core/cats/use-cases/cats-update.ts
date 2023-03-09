@@ -1,6 +1,7 @@
 import { ICatsRepository } from '@/core/cats/repository/cats';
 import { ILoggerAdapter } from '@/infra/logger';
-import { CatsUpdateInput, CatsUpdateOutput } from '@/modules/cats/types';
+import { CatsUpdateInput, CatsUpdateOutput, CatsUpdateSchema } from '@/modules/cats/types';
+import { ValidateSchema } from '@/utils/decorators/validate-schema.decorator';
 import { ApiNotFoundException } from '@/utils/exception';
 
 import { CatsEntity } from './../entity/cats';
@@ -8,6 +9,7 @@ import { CatsEntity } from './../entity/cats';
 export class CatsUpdateUsecase {
   constructor(private readonly catsRepository: ICatsRepository, private readonly loggerServide: ILoggerAdapter) {}
 
+  @ValidateSchema(CatsUpdateSchema)
   async execute(input: CatsUpdateInput): Promise<CatsUpdateOutput> {
     const cats = await this.catsRepository.findById(input.id);
 

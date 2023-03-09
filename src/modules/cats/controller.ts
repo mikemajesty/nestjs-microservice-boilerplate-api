@@ -15,19 +15,14 @@ import { SwagggerRequest, SwagggerResponse } from './swagger';
 import {
   CatsCreateInput,
   CatsCreateOutput,
-  CatsCreateSchema,
   CatsDeleteInput,
   CatsDeleteOutput,
-  CatsDeleteSchema,
   CatsGetByIDInput,
   CatsGetByIDOutput,
-  CatsGetByIdSchema,
   CatsListInput,
   CatsListOutput,
-  CatsListSchema,
   CatsUpdateInput,
-  CatsUpdateOutput,
-  CatsUpdateSchema
+  CatsUpdateOutput
 } from './types';
 
 @Controller()
@@ -47,8 +42,7 @@ export class CatsController {
   @ApiResponse(SwagggerResponse.create[200])
   @ApiBody(SwagggerRequest.createBody)
   async create(@Body() input: CatsCreateInput): CatsCreateOutput {
-    const model = CatsCreateSchema.parse(input);
-    return await this.catsCreate.execute(model);
+    return await this.catsCreate.execute(input);
   }
 
   @Put('/cats')
@@ -56,8 +50,7 @@ export class CatsController {
   @ApiResponse(SwagggerResponse.update[404])
   @ApiBody(SwagggerRequest.updateBody)
   async update(@Body() input: CatsUpdateInput): CatsUpdateOutput {
-    const model = CatsUpdateSchema.parse(input);
-    return await this.catsUpdate.execute(model);
+    return await this.catsUpdate.execute(input);
   }
 
   @Get('/cats/:id')
@@ -65,16 +58,14 @@ export class CatsController {
   @ApiResponse(SwagggerResponse.getByID[200])
   @ApiResponse(SwagggerResponse.getByID[404])
   async getById(@Param() input: CatsGetByIDInput): CatsGetByIDOutput {
-    const model = CatsGetByIdSchema.parse(input);
-    return await this.catsGetByID.execute(model);
+    return await this.catsGetByID.execute(input);
   }
 
   @Get('/cats')
   @ApiQuery(SwagggerRequest.listQuery)
   @ApiResponse(SwagggerResponse.list[200])
   async list(@Query() input: CatsListInput): CatsListOutput {
-    const model = CatsListSchema.parse(input);
-    return await this.catsList.execute(model);
+    return await this.catsList.execute(input);
   }
 
   @Delete('/cats/:id')
@@ -82,7 +73,6 @@ export class CatsController {
   @ApiResponse(SwagggerResponse.delete[200])
   @ApiResponse(SwagggerResponse.delete[404])
   async delete(@Param() input: CatsDeleteInput): CatsDeleteOutput {
-    const model = CatsDeleteSchema.parse(input);
-    return await this.catsDelete.execute(model);
+    return await this.catsDelete.execute(input);
   }
 }

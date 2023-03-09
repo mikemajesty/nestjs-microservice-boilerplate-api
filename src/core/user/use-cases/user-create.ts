@@ -1,5 +1,6 @@
 import { ILoggerAdapter } from '@/infra/logger';
-import { UserCreateInput, UserCreateOutput } from '@/modules/user/types';
+import { UserCreateInput, UserCreateOutput, UserCreateSchema } from '@/modules/user/types';
+import { ValidateSchema } from '@/utils/decorators/validate-schema.decorator';
 import { ApiConflictException } from '@/utils/exception';
 
 import { UserEntity } from '../entity/user';
@@ -8,6 +9,7 @@ import { IUserRepository } from '../repository/user';
 export class UserCreateUsecase {
   constructor(private readonly userRepository: IUserRepository, private readonly loggerServide: ILoggerAdapter) {}
 
+  @ValidateSchema(UserCreateSchema)
   async execute(input: UserCreateInput): Promise<UserCreateOutput> {
     const entity = new UserEntity({
       clientId: input.clientId,
