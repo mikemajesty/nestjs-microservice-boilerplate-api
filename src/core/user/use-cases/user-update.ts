@@ -1,5 +1,6 @@
 import { ILoggerAdapter } from '@/infra/logger';
-import { UserUpdateInput, UserUpdateOutput } from '@/modules/user/types';
+import { UserUpdateInput, UserUpdateOutput, UserUpdateSchema } from '@/modules/user/types';
+import { ValidateSchema } from '@/utils/decorators/validate-schema.decorator';
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception';
 
 import { UserEntity } from '../entity/user';
@@ -8,6 +9,7 @@ import { IUserRepository } from '../repository/user';
 export class UserUpdateUsecase {
   constructor(private readonly userRepository: IUserRepository, private readonly loggerServide: ILoggerAdapter) {}
 
+  @ValidateSchema(UserUpdateSchema)
   async execute(input: UserUpdateInput): Promise<UserUpdateOutput> {
     const user = await this.userRepository.findById(input.id);
 

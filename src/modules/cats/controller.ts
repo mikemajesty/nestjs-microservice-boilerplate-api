@@ -3,6 +3,7 @@ import { ApiBearerAuth, ApiBody, ApiParam, ApiQuery, ApiResponse, ApiTags } from
 
 import { UserRole } from '@/core/user/entity/user';
 import { Roles } from '@/utils/decorators/role.decorator';
+import { SortHttpSchema } from '@/utils/sort';
 
 import {
   ICatsCreateAdapter,
@@ -62,9 +63,12 @@ export class CatsController {
   }
 
   @Get('/cats')
-  @ApiQuery(SwagggerRequest.listQuery)
+  @ApiQuery(SwagggerRequest.listQuery.pagination.limit)
+  @ApiQuery(SwagggerRequest.listQuery.pagination.page)
+  @ApiQuery(SwagggerRequest.listQuery.sort)
   @ApiResponse(SwagggerResponse.list[200])
   async list(@Query() input: CatsListInput): CatsListOutput {
+    input.sort = SortHttpSchema.parse(input.sort);
     return await this.catsList.execute(input);
   }
 

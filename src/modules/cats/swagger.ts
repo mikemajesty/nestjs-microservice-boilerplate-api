@@ -68,5 +68,11 @@ export const SwagggerResponse = {
 export const SwagggerRequest = {
   createBody: Swagger.defaultRequestJSON({ ...entity, id: undefined }),
   updateBody: Swagger.defaultRequestJSON({ ...entity, id: '<id>' }),
-  listQuery: Swagger.defaultApiQueryOptions({ example: 'limit=10&page=1', name: 'pagination', required: false })
+  listQuery: {
+    pagination: {
+      limit: Swagger.defaultApiQueryOptions({ example: 10, name: 'limit', required: false }),
+      page: Swagger.defaultApiQueryOptions({ example: 1, name: 'page', required: false })
+    },
+    sort: Swagger.defaultApiQueryOptions({ example: 'createdAt:desc', name: 'sort', required: false })
+  }
 };

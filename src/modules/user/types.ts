@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { UserEntitySchema } from '@/core/user/entity/user';
 import { CreatedModel } from '@/infra/repository';
 import { PaginationInput, PaginationOutput, PaginationSchema } from '@/utils/pagination';
+import { SortSchema } from '@/utils/sort';
 
 type Schema = z.infer<typeof UserEntitySchema>;
 
@@ -20,11 +21,8 @@ export const UserUpdateSchema = UserEntitySchema.pick({
 export type UserUpdateInput = z.infer<typeof UserUpdateSchema>;
 export type UserUpdateOutput = Promise<Schema>;
 
-export const UserListSchema = z.intersection(
-  PaginationSchema,
-  z.object({ filter: z.record(z.string().trim().min(1).max(200), z.string().trim().min(1).max(200)) }).partial()
-);
-export type UserListInput = { filter?: Partial<Schema> } & Omit<PaginationInput, 'total'>;
+export const UserListSchema = z.intersection(PaginationSchema, SortSchema);
+export type UserListInput = PaginationInput;
 export type UserListOutput = Promise<{ docs: Schema[] } & PaginationOutput>;
 
 export const UserDeleteSchema = UserEntitySchema.pick({

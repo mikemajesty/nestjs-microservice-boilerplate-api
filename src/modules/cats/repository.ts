@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { CatsEntity } from '@/core/cats/entity/cats';
 import { ICatsRepository } from '@/core/cats/repository/cats';
 import { PostgresRepository } from '@/infra/repository/postgres/repository';
+import { calucaleSkip } from '@/utils/pagination';
 
 import { CatsSchema } from './schema';
 import { CatsListInput, CatsListOutput } from './types';
@@ -18,8 +19,8 @@ export class CatsRepository
   }
 
   async paginate(input: CatsListInput): Promise<CatsListOutput> {
-    const skip = (input.page - 1) * input.limit;
-    const [docs, total] = await this.repository.findAndCount({ take: input.limit, skip });
+    const skip = calucaleSkip(input);
+    const [docs, total] = await this.repository.findAndCount({ take: input.limit, skip, order: input.sort });
 
     return { docs, total, page: input.page, limit: input.limit };
   }
