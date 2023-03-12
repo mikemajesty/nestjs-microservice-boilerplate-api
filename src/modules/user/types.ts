@@ -22,7 +22,7 @@ export type UserUpdateInput = z.infer<typeof UserUpdateSchema>;
 export type UserUpdateOutput = Promise<Schema>;
 
 export const UserListSchema = z.intersection(PaginationSchema, SortSchema);
-export type UserListInput = PaginationInput;
+export type UserListInput = PaginationInput<Schema>;
 export type UserListOutput = Promise<{ docs: Schema[] } & PaginationOutput>;
 
 export const UserDeleteSchema = UserEntitySchema.pick({

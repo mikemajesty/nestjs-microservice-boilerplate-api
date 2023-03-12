@@ -73,6 +73,15 @@ export const SwagggerRequest = {
       limit: Swagger.defaultApiQueryOptions({ example: 10, name: 'limit', required: false }),
       page: Swagger.defaultApiQueryOptions({ example: 1, name: 'page', required: false })
     },
-    sort: Swagger.defaultApiQueryOptions({ example: 'createdAt:desc', name: 'sort', required: false })
+    sort: Swagger.defaultApiQueryOptions({
+      name: 'sort',
+      required: false,
+      description: `<b>createdAt:desc,name:asc`
+    }),
+    search: Swagger.defaultApiQueryOptions({
+      name: 'search',
+      required: false,
+      description: `<b>name:miau,breed:siamese`
+    })
   }
 };

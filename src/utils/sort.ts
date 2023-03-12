@@ -36,7 +36,7 @@ export const SortHttpSchema = z
     const sortDefault = sort || 'createdAt:desc';
 
     const order = Object.fromEntries(
-      String(sort && !sort.includes('createdAt') ? sort?.concat(',createdAt:desc') : sortDefault)
+      String(sort && !sort.includes('createdAt') ? sort : sortDefault)
         .split(',')
         .map((s) => {
           const [field, order] = s.split(':');

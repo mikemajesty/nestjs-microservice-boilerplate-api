@@ -3,6 +3,8 @@ import { z } from 'zod';
 import { CatsEntitySchema } from '@/core/cats/entity/cats';
 import { CreatedModel } from '@/infra/repository';
 import { PaginationInput, PaginationOutput, PaginationSchema } from '@/utils/pagination';
+import { SearchSchema } from '@/utils/search';
+import { SortSchema } from '@/utils/sort';
 
 type Schema = z.infer<typeof CatsEntitySchema>;
 
@@ -32,9 +34,9 @@ export const CatsGetByIdSchema = CatsEntitySchema.pick({
 export type CatsGetByIDInput = z.infer<typeof CatsGetByIdSchema>;
 export type CatsGetByIDOutput = Promise<Schema>;
 
-export const CatsListSchema = PaginationSchema;
+export const CatsListSchema = z.intersection(PaginationSchema, SortSchema.merge(SearchSchema));
 
-export type CatsListInput = PaginationInput;
+export type CatsListInput = PaginationInput<Schema>;
 export type CatsListOutput = Promise<{ docs: Schema[] } & PaginationOutput>;
 
 export const CatsDeleteSchema = CatsEntitySchema.pick({
