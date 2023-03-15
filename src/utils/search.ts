@@ -38,7 +38,7 @@ export const SearchHttpSchema = z
       .split(',')
       .forEach((s) => {
         const [field, value] = s.split(':');
-        search[field] = value;
+        search[field] = value.trim();
       });
 
     return search;

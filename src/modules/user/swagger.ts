@@ -4,9 +4,8 @@ import { Swagger } from '@/utils/swagger';
 
 const entity = {
   id: '<id>',
-  clientId: '<clientId>',
-  clientSecret: '<clientSecret>',
-  organization: '<organization>',
+  login: '<login>',
+  password: '<password>',
   roles: [UserRole.USER]
 };
 
@@ -88,6 +87,15 @@ export const SwagggerRequest = {
       limit: Swagger.defaultApiQueryOptions({ example: 10, name: 'limit', required: false }),
       page: Swagger.defaultApiQueryOptions({ example: 1, name: 'page', required: false })
     },
-    sort: Swagger.defaultApiQueryOptions({ example: 'createdAt:desc', name: 'sort', required: false })
+    sort: Swagger.defaultApiQueryOptions({
+      name: 'sort',
+      required: false,
+      description: `<b>createdAt:desc,login:asc`
+    }),
+    search: Swagger.defaultApiQueryOptions({
+      name: 'search',
+      required: false,
+      description: `<b>login:<login>`
+    })
   }
 };

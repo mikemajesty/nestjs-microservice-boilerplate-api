@@ -11,8 +11,8 @@ export class LoginUsecase {
   @ValidateSchema(LoginSchema)
   async execute(input: LoginInput): Promise<LoginOutput> {
     const login = await this.loginRepository.findOne({
-      clientId: input.clientId,
-      clientSecret: input.clientSecret
+      login: input.login,
+      password: input.password
     });
 
     if (!login) {
@@ -20,9 +20,8 @@ export class LoginUsecase {
     }
 
     return this.tokenService.sign({
-      clientId: login.clientId,
-      clientSecret: login.clientSecret,
-      organization: login.organization,
+      login: login.login,
+      password: login.password,
       roles: login.roles
     });
   }

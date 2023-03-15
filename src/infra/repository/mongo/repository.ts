@@ -8,8 +8,8 @@ import {
   UpdateWithAggregationPipeline
 } from 'mongoose';
 
+import { ConvertMongoFilterBaseRepository } from '@/utils/decorators/convert-mongo-filter.decorator';
 import { ApiInternalServerException } from '@/utils/exception';
-import { convertMongoFilter } from '@/utils/mongo';
 
 import { IRepository } from '../adapter';
 import { CreatedModel, RemovedModel, UpdatedModel } from '../types';
@@ -28,8 +28,8 @@ export class MongoRepository<T extends Document> implements IRepository<T> {
     return { id: savedResult.id, created: !!savedResult.id };
   }
 
+  @ConvertMongoFilterBaseRepository()
   async find(filter: FilterQuery<T>, options?: QueryOptions): Promise<T[]> {
-    convertMongoFilter<T>([filter]);
     return (await this.model.find(filter, undefined, options)).map((u) => u.toObject({ virtuals: true }));
   }
 
@@ -37,9 +37,8 @@ export class MongoRepository<T extends Document> implements IRepository<T> {
     return (await this.model.findById(id)).toObject({ virtuals: true });
   }
 
+  @ConvertMongoFilterBaseRepository()
   async findOne(filter: FilterQuery<T>, options?: QueryOptions): Promise<T | null> {
-    convertMongoFilter<T>([filter]);
-
     const data = await this.model.findOne(filter, undefined, options);
 
     if (!data) return null;
@@ -47,31 +46,32 @@ export class MongoRepository<T extends Document> implements IRepository<T> {
     return data.toObject({ virtuals: true });
   }
 
+  @ConvertMongoFilterBaseRepository()
   async findAll(filter?: FilterQuery<T>): Promise<T[]> {
     return (await this.model.find(filter)).map((u) => u.toObject({ virtuals: true }));
   }
 
+  @ConvertMongoFilterBaseRepository()
   async remove(filter: FilterQuery<T>): Promise<RemovedModel> {
-    convertMongoFilter<T>([filter]);
     const { deletedCount } = await this.model.deleteOne(filter);
     return { deletedCount, deleted: !!deletedCount };
   }
 
+  @ConvertMongoFilterBaseRepository()
   async updateOne(
     filter: FilterQuery<T>,
     updated: UpdateWithAggregationPipeline | UpdateQuery<T>,
     options?: QueryOptions
   ): Promise<UpdatedModel> {
-    convertMongoFilter<T>([filter]);
     return await this.model.updateOne(filter, updated, options);
   }
 
+  @ConvertMongoFilterBaseRepository()
   async updateMany(
     filter: FilterQuery<T>,
     updated: UpdateWithAggregationPipeline | UpdateQuery<T>,
     options?: QueryOptions
   ): Promise<UpdatedModel> {
-    convertMongoFilter<T>([filter]);
     return await this.model.updateMany(filter, updated, options);
   }
 }

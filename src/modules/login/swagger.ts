@@ -18,7 +18,7 @@ export const SwagggerResponse = {
 
 export const SwagggerRequest = {
   body: Swagger.defaultRequestJSON({
-    clientId: 'clientId',
-    clientSecret: 'clientSecret'
+    login: 'login',
+    password: 'password'
   })
 };

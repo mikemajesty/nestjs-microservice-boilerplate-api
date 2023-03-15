@@ -11,9 +11,8 @@ import { IUserRepository } from '../../repository/user';
 import { UserCreateUsecase } from '../user-create';
 
 const user: UserCreateInput = {
-  clientId: 'clientId',
-  clientSecret: 'clientSecret',
-  organization: 'organization',
+  login: 'login',
+  password: 'password',
   roles: [UserRole.USER]
 };
 
@@ -56,11 +55,10 @@ describe('UserCreateUsecase', () => {
 
   test('should throw error when invalid entity', async () => {
     await expectZodError(
-      () => usecase.execute({ clientId: 'clientId' }),
+      () => usecase.execute({ login: 'login' }),
       (issues) => {
         expect(issues).toEqual([
-          { message: 'Required', path: 'clientSecret' },
-          { message: 'Required', path: 'organization' },
+          { message: 'Required', path: 'password' },
           { message: 'Required', path: 'roles' }
         ]);
       }

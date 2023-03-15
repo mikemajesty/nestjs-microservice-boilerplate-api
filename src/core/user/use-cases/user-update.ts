@@ -19,19 +19,11 @@ export class UserUpdateUsecase {
 
     const userFinded = new UserEntity(user);
 
-    if (input.organization) {
-      userFinded.organization.name = input.organization;
-      delete input.organization;
-    }
-
-    const updatedInput = { ...input, organization: undefined };
-    delete updatedInput.organization;
-
-    const entity = new UserEntity({ ...userFinded, ...updatedInput });
+    const entity = new UserEntity({ ...userFinded, ...input });
 
     const userExists = await this.userRepository.existsOnUpdate(
-      { clientId: entity.clientId, clientSecret: entity.clientSecret },
-      [{ id: entity.id }]
+      { login: entity.login, password: entity.password },
+      { id: entity.id }
     );
 
     if (userExists) {

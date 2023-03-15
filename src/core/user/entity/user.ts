@@ -3,16 +3,11 @@ import { z } from 'zod';
 import { IEntity, withID } from '@/utils/entity';
 
 const ID = z.string().uuid();
-const ClientId = z.string().trim().min(1).max(200);
-const ClientSecret = z.string().trim().min(1).max(200);
+const Login = z.string().trim().min(1).max(200);
+const Password = z.string().trim().min(1).max(200);
 const CreatedAt = z.date().nullish();
 const UpdatedAt = z.date().nullish();
 const DeletedAt = z.date().default(null).nullish();
-
-const Organization = z.object({
-  id: z.string().uuid().optional(),
-  name: z.string().trim().min(1).max(200)
-});
 
 export enum UserRole {
   USER = 'USER',
@@ -21,9 +16,8 @@ export enum UserRole {
 
 export const UserEntitySchema = z.object({
   id: ID,
-  clientId: ClientId,
-  clientSecret: ClientSecret,
-  organization: Organization,
+  login: Login,
+  password: Password,
   roles: z.array(z.nativeEnum(UserRole)),
   createdAt: CreatedAt,
   updatedAt: UpdatedAt,
@@ -32,16 +26,12 @@ export const UserEntitySchema = z.object({
 
 type User = z.infer<typeof UserEntitySchema>;
 
-type Organization = z.infer<typeof Organization>;
-
 export class UserEntity implements IEntity {
   id: string;
 
-  clientId: string;
+  login: string;
 
-  clientSecret: string;
-
-  organization: Organization;
+  password: string;
 
   roles: UserRole[];
 

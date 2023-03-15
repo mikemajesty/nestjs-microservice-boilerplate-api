@@ -10,9 +10,8 @@ import { LoginUsecase } from '../user-login';
 
 const userResponse: UserEntity = {
   id: '61cc35f3-03d9-4b7f-9c63-59f32b013ef5',
-  clientId: 'clientId',
-  clientSecret: 'clientSecret',
-  organization: { id: '61cc35f3-03d9-4b7f-9c63-59f32b013ef5', name: 'name' },
+  login: 'login',
+  password: 'password',
   roles: [UserRole.USER],
   createdAt: new Date(),
   updatedAt: new Date()
@@ -46,14 +45,14 @@ describe('LoginUsecase', () => {
 
   test('should throw erron when login or password not found', async () => {
     repository.findOne = jest.fn().mockResolvedValue(null);
-    await expect(usecase.execute({ clientId: 'clientId', clientSecret: 'clientSecret' })).rejects.toThrowError(
+    await expect(usecase.execute({ login: 'login', password: 'password' })).rejects.toThrowError(
       ApiNotFoundException
     );
   });
 
   test('should login successfully', async () => {
     repository.findOne = jest.fn().mockResolvedValue(userResponse);
-    await expect(usecase.execute({ clientId: 'clientId', clientSecret: 'clientSecret' })).resolves.toEqual({
+    await expect(usecase.execute({ login: 'login', password: 'password' })).resolves.toEqual({
       token: expect.any(String)
     });
   });

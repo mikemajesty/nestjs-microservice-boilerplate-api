@@ -8,7 +8,7 @@ import { ITokenAdapter } from './adapter';
 import { AuthInput, AuthOutput } from './types';
 
 type DecodeOutput = {
-  clientSecret: string;
+  password: string;
 };
 
 @Injectable()
@@ -18,7 +18,7 @@ export class TokenService implements ITokenAdapter {
   sign(model: AuthInput, options?: jwt.SignOptions): AuthOutput {
     const token = jwt.sign(
       model,
-      model.clientSecret,
+      model.password,
       options || {
         expiresIn: this.secret.TOKEN_EXPIRATION
       }
@@ -31,7 +31,7 @@ export class TokenService implements ITokenAdapter {
     const tokenData = this.decode(token);
 
     return new Promise((res, rej) => {
-      jwt.verify(token, tokenData?.clientSecret, (error, decoded) => {
+      jwt.verify(token, tokenData?.password, (error, decoded) => {
         if (error) rej(new ApiUnauthorizedException(error.message));
 
         res(decoded);

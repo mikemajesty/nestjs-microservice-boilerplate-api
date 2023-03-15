@@ -8,9 +8,8 @@ import { UserListUsecase } from '../user-list';
 
 const userResponse: UserEntity = {
   id: '61cc35f3-03d9-4b7f-9c63-59f32b013ef5',
-  clientId: 'clientId',
-  clientSecret: 'clientSecret',
-  organization: { id: '61cc35f3-03d9-4b7f-9c63-59f32b013ef5', name: 'name' },
+  login: 'login',
+  password: 'password',
   roles: [UserRole.USER],
   createdAt: new Date(),
   updatedAt: new Date()

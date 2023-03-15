@@ -5,7 +5,8 @@ import { PaginateModel } from 'mongoose';
 import { UserEntity } from '@/core/user/entity/user';
 import { IUserRepository } from '@/core/user/repository/user';
 import { MongoRepository } from '@/infra/repository';
-import { convertMongoFilter } from '@/utils/mongo';
+import { ValidateDatabaseSort } from '@/utils/decorators/validate-allowed-sort-order.decorator';
+import { SearchTypeEnum, ValidateMongoFilter } from '@/utils/decorators/validate-mongo-filter.decorator';
 
 import { User, UserDocument } from './schema';
 import { UserListInput, UserListOutput } from './types';
@@ -16,17 +17,19 @@ export class UserRepository extends MongoRepository<UserDocument> implements IUs
     super(entity);
   }
 
-  async existsOnUpdate(equalFilter: Partial<UserEntity>, notEqualFilter: UserEntity[]): Promise<boolean> {
-    convertMongoFilter<UserDocument>([equalFilter]);
-    convertMongoFilter<UserDocument>(notEqualFilter);
-
-    const user = await this.entity.findOne({ ...equalFilter, $nor: notEqualFilter });
+  async existsOnUpdate(
+    equalFilter: Pick<UserEntity, 'login' | 'password'>,
+    notEqualFilter: Pick<UserEntity, 'id'>
+  ): Promise<boolean> {
+    const user = await this.entity.findOne({ ...equalFilter, $nor: [{ _id: notEqualFilter.id }] });
 
     return !!user;
   }
 
-  async paginate({ limit, page, sort }: UserListInput): Promise<UserListOutput> {
-    const users = await this.entity.paginate({ deletedAt: null }, { page, limit, sort });
+  @ValidateMongoFilter([{ name: 'login', type: SearchTypeEnum.like }])
+  @ValidateDatabaseSort(['login', 'createdAt'])
+  async paginate({ limit, page, sort, search }: UserListInput): Promise<UserListOutput> {
+    const users = await this.entity.paginate(search, { page, limit, sort });
 
     return { docs: users.docs.map((u) => u.toObject({ virtuals: true })), limit, page, total: users.totalDocs };
   }

@@ -11,16 +11,11 @@ export class UserCreateUsecase {
 
   @ValidateSchema(UserCreateSchema)
   async execute(input: UserCreateInput): Promise<UserCreateOutput> {
-    const entity = new UserEntity({
-      clientId: input.clientId,
-      clientSecret: input.clientSecret,
-      roles: input.roles,
-      organization: { name: input.organization }
-    });
+    const entity = new UserEntity(input);
 
     const userExists = await this.userRepository.findOne({
-      clientId: entity.clientId,
-      clientSecret: entity.clientSecret
+      login: entity.login,
+      password: entity.password
     });
 
     if (userExists) {

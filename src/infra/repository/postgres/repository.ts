@@ -42,8 +42,9 @@ export class PostgresRepository<T extends BaseEntity & IEntity> implements Parti
   }
 
   async findOne<TQuery = FindOneOptions<T>>(filter: TQuery): Promise<T> {
+    Object.assign(filter, { deletedAt: null });
     return await this.repository.findOne({
-      where: { ...filter, deletedAt: null }
+      where: filter
     } as FindOneOptions<T>);
   }
 

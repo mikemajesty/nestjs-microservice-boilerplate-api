@@ -3,6 +3,7 @@ import { ApiBearerAuth, ApiBody, ApiParam, ApiQuery, ApiResponse, ApiTags } from
 
 import { UserRole } from '@/core/user/entity/user';
 import { Roles } from '@/utils/decorators/role.decorator';
+import { SearchHttpSchema } from '@/utils/search';
 import { SortHttpSchema } from '@/utils/sort';
 
 import {
@@ -60,9 +61,11 @@ export class UserController {
   @ApiQuery(SwagggerRequest.listQuery.pagination.limit)
   @ApiQuery(SwagggerRequest.listQuery.pagination.page)
   @ApiQuery(SwagggerRequest.listQuery.sort)
+  @ApiQuery(SwagggerRequest.listQuery.search)
   @ApiResponse(SwagggerResponse.list[200])
   async list(@Query() input: UserListInput): UserListOutput {
     input.sort = SortHttpSchema.parse(input.sort);
+    input.search = SearchHttpSchema.parse(input.search);
     return await this.userListUsecase.execute(input);
   }
 

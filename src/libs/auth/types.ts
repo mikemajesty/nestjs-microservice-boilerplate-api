@@ -3,9 +3,8 @@ import { z } from 'zod';
 import { UserEntitySchema } from '@/core/user/entity/user';
 
 const Schema = UserEntitySchema.pick({
-  clientId: true,
-  clientSecret: true,
-  organization: true,
+  login: true,
+  password: true,
   roles: true
 });
 

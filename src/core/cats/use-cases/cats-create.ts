@@ -10,11 +10,7 @@ export class CatsCreateUsecase {
 
   @ValidateSchema(CatsCreateSchema)
   async execute(input: CatsCreateInput): Promise<CatsCreateOutput> {
-    const entity = new CatsEntity({
-      name: input.name,
-      breed: input.breed,
-      age: input.age
-    });
+    const entity = new CatsEntity(input);
 
     const cats = await this.catsRepository.create(entity);
 
