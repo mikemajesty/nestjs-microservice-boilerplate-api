@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
 
 // eslint-disable-next-line @typescript-eslint/ban-types
@@ -11,3 +12,5 @@ export const expectZodError = async (callback: Function, expected: Function) => 
     }
   }
 };
+
+export const generateUUID = () => uuidv4();

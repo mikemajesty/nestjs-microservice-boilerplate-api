@@ -10,11 +10,11 @@ import { UserRole } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
 import { UserCreateUsecase } from '../user-create';
 
-const user: UserCreateInput = {
+const user = {
   login: 'login',
   password: 'password',
   roles: [UserRole.USER]
-};
+} as UserCreateInput;
 
 describe('UserCreateUsecase', () => {
   let usecase: IUserCreateAdapter;

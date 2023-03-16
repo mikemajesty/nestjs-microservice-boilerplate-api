@@ -9,16 +9,16 @@
       "source.fixAll": false,
       "source.organizeImports": false
     },
-    "editor.formatOnSave": false,
+    "editor.formatOnSave": true,
   },
   "[javascript]": {
     "editor.codeActionsOnSave": {
       "source.fixAll": false,
       "source.organizeImports": false
     },
-    "editor.formatOnSave": false,
+    "editor.formatOnSave": true,
   },
-  "editor.formatOnSave": false,
+  "editor.formatOnSave": true,
   "javascript.format.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces": false,
   "typescript.format.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces": false,
 }

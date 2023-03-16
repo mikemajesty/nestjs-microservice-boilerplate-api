@@ -9,18 +9,19 @@ import { UserEntity, UserRole } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
 import { UserUpdateUsecase } from '../user-update';
 
-const userBody: UserUpdateInput = {
+const userBody = {
   id: '61cc35f3-03d9-4b7f-9c63-59f32b013ef5',
   login: 'login',
   password: 'password',
   roles: [UserRole.USER]
-};
-const userResponse: UserEntity = {
+} as UserUpdateInput;
+
+const userResponse = {
   id: '61cc35f3-03d9-4b7f-9c63-59f32b013ef5',
   login: 'login',
   password: 'password',
   roles: [UserRole.USER]
-};
+} as UserEntity;
 
 describe('UserUpdateUsecase', () => {
   let usecase: IUserUpdateAdapter;

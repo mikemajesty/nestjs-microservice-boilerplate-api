@@ -1,21 +1,21 @@
 import { Test } from '@nestjs/testing';
 
+import { ITokenAdapter, TokenModule } from '@/libs/auth';
 import { ILoginAdapter } from '@/modules/login/adapter';
-import { ITokenAdapter, TokenModule } from '@/utils/auth';
 import { ApiNotFoundException } from '@/utils/exception';
 
 import { UserEntity, UserRole } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
 import { LoginUsecase } from '../user-login';
 
-const userResponse: UserEntity = {
+const userResponse = {
   id: '61cc35f3-03d9-4b7f-9c63-59f32b013ef5',
   login: 'login',
   password: 'password',
   roles: [UserRole.USER],
   createdAt: new Date(),
   updatedAt: new Date()
-};
+} as UserEntity;
 
 describe('LoginUsecase', () => {
   let usecase: ILoginAdapter;
@@ -45,9 +45,7 @@ describe('LoginUsecase', () => {
 
   test('should throw erron when login or password not found', async () => {
     repository.findOne = jest.fn().mockResolvedValue(null);
-    await expect(usecase.execute({ login: 'login', password: 'password' })).rejects.toThrowError(
-      ApiNotFoundException
-    );
+    await expect(usecase.execute({ login: 'login', password: 'password' })).rejects.toThrowError(ApiNotFoundException);
   });
 
   test('should login successfully', async () => {

@@ -2,17 +2,18 @@ import { Test } from '@nestjs/testing';
 
 import { IUserGetByIDAdapter } from '@/modules/user/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
+import { generateUUID } from '@/utils/tests';
 
 import { UserEntity, UserRole } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
 import { UserGetByIdUsecase } from '../user-getByID';
 
-const userResponse: UserEntity = {
+const userResponse = {
   id: '61cc35f3-03d9-4b7f-9c63-59f32b013ef5',
   login: 'login',
   password: 'password',
   roles: [UserRole.USER]
-};
+} as UserEntity;
 
 describe('UserGetByIdUsecase', () => {
   let usecase: IUserGetByIDAdapter;
@@ -42,11 +43,11 @@ describe('UserGetByIdUsecase', () => {
 
   test('should throw error when user not found', async () => {
     repository.findById = jest.fn().mockResolvedValue(null);
-    await expect(usecase.execute({ id: 'uuid' })).rejects.toThrowError(ApiNotFoundException);
+    await expect(usecase.execute({ id: generateUUID() })).rejects.toThrowError(ApiNotFoundException);
   });
 
   test('should getById successfully', async () => {
     repository.findById = jest.fn().mockResolvedValue(userResponse);
-    await expect(usecase.execute({ id: 'uuid' })).resolves.toEqual(userResponse);
+    await expect(usecase.execute({ id: generateUUID() })).resolves.toEqual(userResponse);
   });
 });
