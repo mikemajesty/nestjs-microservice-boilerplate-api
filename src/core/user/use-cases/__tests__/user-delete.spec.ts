@@ -41,7 +41,7 @@ describe('UserDeleteUsecase', () => {
     repository = app.get(IUserRepository);
   });
 
-  test('should throw error when user not found', async () => {
+  test('should throw error when invalid parameters', async () => {
     await expectZodError(
       () => usecase.execute({ id: 'uuid' }),
       (issues) => {

@@ -12,7 +12,7 @@ import {
   ICatsGetByIDAdapter,
   ICatsListAdapter,
   ICatsUpdateAdapter
-} from './adaptet';
+} from './adapter';
 import { SwagggerRequest, SwagggerResponse } from './swagger';
 import {
   CatsCreateInput,

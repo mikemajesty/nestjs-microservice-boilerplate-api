@@ -3,8 +3,8 @@ import { CatsGetByIdSchema } from '@/modules/cats/types';
 import { ValidateSchema } from '@/utils/decorators/validate-schema.decorator';
 import { ApiNotFoundException } from '@/utils/exception';
 
+import { CatsEntity } from '../entity/cats';
 import { ICatsRepository } from '../repository/cats';
-import { CatsEntity } from './../entity/cats';
 
 export class CatsGetByIdUsecase {
   constructor(private readonly catsRepository: ICatsRepository) {}

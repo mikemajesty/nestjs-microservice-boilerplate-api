@@ -3,6 +3,7 @@ import { Test } from '@nestjs/testing';
 import { ITokenAdapter, TokenModule } from '@/libs/auth';
 import { ILoginAdapter } from '@/modules/login/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
+import { expectZodError } from '@/utils/tests';
 
 import { UserEntity, UserRole } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
@@ -41,6 +42,18 @@ describe('LoginUsecase', () => {
 
     usecase = app.get(ILoginAdapter);
     repository = app.get(IUserRepository);
+  });
+
+  test('should throw error when invalid parameters', async () => {
+    await expectZodError(
+      () => usecase.execute({}),
+      (issues) => {
+        expect(issues).toEqual([
+          { message: 'Required', path: 'login' },
+          { message: 'Required', path: 'password' }
+        ]);
+      }
+    );
   });
 
   test('should throw erron when login or password not found', async () => {

@@ -4,6 +4,7 @@ import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { IUserUpdateAdapter } from '@/modules/user/adapter';
 import { UserUpdateInput } from '@/modules/user/types';
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception';
+import { expectZodError } from '@/utils/tests';
 
 import { UserEntity, UserRole } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
@@ -47,6 +48,15 @@ describe('UserUpdateUsecase', () => {
 
     usecase = app.get(IUserUpdateAdapter);
     repository = app.get(IUserRepository);
+  });
+
+  test('should throw error when invalid parameters', async () => {
+    await expectZodError(
+      () => usecase.execute({}),
+      (issues) => {
+        expect(issues).toEqual([{ message: 'Required', path: 'id' }]);
+      }
+    );
   });
 
   test('should update successfully', async () => {

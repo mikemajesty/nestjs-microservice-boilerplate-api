@@ -2,7 +2,7 @@ import { Test } from '@nestjs/testing';
 
 import { IUserGetByIDAdapter } from '@/modules/user/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
-import { generateUUID } from '@/utils/tests';
+import { expectZodError, generateUUID } from '@/utils/tests';
 
 import { UserEntity, UserRole } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
@@ -39,6 +39,15 @@ describe('UserGetByIdUsecase', () => {
 
     usecase = app.get(IUserGetByIDAdapter);
     repository = app.get(IUserRepository);
+  });
+
+  test('should throw error when invalid parameters', async () => {
+    await expectZodError(
+      () => usecase.execute({}),
+      (issues) => {
+        expect(issues).toEqual([{ message: 'Required', path: 'id' }]);
+      }
+    );
   });
 
   test('should throw error when user not found', async () => {

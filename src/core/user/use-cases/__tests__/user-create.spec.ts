@@ -53,11 +53,12 @@ describe('UserCreateUsecase', () => {
     await expect(usecase.execute(user)).rejects.toThrowError(ApiConflictException);
   });
 
-  test('should throw error when invalid entity', async () => {
+  test('should throw error when invalid parameters', async () => {
     await expectZodError(
-      () => usecase.execute({ login: 'login' }),
+      () => usecase.execute({}),
       (issues) => {
         expect(issues).toEqual([
+          { message: 'Required', path: 'login' },
           { message: 'Required', path: 'password' },
           { message: 'Required', path: 'roles' }
         ]);

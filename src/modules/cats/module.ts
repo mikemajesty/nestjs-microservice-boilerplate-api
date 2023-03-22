@@ -12,14 +12,14 @@ import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { TokenModule } from '@/libs/auth';
 import { IsLoggedMiddleware } from '@/utils/middlewares/is-logged.middleware';
 
-import { CatsGetByIdUsecase } from './../../core/cats/use-cases/user-getByID';
+import { CatsGetByIdUsecase } from '../../core/cats/use-cases/cats-getByID';
 import {
   ICatsCreateAdapter,
   ICatsDeleteAdapter,
   ICatsGetByIDAdapter,
   ICatsListAdapter,
   ICatsUpdateAdapter
-} from './adaptet';
+} from './adapter';
 import { CatsController } from './controller';
 import { CatsRepository } from './repository';
 import { CatsSchema } from './schema';
