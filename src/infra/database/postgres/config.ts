@@ -14,5 +14,5 @@ export default new DataSource({
   password: configService.get('POSTGRES_PASSWORD'),
   migrationsTableName: 'migrations_table',
   migrations: ['src/infra/database/postgres/migrations/*.ts'],
-  entities: []
+  entities: ['src/modules/cats/schema.ts']
 });
