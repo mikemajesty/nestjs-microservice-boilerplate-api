@@ -18,8 +18,8 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "typeorm": "ts-node \"./node_modules/typeorm/cli.js\"",
-    "migration:create": "yarn typeorm migration:create \"./src/infra/database/postgres/migrations/migration\"",
-    "migration:run": "npm run typeorm migration:run -- -d ./src/infra/database/postgres/config --transaction none"
+    "migration-postgres:create": "yarn typeorm migration:create \"./src/infra/database/postgres/migrations/migration\"",
+    "migration-postgres:run": "npm run typeorm migration:run -- -d ./src/infra/database/postgres/config --transaction none"
   },
   "dependencies": {
     "@nestjs/common": "^9.0.0",

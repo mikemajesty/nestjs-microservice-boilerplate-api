@@ -13,6 +13,7 @@ export default new DataSource({
   username: configService.get('POSTGRES_USER'),
   password: configService.get('POSTGRES_PASSWORD'),
   migrationsTableName: 'migrations_table',
+  synchronize: configService.get<string>('ENV').toLowerCase() !== 'prd',
   migrations: ['src/infra/database/postgres/migrations/*.ts'],
   entities: ['src/modules/cats/schema.ts']
 });
