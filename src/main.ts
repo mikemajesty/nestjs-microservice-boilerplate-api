@@ -5,6 +5,8 @@ import { bold } from 'colorette';
 
 import { description, name, version } from '../package.json';
 import { AppModule } from './app.module';
+import { IUserRepository } from './core/user/repository/user';
+import { UserAdminSeed } from './infra/database/mongo/seed/create-user-admin';
 import { ILoggerAdapter } from './infra/logger/adapter';
 import { ISecretsAdapter } from './infra/secrets';
 import { AppExceptionFilter } from './utils/filters/http-exception.filter';
@@ -56,5 +58,9 @@ async function bootstrap() {
   loggerService.log(`🔵 Postgres listening at ${bold(POSTGRES_URL)}`);
   loggerService.log(`🔵 Mongo listening at ${bold(MONGO_URL)}`);
   loggerService.log(`🔵 kibana listening at ${bold(KIBANA_URL)}`);
+
+  const userRepository = app.get(IUserRepository);
+
+  await userRepository.seed([UserAdminSeed]);
 }
 bootstrap();

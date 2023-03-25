@@ -31,4 +31,6 @@ export abstract class IRepository<T> {
     TUpdate = UpdateQuery<T> | UpdateWithAggregationPipeline,
     TOptions = QueryOptions<T>
   >(filter: TQuery, updated: TUpdate, options?: TOptions): Promise<UpdatedModel>;
+
+  abstract seed(entityList: T[]): Promise<void>;
 }

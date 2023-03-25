@@ -14,7 +14,7 @@ import { CatsListInput, CatsListOutput } from './types';
 @Injectable()
 export class CatsRepository
   extends PostgresRepository<CatsSchema & CatsEntity>
-  implements Omit<ICatsRepository, 'updateMany'>
+  implements Omit<ICatsRepository, 'updateMany' | 'seed'>
 {
   constructor(readonly repository: Repository<CatsSchema & CatsEntity>) {
     super(repository);

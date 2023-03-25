@@ -34,7 +34,9 @@ export class MongoRepository<T extends Document> implements IRepository<T> {
   }
 
   async findById(id: string | number): Promise<T> {
-    return (await this.model.findById(id)).toObject({ virtuals: true });
+    const model = await this.model.findById(id);
+    if (!model) return null;
+    return model.toObject({ virtuals: true });
   }
 
   @ConvertMongoFilterBaseRepository()
@@ -73,5 +75,14 @@ export class MongoRepository<T extends Document> implements IRepository<T> {
     options?: QueryOptions
   ): Promise<UpdatedModel> {
     return await this.model.updateMany(filter, updated, options);
+  }
+
+  async seed(entityList: T[]): Promise<void> {
+    for (const model of entityList) {
+      const data = await this.findById(model.id);
+      if (!data) {
+        await this.create(model);
+      }
+    }
   }
 }
