@@ -31,8 +31,7 @@ export class LoggerService implements ILoggerAdapter {
         {
           level: 'trace',
           stream: pinoPretty(this.getPinoConfig())
-        },
-        { level: 'info', stream: this.streamToElastic }
+        }
       ])
     );
     this.logger = pinoHttp(this.getPinoHttpConfig(pinoLogger));
