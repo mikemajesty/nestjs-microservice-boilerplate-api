@@ -9,15 +9,15 @@ export class SecretsService extends ConfigService implements ISecretsAdapter {
     super();
   }
 
-  REDIS_URL = this.get('REDIS_URL');
+  ENV = this.get('ENV');
 
   PORT = this.get<number>('PORT');
-
-  ENV = this.get('ENV');
 
   HOST = this.get('HOST');
 
   LOG_LEVEL = this.get('LOG_LEVEL');
+
+  REDIS_URL = this.get('REDIS_URL');
 
   POSTGRES_URL = `postgresql://${this.get('POSTGRES_USER')}:${this.get('POSTGRES_PASSWORD')}@${this.get(
     'POSTGRES_HOST'
@@ -25,19 +25,7 @@ export class SecretsService extends ConfigService implements ISecretsAdapter {
 
   MONGO_URL = this.get('MONGO_URL');
 
-  ELK_URL = this.get('ELK_URL');
-
-  KIBANA_URL = this.get('KIBANA_URL');
-
   TOKEN_EXPIRATION = this.get<number>('TOKEN_EXPIRATION');
-
-  SIGEF_BASE_URL = this.get('SIGEF_BASE_URL');
-
-  POLYGON_BASE_URL = this.get('POLYGON_BASE_URL');
-
-  QUEUE_SENT_AREAS = this.get('QUEUE_SENT_AREAS');
-
-  QUEUE_PROCESSED_AREAS = this.get('QUEUE_PROCESSED_AREAS');
 
   rabbitMQ = {
     user: this.get('RABBITMQ_USER'),
@@ -45,6 +33,4 @@ export class SecretsService extends ConfigService implements ISecretsAdapter {
     port: this.get<number>('RABBITMQ_PORT'),
     host: this.get('RABBITMQ_HOST')
   };
-
-  BUCKET_ENV = this.get('BUCKET_ENV');
 }

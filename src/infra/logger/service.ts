@@ -6,7 +6,6 @@ import { gray, green, isColorSupported } from 'colorette';
 import { PinoRequestConverter } from 'convert-pino-request-to-curl';
 import { DateTime } from 'luxon';
 import { LevelWithSilent, Logger, multistream, pino } from 'pino';
-import * as pinoElastic from 'pino-elasticsearch';
 import { HttpLogger, Options, pinoHttp } from 'pino-http';
 import pinoPretty from 'pino-pretty';
 import { v4 as uuidv4 } from 'uuid';
@@ -21,17 +20,6 @@ export class LoggerService implements ILoggerAdapter {
   private streamToElastic: Transform;
   logger: HttpLogger;
   private app: string;
-
-  constructor(private readonly elkURL: string) {
-    const index = `monorepo-logs-${this.getDateFormat(new Date(), 'yyyy-MM')}`;
-    this.streamToElastic = pinoElastic({
-      index,
-      consistency: 'one',
-      node: this.elkURL,
-      'es-version': 7,
-      'flush-bytes': 1000
-    });
-  }
 
   connect<T = LevelWithSilent>(logLevel: T): void {
     const pinoLogger = pino(

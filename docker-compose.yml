@@ -22,30 +22,6 @@ services:
     restart: unless-stopped
     networks:
       - postgres-network
-  elasticsearch:
-    container_name: nestjs-microservice-elasticsearch
-    image: elasticsearch:7.11.2
-    ports:
-      - '9200:9200'
-      - '9300:9300'
-    environment:
-      - node.name=elasticsearch
-      - cluster.name=es-docker-cluster
-      - discovery.type=single-node
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms1024m -Xmx1024m"
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-  kibana:
-    container_name: nestjs-microservice-kibana
-    image: kibana:7.11.2
-    ports:
-      - '5601:5601'
-    environment:
-      ELASTICSEARCH_URL: http://elasticsearch:9200
-      ELASTICSEARCH_HOSTS: '["http://elasticsearch:9200"]'
   redis:
     container_name: nestjs-microservice-redis
     image: 'redis:alpine'

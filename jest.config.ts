@@ -7,7 +7,7 @@ export default {
   rootDir: 'src/core',
   testRegex: '.*\\.spec\\.ts$',
   transform: {
-    '^.+\\.(t|j)s$': 'ts-jest'
+    '^.+\\.(t|j)s?$': ['@swc/jest']
   },
   setupFilesAfterEnv: ['../../test/initializaion.ts'],
   testEnvironment: 'node',

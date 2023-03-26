@@ -36,7 +36,7 @@ async function bootstrap() {
     ]
   });
 
-  const { ENV, MONGO_URL, POSTGRES_URL, PORT, KIBANA_URL, HOST } = app.get(ISecretsAdapter);
+  const { ENV, MONGO_URL, POSTGRES_URL, PORT, HOST } = app.get(ISecretsAdapter);
 
   const config = new DocumentBuilder()
     .setTitle(name)
@@ -57,7 +57,6 @@ async function bootstrap() {
 
   loggerService.log(`🔵 Postgres listening at ${bold(POSTGRES_URL)}`);
   loggerService.log(`🔵 Mongo listening at ${bold(MONGO_URL)}`);
-  loggerService.log(`🔵 kibana listening at ${bold(KIBANA_URL)}`);
 
   const userRepository = app.get(IUserRepository);
 

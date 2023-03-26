@@ -9,8 +9,8 @@ import { LoggerService } from './service';
   providers: [
     {
       provide: ILoggerAdapter,
-      useFactory: ({ LOG_LEVEL, ELK_URL }: ISecretsAdapter) => {
-        const logger = new LoggerService(ELK_URL);
+      useFactory: ({ LOG_LEVEL }: ISecretsAdapter) => {
+        const logger = new LoggerService();
         logger.connect(LOG_LEVEL);
         return logger;
       },

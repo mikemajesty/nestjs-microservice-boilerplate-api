@@ -9,24 +9,11 @@ export abstract class ISecretsAdapter {
 
   MONGO_URL: string;
 
-  ELK_URL: string;
-
-  KIBANA_URL: string;
-
   POSTGRES_URL: string;
 
   REDIS_URL: string;
 
   TOKEN_EXPIRATION: number;
-
-  SIGEF_BASE_URL: string;
-
-  POLYGON_BASE_URL: string;
-
-  QUEUE_SENT_AREAS: string;
-  QUEUE_PROCESSED_AREAS: string;
-
-  BUCKET_ENV: string;
 
   rabbitMQ: {
     user: string;
