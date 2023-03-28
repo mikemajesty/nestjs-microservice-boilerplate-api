@@ -6,13 +6,13 @@ import { CatsEntity } from '@/core/cats/entity/cats';
 import { ICatsRepository } from '@/core/cats/repository/cats';
 import { CatsCreateUsecase } from '@/core/cats/use-cases/cats-create';
 import { CatsDeleteUsecase } from '@/core/cats/use-cases/cats-delete';
+import { CatsGetByIdUsecase } from '@/core/cats/use-cases/cats-getByID';
 import { CatsListUsecase } from '@/core/cats/use-cases/cats-list';
 import { CatsUpdateUsecase } from '@/core/cats/use-cases/cats-update';
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { TokenModule } from '@/libs/auth';
 import { IsLoggedMiddleware } from '@/utils/middlewares/is-logged.middleware';
 
-import { CatsGetByIdUsecase } from '../../core/cats/use-cases/cats-getByID';
 import {
   ICatsCreateAdapter,
   ICatsDeleteAdapter,

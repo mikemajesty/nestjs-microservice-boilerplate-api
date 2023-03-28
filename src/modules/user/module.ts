@@ -36,7 +36,7 @@ import { User, UserDocument, UserSchema } from './schema';
           connection.model<UserDocument, mongoose.PaginateModel<UserDocument>>(User.name, UserSchema)
         );
       },
-      inject: [getConnectionToken(ConnectionName.ENRICHMENT)]
+      inject: [getConnectionToken(ConnectionName.USER)]
     },
     {
       provide: IUserCreateAdapter,

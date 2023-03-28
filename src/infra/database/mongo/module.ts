@@ -9,7 +9,7 @@ import { MongoService } from './service';
 @Module({
   imports: [
     MongooseModule.forRootAsync({
-      connectionName: ConnectionName.ENRICHMENT,
+      connectionName: ConnectionName.USER,
       useFactory: ({ MONGO_URL }: ISecretsAdapter) => {
         return new MongoService().getConnection({ URI: MONGO_URL });
       },

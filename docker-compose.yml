@@ -19,7 +19,7 @@ services:
       - '5432:5432'
     volumes:
       - nestjs-microservice-postgres:/data/postgres
-      - ./create-database.sql:/docker-entrypoint-initdb.d/create-database.sql
+      - ./sql/postgres/create-database.sql:/docker-entrypoint-initdb.d/create-database.sql
     restart: always
     networks:
       - postgres-network

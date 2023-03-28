@@ -1,3 +1,3 @@
 export enum ConnectionName {
-  ENRICHMENT = `ENRICHMENT_API`
+  USER = `USER_CONNECTION`
 }
