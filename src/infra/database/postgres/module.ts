@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { ISecretsAdapter, SecretsModule } from '@/infra/secrets';
-import { CatsSchema } from '@/modules/cats/schema';
 
 import { PostgresService } from './service';
 
@@ -15,7 +14,7 @@ import { PostgresService } from './service';
           ...conn,
           timeout: 5000,
           connectTimeout: 5000,
-          entities: [CatsSchema],
+          autoLoadEntities: true,
           synchronize: true,
           migrationsTableName: 'migration_collection'
         };
