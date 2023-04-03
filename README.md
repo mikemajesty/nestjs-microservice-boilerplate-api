@@ -1,192 +1,106 @@
-# Data Enrichment API.
+# Nesjt Microservice API
 
-API for data enrichment using **Node/Nestjs**, mongodb, postgresql and RabbitMQ.
+In this microservice I used the best architecture concepts: clean architecture, DDD and onion architecture.
 
-## How to start?
- 
-* Initialize the infra
-  ``` 
-   docker-compose up --build
+### Building and Running the application
+
+- build
   ```
- * install dependencies
-   ```
-    yarn
-   ```
- * start app
-   ```
-    yarn start:debug
-   ```
+  $ yarn build
+  ```
+- running
+  ```
+   $ docker-compose up build
+  ```
+  ```
+   $ yarn start | start:debug | start:prod
+  ```
 
-## Architecture
- ##### This architecture is a mixture of DDD and Clean Architecture, trying to get the best of each one.
+### CRUD Scafold
 
-  * ```├── src ├── core```: **Core domain Logic**:  Where all the business rules, use cases and abstraction of the repositories are located, do not use frameworks in this layer, use only nodejs.  
-  * ```├── src ├── infra```:  **Application infrastructure**: Maps to the layers that hold the Database and Gateway concerns. In here, we define data entities, database access (typically in the shape of repositories), integrations with other network services, caches, etc. This project/layer contains the physical implementation of the interfaces defined in our domain layer.
-* ```├── src ├── libs```: **Application Library**: Shared app library.
-* ```├── src ├── utils```: **Application Utilities**: Shared app utilities.
-* ```├── src ├── modules```: **Application Modules**: App shared modules.
+Creating a crud in Postgres and Mongo in seconds.
 
+- run
+  ```
+  $ yarn scafold
+  ```
+- Choose database for CRUD.
+- `(x) POTGRES:CRUD`
+- `( ) MONGO:CRUD `
+- choose root microservice api folder
+- ✨Magic ✨
 
--- App Skeleton
-```
-.
-├── README.md
-├── docker-compose.yml
-├── nest-cli.json
-├── package.json
-├── src
-│   ├── app.module.ts
-│   ├── core
-│   │   ├── analysis
-│   │   │   ├── entities
-│   │   │   │   └── analysis.ts
-│   │   │   ├── repository
-│   │   │   │   └── analysis.ts
-│   │   │   └── use-cases
-│   │   │       └── analysis-create.ts
-│   │   ├── cats
-│   │   │   ├── entities
-│   │   │   │   └── cats.ts
-│   │   │   ├── repositories
-│   │   │   │   └── cats.ts
-│   │   │   └── use-cases
-│   │   └── user
-│   │       ├── entities
-│   │       │   └── user.ts
-│   │       ├── repositories
-│   │       │   └── user.ts
-│   │       └── use-cases
-│   │           ├── user-create.ts
-│   │           ├── user-delete.ts
-│   │           ├── user-getByID.ts
-│   │           ├── user-list.ts
-│   │           ├── user-login.ts
-│   │           └── user-update.ts
-│   ├── infra
-│   │   ├── cache
-│   │   │   ├── adapter.ts
-│   │   │   ├── index.ts
-│   │   │   ├── memory
-│   │   │   │   ├── index.ts
-│   │   │   │   ├── module.ts
-│   │   │   │   ├── service.ts
-│   │   │   │   └── types.ts
-│   │   │   ├── redis
-│   │   │   │   ├── index.ts
-│   │   │   │   ├── module.ts
-│   │   │   │   ├── service.ts
-│   │   │   │   └── types.ts
-│   │   │   └── types.ts
-│   │   ├── database
-│   │   │   ├── adapter.ts
-│   │   │   ├── enum.ts
-│   │   │   ├── index.ts
-│   │   │   ├── mongo
-│   │   │   │   ├── index.ts
-│   │   │   │   ├── module.ts
-│   │   │   │   └── service.ts
-│   │   │   ├── postgres
-│   │   │   │   ├── index.ts
-│   │   │   │   ├── module.ts
-│   │   │   │   └── service.ts
-│   │   │   └── types.ts
-│   │   ├── http
-│   │   │   ├── adapter.ts
-│   │   │   ├── index.ts
-│   │   │   ├── module.ts
-│   │   │   └── service.ts
-│   │   ├── logger
-│   │   │   ├── adapter.ts
-│   │   │   ├── index.ts
-│   │   │   ├── module.ts
-│   │   │   ├── service.ts
-│   │   │   └── types.ts
-│   │   ├── rabbitmq
-│   │   │   ├── adapter.ts
-│   │   │   ├── index.ts
-│   │   │   ├── module.ts
-│   │   │   └── service.ts
-│   │   ├── repository
-│   │   │   ├── adapter.ts
-│   │   │   ├── index.ts
-│   │   │   ├── mongo
-│   │   │   │   └── repository.ts
-│   │   │   ├── postgres
-│   │   │   │   └── repository.ts
-│   │   │   └── types.ts
-│   │   └── secrets
-│   │       ├── adapter.ts
-│   │       ├── index.ts
-│   │       ├── module.ts
-│   │       └── service.ts
-│   ├── libs
-│   │   ├── auth
-│   │   │   ├── adapter.ts
-│   │   │   ├── index.ts
-│   │   │   ├── module.ts
-│   │   │   ├── service.ts
-│   │   │   └── types.ts
-│   │   ├── entity.ts
-│   │   ├── mongo.ts
-│   │   ├── pagination.ts
-│   │   ├── sort.ts
-│   │   └── swagger.ts
-│   ├── main.ts
-│   ├── modules
-│   │   ├── analysis
-│   │   │   ├── adapter.ts
-│   │   │   ├── controller.ts
-│   │   │   ├── module.ts
-│   │   │   ├── repository.ts
-│   │   │   ├── schema.ts
-│   │   │   ├── swagger.ts
-│   │   │   └── types.ts
-│   │   ├── health
-│   │   │   ├── __tests__
-│   │   │   │   └── controller.spec.ts
-│   │   │   ├── controller.ts
-│   │   │   └── module.ts
-│   │   ├── login
-│   │   │   ├── adapter.ts
-│   │   │   ├── controller.ts
-│   │   │   ├── module.ts
-│   │   │   ├── swagger.ts
-│   │   │   └── types.ts
-│   │   ├── polygon
-│   │   │   ├── adapter.ts
-│   │   │   ├── module.ts
-│   │   │   ├── repository.ts
-│   │   │   └── types.ts
-│   │   ├── sigef
-│   │   │   ├── adapter.ts
-│   │   │   ├── module.ts
-│   │   │   ├── repository.ts
-│   │   │   └── types.ts
-│   │   └── user
-│   │       ├── adapter.ts
-│   │       ├── controller.ts
-│   │       ├── module.ts
-│   │       ├── repository.ts
-│   │       ├── schema.ts
-│   │       ├── swagger.ts
-│   │       └── types.ts
-│   └── utils
-│       ├── decorators
-│       │   └── role.decorator.ts
-│       ├── exception.ts
-│       ├── filters
-│       │   └── http-exception.filter.ts
-│       ├── interceptors
-│       │   ├── auth-guard.interceptor.ts
-│       │   ├── http-exception.interceptor.ts
-│       │   └── http-logger.interceptor.ts
-│       ├── middlewares
-│       │   └── is-logged.middleware.ts
-│       └── static
-│           └── htttp-status.json
-├── test
-│   ├── app.e2e-spec.ts
-│   └── jest-e2e.json
-├── tsconfig.build.json
-└── tsconfig.json
-```
+### Postgres migrations
+
+- create
+  ```
+  $ yarn migration-postgres:create
+  ```
+- run
+  ```
+  $ yarn migration-postgres:run
+  ```
+
+### Test
+
+- run
+  ```
+  $ yarn test
+  ```
+- coverage
+  ```
+  $ yarn test:cov
+  ```
+
+### Lint
+
+- run
+  ```
+  $ yarn lint
+  ```
+- prettier
+  ```
+  $ yarn format
+  ```
+
+##### Microservice architecture.
+
+- Docker
+- Git hooks
+  - Husky
+- Secrets Service
+- Logs Service
+- Authentication
+- Authorization
+- Error Handler
+- Libs Structure
+- Dependency Inversion Pattern
+- Usecase Pattern
+- Anti Corruption Layer Pattern
+- Interface Adapter Pattern
+- Swaggger Documentation
+- Generic Repository Pattern
+  - Mongo Repository
+  - Postgres Repository
+- Cache Service
+  - Redis
+  - NodeCache
+- Databse
+  - mongo
+    - Seed
+  - postgres
+    - Migrations
+- Tests
+  - unit
+  - 100% coverage
+
+---
+
+The following is a list of all the people that have contributed Nestjs monorepo boilerplate. Thanks for your contributions!
+
+[<img alt="mikemajesty" src="https://avatars1.githubusercontent.com/u/11630212?s=460&v=4&s=117" width="117">](https://github.com/mikemajesty)
+
+## License
+
+It is available under the MIT license.
+[License](https://opensource.org/licenses/mit-license.php)
