@@ -1,4 +1,4 @@
-# Nesjt Microservice API
+# Nestjs boilerplate Microservice API
 
 In this microservice I used the best architecture concepts: clean architecture, DDD and onion architecture.
 
@@ -64,7 +64,7 @@ Creating a crud in Postgres and Mongo in seconds.
   $ yarn format
   ```
 
-##### Microservice architecture.
+### Microservice architecture.
 
 - Docker
 - Git hooks
