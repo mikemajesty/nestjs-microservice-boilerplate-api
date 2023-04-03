@@ -18,6 +18,7 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "typeorm": "ts-node \"./node_modules/typeorm/cli.js\"",
+    "scafold": "./node_modules/@mikemajesty/microservice-crud/bin/microservice-crud",
     "migration-postgres:create": "yarn typeorm migration:create \"./src/infra/database/postgres/migrations/migration\"",
     "migration-postgres:run": "npm run typeorm migration:run -- -d ./src/infra/database/postgres/config --transaction none"
   },
@@ -53,6 +54,7 @@
     "zod": "^3.20.2"
   },
   "devDependencies": {
+    "@mikemajesty/microservice-crud": "^0.0.1",
     "@nestjs/cli": "^9.0.0",
     "@nestjs/schematics": "^9.0.0",
     "@nestjs/testing": "^9.0.0",
