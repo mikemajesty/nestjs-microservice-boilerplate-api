@@ -31,6 +31,17 @@ Creating a crud in Postgres and Mongo in seconds.
 - import new module 'app.module.ts'
 - ✨Magic ✨
 
+#### CRUD features
+  - List
+    - mongo
+      - search
+      - pagination
+      - sort
+    - postgres
+      - search
+      - pagination
+      - sort
+
 ### Postgres migrations
 
 - create
