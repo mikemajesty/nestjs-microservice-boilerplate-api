@@ -102,6 +102,7 @@ Creating a crud in Postgres and Mongo in seconds.
 - Git hooks
   - Husky
 - Secrets Service
+- HTTP Service
 - Logs Service
 - Authentication
 - Authorization
