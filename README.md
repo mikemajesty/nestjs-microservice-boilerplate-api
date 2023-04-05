@@ -37,31 +37,31 @@ Creating a crud in Postgres and Mongo in seconds.
       - search
       - pagination
       - sort
-      - validation schema
+      - entity validation
     - postgres
       - search
       - pagination
       - sort
-      - validation schema
+      - entity validation
   - Delete
     - mongo
       - Logical deletion 
-      - validation schema
+      - entity validation
     - postgres
       - Logical deletion
-      - validation schema
+      - entity validation
   - Update
     - mongo
       - Update Partial entity 
-      - validation schema
+      - entity validation
     - postgres
       - Update Partial entity
-      - validation schema
+      - entity validation
   - Create
     - mongo
-      - validation schema
+      - entity validation
     - postgres
-      - validation schema
+      - entity validation
 
 ### Postgres migrations
 
