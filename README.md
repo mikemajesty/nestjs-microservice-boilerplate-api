@@ -41,6 +41,11 @@ Creating a crud in Postgres and Mongo in seconds.
       - search
       - pagination
       - sort
+   - Delete
+      - mongo
+        - Logical deletion 
+      - postgres
+        - Logical deletion 
 
 ### Postgres migrations
 
