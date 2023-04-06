@@ -23,7 +23,7 @@ In this microservice I used the best architecture concepts: clean architecture, 
 
 Creating a crud in Postgres and Mongo in seconds.
 
-- warning: It doesn't work on WSL.
+- warning: only GNU/Linux.
 
 - install 
    https://howtoinstall.co/en/zenity
