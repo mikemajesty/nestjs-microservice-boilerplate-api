@@ -23,6 +23,9 @@ In this microservice I used the best architecture concepts: clean architecture, 
 
 Creating a crud in Postgres and Mongo in seconds.
 
+- install 
+   https://howtoinstall.co/en/zenity
+
 - run
   ```
   $ yarn scafold
