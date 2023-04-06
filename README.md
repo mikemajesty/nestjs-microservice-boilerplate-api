@@ -4,7 +4,7 @@ In this microservice I used the best architecture concepts: clean architecture, 
 
 ### Building and Running the application
 
-- build
+- install dependencies
   ```
   $ yarn build
   ```
@@ -15,7 +15,10 @@ In this microservice I used the best architecture concepts: clean architecture, 
   ```
    $ yarn start | start:debug | start:prod
   ```
-
+- build
+  ```
+  $ yarn build
+  
 ### CRUD Scafold
 
 Creating a crud in Postgres and Mongo in seconds.
