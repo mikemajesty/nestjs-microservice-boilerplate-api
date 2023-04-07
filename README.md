@@ -12,9 +12,21 @@ In this microservice I used the best architecture concepts: clean architecture, 
   ```
    $ docker-compose up --build
   ```
-  ```
-   $ yarn start:dev | start:debug | start:prod
-  ```
+- running
+
+  - dev
+    ```
+    $ yarn start:dev
+    ```
+  - debug
+    ```
+    $ start:debug
+    ```
+  - production
+    ```
+    $ yarn start
+    ```
+
 - build
 
   ```
@@ -100,13 +112,13 @@ Creating a crud in Postgres and Mongo in seconds.
 
 ### Lint
 
-- run
+- lint
   ```
   $ yarn lint
   ```
 - prettier
   ```
-  $ yarn format
+  $ yarn prettier
   ```
 
 ### Microservice architecture.
