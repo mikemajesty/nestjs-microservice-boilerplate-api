@@ -1,4 +1,5 @@
 {
+  "$schema": "https://json.schemastore.org/swcrc",
   "sourceMaps": true,
   "module": {
     "type": "commonjs",
@@ -14,6 +15,7 @@
       "legacyDecorator": true,
       "decoratorMetadata": true
     },
-    "keepClassNames": true
+    "keepClassNames": true,
+    "baseUrl": "./"
   }
 }

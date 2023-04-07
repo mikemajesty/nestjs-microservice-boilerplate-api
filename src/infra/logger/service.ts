@@ -1,5 +1,4 @@
 import { IncomingMessage, ServerResponse } from 'node:http';
-import { Transform } from 'node:stream';
 
 import { Injectable, InternalServerErrorException, Scope } from '@nestjs/common';
 import { gray, green, isColorSupported } from 'colorette';
@@ -17,7 +16,6 @@ import { ErrorType, MessageType } from './types';
 
 @Injectable({ scope: Scope.REQUEST })
 export class LoggerService implements ILoggerAdapter {
-  private streamToElastic: Transform;
   logger: HttpLogger;
   private app: string;
 

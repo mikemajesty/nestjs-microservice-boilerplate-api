@@ -17,13 +17,16 @@ export class HttpService implements IHttpAdapter {
       retryDelay: (retryCount, axiosError) => {
         this.loggerService.warn({
           message: `retry attempt: ${retryCount}`,
-          obj: { warn: axiosError.message, status: axiosError.status || axiosError.code }
+          obj: {
+            response: axiosError.response.data['message'],
+            status: [axiosError.response.status, axiosError.status, axiosError.code].find(Boolean)
+          }
         });
-        return retryCount * 2000;
+        return retryCount * 1500;
       },
       retryCondition: (error) => {
         const status = error?.response?.status || 500;
-        return [status === 503].some(Boolean);
+        return [status === 503, status === 408].some(Boolean);
       }
     });
 

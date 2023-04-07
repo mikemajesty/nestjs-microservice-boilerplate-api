@@ -1,8 +1,9 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 
+import { TokenModule } from '@/libs/auth';
+
 import { InfraModule } from './infra/module';
-import { LibsModule } from './libs/module';
 import { CatsModule } from './modules/cats/module';
 import { HealthModule } from './modules/health/module';
 import { LoginModule } from './modules/login/module';
@@ -16,6 +17,6 @@ import { RolesGuardInterceptor } from './utils/interceptors/auth-guard.intercept
       useClass: RolesGuardInterceptor
     }
   ],
-  imports: [InfraModule, HealthModule, UserModule, LoginModule, LibsModule, CatsModule]
+  imports: [InfraModule, HealthModule, UserModule, LoginModule, TokenModule, CatsModule]
 })
 export class AppModule {}
