@@ -7,8 +7,8 @@
   "license": "MIT",
   "scripts": {
     "prepare": "husky install",
-    "build:swc": "npx swc --out-dir dist -w src",
     "build": "nest build",
+    "build:swc": "npx swc --out-dir dist src",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start --watch",
     "start:debug": "nest start --debug --watch",
