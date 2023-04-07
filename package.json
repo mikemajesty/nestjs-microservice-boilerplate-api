@@ -8,9 +8,9 @@
   "scripts": {
     "prepare": "husky install",
     "build": "nest build",
-    "start": "nest start --watch",
+    "start": "node dist/src/main",
+    "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
-    "start:prod": "node dist/src/main",
     "prettier": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "lint": "eslint \"{src,test}/**/*.ts\" --fix",
     "test": "jest --config=\"./jest.config.ts\" --detectOpenHandles",

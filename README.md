@@ -13,20 +13,23 @@ In this microservice I used the best architecture concepts: clean architecture, 
    $ docker-compose up build
   ```
   ```
-   $ yarn start | start:debug | start:prod
+   $ yarn start:dev | start:debug | start:prod
   ```
 - build
+
   ```
   $ yarn build
-  
+
+  ```
+
 ### CRUD Scafold
 
 Creating a crud in Postgres and Mongo in seconds.
 
 - warning: only GNU/Linux.
 
-- install 
-   https://howtoinstall.co/en/zenity
+- install
+  https://howtoinstall.co/en/zenity
 
 - run
   ```
@@ -41,36 +44,37 @@ Creating a crud in Postgres and Mongo in seconds.
 - ✨Magic ✨
 
 #### CRUD features
-  - List
-    - mongo
-      - search
-      - pagination
-      - sort
-      - entity validation
-    - postgres
-      - search
-      - pagination
-      - sort
-      - entity validation
-  - Delete
-    - mongo
-      - Logical deletion 
-      - entity validation
-    - postgres
-      - Logical deletion
-      - entity validation
-  - Update
-    - mongo
-      - Update Partial entity 
-      - entity validation
-    - postgres
-      - Update Partial entity
-      - entity validation
-  - Create
-    - mongo
-      - entity validation
-    - postgres
-      - entity validation
+
+- List
+  - mongo
+    - search
+    - pagination
+    - sort
+    - entity validation
+  - postgres
+    - search
+    - pagination
+    - sort
+    - entity validation
+- Delete
+  - mongo
+    - Logical deletion
+    - entity validation
+  - postgres
+    - Logical deletion
+    - entity validation
+- Update
+  - mongo
+    - Update Partial entity
+    - entity validation
+  - postgres
+    - Update Partial entity
+    - entity validation
+- Create
+  - mongo
+    - entity validation
+  - postgres
+    - entity validation
 
 ### Postgres migrations
 
@@ -136,7 +140,6 @@ Creating a crud in Postgres and Mongo in seconds.
 - Tests
   - unit
   - 100% coverage
-
 
 -- App Skeleton
 
