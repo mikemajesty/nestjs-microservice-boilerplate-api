@@ -38,11 +38,6 @@ In this microservice I used the best architecture concepts: clean architecture, 
 
 Creating a crud in Postgres and Mongo in seconds.
 
-- warning: only GNU/Linux.
-
-- install
-  https://howtoinstall.co/en/zenity
-
 - run
   ```
   $ yarn scafold
@@ -51,7 +46,6 @@ Creating a crud in Postgres and Mongo in seconds.
 - `(x) POTGRES:CRUD`
 - `( ) MONGO:CRUD `
 - type module name (use the singular name)
-- choose root microservice api folder
 - import new module 'app.module.ts'
 - ✨Magic ✨
 
