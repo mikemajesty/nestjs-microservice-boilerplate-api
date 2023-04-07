@@ -8,11 +8,10 @@
   "scripts": {
     "prepare": "husky install",
     "build": "nest build",
-    "build:swc": "npx swc --out-dir dist src",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start --watch",
     "start:debug": "nest start --debug --watch",
-    "start:prod": "node dist/main",
+    "start:prod": "node dist/src/main",
     "lint": "eslint \"{src,test}/**/*.ts\" --fix",
     "test": "jest --config=\"./jest.config.ts\" --detectOpenHandles",
     "test:watch": "jest --watch",

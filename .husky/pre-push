@@ -2,4 +2,4 @@
 . "$(dirname -- "$0")/_/husky.sh"
 
 npm run test
-npm run build:swc
+npx swc --out-dir dist src
