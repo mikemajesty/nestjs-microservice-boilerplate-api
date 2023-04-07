@@ -6,7 +6,7 @@ In this microservice I used the best architecture concepts: clean architecture, 
 
 - install dependencies
   ```
-  $ yarn build
+  $ yarn
   ```
 - running
   ```
