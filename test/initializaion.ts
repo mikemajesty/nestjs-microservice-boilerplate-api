@@ -10,5 +10,4 @@ jest.mock('pino-http', () => ({
   })
 }));
 
-jest.mock('pino-elasticsearch', () => jest.fn(() => ({})));
 jest.mock('pino', () => jest.genMockFromModule('pino'));
