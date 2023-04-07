@@ -10,7 +10,7 @@ In this microservice I used the best architecture concepts: clean architecture, 
   ```
 - running
   ```
-   $ docker-compose up build
+   $ docker-compose up --build
   ```
   ```
    $ yarn start:dev | start:debug | start:prod
