@@ -12,7 +12,7 @@ In this microservice I used the best architecture concepts: clean architecture, 
   ```
   $ yarn
   ```
-- running
+- infra
   ```
    $ docker-compose up --build
   ```
