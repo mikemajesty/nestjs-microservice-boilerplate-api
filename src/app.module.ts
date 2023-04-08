@@ -7,6 +7,7 @@ import { InfraModule } from './infra/module';
 import { CatsModule } from './modules/cats/module';
 import { HealthModule } from './modules/health/module';
 import { LoginModule } from './modules/login/module';
+import { LogoutModule } from './modules/logout/module';
 import { UserModule } from './modules/user/module';
 import { RolesGuardInterceptor } from './utils/interceptors/auth-guard.interceptor';
 
@@ -17,6 +18,6 @@ import { RolesGuardInterceptor } from './utils/interceptors/auth-guard.intercept
       useClass: RolesGuardInterceptor
     }
   ],
-  imports: [InfraModule, HealthModule, UserModule, LoginModule, TokenModule, CatsModule]
+  imports: [InfraModule, HealthModule, UserModule, LoginModule, LogoutModule, TokenModule, CatsModule]
 })
 export class AppModule {}

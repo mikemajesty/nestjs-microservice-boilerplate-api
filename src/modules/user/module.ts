@@ -8,6 +8,7 @@ import { UserDeleteUsecase } from '@/core/user/use-cases/user-delete';
 import { UserGetByIdUsecase } from '@/core/user/use-cases/user-getByID';
 import { UserListUsecase } from '@/core/user/use-cases/user-list';
 import { UserUpdateUsecase } from '@/core/user/use-cases/user-update';
+import { RedisCacheModule } from '@/infra/cache/redis';
 import { ConnectionName } from '@/infra/database/enum';
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { SecretsModule } from '@/infra/secrets';
@@ -26,7 +27,7 @@ import { UserRepository } from './repository';
 import { User, UserDocument, UserSchema } from './schema';
 
 @Module({
-  imports: [TokenModule, SecretsModule, LoggerModule],
+  imports: [TokenModule, SecretsModule, LoggerModule, RedisCacheModule],
   controllers: [UserController],
   providers: [
     {

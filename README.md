@@ -124,7 +124,10 @@ Creating a crud in Postgres and Mongo in seconds.
 - HTTP Service
 - Logs Service
 - Authentication
+  - Login
+  - Logout
 - Authorization
+  - Role-based access
 - Error Handler
 - Libs Structure
 - Dependency Inversion Pattern

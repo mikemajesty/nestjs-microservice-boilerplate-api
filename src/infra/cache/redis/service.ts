@@ -31,24 +31,17 @@ export class RedisService implements Partial<ICacheAdapter<RedisClientType>> {
   }
 
   async set(key: CacheKeyArgument, value: CacheValeuArgument, config?: unknown): Promise<void> {
-    const setResult = await this.client.set(key, value, config);
-    if (setResult !== 'OK') this.throwException(`cache ${this.set.name} error: ${key} ${value}`);
+    await this.client.set(key, value, config);
   }
 
   async get(key: CacheKeyArgument): Promise<string> {
     const getResult = await this.client.get(key);
-    if (!getResult)
-      this.logger.warn({
-        message: `key: ${key} not found.`,
-        context: RedisService.name
-      });
 
     return getResult;
   }
 
   async del(key: CacheKeyArgument): Promise<void> {
-    const deleted = await this.client.del(key);
-    if (!deleted) this.throwException(`cache key: ${key} not deleted`);
+    await this.client.del(key);
   }
 
   async setMulti(redisList: CacheKeyValue[]): Promise<void> {
@@ -62,8 +55,7 @@ export class RedisService implements Partial<ICacheAdapter<RedisClientType>> {
   }
 
   async pExpire(key: CacheKeyArgument, miliseconds: number): Promise<void> {
-    const expired = await this.client.pExpire(key, miliseconds);
-    if (!expired) this.throwException(`set expire error key: ${key}`);
+    await this.client.pExpire(key, miliseconds);
   }
 
   async hGet(key: CacheKeyArgument, field: CacheKeyArgument): Promise<unknown | unknown[]> {

@@ -9,6 +9,7 @@ import { CatsDeleteUsecase } from '@/core/cats/use-cases/cats-delete';
 import { CatsGetByIdUsecase } from '@/core/cats/use-cases/cats-getByID';
 import { CatsListUsecase } from '@/core/cats/use-cases/cats-list';
 import { CatsUpdateUsecase } from '@/core/cats/use-cases/cats-update';
+import { RedisCacheModule } from '@/infra/cache/redis';
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { TokenModule } from '@/libs/auth';
 import { IsLoggedMiddleware } from '@/utils/middlewares/is-logged.middleware';
@@ -25,7 +26,7 @@ import { CatsRepository } from './repository';
 import { CatsSchema } from './schema';
 
 @Module({
-  imports: [TokenModule, LoggerModule, TypeOrmModule.forFeature([CatsSchema])],
+  imports: [TokenModule, LoggerModule, TypeOrmModule.forFeature([CatsSchema]), RedisCacheModule],
   controllers: [CatsController],
   providers: [
     {
