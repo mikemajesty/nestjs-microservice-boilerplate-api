@@ -3,3 +3,6 @@
 
 npm run test
 npx swc --out-dir dist src
+npm run make-badges
+git add README.md
+git commit -m "docs: make test badge" -n
