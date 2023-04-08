@@ -21,8 +21,8 @@ describe('CatsCreateUsecase', () => {
         },
         {
           provide: ICatsCreateAdapter,
-          useFactory: (userRepository: ICatsRepository, logger: ILoggerAdapter) => {
-            return new CatsCreateUsecase(userRepository, logger);
+          useFactory: (catsRepository: ICatsRepository, logger: ILoggerAdapter) => {
+            return new CatsCreateUsecase(catsRepository, logger);
           },
           inject: [ICatsRepository, ILoggerAdapter]
         }

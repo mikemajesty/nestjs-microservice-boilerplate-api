@@ -30,8 +30,8 @@ describe('CatsGetByIdUsecase', () => {
         },
         {
           provide: ICatsGetByIDAdapter,
-          useFactory: (userRepository: ICatsRepository) => {
-            return new CatsGetByIdUsecase(userRepository);
+          useFactory: (catsRepository: ICatsRepository) => {
+            return new CatsGetByIdUsecase(catsRepository);
           },
           inject: [ICatsRepository, ILoggerAdapter]
         }
@@ -51,7 +51,7 @@ describe('CatsGetByIdUsecase', () => {
     );
   });
 
-  test('should throw error when user not found', async () => {
+  test('should throw error when cats not found', async () => {
     repository.findById = jest.fn().mockResolvedValue(null);
     await expect(usecase.execute({ id: generateUUID() })).rejects.toThrowError(ApiNotFoundException);
   });

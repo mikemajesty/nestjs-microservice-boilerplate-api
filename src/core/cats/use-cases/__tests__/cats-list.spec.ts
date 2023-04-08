@@ -31,8 +31,8 @@ describe('CatsListUsecase', () => {
         },
         {
           provide: ICatsListAdapter,
-          useFactory: (userRepository: ICatsRepository) => {
-            return new CatsListUsecase(userRepository);
+          useFactory: (catsRepository: ICatsRepository) => {
+            return new CatsListUsecase(catsRepository);
           },
           inject: [ICatsRepository, ILoggerAdapter]
         }
