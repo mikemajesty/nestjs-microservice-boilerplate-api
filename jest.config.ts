@@ -6,8 +6,19 @@ export default {
   moduleFileExtensions: ['js', 'json', 'ts'],
   rootDir: 'src/core',
   testRegex: '.*\\.spec\\.ts$',
+  // transform: {
+  //   '^.+\\.(t|j)s$': 'ts-jest'
+  // },
   transform: {
-    '^.+\\.(t|j)s?$': ['@swc/jest']
+    '^.+\\.(t|j)s$': [
+      '@swc/jest',
+      {
+        jsc: {
+          target: 'es2021'
+        },
+        sourceMaps: 'inline'
+      }
+    ]
   },
   setupFilesAfterEnv: ['../../test/initializaion.ts'],
   testEnvironment: 'node',

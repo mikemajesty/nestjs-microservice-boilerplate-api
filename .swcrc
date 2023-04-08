@@ -6,7 +6,7 @@
     "strict": true
   },
   "jsc": {
-    "target": "es2020",
+    "target": "es2021",
     "parser": {
       "syntax": "typescript",
       "decorators": true
