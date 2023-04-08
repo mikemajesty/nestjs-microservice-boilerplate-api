@@ -2,6 +2,10 @@
 
 In this microservice I used the best architecture concepts: clean architecture, DDD and onion architecture.
 
+| Statements                                                                         | Branches                                                                      | Functions                                                                              | Lines                                                                            |
+| ---------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| ![Statements](https://img.shields.io/badge/statements-87%25-yellow.svg?style=flat) | ![Branches](https://img.shields.io/badge/branches-53.8%25-red.svg?style=flat) | ![Functions](https://img.shields.io/badge/functions-100%25-brightgreen.svg?style=flat) | ![Lines](https://img.shields.io/badge/lines-93.54%25-brightgreen.svg?style=flat) |
+
 ### Building and Running the application
 
 - install dependencies
@@ -194,12 +198,14 @@ Creating a crud in Postgres and Mongo in seconds.
 │   │           │   ├── user-getByID.spec.ts
 │   │           │   ├── user-list.spec.ts
 │   │           │   ├── user-login.spec.ts
+│   │           │   ├── user-logout.spec.ts
 │   │           │   └── user-update.spec.ts
 │   │           ├── user-create.ts
 │   │           ├── user-delete.ts
 │   │           ├── user-getByID.ts
 │   │           ├── user-list.ts
 │   │           ├── user-login.ts
+│   │           ├── user-logout.ts
 │   │           └── user-update.ts
 │   ├── infra
 │   │   ├── cache
@@ -260,13 +266,12 @@ Creating a crud in Postgres and Mongo in seconds.
 │   │       ├── module.ts
 │   │       └── service.ts
 │   ├── libs
-│   │   ├── auth
-│   │   │   ├── adapter.ts
-│   │   │   ├── index.ts
-│   │   │   ├── module.ts
-│   │   │   ├── service.ts
-│   │   │   └── types.ts
-│   │   └── module.ts
+│   │   └── auth
+│   │       ├── adapter.ts
+│   │       ├── index.ts
+│   │       ├── module.ts
+│   │       ├── service.ts
+│   │       └── types.ts
 │   ├── main.ts
 │   ├── modules
 │   │   ├── cats
@@ -283,6 +288,12 @@ Creating a crud in Postgres and Mongo in seconds.
 │   │   │   └── __tests__
 │   │   │       └── controller.spec.ts
 │   │   ├── login
+│   │   │   ├── adapter.ts
+│   │   │   ├── controller.ts
+│   │   │   ├── module.ts
+│   │   │   ├── swagger.ts
+│   │   │   └── types.ts
+│   │   ├── logout
 │   │   │   ├── adapter.ts
 │   │   │   ├── controller.ts
 │   │   │   ├── module.ts
