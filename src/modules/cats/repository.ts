@@ -12,10 +12,7 @@ import { CatsSchema } from './schema';
 import { CatsListInput, CatsListOutput } from './types';
 
 @Injectable()
-export class CatsRepository
-  extends PostgresRepository<CatsSchema & CatsEntity>
-  implements Omit<ICatsRepository, 'updateMany' | 'seed'>
-{
+export class CatsRepository extends PostgresRepository<CatsSchema & CatsEntity> implements Partial<ICatsRepository> {
   constructor(readonly repository: Repository<CatsSchema & CatsEntity>) {
     super(repository);
   }

@@ -1,6 +1,6 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { getConnectionToken } from '@nestjs/mongoose';
-import mongoose, { Connection } from 'mongoose';
+import mongoose, { Connection, PaginateModel } from 'mongoose';
 
 import { IUserRepository } from '@/core/user/repository/user';
 import { UserCreateUsecase } from '@/core/user/use-cases/user-create';
@@ -14,6 +14,7 @@ import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { SecretsModule } from '@/infra/secrets';
 import { TokenModule } from '@/libs/auth';
 import { IsLoggedMiddleware } from '@/utils/middlewares/is-logged.middleware';
+import { RepositoryModelSessionType } from '@/utils/mongo';
 
 import {
   IUserCreateAdapter,
@@ -32,10 +33,18 @@ import { User, UserDocument, UserSchema } from './schema';
   providers: [
     {
       provide: IUserRepository,
-      useFactory: (connection: Connection) => {
-        return new UserRepository(
-          connection.model<UserDocument, mongoose.PaginateModel<UserDocument>>(User.name, UserSchema)
-        );
+      useFactory: async (connection: Connection) => {
+        type Model = mongoose.PaginateModel<UserDocument>;
+
+        const repository: RepositoryModelSessionType<PaginateModel<UserDocument>> = connection.model<
+          UserDocument,
+          Model
+        >(User.name, UserSchema);
+
+        repository.connection = connection;
+
+        // use if you want transaction
+        return new UserRepository(repository);
       },
       inject: [getConnectionToken(ConnectionName.USER)]
     },

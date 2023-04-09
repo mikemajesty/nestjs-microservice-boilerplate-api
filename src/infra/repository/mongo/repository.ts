@@ -17,8 +17,9 @@ import { CreatedModel, RemovedModel, UpdatedModel } from '../types';
 export class MongoRepository<T extends Document> implements IRepository<T> {
   constructor(private readonly model: Model<T>) {}
 
-  async isConnected(): Promise<void> {
+  isConnected(): boolean {
     if (this.model.db.readyState !== 1) throw new ApiInternalServerException(`db ${this.model.db.name} disconnected`);
+    return !!this.model.db.readyState;
   }
 
   async create(document: T, saveOptions?: SaveOptions): Promise<CreatedModel> {

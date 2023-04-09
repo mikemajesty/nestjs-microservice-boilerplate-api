@@ -3,7 +3,7 @@ import { QueryOptions, SaveOptions, UpdateQuery, UpdateWithAggregationPipeline }
 import { CreatedModel, RemovedModel, UpdatedModel } from './types';
 
 export abstract class IRepository<T> {
-  abstract isConnected(): Promise<void>;
+  abstract isConnected(): Promise<boolean> | boolean;
 
   abstract create<TOptions = SaveOptions>(document: T, saveOptions?: TOptions): Promise<CreatedModel>;
 

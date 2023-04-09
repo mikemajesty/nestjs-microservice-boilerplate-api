@@ -2,8 +2,8 @@
 
 In this microservice I used the best architecture concepts: clean architecture, DDD and onion architecture.
 
-| Statements                                                                         | Branches                                                                      | Functions                                                                              | Lines                                                                            |
-| ---------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| Statements                                                                               | Branches                                                                             | Functions                                                                              | Lines                                                                          |
+| ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
 | ![Statements](https://img.shields.io/badge/statements-100%25-brightgreen.svg?style=flat) | ![Branches](https://img.shields.io/badge/branches-100%25-brightgreen.svg?style=flat) | ![Functions](https://img.shields.io/badge/functions-100%25-brightgreen.svg?style=flat) | ![Lines](https://img.shields.io/badge/lines-100%25-brightgreen.svg?style=flat) |
 
 ### Building and Running the application
@@ -14,7 +14,7 @@ In this microservice I used the best architecture concepts: clean architecture, 
   ```
 - infra
   ```
-   $ docker-compose up --build
+   $ yarn infra
   ```
 - running
 
@@ -148,6 +148,8 @@ Creating a crud in Postgres and Mongo in seconds.
 - Databse
   - mongo
     - Seed
+    - Replica set
+    - Transaction session
   - postgres
     - Migrations
 - Tests
@@ -163,9 +165,9 @@ Creating a crud in Postgres and Mongo in seconds.
 ├── nest-cli.json
 ├── package.json
 ├── README.md
-├── sql
+├── scripts
 │   └── postgres
-│       └── create-database.sql
+│       └── create-database.scripts
 ├── src
 │   ├── app.module.ts
 │   ├── core

@@ -1,15 +1,42 @@
 version: '3'
 
 services:
-  db:
-    container_name: nestjs-microservice-mongo
-    image: mongo
-    env_file:
-      - .env
-    ports:
-      - '27017:27017'
+  mongo-primary:
+    container_name: nestjs-microservice-primary
+    image: mongo:4.2.20
+    entrypoint: ['/usr/bin/mongod', '--bind_ip_all', '--replSet', 'app']
     volumes:
-      - nestjs-microservice-mongo:/data/db
+      - mongo-primary-data:/data/db
+      -  ./scripts/mongo/rs-init.sh:/scripts/mongo/rs-init.sh
+    ports:
+      - 27081:27017
+    networks:
+      mongo-network:
+        ipv4_address: 10.5.0.5
+
+  mongo-secondary:
+    container_name: nestjs-microservice-secondary
+    image: mongo:4.2.20
+    entrypoint: ['/usr/bin/mongod', '--bind_ip_all', '--replSet', 'app']
+    volumes:
+      - mongo-secondary-data:/data/db
+    ports:
+      - 27082:27017
+    networks:
+      mongo-network:
+        ipv4_address: 10.5.0.6
+
+  mongo-tertiary:
+    container_name: nestjs-microservice-tertiary
+    image: mongo:4.2.20
+    entrypoint: ['/usr/bin/mongod', '--bind_ip_all', '--replSet', 'app']
+    volumes:
+      - mongo-tertiary-data:/data/db
+    ports:
+      - 27083:27017
+    networks:
+      mongo-network:
+        ipv4_address: 10.5.0.7
   postgres:
     container_name: nestjs-microservice-postgres
     image: postgres
@@ -19,10 +46,8 @@ services:
       - '5432:5432'
     volumes:
       - nestjs-microservice-postgres:/data/postgres
-      - ./sql/postgres/create-database.sql:/docker-entrypoint-initdb.d/create-database.sql
+      - ./scripts/postgres/create-database.sql:/docker-entrypoint-initdb.d/create-database.sql
     restart: always
-    networks:
-      - postgres-network
   redis:
     container_name: nestjs-microservice-redis
     image: 'redis:alpine'
@@ -30,21 +55,16 @@ services:
       - nestjs-microservice-redis:/data
     ports:
       - 6379:6379
-  pgadmin:
-    image: dpage/pgadmin4
-    env_file:
-      - .env
-    ports:
-      - "16543:80"
-    depends_on:
-      - postgres
-    networks:
-      - postgres-network
 
 volumes:
-  nestjs-microservice-mongo:
   nestjs-microservice-postgres:
   nestjs-microservice-redis:
+  mongo-primary-data:
+  mongo-secondary-data:
+  mongo-tertiary-data:
 networks: 
-  postgres-network:
+  mongo-network:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 10.5.0.0/16

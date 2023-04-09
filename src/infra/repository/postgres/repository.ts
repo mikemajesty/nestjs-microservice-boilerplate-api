@@ -6,12 +6,16 @@ import { ApiInternalServerException } from '@/utils/exception';
 import { IRepository } from '../adapter';
 import { CreatedModel, RemovedModel, UpdatedModel } from '../types';
 
-export class PostgresRepository<T extends BaseEntity & IEntity> implements Partial<IRepository<T>> {
+export class PostgresRepository<T extends BaseEntity & IEntity> implements Omit<IRepository<T>, 'updateMany' | 'seed'> {
   constructor(readonly repository: Repository<T & IEntity>) {}
 
-  isConnected(): Promise<void> {
+  isConnected(): boolean {
     const connected = this.repository.manager.connection.isInitialized;
-    throw new ApiInternalServerException(`db ${connected} disconnected`);
+    if (!connected) {
+      throw new ApiInternalServerException(`db ${connected} disconnected`);
+    }
+
+    return connected;
   }
 
   async create<TOptions = SaveOptions>(document: T, saveOptions?: TOptions): Promise<CreatedModel> {
