@@ -82,6 +82,7 @@ Creating a crud in Postgres and Mongo in seconds.
 - Create
   - mongo
     - entity validation
+    - Not allow creating duplicates
   - postgres
     - entity validation
 
