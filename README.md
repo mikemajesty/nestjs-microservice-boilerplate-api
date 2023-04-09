@@ -152,6 +152,7 @@ Creating a crud in Postgres and Mongo in seconds.
     - Transaction session
   - postgres
     - Migrations
+    - Transaction session
 - Tests
   - unit
   - 100% coverage
