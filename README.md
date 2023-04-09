@@ -277,7 +277,7 @@ Creating a crud in Postgres and Mongo in seconds.
 │   │       └── types.ts
 │   ├── main.ts
 │   ├── modules
-│   │   ├── cats
+│   │   ├── cats (POSTGRES)
 │   │   │   ├── adapter.ts
 │   │   │   ├── controller.ts
 │   │   │   ├── module.ts
@@ -302,7 +302,7 @@ Creating a crud in Postgres and Mongo in seconds.
 │   │   │   ├── module.ts
 │   │   │   ├── swagger.ts
 │   │   │   └── types.ts
-│   │   └── user
+│   │   └── user (MONGODB)
 │   │       ├── adapter.ts
 │   │       ├── controller.ts
 │   │       ├── module.ts
