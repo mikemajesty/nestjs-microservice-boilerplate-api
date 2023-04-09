@@ -35,7 +35,6 @@ In this microservice I used the best architecture concepts: clean architecture, 
 
   ```
   $ yarn build
-
   ```
 
 ### CRUD Scafold
