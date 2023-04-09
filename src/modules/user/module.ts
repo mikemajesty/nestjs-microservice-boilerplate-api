@@ -14,7 +14,7 @@ import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { SecretsModule } from '@/infra/secrets';
 import { TokenModule } from '@/libs/auth';
 import { IsLoggedMiddleware } from '@/utils/middlewares/is-logged.middleware';
-import { RepositoryModelSessionType } from '@/utils/mongo';
+import { MongoRepositoryModelSessionType } from '@/utils/mongo';
 
 import {
   IUserCreateAdapter,
@@ -37,7 +37,7 @@ import { User, UserDocument, UserSchema } from './schema';
         type Model = mongoose.PaginateModel<UserDocument>;
 
         // use if you want transaction
-        const repository: RepositoryModelSessionType<PaginateModel<UserDocument>> = connection.model<
+        const repository: MongoRepositoryModelSessionType<PaginateModel<UserDocument>> = connection.model<
           UserDocument,
           Model
         >(User.name, UserSchema);

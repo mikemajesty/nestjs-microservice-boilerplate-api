@@ -1,6 +1,6 @@
 import { IRepository } from '@/infra/repository';
 import { UserListInput, UserListOutput } from '@/modules/user/types';
-import { RepositorySession } from '@/utils/mongo';
+import { MongoRepositorySession } from '@/utils/mongo';
 
 import { UserEntity } from '../entity/user';
 
@@ -10,5 +10,5 @@ export abstract class IUserRepository extends IRepository<UserEntity> {
     notEqualFilter: Pick<UserEntity, 'id'>
   ): Promise<boolean>;
   abstract paginate(input: UserListInput): Promise<UserListOutput>;
-  abstract startSession(): Promise<RepositorySession>;
+  abstract startSession(): Promise<MongoRepositorySession>;
 }

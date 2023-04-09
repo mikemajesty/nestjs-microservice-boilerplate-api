@@ -7,18 +7,18 @@ import { IUserRepository } from '@/core/user/repository/user';
 import { MongoRepository } from '@/infra/repository';
 import { ValidateDatabaseSort } from '@/utils/decorators/validate-allowed-sort-order.decorator';
 import { SearchTypeEnum, ValidateMongoFilter } from '@/utils/decorators/validate-mongo-filter.decorator';
-import { RepositoryModelSessionType, RepositorySession } from '@/utils/mongo';
+import { MongoRepositoryModelSessionType, MongoRepositorySession } from '@/utils/mongo';
 
 import { User, UserDocument } from './schema';
 import { UserListInput, UserListOutput } from './types';
 
 @Injectable()
 export class UserRepository extends MongoRepository<UserDocument> implements IUserRepository {
-  constructor(@InjectModel(User.name) readonly entity: RepositoryModelSessionType<PaginateModel<UserDocument>>) {
+  constructor(@InjectModel(User.name) readonly entity: MongoRepositoryModelSessionType<PaginateModel<UserDocument>>) {
     super(entity);
   }
 
-  async startSession(): Promise<RepositorySession> {
+  async startSession(): Promise<MongoRepositorySession> {
     const session = await this.entity.connection.startSession();
     session.startTransaction();
 
