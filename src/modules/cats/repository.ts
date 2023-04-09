@@ -1,8 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
+import { Transactional } from 'typeorm-transactional';
 
 import { CatsEntity } from '@/core/cats/entity/cats';
 import { ICatsRepository } from '@/core/cats/repository/cats';
+import { CreatedModel } from '@/infra/repository';
 import { PostgresRepository } from '@/infra/repository/postgres/repository';
 import { ValidateDatabaseSort } from '@/utils/decorators/validate-allowed-sort-order.decorator';
 import { SearchTypeEnum, ValidatePostgresFilter } from '@/utils/decorators/validate-postgres-filter.decorator';
@@ -15,6 +17,14 @@ import { CatsListInput, CatsListOutput } from './types';
 export class CatsRepository extends PostgresRepository<CatsSchema & CatsEntity> implements Partial<ICatsRepository> {
   constructor(readonly repository: Repository<CatsSchema & CatsEntity>) {
     super(repository);
+  }
+
+  @Transactional()
+  async executeWithTransaction(input: CatsSchema & CatsEntity): Promise<CreatedModel> {
+    // use if you want transaction, you can use other repositories here, exemple
+    // this.dogReposipoty.create(input);
+    const created = await super.create(input);
+    return created;
   }
 
   @ValidatePostgresFilter([

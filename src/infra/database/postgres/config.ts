@@ -6,7 +6,7 @@ config();
 
 const configService = new ConfigService();
 
-export default new DataSource({
+const dataSource = new DataSource({
   type: 'postgres',
   host: configService.get('POSTGRES_HOST'),
   port: configService.get('POSTGRES_PORT'),
@@ -18,3 +18,5 @@ export default new DataSource({
   migrations: ['src/infra/database/postgres/migrations/*.ts'],
   entities: ['src/modules/cats/schema.ts']
 });
+
+export default dataSource;

@@ -2,6 +2,7 @@ import { RequestMethod } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { bold } from 'colorette';
+import { initializeTransactionalContext } from 'typeorm-transactional';
 
 import { description, name, version } from '../package.json';
 import { AppModule } from './app.module';
@@ -14,6 +15,8 @@ import { ExceptionInterceptor } from './utils/interceptors/http-exception.interc
 import { HttpLoggerInterceptor } from './utils/interceptors/http-logger.interceptor';
 
 async function bootstrap() {
+  initializeTransactionalContext();
+
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true,
     cors: true

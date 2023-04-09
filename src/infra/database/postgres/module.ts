@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
+import { addTransactionalDataSource } from 'typeorm-transactional';
 
 import { ISecretsAdapter, SecretsModule } from '@/infra/secrets';
 
@@ -18,6 +20,9 @@ import { PostgresService } from './service';
           synchronize: true,
           migrationsTableName: 'migration_collection'
         };
+      },
+      async dataSourceFactory(options) {
+        return addTransactionalDataSource(new DataSource(options));
       },
       imports: [SecretsModule],
       inject: [ISecretsAdapter]
