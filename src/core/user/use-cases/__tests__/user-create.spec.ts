@@ -45,7 +45,19 @@ describe('UserCreateUsecase', () => {
   test('should create successfully', async () => {
     repository.findOne = jest.fn().mockResolvedValue(null);
     repository.create = jest.fn().mockResolvedValue(user);
+    repository.startSession = jest.fn().mockResolvedValue({
+      commitTransaction: jest.fn()
+    });
+
     await expect(usecase.execute(user)).resolves.toEqual(user);
+  });
+
+  test('should throw error when start transaction', async () => {
+    repository.findOne = jest.fn().mockResolvedValue(null);
+    repository.create = jest.fn().mockResolvedValue(user);
+    repository.startSession = jest.fn().mockRejectedValue(new Error('startSessionError'));
+
+    await expect(usecase.execute(user)).rejects.toThrowError('startSessionError');
   });
 
   test('should throw error when user exists', async () => {
