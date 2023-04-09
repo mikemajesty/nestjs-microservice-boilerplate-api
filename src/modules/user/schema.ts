@@ -30,7 +30,7 @@ export class User {
 
 const UserSchema = SchemaFactory.createForClass(User);
 
-UserSchema.index({ login: 1, password: 1 }, { unique: true });
+UserSchema.index({ login: 1 }, { unique: true });
 
 UserSchema.plugin(paginate);
 

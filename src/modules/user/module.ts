@@ -36,14 +36,18 @@ import { User, UserDocument, UserSchema } from './schema';
       useFactory: async (connection: Connection) => {
         type Model = mongoose.PaginateModel<UserDocument>;
 
+        // use if you want transaction
         const repository: RepositoryModelSessionType<PaginateModel<UserDocument>> = connection.model<
           UserDocument,
           Model
         >(User.name, UserSchema);
 
         repository.connection = connection;
+        //
 
-        // use if you want transaction
+        // use if you not want transaction
+        // const repository: PaginateModel<UserDocument> = connection.model<UserDocument, Model>(User.name, UserSchema);
+
         return new UserRepository(repository);
       },
       inject: [getConnectionToken(ConnectionName.USER)]
