@@ -1,7 +1,7 @@
 version: '3'
 
 services:
-  mongo-primary:
+  nestjs-microservice-primary:
     container_name: nestjs-microservice-primary
     image: mongo:4.2.20
     entrypoint: ['/usr/bin/mongod', '--bind_ip_all', '--replSet', 'app']
@@ -14,7 +14,7 @@ services:
       mongo-network:
         ipv4_address: 10.5.0.5
 
-  mongo-secondary:
+  nestjs-microservice-secondary:
     container_name: nestjs-microservice-secondary
     image: mongo:4.2.20
     entrypoint: ['/usr/bin/mongod', '--bind_ip_all', '--replSet', 'app']
@@ -26,7 +26,7 @@ services:
       mongo-network:
         ipv4_address: 10.5.0.6
 
-  mongo-tertiary:
+  nestjs-microservice-tertiary:
     container_name: nestjs-microservice-tertiary
     image: mongo:4.2.20
     entrypoint: ['/usr/bin/mongod', '--bind_ip_all', '--replSet', 'app']
