@@ -355,3 +355,6 @@ The following is a list of all the people that have contributed Nestjs monorepo 
 
 It is available under the MIT license.
 [License](https://opensource.org/licenses/mit-license.php)
+
+10/04 = 1 adicionando e configurando sequelize no projeto
+11/04 = 2 criação de uma função create usando um repositorio generico

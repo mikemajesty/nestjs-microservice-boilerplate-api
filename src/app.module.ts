@@ -3,8 +3,10 @@ import { APP_GUARD } from '@nestjs/core';
 
 import { TokenModule } from '@/libs/auth';
 
+import { SequelizeDatabaseModule } from './infra/database/sequelize';
 import { InfraModule } from './infra/module';
 import { CatsModule } from './modules/cats/module';
+import { DogModule } from './modules/dog/module';
 import { HealthModule } from './modules/health/module';
 import { LoginModule } from './modules/login/module';
 import { LogoutModule } from './modules/logout/module';
@@ -18,6 +20,16 @@ import { RolesGuardInterceptor } from './utils/interceptors/auth-guard.intercept
       useClass: RolesGuardInterceptor
     }
   ],
-  imports: [InfraModule, HealthModule, UserModule, LoginModule, LogoutModule, TokenModule, CatsModule]
+  imports: [
+    InfraModule,
+    HealthModule,
+    UserModule,
+    LoginModule,
+    LogoutModule,
+    TokenModule,
+    CatsModule,
+    SequelizeDatabaseModule,
+    DogModule
+  ]
 })
 export class AppModule {}
