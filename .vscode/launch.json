@@ -2,16 +2,11 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Debug: App",
       "type": "node",
-      "request": "launch",
-      "cwd": "${workspaceFolder}",
-      "console": "integratedTerminal",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run-script",
-        "start:debug"
-      ]
+      "request": "attach",
+      "name": "Debug",
+      "remoteRoot": "/usr/src/app",
+      "restart": true
     }
   ]
 }

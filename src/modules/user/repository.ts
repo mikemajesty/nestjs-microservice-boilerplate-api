@@ -5,7 +5,7 @@ import { PaginateModel } from 'mongoose';
 import { UserEntity } from '@/core/user/entity/user';
 import { IUserRepository } from '@/core/user/repository/user';
 import { MongoRepository } from '@/infra/repository';
-import { ValidateDatabaseSort } from '@/utils/decorators/validate-allowed-sort-order.decorator';
+import { ValidateDatabaseSortAllowed } from '@/utils/decorators/validate-database-sort-allowed.decorator';
 import { SearchTypeEnum, ValidateMongoFilter } from '@/utils/decorators/validate-mongo-filter.decorator';
 import { MongoRepositoryModelSessionType, MongoRepositorySession } from '@/utils/mongo';
 
@@ -35,7 +35,7 @@ export class UserRepository extends MongoRepository<UserDocument> implements IUs
   }
 
   @ValidateMongoFilter([{ name: 'login', type: SearchTypeEnum.like }])
-  @ValidateDatabaseSort(['login', 'createdAt'])
+  @ValidateDatabaseSortAllowed(['login', 'createdAt'])
   async paginate({ limit, page, sort, search }: UserListInput): Promise<UserListOutput> {
     const users = await this.entity.paginate(search, { page, limit, sort });
 

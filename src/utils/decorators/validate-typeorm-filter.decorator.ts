@@ -1,16 +1,8 @@
 import { ILike } from 'typeorm';
 
-export enum SearchTypeEnum {
-  'like',
-  'equal'
-}
+import { AllowedFilter, SearchTypeEnum } from './types';
 
-type AllowedFilter = {
-  type: SearchTypeEnum;
-  name: string;
-};
-
-export function ValidatePostgresFilter(allowedFilterList: AllowedFilter[] = []) {
+export function ValidateTypeOrmFilter(allowedFilterList: AllowedFilter[] = []) {
   return (target: unknown, propertyKey: string, descriptor: PropertyDescriptor) => {
     const originalMethod = descriptor.value;
     descriptor.value = function (...args: any[]) {

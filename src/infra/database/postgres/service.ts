@@ -4,7 +4,7 @@ import { name } from '../../../../package.json';
 import { IDataBaseAdapter } from '../adapter';
 import { ConnectionType } from '../types';
 
-export class PostgresService implements IDataBaseAdapter {
+export class PostgresService implements Partial<IDataBaseAdapter> {
   getConnection<TOpt extends TypeOrmModuleOptions = TypeOrmModuleOptions & { url: string }>({
     URI
   }: ConnectionType): TOpt {

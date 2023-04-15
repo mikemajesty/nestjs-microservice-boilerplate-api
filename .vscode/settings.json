@@ -1,25 +1,25 @@
 {
-	"editor.tabSize": 2,
-	"editor.codeActionsOnSave": {
-		"source.fixAll": false,
-		"source.organizeImports": false,
-	},
-	"[typescript]": {
-		"editor.codeActionsOnSave": {
-			"source.fixAll": false,
-			"source.organizeImports": false
-		},
-		"editor.formatOnSave": true,
-	},
-	"[javascript]": {
-		"editor.codeActionsOnSave": {
-			"source.fixAll": false,
-			"source.organizeImports": false
-		},
-		"editor.formatOnSave": true,
-	},
-	"editor.formatOnSave": true,
-	"editor.detectIndentation": false,
-	"javascript.format.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces": false,
-	"typescript.format.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces": false,
+  "editor.tabSize": 2,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": true,
+    "source.organizeImports": false,
+  },
+  "[typescript]": {
+    "editor.codeActionsOnSave": {
+      "source.fixAll": true,
+      "source.organizeImports": false
+    },
+    "editor.formatOnSave": true,
+  },
+  "[javascript]": {
+    "editor.codeActionsOnSave": {
+      "source.fixAll": true,
+      "source.organizeImports": false
+    },
+    "editor.formatOnSave": true,
+  },
+  "editor.formatOnSave": true,
+  "editor.detectIndentation": false,
+  "javascript.format.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces": false,
+  "typescript.format.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces": false,
 }

@@ -1,7 +1,7 @@
 import { IncomingMessage, ServerResponse } from 'node:http';
 
 import { Injectable, InternalServerErrorException, Scope } from '@nestjs/common';
-import { gray, green, isColorSupported } from 'colorette';
+import { blue, gray, green, isColorSupported } from 'colorette';
 import { PinoRequestConverter } from 'convert-pino-request-to-curl';
 import { DateTime } from 'luxon';
 import { LevelWithSilent, Logger, multistream, pino } from 'pino';
@@ -109,7 +109,7 @@ export class LoggerService implements ILoggerAdapter {
       messageFormat: (log: unknown, messageKey: string) => {
         const message = log[String(messageKey)];
         if (this.app) {
-          return `[${this.app}] ${message}`;
+          return `[${blue(this.app)}] ${message}`;
         }
 
         return message;

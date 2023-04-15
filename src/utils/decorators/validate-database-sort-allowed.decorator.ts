@@ -1,4 +1,4 @@
-export function ValidateDatabaseSort(allowedSortList: string[] = []) {
+export function ValidateDatabaseSortAllowed(allowedSortList: string[] = []) {
   return (target: unknown, propertyKey: string, descriptor: PropertyDescriptor) => {
     const originalMethod = descriptor.value;
     descriptor.value = function (...args: any[]) {

@@ -6,8 +6,9 @@ import { CatsEntity } from '@/core/cats/entity/cats';
 import { ICatsRepository } from '@/core/cats/repository/cats';
 import { CreatedModel } from '@/infra/repository';
 import { PostgresRepository } from '@/infra/repository/postgres/repository';
-import { ValidateDatabaseSort } from '@/utils/decorators/validate-allowed-sort-order.decorator';
-import { SearchTypeEnum, ValidatePostgresFilter } from '@/utils/decorators/validate-postgres-filter.decorator';
+import { SearchTypeEnum } from '@/utils/decorators/types';
+import { ValidateDatabaseSortAllowed } from '@/utils/decorators/validate-database-sort-allowed.decorator';
+import { ValidateTypeOrmFilter } from '@/utils/decorators/validate-typeorm-filter.decorator';
 import { calucaleSkip } from '@/utils/pagination';
 
 import { CatsSchema } from './schema';
@@ -27,12 +28,12 @@ export class CatsRepository extends PostgresRepository<CatsSchema & CatsEntity> 
     return created;
   }
 
-  @ValidatePostgresFilter([
+  @ValidateTypeOrmFilter([
     { name: 'name', type: SearchTypeEnum.like },
     { name: 'breed', type: SearchTypeEnum.like },
     { name: 'age', type: SearchTypeEnum.equal }
   ])
-  @ValidateDatabaseSort(['createdAt', 'name', 'breed', 'age'])
+  @ValidateDatabaseSortAllowed(['createdAt', 'name', 'breed', 'age'])
   async paginate(input: CatsListInput): Promise<CatsListOutput> {
     const skip = calucaleSkip(input);
 
