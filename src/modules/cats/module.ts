@@ -1,6 +1,5 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { getRepositoryToken, TypeOrmModule } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { ModelCtor, Sequelize } from 'sequelize-typescript';
 
 import { CatsEntity } from '@/core/cats/entity/cats';
 import { ICatsRepository } from '@/core/cats/repository/cats';
@@ -10,6 +9,9 @@ import { CatsGetByIdUsecase } from '@/core/cats/use-cases/cats-getByID';
 import { CatsListUsecase } from '@/core/cats/use-cases/cats-list';
 import { CatsUpdateUsecase } from '@/core/cats/use-cases/cats-update';
 import { RedisCacheModule } from '@/infra/cache/redis';
+import { IDataBaseAdapter } from '@/infra/database';
+import { PostgresDatabaseModule } from '@/infra/database/postgres/module';
+import { CatSchema } from '@/infra/database/postgres/schemas/cats';
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { TokenModule } from '@/libs/auth';
 import { IsLoggedMiddleware } from '@/utils/middlewares/is-logged.middleware';
@@ -23,18 +25,18 @@ import {
 } from './adapter';
 import { CatsController } from './controller';
 import { CatsRepository } from './repository';
-import { CatsSchema } from './schema';
 
 @Module({
-  imports: [TokenModule, LoggerModule, TypeOrmModule.forFeature([CatsSchema]), RedisCacheModule],
+  imports: [TokenModule, LoggerModule, RedisCacheModule, PostgresDatabaseModule],
   controllers: [CatsController],
   providers: [
     {
       provide: ICatsRepository,
-      useFactory: (repository: Repository<CatsSchema & CatsEntity>) => {
-        return new CatsRepository(repository);
+      useFactory: (database: IDataBaseAdapter) => {
+        const repossitory = database.getDatabase<Sequelize>().model(CatSchema);
+        return new CatsRepository(repossitory as ModelCtor<CatSchema> & CatsEntity);
       },
-      inject: [getRepositoryToken(CatsSchema)]
+      inject: [IDataBaseAdapter]
     },
     {
       provide: ICatsCreateAdapter,

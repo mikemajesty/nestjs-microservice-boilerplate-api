@@ -11,7 +11,7 @@ export class CatsGetByIdUsecase {
 
   @ValidateSchema(CatsGetByIdSchema)
   async execute({ id }: CatsGetByIDInput): Promise<CatsGetByIDOutput> {
-    const cats = await this.catsRepository.findById(id);
+    const cats = await this.catsRepository.findById(id, { schema: 'schema2' });
 
     if (!cats) {
       throw new ApiNotFoundException('catsNotFound');

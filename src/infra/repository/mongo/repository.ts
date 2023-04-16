@@ -14,7 +14,7 @@ import { ApiInternalServerException } from '@/utils/exception';
 import { IRepository } from '../adapter';
 import { CreatedModel, RemovedModel, UpdatedModel } from '../types';
 
-export class MongoRepository<T extends Document> implements IRepository<T> {
+export class MongoRepository<T extends Document> implements Omit<IRepository<T>, 'startSession'> {
   constructor(private readonly model: Model<T>) {}
 
   isConnected(): boolean {

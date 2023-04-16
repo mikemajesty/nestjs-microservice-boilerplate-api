@@ -2,7 +2,6 @@
 
 In this microservice I used the best architecture concepts: clean architecture, DDD and onion architecture.
 
-
 #### This microservice was developed and tested only on Linux. It may be that on another OS the mongo replicaset does not work correctly.
 
 | Statements                                                                               | Branches                                                                             | Functions                                                                              | Lines                                                                          |
@@ -356,5 +355,4 @@ The following is a list of all the people that have contributed Nestjs monorepo 
 It is available under the MIT license.
 [License](https://opensource.org/licenses/mit-license.php)
 
-10/04 = 1 adicionando e configurando sequelize no projeto
-11/04 = 2 criação de uma função create usando um repositorio generico
+<!-- migration, translation, ajustar scafold -->

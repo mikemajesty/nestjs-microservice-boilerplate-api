@@ -11,7 +11,7 @@ export class CatsUpdateUsecase {
 
   @ValidateSchema(CatsUpdateSchema)
   async execute(input: CatsUpdateInput): Promise<CatsUpdateOutput> {
-    const cats = await this.catsRepository.findById(input.id);
+    const cats = await this.catsRepository.findById(input.id, { schema: 'schema2' });
 
     if (!cats) {
       throw new ApiNotFoundException('catsNotFound');
@@ -21,11 +21,11 @@ export class CatsUpdateUsecase {
 
     const entity = new CatsEntity({ ...catsFinded, ...input });
 
-    await this.catsRepository.updateOne({ id: entity.id }, entity);
+    await this.catsRepository.updateOne({ id: entity.id }, entity, { schema: 'schema2' });
 
     this.loggerServide.info({ message: 'cats updated.', obj: { cats: input } });
 
-    const updated = await this.catsRepository.findById(entity.id);
+    const updated = await this.catsRepository.findById(entity.id, { schema: 'schema2' });
 
     return new CatsEntity(updated);
   }

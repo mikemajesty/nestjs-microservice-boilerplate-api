@@ -9,7 +9,7 @@ import { ValidateDatabaseSortAllowed } from '@/utils/decorators/validate-databas
 import { SearchTypeEnum, ValidateMongoFilter } from '@/utils/decorators/validate-mongo-filter.decorator';
 import { MongoRepositoryModelSessionType, MongoRepositorySession } from '@/utils/mongo';
 
-import { User, UserDocument } from './schema';
+import { User, UserDocument } from '../../infra/database/mongo/schemas/user';
 import { UserListInput, UserListOutput } from './types';
 
 @Injectable()
@@ -18,11 +18,11 @@ export class UserRepository extends MongoRepository<UserDocument> implements IUs
     super(entity);
   }
 
-  async startSession(): Promise<MongoRepositorySession> {
+  async startSession<TTransaction = MongoRepositorySession>(): Promise<TTransaction> {
     const session = await this.entity.connection.startSession();
     session.startTransaction();
 
-    return session;
+    return session as TTransaction;
   }
 
   async existsOnUpdate(

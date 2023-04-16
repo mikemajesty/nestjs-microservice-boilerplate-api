@@ -10,7 +10,7 @@ export class CatsDeleteUsecase {
 
   @ValidateSchema(CatsDeleteSchema)
   async execute({ id }: CatsDeleteInput): Promise<CatsDeleteOutput> {
-    const model = await this.catsRepository.findById(id);
+    const model = await this.catsRepository.findById(id, { schema: 'schema2' });
 
     if (!model) {
       throw new ApiNotFoundException('catsNotFound');
@@ -20,7 +20,7 @@ export class CatsDeleteUsecase {
 
     cats.setDelete();
 
-    await this.catsRepository.updateOne({ id: cats.id }, cats);
+    await this.catsRepository.updateOne({ id: cats.id }, cats, { schema: 'schema2' });
 
     return cats;
   }

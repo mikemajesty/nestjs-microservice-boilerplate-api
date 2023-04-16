@@ -1,49 +1,39 @@
 import { Injectable } from '@nestjs/common';
-import { Repository } from 'typeorm';
-import { Transactional } from 'typeorm-transactional';
+import { Transaction } from 'sequelize';
+import { ModelCtor } from 'sequelize-typescript';
 
 import { CatsEntity } from '@/core/cats/entity/cats';
 import { ICatsRepository } from '@/core/cats/repository/cats';
-import { CreatedModel } from '@/infra/repository';
-import { PostgresRepository } from '@/infra/repository/postgres/repository';
+import { CatSchema } from '@/infra/database/postgres/schemas/cats';
+import { SequelizeRepository } from '@/infra/repository/postgres/repository';
+import { CatsListInput, CatsListOutput } from '@/modules/cats/types';
+import { ConvertPaginateInputToSequelizeFilter } from '@/utils/decorators/convert-paginate-input-to-sequelize-filter.decorator';
 import { SearchTypeEnum } from '@/utils/decorators/types';
 import { ValidateDatabaseSortAllowed } from '@/utils/decorators/validate-database-sort-allowed.decorator';
-import { ValidateTypeOrmFilter } from '@/utils/decorators/validate-typeorm-filter.decorator';
-import { calucaleSkip } from '@/utils/pagination';
 
-import { CatsSchema } from './schema';
-import { CatsListInput, CatsListOutput } from './types';
+type Model = ModelCtor<CatSchema> & CatsEntity;
 
 @Injectable()
-export class CatsRepository extends PostgresRepository<CatsSchema & CatsEntity> implements Partial<ICatsRepository> {
-  constructor(readonly repository: Repository<CatsSchema & CatsEntity>) {
+export class CatsRepository extends SequelizeRepository<Model> implements ICatsRepository {
+  constructor(readonly repository: Model) {
     super(repository);
   }
 
-  @Transactional()
-  async executeWithTransaction(input: CatsSchema & CatsEntity): Promise<CreatedModel> {
-    // use if you want transaction, you can use other repositories here, exemple
-    // this.dogReposipoty.create(input);
-    const created = await super.create(input);
-    return created;
+  async startSession<TTransaction = Transaction>(): Promise<TTransaction> {
+    const transaction = await this.repository.sequelize.transaction();
+
+    return transaction as TTransaction;
   }
 
-  @ValidateTypeOrmFilter([
+  @ValidateDatabaseSortAllowed(['createdAt', 'name', 'breed', 'age'])
+  @ConvertPaginateInputToSequelizeFilter([
     { name: 'name', type: SearchTypeEnum.like },
     { name: 'breed', type: SearchTypeEnum.like },
     { name: 'age', type: SearchTypeEnum.equal }
   ])
-  @ValidateDatabaseSortAllowed(['createdAt', 'name', 'breed', 'age'])
   async paginate(input: CatsListInput): Promise<CatsListOutput> {
-    const skip = calucaleSkip(input);
+    const list = await this.repository.schema('schema2').findAndCountAll(input);
 
-    const [docs, total] = await this.repository.findAndCount({
-      take: input.limit,
-      skip,
-      order: input.sort,
-      where: input.search
-    });
-
-    return { docs, total, page: input.page, limit: input.limit };
+    return { docs: list.rows, limit: input.limit, page: input.page, total: list.count };
   }
 }

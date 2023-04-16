@@ -10,6 +10,7 @@ import { UserListUsecase } from '@/core/user/use-cases/user-list';
 import { UserUpdateUsecase } from '@/core/user/use-cases/user-update';
 import { RedisCacheModule } from '@/infra/cache/redis';
 import { ConnectionName } from '@/infra/database/enum';
+import { User, UserDocument, UserSchema } from '@/infra/database/mongo/schemas/user';
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { SecretsModule } from '@/infra/secrets';
 import { TokenModule } from '@/libs/auth';
@@ -25,7 +26,6 @@ import {
 } from './adapter';
 import { UserController } from './controller';
 import { UserRepository } from './repository';
-import { User, UserDocument, UserSchema } from './schema';
 
 @Module({
   imports: [TokenModule, SecretsModule, LoggerModule, RedisCacheModule],

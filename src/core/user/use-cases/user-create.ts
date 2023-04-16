@@ -32,7 +32,7 @@ export class UserCreateUsecase {
       this.loggerServide.info({ message: 'user created.', obj: { user } });
       return user;
     } catch (error) {
-      await session.commitTransaction();
+      await session.abortTransaction();
       throw error;
     }
   }

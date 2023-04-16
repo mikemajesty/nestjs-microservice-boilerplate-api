@@ -17,10 +17,7 @@
     "test:cov": "jest --coverage --detectOpenHandles",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "infra": "./scripts/mongo/start-replicaset.sh",
-    "typeorm": "ts-node \"./node_modules/typeorm/cli.js\"",
     "scafold": "./node_modules/@mikemajesty/microservice-crud/bin/microservice-crud",
-    "migration-postgres:create": "yarn typeorm migration:create \"./src/infra/database/postgres/migrations/migration\"",
-    "migration-postgres:run": "npm run typeorm migration:run -- -d ./src/infra/database/postgres/config --transaction none",
     "make-badges": "istanbul-badges-readme"
   },
   "dependencies": {
@@ -30,7 +27,6 @@
     "@nestjs/mongoose": "^9.0.1",
     "@nestjs/platform-express": "^9.0.0",
     "@nestjs/swagger": "^6.2.1",
-    "@nestjs/typeorm": "^9.0.1",
     "axios": "^1.3.0",
     "axios-retry": "^3.4.0",
     "class-validator": "^0.14.0",
@@ -53,8 +49,6 @@
     "sequelize": "^6.31.0",
     "sequelize-typescript": "^2.1.5",
     "swagger-ui-express": "^4.6.0",
-    "typeorm": "^0.3.13",
-    "typeorm-transactional": "^0.4.1",
     "uuid": "^9.0.0",
     "zod": "^3.20.2"
   },

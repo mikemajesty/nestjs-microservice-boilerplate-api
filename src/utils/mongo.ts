@@ -1,4 +1,4 @@
-import { ClientSession, Connection } from 'mongoose';
+import { Connection } from 'mongoose';
 
 export const skipParentheses = (filter: string) => {
   return filter?.replace('(', '\\(')?.replace(')', '\\)');
@@ -6,4 +6,7 @@ export const skipParentheses = (filter: string) => {
 
 export type MongoRepositoryModelSessionType<T> = T & { connection?: Connection };
 
-export type MongoRepositorySession = ClientSession;
+export type MongoRepositorySession = {
+  abortTransaction: () => Promise<{ [key: string]: unknown }>;
+  commitTransaction: () => Promise<{ [key: string]: unknown }>;
+};

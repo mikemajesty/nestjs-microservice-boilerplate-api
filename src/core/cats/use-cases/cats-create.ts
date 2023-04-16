@@ -12,10 +12,18 @@ export class CatsCreateUsecase {
   async execute(input: CatsCreateInput): Promise<CatsCreateOutput> {
     const entity = new CatsEntity(input);
 
-    const cats = await this.catsRepository.create(entity);
+    const transaction = await this.catsRepository.startSession();
+    try {
+      const cats = await this.catsRepository.create(entity, { schema: 'schema2', transaction });
 
-    this.loggerServide.info({ message: 'cats created.', obj: { cats } });
+      await transaction.commit();
 
-    return cats;
+      this.loggerServide.info({ message: 'cats created.', obj: { cats } });
+
+      return cats;
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
   }
 }

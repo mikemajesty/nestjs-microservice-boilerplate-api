@@ -8,6 +8,6 @@ export class CatsListUsecase {
 
   @ValidateSchema(CatsListSchema)
   async execute(input: CatsListInput): Promise<CatsListOutput> {
-    return await this.catsRepository.paginate(input);
+    return await this.catsRepository.paginate(input, { schema: 'schema2' });
   }
 }
