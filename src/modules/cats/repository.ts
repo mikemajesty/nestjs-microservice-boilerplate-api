@@ -7,6 +7,7 @@ import { ICatsRepository } from '@/core/cats/repository/cats';
 import { CatSchema } from '@/infra/database/postgres/schemas/cats';
 import { SequelizeRepository } from '@/infra/repository/postgres/repository';
 import { CatsListInput, CatsListOutput } from '@/modules/cats/types';
+import { DatabaseOptionsSchema, DatabaseOptionsType } from '@/utils/database/sequelize';
 import { ConvertPaginateInputToSequelizeFilter } from '@/utils/decorators/convert-paginate-input-to-sequelize-filter.decorator';
 import { SearchTypeEnum } from '@/utils/decorators/types';
 import { ValidateDatabaseSortAllowed } from '@/utils/decorators/validate-database-sort-allowed.decorator';
@@ -31,8 +32,10 @@ export class CatsRepository extends SequelizeRepository<Model> implements ICatsR
     { name: 'breed', type: SearchTypeEnum.like },
     { name: 'age', type: SearchTypeEnum.equal }
   ])
-  async paginate(input: CatsListInput): Promise<CatsListOutput> {
-    const list = await this.repository.schema('schema2').findAndCountAll(input);
+  async paginate(input: CatsListInput, options: DatabaseOptionsType): Promise<CatsListOutput> {
+    const { schema } = DatabaseOptionsSchema.parse(options);
+
+    const list = await this.repository.schema(schema).findAndCountAll(input);
 
     return { docs: list.rows, limit: input.limit, page: input.page, total: list.count };
   }

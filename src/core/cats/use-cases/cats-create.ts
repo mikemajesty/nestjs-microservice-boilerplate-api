@@ -1,5 +1,6 @@
 import { ILoggerAdapter } from '@/infra/logger';
 import { CatsCreateInput, CatsCreateOutput, CatsCreateSchema } from '@/modules/cats/types';
+import { DatabaseOptionsType } from '@/utils/database/sequelize';
 import { ValidateSchema } from '@/utils/decorators/validate-schema.decorator';
 
 import { ICatsRepository } from '../repository/cats';
@@ -14,7 +15,7 @@ export class CatsCreateUsecase {
 
     const transaction = await this.catsRepository.startSession();
     try {
-      const cats = await this.catsRepository.create(entity, { schema: 'schema2', transaction });
+      const cats = await this.catsRepository.create<DatabaseOptionsType>(entity, { transaction });
 
       await transaction.commit();
 

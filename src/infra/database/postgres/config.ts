@@ -1,6 +1,7 @@
 import { ConfigService } from '@nestjs/config';
 import { blue, gray } from 'colorette';
 import { config } from 'dotenv';
+import { writeFileSync } from 'fs';
 import { Sequelize } from 'sequelize-typescript';
 
 import { CatSchema } from '@/infra/database/postgres/schemas/cats';
@@ -23,3 +24,18 @@ const sequelizeConfig = new Sequelize(connection, {
 sequelizeConfig.addModels([CatSchema]);
 
 export { sequelizeConfig };
+
+const databaseConfigMap = {
+  DEV: 'development',
+  TEST: 'test',
+  PRD: 'production'
+}[configService.get('ENV')];
+
+const postgresConfig = sequelizeConfig.config.dialectOptions;
+
+writeFileSync(
+  'database.json',
+  JSON.stringify({
+    [databaseConfigMap]: { ...postgresConfig, username: postgresConfig['user'], user: undefined, dialect: 'postgres' }
+  })
+);

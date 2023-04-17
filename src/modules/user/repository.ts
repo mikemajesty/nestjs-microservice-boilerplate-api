@@ -5,9 +5,9 @@ import { PaginateModel } from 'mongoose';
 import { UserEntity } from '@/core/user/entity/user';
 import { IUserRepository } from '@/core/user/repository/user';
 import { MongoRepository } from '@/infra/repository';
+import { MongoRepositoryModelSessionType, MongoRepositorySession } from '@/utils/database/mongoose';
 import { ValidateDatabaseSortAllowed } from '@/utils/decorators/validate-database-sort-allowed.decorator';
 import { SearchTypeEnum, ValidateMongoFilter } from '@/utils/decorators/validate-mongo-filter.decorator';
-import { MongoRepositoryModelSessionType, MongoRepositorySession } from '@/utils/mongo';
 
 import { User, UserDocument } from '../../infra/database/mongo/schemas/user';
 import { UserListInput, UserListOutput } from './types';

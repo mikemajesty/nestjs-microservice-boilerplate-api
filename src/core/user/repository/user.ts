@@ -1,6 +1,6 @@
 import { IRepository } from '@/infra/repository';
 import { UserListInput, UserListOutput } from '@/modules/user/types';
-import { MongoRepositorySession } from '@/utils/mongo';
+import { MongoRepositorySession } from '@/utils/database/mongoose';
 
 import { UserEntity } from '../entity/user';
 

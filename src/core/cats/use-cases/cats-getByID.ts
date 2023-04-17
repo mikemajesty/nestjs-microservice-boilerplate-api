@@ -1,5 +1,6 @@
 import { CatsGetByIDInput, CatsGetByIDOutput } from '@/modules/cats/types';
 import { CatsGetByIdSchema } from '@/modules/cats/types';
+import { DatabaseOptionsType } from '@/utils/database/sequelize';
 import { ValidateSchema } from '@/utils/decorators/validate-schema.decorator';
 import { ApiNotFoundException } from '@/utils/exception';
 
@@ -11,7 +12,7 @@ export class CatsGetByIdUsecase {
 
   @ValidateSchema(CatsGetByIdSchema)
   async execute({ id }: CatsGetByIDInput): Promise<CatsGetByIDOutput> {
-    const cats = await this.catsRepository.findById(id, { schema: 'schema2' });
+    const cats = await this.catsRepository.findById<DatabaseOptionsType>(id, {});
 
     if (!cats) {
       throw new ApiNotFoundException('catsNotFound');

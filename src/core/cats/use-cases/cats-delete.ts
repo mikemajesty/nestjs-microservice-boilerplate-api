@@ -1,5 +1,6 @@
 import { ICatsRepository } from '@/core/cats/repository/cats';
 import { CatsDeleteInput, CatsDeleteOutput, CatsDeleteSchema } from '@/modules/cats/types';
+import { DatabaseOptionsType } from '@/utils/database/sequelize';
 import { ValidateSchema } from '@/utils/decorators/validate-schema.decorator';
 import { ApiNotFoundException } from '@/utils/exception';
 
@@ -10,7 +11,7 @@ export class CatsDeleteUsecase {
 
   @ValidateSchema(CatsDeleteSchema)
   async execute({ id }: CatsDeleteInput): Promise<CatsDeleteOutput> {
-    const model = await this.catsRepository.findById(id, { schema: 'schema2' });
+    const model = await this.catsRepository.findById<DatabaseOptionsType>(id, {});
 
     if (!model) {
       throw new ApiNotFoundException('catsNotFound');
@@ -20,7 +21,7 @@ export class CatsDeleteUsecase {
 
     cats.setDelete();
 
-    await this.catsRepository.updateOne({ id: cats.id }, cats, { schema: 'schema2' });
+    await this.catsRepository.updateOne({ id: cats.id }, cats, {} as DatabaseOptionsType);
 
     return cats;
   }

@@ -1,16 +1,10 @@
-import { SaveOptions, Transaction, WhereOptions } from 'sequelize';
+import { WhereOptions } from 'sequelize';
 import { MakeNullishOptional } from 'sequelize/types/utils';
 import { Model, ModelCtor } from 'sequelize-typescript';
 
 import { CreatedModel, IRepository, RemovedModel, UpdatedModel } from '@/infra/repository';
+import { DatabaseOptionsSchema, DatabaseOptionsType, SaveOptionsType } from '@/utils/database/sequelize';
 import { IEntity } from '@/utils/entity';
-
-type SequelizeOptions = {
-  schema: string;
-  transaction: Transaction;
-};
-
-type SaveOptionsType = SaveOptions & SequelizeOptions;
 
 export class SequelizeRepository<T extends ModelCtor & IEntity> implements Omit<IRepository<T>, 'startSession'> {
   protected Model!: T;
@@ -23,60 +17,60 @@ export class SequelizeRepository<T extends ModelCtor & IEntity> implements Omit<
     return this.Model.isInitialized;
   }
 
-  async findAll<TQuery = Partial<T>, TOpt = SequelizeOptions>(filter?: TQuery, options?: TOpt): Promise<T[]> {
-    const opt = options as SequelizeOptions;
+  async findAll<TQuery = Partial<T>, TOpt = DatabaseOptionsType>(filter?: TQuery, options?: TOpt): Promise<T[]> {
+    const { schema } = DatabaseOptionsSchema.parse(options || {});
 
-    const model = await this.Model.schema(opt.schema).findAll({
+    const model = await this.Model.schema(schema).findAll({
       where: filter as WhereOptions<T>
     });
 
     return model as unknown as T[];
   }
 
-  async find<TQuery = Partial<T>, TOptions = SequelizeOptions>(filter: TQuery, options?: TOptions): Promise<T[]> {
-    const opt = options as SequelizeOptions;
+  async find<TQuery = Partial<T>, TOptions = DatabaseOptionsType>(filter: TQuery, options?: TOptions): Promise<T[]> {
+    const { schema } = DatabaseOptionsSchema.parse(options || {});
 
-    const model = await this.Model.schema(opt.schema).findAll({
+    const model = await this.Model.schema(schema).findAll({
       where: filter as WhereOptions<T>
     });
 
     return model as unknown as T[];
   }
 
-  async remove<TQuery = WhereOptions<T>, TOpt = SequelizeOptions>(
+  async remove<TQuery = WhereOptions<T>, TOpt = DatabaseOptionsType>(
     filter: TQuery,
     options: TOpt
   ): Promise<RemovedModel> {
-    const opt = options as SequelizeOptions;
+    const { schema, transaction } = DatabaseOptionsSchema.parse(options || {});
 
-    const model = await this.Model.schema(opt.schema).destroy({
+    const model = await this.Model.schema(schema).destroy({
       where: filter as WhereOptions<T>,
-      transaction: opt?.transaction
+      transaction
     });
 
     return { deletedCount: model, deleted: !!model };
   }
 
-  async findOne<TQuery = Partial<T>, TOptions = SequelizeOptions>(filter: TQuery, options?: TOptions): Promise<T> {
-    const opt = options as SequelizeOptions;
+  async findOne<TQuery = Partial<T>, TOptions = DatabaseOptionsType>(filter: TQuery, options?: TOptions): Promise<T> {
+    const { schema } = DatabaseOptionsSchema.parse(options || {});
 
-    const model = await this.Model.schema(opt.schema).findOne({
+    const model = await this.Model.schema(schema).findOne({
       where: filter as WhereOptions<T>
     });
 
     return model as unknown as T;
   }
 
-  async updateOne<TQuery = Partial<T>, TUpdate = Partial<T>, TOptions = SequelizeOptions>(
+  async updateOne<TQuery = Partial<T>, TUpdate = Partial<T>, TOptions = DatabaseOptionsType>(
     filter: TQuery,
     updated: TUpdate,
     options?: TOptions
   ): Promise<UpdatedModel> {
-    const opt = options as SequelizeOptions;
+    const { schema, transaction } = DatabaseOptionsSchema.parse(options || {});
 
-    const model = await this.Model.schema(opt.schema).update(updated, {
+    const model = await this.Model.schema(schema).update(updated, {
       where: filter as WhereOptions<T>,
-      transaction: opt?.transaction
+      transaction
     });
 
     return {
@@ -88,16 +82,16 @@ export class SequelizeRepository<T extends ModelCtor & IEntity> implements Omit<
     };
   }
 
-  async updateMany<TQuery = Partial<T>, TUpdate = Partial<T>, TOptions = SequelizeOptions>(
+  async updateMany<TQuery = Partial<T>, TUpdate = Partial<T>, TOptions = DatabaseOptionsType>(
     filter: TQuery,
     updated: TUpdate,
     options?: TOptions
   ): Promise<UpdatedModel> {
-    const opt = options as SequelizeOptions;
+    const { schema, transaction } = DatabaseOptionsSchema.parse(options || {});
 
-    const model = await this.Model.schema(opt.schema).update(updated, {
+    const model = await this.Model.schema(schema).update(updated, {
       where: filter as WhereOptions<T>,
-      transaction: opt?.transaction
+      transaction
     });
 
     return {
@@ -109,34 +103,33 @@ export class SequelizeRepository<T extends ModelCtor & IEntity> implements Omit<
     };
   }
 
-  async seed<TOpt = SequelizeOptions>(entityList: T[], options: TOpt): Promise<void> {
-    const opt = options as SequelizeOptions;
+  async seed<TOpt = DatabaseOptionsType>(entityList: T[], options: TOpt): Promise<void> {
+    const { schema } = DatabaseOptionsSchema.parse(options || {});
 
     for (const model of entityList) {
-      const data = await this.findById(model.id, { schema: opt.schema });
+      const data = await this.findById(model.id, { schema });
       if (!data) {
-        await this.create(model, { schema: opt.schema });
+        await this.create(model, { schema: schema });
       }
     }
   }
 
   async create<TOptions = SaveOptionsType>(document: T, saveOptions: TOptions): Promise<CreatedModel> {
-    const options = saveOptions as SaveOptionsType;
+    const { schema, transaction } = DatabaseOptionsSchema.parse(saveOptions);
 
-    const savedDoc = await this.Model.schema(options.schema).create<Model<T>>(
-      document as unknown as MakeNullishOptional<T>,
-      { transaction: options?.transaction }
-    );
+    const savedDoc = await this.Model.schema(schema).create<Model<T>>(document as unknown as MakeNullishOptional<T>, {
+      transaction
+    });
 
-    const model = await savedDoc.save(options as SaveOptions);
+    const model = await savedDoc.save();
 
     return { id: model.id, created: !!model.id };
   }
 
-  async findById<TOpt = SequelizeOptions>(id: string, options: TOpt): Promise<T> {
-    const opt = options as SequelizeOptions;
+  async findById<TOpt = DatabaseOptionsType>(id: string, options: TOpt): Promise<T> {
+    const { schema } = DatabaseOptionsSchema.parse(options || {});
 
-    const model = await this.Model.schema(opt.schema).findOne({ where: { id } });
+    const model = await this.Model.schema(schema).findOne({ where: { id } });
 
     return model as unknown as T;
   }

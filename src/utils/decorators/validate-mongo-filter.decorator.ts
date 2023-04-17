@@ -1,4 +1,4 @@
-import { skipParentheses } from '../mongo';
+import { skipParentheses } from '../database/mongoose';
 
 export enum SearchTypeEnum {
   'like',
