@@ -1,1 +1,0 @@
-{"development":{"password":"admin","port":"5432","host":"localhost","database":"nestjs-microservice","username":"admin","dialect":"postgres"}}
