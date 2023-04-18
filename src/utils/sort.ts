@@ -40,7 +40,8 @@ export const SortHttpSchema = z
         .split(',')
         .map((s) => {
           const [field, order] = s.split(':');
-          return [field, SortEnum[(order.trim().toLowerCase() || 'asc') as keyof typeof SortEnum]];
+          const sorted = [field.trim(), SortEnum[(order.trim().toLowerCase() || 'asc') as keyof typeof SortEnum]];
+          return sorted;
         })
     );
 
