@@ -17,10 +17,7 @@ export function ValidateDatabaseSortAllowed(allowedSortList: string[] = []) {
         const filter = input.sort[allowedFilter];
         if (filter) {
           sort[allowedFilter] = filter;
-          continue;
         }
-
-        console.log('object');
       }
 
       args[0].sort = sort;
