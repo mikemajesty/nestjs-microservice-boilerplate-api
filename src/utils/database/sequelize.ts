@@ -1,10 +1,17 @@
 import { SaveOptions } from 'sequelize';
 import { z } from 'zod';
 
-export const DatabaseOptionsSchema = z.object({
-  schema: z.string().trim().default('public'),
-  transaction: z.any().optional().nullable()
-});
+//you can use a dynamic schema
+const DEFAULT_SCHEMA = 'public';
+
+export const DatabaseOptionsSchema = z
+  .object({
+    schema: z.string().trim().default(DEFAULT_SCHEMA),
+    transaction: z.any().optional().nullable()
+  })
+  .default({
+    schema: DEFAULT_SCHEMA
+  });
 
 export type DatabaseOptionsType = z.infer<typeof DatabaseOptionsSchema>;
 

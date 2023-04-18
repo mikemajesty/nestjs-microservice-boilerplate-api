@@ -2,7 +2,7 @@ import { Op } from 'sequelize';
 
 import { SearchTypeEnum } from '@/utils/decorators/types';
 
-import { AllowedFilter } from './types';
+import { AllowedFilter } from '../../types';
 
 const SequelizeSort = {
   '1': 'ASC',
@@ -17,7 +17,9 @@ export function ConvertPaginateInputToSequelizeFilter(allowedFilterList: Allowed
 
       const postgresSort = [];
 
-      const where = {};
+      const where = {
+        deletedAt: null
+      };
 
       for (const allowedFilter of allowedFilterList) {
         if (!input.search) continue;
@@ -39,11 +41,16 @@ export function ConvertPaginateInputToSequelizeFilter(allowedFilterList: Allowed
         postgresSort.push([key, SequelizeSort[sort]]);
       }
 
+      const limit = Number(input.limit);
+
+      const offset = Number(input.page - 1) * limit;
+
       const filter = {
-        offset: input.page,
-        limit: input.limit,
+        offset,
+        limit,
         order: postgresSort,
-        where
+        where,
+        page: input.page
       };
 
       args[0] = filter;

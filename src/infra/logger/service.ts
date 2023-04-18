@@ -70,6 +70,8 @@ export class LoggerService implements ILoggerAdapter {
       Error: BaseException.name
     }[error?.name];
 
+    const messageFind = [message, response?.message, error.message].find(Boolean);
+
     this.logger.logger.error(
       {
         ...response,
@@ -79,9 +81,9 @@ export class LoggerService implements ILoggerAdapter {
         timestamp: this.getDateFormat(),
         application: this.app,
         stack: error.stack,
-        message: message
+        message: messageFind
       },
-      message
+      messageFind
     );
   }
 

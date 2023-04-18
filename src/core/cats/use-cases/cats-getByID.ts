@@ -12,7 +12,7 @@ export class CatsGetByIdUsecase {
 
   @ValidateSchema(CatsGetByIdSchema)
   async execute({ id }: CatsGetByIDInput): Promise<CatsGetByIDOutput> {
-    const cats = await this.catsRepository.findById<DatabaseOptionsType>(id, {});
+    const cats = await this.catsRepository.findById<DatabaseOptionsType>(id);
 
     if (!cats) {
       throw new ApiNotFoundException('catsNotFound');

@@ -1,4 +1,5 @@
 import { Connection } from 'mongoose';
+
 export const skipParentheses = (filter: string) => {
   return filter?.replace('(', '\\(')?.replace(')', '\\)');
 };

@@ -8,7 +8,7 @@ import {
   UpdateWithAggregationPipeline
 } from 'mongoose';
 
-import { ConvertMongoFilterBaseRepository } from '@/utils/decorators/convert-mongo-filter.decorator';
+import { ConvertMongoFilterToBaseRepository } from '@/utils/decorators/database/mongo/convert-mongoose-filter.decorator';
 import { ApiInternalServerException } from '@/utils/exception';
 
 import { IRepository } from '../adapter';
@@ -29,7 +29,7 @@ export class MongoRepository<T extends Document> implements Omit<IRepository<T>,
     return { id: savedResult.id, created: !!savedResult.id };
   }
 
-  @ConvertMongoFilterBaseRepository()
+  @ConvertMongoFilterToBaseRepository()
   async find(filter: FilterQuery<T>, options?: QueryOptions): Promise<T[]> {
     return (await this.model.find(filter, undefined, options)).map((u) => u.toObject({ virtuals: true }));
   }
@@ -40,7 +40,7 @@ export class MongoRepository<T extends Document> implements Omit<IRepository<T>,
     return model.toObject({ virtuals: true });
   }
 
-  @ConvertMongoFilterBaseRepository()
+  @ConvertMongoFilterToBaseRepository()
   async findOne(filter: FilterQuery<T>, options?: QueryOptions): Promise<T | null> {
     const data = await this.model.findOne(filter, undefined, options);
 
@@ -49,18 +49,18 @@ export class MongoRepository<T extends Document> implements Omit<IRepository<T>,
     return data.toObject({ virtuals: true });
   }
 
-  @ConvertMongoFilterBaseRepository()
+  @ConvertMongoFilterToBaseRepository()
   async findAll(filter?: FilterQuery<T>): Promise<T[]> {
     return (await this.model.find(filter)).map((u) => u.toObject({ virtuals: true }));
   }
 
-  @ConvertMongoFilterBaseRepository()
+  @ConvertMongoFilterToBaseRepository()
   async remove(filter: FilterQuery<T>): Promise<RemovedModel> {
     const { deletedCount } = await this.model.deleteOne(filter);
     return { deletedCount, deleted: !!deletedCount };
   }
 
-  @ConvertMongoFilterBaseRepository()
+  @ConvertMongoFilterToBaseRepository()
   async updateOne(
     filter: FilterQuery<T>,
     updated: UpdateWithAggregationPipeline | UpdateQuery<T>,
@@ -69,7 +69,7 @@ export class MongoRepository<T extends Document> implements Omit<IRepository<T>,
     return await this.model.updateOne(filter, updated, options);
   }
 
-  @ConvertMongoFilterBaseRepository()
+  @ConvertMongoFilterToBaseRepository()
   async updateMany(
     filter: FilterQuery<T>,
     updated: UpdateWithAggregationPipeline | UpdateQuery<T>,

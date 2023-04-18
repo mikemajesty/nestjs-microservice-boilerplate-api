@@ -12,7 +12,7 @@ export class CatsUpdateUsecase {
 
   @ValidateSchema(CatsUpdateSchema)
   async execute(input: CatsUpdateInput): Promise<CatsUpdateOutput> {
-    const cats = await this.catsRepository.findById<DatabaseOptionsType>(input.id, {});
+    const cats = await this.catsRepository.findById<DatabaseOptionsType>(input.id);
 
     if (!cats) {
       throw new ApiNotFoundException('catsNotFound');
@@ -22,11 +22,11 @@ export class CatsUpdateUsecase {
 
     const entity = new CatsEntity({ ...catsFinded, ...input });
 
-    await this.catsRepository.updateOne({ id: entity.id }, entity, {} as DatabaseOptionsType);
+    await this.catsRepository.updateOne({ id: entity.id }, entity);
 
     this.loggerServide.info({ message: 'cats updated.', obj: { cats: input } });
 
-    const updated = await this.catsRepository.findById<DatabaseOptionsType>(entity.id, {});
+    const updated = await this.catsRepository.findById<DatabaseOptionsType>(entity.id);
 
     return new CatsEntity(updated);
   }

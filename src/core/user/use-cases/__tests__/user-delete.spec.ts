@@ -1,12 +1,12 @@
 import { Test } from '@nestjs/testing';
 
 import { IUserDeleteAdapter } from '@/modules/user/adapter';
+import { ApiNotFoundException } from '@/utils/exception';
 import { expectZodError, generateUUID } from '@/utils/tests';
 
 import { UserEntity, UserRole } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
 import { UserDeleteUsecase } from '../user-delete';
-import { ApiNotFoundException } from './../../../../utils/exception';
 
 const userResponse = {
   id: '61cc35f3-03d9-4b7f-9c63-59f32b013ef5',

@@ -5,9 +5,9 @@ import { ICatsUpdateAdapter } from '@/modules/cats/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
 import { expectZodError, generateUUID } from '@/utils/tests';
 
+import { CatsEntity } from '../../entity/cats';
 import { ICatsRepository } from '../../repository/cats';
 import { CatsUpdateUsecase } from '../cats-update';
-import { CatsEntity } from './../../entity/cats';
 
 const catResponse = {
   id: generateUUID(),

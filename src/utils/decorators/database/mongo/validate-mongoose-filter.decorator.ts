@@ -1,4 +1,4 @@
-import { skipParentheses } from '../database/mongoose';
+import { skipParentheses } from '../../../database/mongoose';
 
 export enum SearchTypeEnum {
   'like',
@@ -10,7 +10,7 @@ type AllowedFilter = {
   name: string;
 };
 
-export function ValidateMongoFilter(allowedFilterList: AllowedFilter[] = []) {
+export function ValidateMongooseFilter(allowedFilterList: AllowedFilter[] = []) {
   return (target: unknown, propertyKey: string, descriptor: PropertyDescriptor) => {
     const originalMethod = descriptor.value;
     descriptor.value = function (...args: any[]) {

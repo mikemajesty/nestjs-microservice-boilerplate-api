@@ -8,9 +8,9 @@ import { CatSchema } from '@/infra/database/postgres/schemas/cats';
 import { SequelizeRepository } from '@/infra/repository/postgres/repository';
 import { CatsListInput, CatsListOutput } from '@/modules/cats/types';
 import { DatabaseOptionsSchema, DatabaseOptionsType } from '@/utils/database/sequelize';
-import { ConvertPaginateInputToSequelizeFilter } from '@/utils/decorators/convert-paginate-input-to-sequelize-filter.decorator';
+import { ConvertPaginateInputToSequelizeFilter } from '@/utils/decorators/database/postgres/convert-paginate-input-to-sequelize-filter.decorator';
+import { ValidateDatabaseSortAllowed } from '@/utils/decorators/database/validate-database-sort-allowed.decorator';
 import { SearchTypeEnum } from '@/utils/decorators/types';
-import { ValidateDatabaseSortAllowed } from '@/utils/decorators/validate-database-sort-allowed.decorator';
 
 type Model = ModelCtor<CatSchema> & CatsEntity;
 

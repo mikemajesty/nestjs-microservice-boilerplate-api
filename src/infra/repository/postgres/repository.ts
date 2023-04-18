@@ -4,6 +4,7 @@ import { Model, ModelCtor } from 'sequelize-typescript';
 
 import { CreatedModel, IRepository, RemovedModel, UpdatedModel } from '@/infra/repository';
 import { DatabaseOptionsSchema, DatabaseOptionsType, SaveOptionsType } from '@/utils/database/sequelize';
+import { ConvertSequelizeFilterToRepository } from '@/utils/decorators/database/postgres/convert-sequelize-filter.decorator';
 import { IEntity } from '@/utils/entity';
 
 export class SequelizeRepository<T extends ModelCtor & IEntity> implements Omit<IRepository<T>, 'startSession'> {
@@ -17,8 +18,9 @@ export class SequelizeRepository<T extends ModelCtor & IEntity> implements Omit<
     return this.Model.isInitialized;
   }
 
+  @ConvertSequelizeFilterToRepository()
   async findAll<TQuery = Partial<T>, TOpt = DatabaseOptionsType>(filter?: TQuery, options?: TOpt): Promise<T[]> {
-    const { schema } = DatabaseOptionsSchema.parse(options || {});
+    const { schema } = DatabaseOptionsSchema.parse(options);
 
     const model = await this.Model.schema(schema).findAll({
       where: filter as WhereOptions<T>
@@ -27,8 +29,9 @@ export class SequelizeRepository<T extends ModelCtor & IEntity> implements Omit<
     return model as unknown as T[];
   }
 
+  @ConvertSequelizeFilterToRepository()
   async find<TQuery = Partial<T>, TOptions = DatabaseOptionsType>(filter: TQuery, options?: TOptions): Promise<T[]> {
-    const { schema } = DatabaseOptionsSchema.parse(options || {});
+    const { schema } = DatabaseOptionsSchema.parse(options);
 
     const model = await this.Model.schema(schema).findAll({
       where: filter as WhereOptions<T>
@@ -37,11 +40,12 @@ export class SequelizeRepository<T extends ModelCtor & IEntity> implements Omit<
     return model as unknown as T[];
   }
 
+  @ConvertSequelizeFilterToRepository()
   async remove<TQuery = WhereOptions<T>, TOpt = DatabaseOptionsType>(
     filter: TQuery,
     options: TOpt
   ): Promise<RemovedModel> {
-    const { schema, transaction } = DatabaseOptionsSchema.parse(options || {});
+    const { schema, transaction } = DatabaseOptionsSchema.parse(options);
 
     const model = await this.Model.schema(schema).destroy({
       where: filter as WhereOptions<T>,
@@ -51,8 +55,9 @@ export class SequelizeRepository<T extends ModelCtor & IEntity> implements Omit<
     return { deletedCount: model, deleted: !!model };
   }
 
+  @ConvertSequelizeFilterToRepository()
   async findOne<TQuery = Partial<T>, TOptions = DatabaseOptionsType>(filter: TQuery, options?: TOptions): Promise<T> {
-    const { schema } = DatabaseOptionsSchema.parse(options || {});
+    const { schema } = DatabaseOptionsSchema.parse(options);
 
     const model = await this.Model.schema(schema).findOne({
       where: filter as WhereOptions<T>
@@ -61,12 +66,13 @@ export class SequelizeRepository<T extends ModelCtor & IEntity> implements Omit<
     return model as unknown as T;
   }
 
+  @ConvertSequelizeFilterToRepository()
   async updateOne<TQuery = Partial<T>, TUpdate = Partial<T>, TOptions = DatabaseOptionsType>(
     filter: TQuery,
     updated: TUpdate,
     options?: TOptions
   ): Promise<UpdatedModel> {
-    const { schema, transaction } = DatabaseOptionsSchema.parse(options || {});
+    const { schema, transaction } = DatabaseOptionsSchema.parse(options);
 
     const model = await this.Model.schema(schema).update(updated, {
       where: filter as WhereOptions<T>,
@@ -82,12 +88,13 @@ export class SequelizeRepository<T extends ModelCtor & IEntity> implements Omit<
     };
   }
 
+  @ConvertSequelizeFilterToRepository()
   async updateMany<TQuery = Partial<T>, TUpdate = Partial<T>, TOptions = DatabaseOptionsType>(
     filter: TQuery,
     updated: TUpdate,
     options?: TOptions
   ): Promise<UpdatedModel> {
-    const { schema, transaction } = DatabaseOptionsSchema.parse(options || {});
+    const { schema, transaction } = DatabaseOptionsSchema.parse(options);
 
     const model = await this.Model.schema(schema).update(updated, {
       where: filter as WhereOptions<T>,
@@ -104,7 +111,7 @@ export class SequelizeRepository<T extends ModelCtor & IEntity> implements Omit<
   }
 
   async seed<TOpt = DatabaseOptionsType>(entityList: T[], options: TOpt): Promise<void> {
-    const { schema } = DatabaseOptionsSchema.parse(options || {});
+    const { schema } = DatabaseOptionsSchema.parse(options);
 
     for (const model of entityList) {
       const data = await this.findById(model.id, { schema });
@@ -127,9 +134,9 @@ export class SequelizeRepository<T extends ModelCtor & IEntity> implements Omit<
   }
 
   async findById<TOpt = DatabaseOptionsType>(id: string, options: TOpt): Promise<T> {
-    const { schema } = DatabaseOptionsSchema.parse(options || {});
+    const { schema } = DatabaseOptionsSchema.parse(options);
 
-    const model = await this.Model.schema(schema).findOne({ where: { id } });
+    const model = await this.Model.schema(schema).findOne({ where: { id, deletedAt: null } });
 
     return model as unknown as T;
   }
