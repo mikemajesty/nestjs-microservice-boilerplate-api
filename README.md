@@ -51,7 +51,7 @@ Creating a crud in Postgres and Mongo in seconds.
 - `(x) POTGRES:CRUD`
 - `( ) MONGO:CRUD `
 - type module name (use the singular name)
-- import new module 'app.module.ts'
+- After generating the CRUD, follow the instructions on the generated link.
 - ✨Magic ✨
 
 #### CRUD features
@@ -92,11 +92,11 @@ Creating a crud in Postgres and Mongo in seconds.
 
 - create
   ```
-  $ yarn migration-postgres:create
+  $ yarn migration:create
   ```
 - run
   ```
-  $ yarn migration-postgres:run
+  $ yarn migration:run
   ```
 
 ### Test
@@ -142,8 +142,8 @@ Creating a crud in Postgres and Mongo in seconds.
 - Interface Adapter Pattern
 - Swaggger Documentation
 - Generic Repository Pattern
-  - Mongo Repository
-  - Postgres Repository
+  - Mongo Repository (mongooose)
+  - Postgres Repository (sequelize)
 - Cache Service
   - Redis
   - NodeCache
@@ -169,8 +169,11 @@ Creating a crud in Postgres and Mongo in seconds.
 ├── package.json
 ├── README.md
 ├── scripts
+│   ├── mongo
+│   │   ├── rs-init.sh
+│   │   └── start-replicaset.sh
 │   └── postgres
-│       └── create-database.scripts
+│       └── create-database.sql
 ├── src
 │   ├── app.module.ts
 │   ├── core
@@ -234,6 +237,8 @@ Creating a crud in Postgres and Mongo in seconds.
 │   │   │   ├── mongo
 │   │   │   │   ├── index.ts
 │   │   │   │   ├── module.ts
+│   │   │   │   ├── schemas
+│   │   │   │   │   └── user.ts
 │   │   │   │   ├── seed
 │   │   │   │   │   └── create-user-admin.ts
 │   │   │   │   └── service.ts
@@ -241,8 +246,10 @@ Creating a crud in Postgres and Mongo in seconds.
 │   │   │   │   ├── config.ts
 │   │   │   │   ├── index.ts
 │   │   │   │   ├── migrations
-│   │   │   │   │   └── 1679532974085-create-table-cats.ts
+│   │   │   │   │   └── 20230416174316-create-cats-table.js
 │   │   │   │   ├── module.ts
+│   │   │   │   ├── schemas
+│   │   │   │   │   └── cats.ts
 │   │   │   │   └── service.ts
 │   │   │   └── types.ts
 │   │   ├── http
@@ -279,12 +286,11 @@ Creating a crud in Postgres and Mongo in seconds.
 │   │       └── types.ts
 │   ├── main.ts
 │   ├── modules
-│   │   ├── cats (POSTGRES)
+│   │   ├── cats (postgres)
 │   │   │   ├── adapter.ts
 │   │   │   ├── controller.ts
 │   │   │   ├── module.ts
 │   │   │   ├── repository.ts
-│   │   │   ├── schema.ts
 │   │   │   ├── swagger.ts
 │   │   │   └── types.ts
 │   │   ├── health
@@ -304,21 +310,29 @@ Creating a crud in Postgres and Mongo in seconds.
 │   │   │   ├── module.ts
 │   │   │   ├── swagger.ts
 │   │   │   └── types.ts
-│   │   └── user (MONGODB)
+│   │   └── user (mongo)
 │   │       ├── adapter.ts
 │   │       ├── controller.ts
 │   │       ├── module.ts
 │   │       ├── repository.ts
-│   │       ├── schema.ts
 │   │       ├── swagger.ts
 │   │       └── types.ts
+│   ├── schemas
 │   └── utils
+│       ├── database
+│       │   ├── mongoose.ts
+│       │   └── sequelize.ts
 │       ├── decorators
-│       │   ├── convert-mongo-filter.decorator.ts
+│       │   ├── database
+│       │   │   ├── mongo
+│       │   │   │   ├── convert-mongoose-filter.decorator.ts
+│       │   │   │   └── validate-mongoose-filter.decorator.ts
+│       │   │   ├── postgres
+│       │   │   │   ├── convert-paginate-input-to-sequelize-filter.decorator.ts
+│       │   │   │   └── convert-sequelize-filter.decorator.ts
+│       │   │   └── validate-database-sort-allowed.decorator.ts
 │       │   ├── role.decorator.ts
-│       │   ├── validate-allowed-sort-order.decorator.ts
-│       │   ├── validate-mongo-filter.decorator.ts
-│       │   ├── validate-postgres-filter.decorator.ts
+│       │   ├── types.ts
 │       │   └── validate-schema.decorator.ts
 │       ├── entity.ts
 │       ├── exception.ts
@@ -330,7 +344,6 @@ Creating a crud in Postgres and Mongo in seconds.
 │       │   └── http-logger.interceptor.ts
 │       ├── middlewares
 │       │   └── is-logged.middleware.ts
-│       ├── mongo.ts
 │       ├── pagination.ts
 │       ├── search.ts
 │       ├── sort.ts
