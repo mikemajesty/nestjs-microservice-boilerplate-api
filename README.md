@@ -1,6 +1,6 @@
 # Nestjs boilerplate Microservice API
 
-In this microservice I used the best architecture concepts: clean architecture, DDD and onion architecture.
+In this microservice I used the best architecture concepts: onion architecture, DDD and clean architecture.
 
 #### This microservice was developed and tested only on Linux. It may be that on another OS the mongo replicaset does not work correctly.
 
@@ -124,6 +124,8 @@ Creating a crud in Postgres and Mongo in seconds.
 ### Microservice architecture.
 
 - Docker
+- Observability
+  - traceid
 - Git hooks
   - Husky
 - Secrets Service
