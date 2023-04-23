@@ -99,6 +99,10 @@ Creating a crud in Postgres and Mongo in seconds.
   $ yarn migration:run
   ```
 
+### Tracing usage
+
+[Jeager Observability](./TRACING.md)
+
 ### Test
 
 - run
@@ -125,7 +129,8 @@ Creating a crud in Postgres and Mongo in seconds.
 
 - Docker
 - Observability
-  - traceid
+  - tracing
+  - Jeager
 - Git hooks
   - Husky
 - Secrets Service
@@ -165,6 +170,7 @@ Creating a crud in Postgres and Mongo in seconds.
 
 ```
 .
+├── commitlint.config.js
 ├── docker-compose.yml
 ├── jest.config.ts
 ├── nest-cli.json
@@ -288,7 +294,7 @@ Creating a crud in Postgres and Mongo in seconds.
 │   │       └── types.ts
 │   ├── main.ts
 │   ├── modules
-│   │   ├── cats (postgres)
+│   │   ├── cats
 │   │   │   ├── adapter.ts
 │   │   │   ├── controller.ts
 │   │   │   ├── module.ts
@@ -312,7 +318,7 @@ Creating a crud in Postgres and Mongo in seconds.
 │   │   │   ├── module.ts
 │   │   │   ├── swagger.ts
 │   │   │   └── types.ts
-│   │   └── user (mongo)
+│   │   └── user
 │   │       ├── adapter.ts
 │   │       ├── controller.ts
 │   │       ├── module.ts
@@ -343,10 +349,12 @@ Creating a crud in Postgres and Mongo in seconds.
 │       ├── interceptors
 │       │   ├── auth-guard.interceptor.ts
 │       │   ├── http-exception.interceptor.ts
-│       │   └── http-logger.interceptor.ts
+│       │   ├── http-logger.interceptor.ts
+│       │   └── http-tracing.interceptor.ts
 │       ├── middlewares
 │       │   └── is-logged.middleware.ts
 │       ├── pagination.ts
+│       ├── request.ts
 │       ├── search.ts
 │       ├── sort.ts
 │       ├── static
@@ -355,6 +363,7 @@ Creating a crud in Postgres and Mongo in seconds.
 │       └── tests.ts
 ├── test
 │   └── initializaion.ts
+├── TRACING.md
 ├── tsconfig.build.json
 └── tsconfig.json
 ```

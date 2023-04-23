@@ -11,7 +11,7 @@ import { ApiInternalServerException } from '../exception';
 import { TracingType } from '../request';
 
 @Injectable()
-export class TracingInterceptor implements NestInterceptor {
+export class HttpTracingInterceptor implements NestInterceptor {
   private tracer: JaegerTracer;
 
   constructor(logger: ILoggerAdapter) {
@@ -99,7 +99,7 @@ export class TracingInterceptor implements NestInterceptor {
           logger.log(message);
         },
         error: (message: string) => {
-          logger.error(message as unknown as ApiInternalServerException);
+          logger.error(new ApiInternalServerException(message));
         }
       }
     };
