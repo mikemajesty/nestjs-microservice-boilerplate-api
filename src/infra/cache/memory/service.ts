@@ -11,10 +11,10 @@ import { MemoryCacheKeyArgument, MemoryCacheSetType, MemoryCacheTTL, MemoryCache
 export class MemoryCacheService implements Partial<ICacheAdapter<NodeCache>> {
   client!: NodeCache;
 
-  constructor(private readonly logger: ILoggerAdapter, private config?: NodeCache.Options) {}
+  constructor(private readonly logger: ILoggerAdapter) {}
 
-  connect(): NodeCache {
-    this.client = new NodeCache(this.config || { stdTTL: 3600, checkperiod: 3600 });
+  connect(config?: NodeCache.Options): NodeCache {
+    this.client = new NodeCache(config || { stdTTL: 3600, checkperiod: 3600 });
     this.logger.log('CacheMemory connected!');
     return this.client;
   }
