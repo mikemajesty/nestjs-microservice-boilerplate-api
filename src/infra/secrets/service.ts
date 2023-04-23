@@ -15,7 +15,7 @@ export class SecretsService extends ConfigService implements ISecretsAdapter {
 
   HOST = this.get('HOST');
 
-  LOG_LEVEL = this.get('LOG_LEVEL');
+  LOGER_LEVEL = this.get('LOGER_LEVEL');
 
   REDIS_URL = this.get('REDIS_URL');
 
@@ -24,6 +24,8 @@ export class SecretsService extends ConfigService implements ISecretsAdapter {
   )}:${this.get('POSTGRES_PORT')}/${this.get('POSTGRES_DATABASE')}`;
 
   MONGO_URL = this.get('MONGO_URL');
+
+  JEAGER_URL = this.get('JEAGER_URL');
 
   TOKEN_EXPIRATION = this.get<number>('TOKEN_EXPIRATION');
 

@@ -1,5 +1,7 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Controller, Post, Req } from '@nestjs/common';
 import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
+
+import { ApiRequest } from '@/utils/request';
 
 import { ILoginAdapter } from './adapter';
 import { SwagggerRequest, SwagggerResponse } from './swagger';
@@ -14,8 +16,9 @@ export class LoginController {
   @ApiResponse(SwagggerResponse.login[200])
   @ApiResponse(SwagggerResponse.login[404])
   @ApiBody(SwagggerRequest.body)
-  async login(@Body() input: LoginInput): LoginOutput {
-    const model = LoginSchema.parse(input);
-    return this.loginService.execute(model);
+  async login(@Req() { body, tracing }: ApiRequest): LoginOutput {
+    const input = LoginSchema.parse(body as LoginInput);
+    tracing.addTags({ body });
+    return this.loginService.execute(input);
   }
 }

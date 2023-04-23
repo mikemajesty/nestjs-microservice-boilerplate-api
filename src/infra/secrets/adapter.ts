@@ -5,13 +5,15 @@ export abstract class ISecretsAdapter {
 
   HOST: string;
 
-  LOG_LEVEL: string;
+  LOGER_LEVEL: string;
 
   MONGO_URL: string;
 
   POSTGRES_URL: string;
 
   REDIS_URL: string;
+
+  JEAGER_URL: string;
 
   TOKEN_EXPIRATION: number;
 

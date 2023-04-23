@@ -12,6 +12,7 @@ import { ISecretsAdapter } from './infra/secrets';
 import { AppExceptionFilter } from './utils/filters/http-exception.filter';
 import { ExceptionInterceptor } from './utils/interceptors/http-exception.interceptor';
 import { HttpLoggerInterceptor } from './utils/interceptors/http-logger.interceptor';
+import { TracingInterceptor } from './utils/interceptors/tracing.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -27,7 +28,11 @@ async function bootstrap() {
 
   app.useGlobalFilters(new AppExceptionFilter(loggerService));
 
-  app.useGlobalInterceptors(new ExceptionInterceptor(), new HttpLoggerInterceptor(loggerService));
+  app.useGlobalInterceptors(
+    new ExceptionInterceptor(),
+    new HttpLoggerInterceptor(loggerService),
+    new TracingInterceptor(loggerService)
+  );
 
   app.setGlobalPrefix('api', {
     exclude: [
@@ -36,7 +41,7 @@ async function bootstrap() {
     ]
   });
 
-  const { ENV, MONGO_URL, POSTGRES_URL, PORT, HOST } = app.get(ISecretsAdapter);
+  const { ENV, MONGO_URL, POSTGRES_URL, PORT, HOST, JEAGER_URL } = app.get(ISecretsAdapter);
 
   const config = new DocumentBuilder()
     .setTitle(name)
@@ -57,6 +62,7 @@ async function bootstrap() {
 
   loggerService.log(`🔵 Postgres listening at ${bold(POSTGRES_URL)}`);
   loggerService.log(`🔵 Mongo listening at ${bold(MONGO_URL)}`);
+  loggerService.log(`🔵 jeager listening at ${bold(JEAGER_URL)}`);
 
   const userRepository = app.get(IUserRepository);
 
