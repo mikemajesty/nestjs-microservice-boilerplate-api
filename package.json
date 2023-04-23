@@ -17,7 +17,7 @@
     "test:cov": "jest --coverage --detectOpenHandles && yarn make-badges",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "infra": "./scripts/mongo/start-replicaset.sh",
-    "scafold": "./node_modules/@mikemajesty/microservice-crud/bin/microservice-crud",
+    "scaffold": "./node_modules/@mikemajesty/microservice-crud/bin/microservice-crud",
     "migration:create": "npx sequelize-cli migration:generate --name migration-skeleton",
     "migration:run": "npx sequelize-cli db:migrate",
     "make-badges": "istanbul-badges-readme"

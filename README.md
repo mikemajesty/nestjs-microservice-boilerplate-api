@@ -39,13 +39,13 @@ In this microservice I used the best architecture concepts: onion architecture, 
   $ yarn build
   ```
 
-### CRUD Scafold
+### CRUD Scaffold
 
 Creating a crud in Postgres and Mongo in seconds.
 
 - run
   ```
-  $ yarn scafold
+  $ yarn scaffold
   ```
 - Choose database for CRUD.
 - `(x) POTGRES:CRUD`
