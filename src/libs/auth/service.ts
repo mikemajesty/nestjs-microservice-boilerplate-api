@@ -18,7 +18,7 @@ export class TokenService implements ITokenAdapter {
   sign(model: AuthInput, options?: jwt.SignOptions): AuthOutput {
     const token = jwt.sign(
       model,
-      model.password,
+      this.secret.JWT_SECRET_KEY,
       options || {
         expiresIn: this.secret.TOKEN_EXPIRATION
       }
@@ -28,10 +28,8 @@ export class TokenService implements ITokenAdapter {
   }
 
   async verify(token: string): Promise<jwt.JwtPayload | string> {
-    const tokenData = this.decode(token);
-
     return new Promise((res, rej) => {
-      jwt.verify(token, tokenData?.password, (error, decoded) => {
+      jwt.verify(token, this.secret.JWT_SECRET_KEY, (error, decoded) => {
         if (error) rej(new ApiUnauthorizedException(error.message));
 
         res(decoded);
