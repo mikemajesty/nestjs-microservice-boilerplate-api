@@ -30,7 +30,7 @@ export class AppExceptionFilter implements ExceptionFilter {
         code: status,
         traceid: exception.traceid,
         message: [errorStatus[String(status)], message].find(Boolean),
-        timestamp: DateTime.fromJSDate(new Date()).setZone(process.env.TZ).toFormat('dd/MM/yyyy HH:mm:ss'),
+        timestamp: DateTime.fromJSDate(new Date()).setZone(process.env.TZ).toFormat(process.env.DATE_FORMAT),
         path: request.url
       }
     } as ErrorModel);
