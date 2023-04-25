@@ -2,7 +2,7 @@
 
 In this microservice I used the best architecture concepts: onion architecture, DDD and clean architecture.
 
-#### This microservice was developed and tested only on Linux. It may be that on another OS the mongo replicaset does not work correctly.
+#### This microservice has only been tested on Linux and WSL2. If you have connection problems with Mongodb(replicaset) on MACos fix it and send me the PR.
 
 | Statements                                                                               | Branches                                                                             | Functions                                                                              | Lines                                                                          |
 | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
