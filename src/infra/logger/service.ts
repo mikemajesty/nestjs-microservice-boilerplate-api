@@ -111,6 +111,7 @@ export class LoggerService implements ILoggerAdapter {
       },
       message
     );
+    process.exit(1);
   }
 
   private getPinoConfig() {

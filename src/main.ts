@@ -9,6 +9,7 @@ import { IUserRepository } from './core/user/repository/user';
 import { UserAdminSeed } from './infra/database/mongo/seed/create-user-admin';
 import { ILoggerAdapter } from './infra/logger/adapter';
 import { ISecretsAdapter } from './infra/secrets';
+import { ApiInternalServerException, BaseException } from './utils/exception';
 import { AppExceptionFilter } from './utils/filters/http-exception.filter';
 import { ExceptionInterceptor } from './utils/interceptors/http-exception.interceptor';
 import { HttpLoggerInterceptor } from './utils/interceptors/http-logger.interceptor';
@@ -39,6 +40,14 @@ async function bootstrap() {
       { path: 'health', method: RequestMethod.GET },
       { path: '/', method: RequestMethod.GET }
     ]
+  });
+
+  process.on('uncaughtException', (error) => {
+    if (!(error instanceof BaseException)) {
+      const customError = new ApiInternalServerException(error?.message || error);
+      customError.stack = error.stack;
+      loggerService.fatal(customError);
+    }
   });
 
   const { ENV, MONGO_URL, POSTGRES_URL, PORT, HOST, JEAGER_URL } = app.get(ISecretsAdapter);

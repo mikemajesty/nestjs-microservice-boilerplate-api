@@ -51,6 +51,11 @@ export class HttpTracingInterceptor implements NestInterceptor {
           this.tracer.inject(span, FORMAT_HTTP_HEADERS, headers);
           options.headers = { ...options.headers, ...headers, traceid: request.id };
 
+          if (request.headers.authorization) {
+            options.headers['authorization'] = `${request.headers.authorization}`;
+          }
+          options.headers['traceid'] = request.headers.traceid;
+
           return axios.create(options);
         },
         log: (eventName, payload) => {

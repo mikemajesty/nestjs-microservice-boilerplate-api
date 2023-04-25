@@ -31,12 +31,15 @@
   ```
 
 - Call the instance HTTP and magic :).
+
   ```
-  async execute(input: UserListInput, http: IHttpAdapter): Promise<UserListOutput> {
-    const catModel = await http.instance()
-      .post('http://localhost:4000/api/cats', { name: 'Miau', breed: 'siamese', age: 1 } as CatsEntity);
+  async execute(input: UserListInput, httpService: IHttpAdapter): Promise<UserListOutput> {
+    const http = httpService.instance();
+
+    await http.post('http://localhost:4000/api/cats', input);
   }
   ```
+
 - Access Jaeger URL
   ```
   http://0.0.0.0:16686/search
