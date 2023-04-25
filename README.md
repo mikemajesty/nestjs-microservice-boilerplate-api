@@ -133,6 +133,7 @@ Creating a crud in Postgres and Mongo in seconds.
   - Jeager
 - Git hooks
   - Husky
+- Commitlint
 - Secrets Service
 - HTTP Service
 - Logs Service
