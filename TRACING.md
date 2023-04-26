@@ -25,7 +25,7 @@
 
     @Post('/users')
     async list(@Req() { tracing, body }: ApiRequest): UserListOutput {
-      return await this.userCreate.execute(body, { instance: tracing.axios });
+      return await this.userCreate.execute(body, { instance: tracing.axios, tracing });
     }
   }
   ```
