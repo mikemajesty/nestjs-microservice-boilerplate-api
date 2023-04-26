@@ -41,6 +41,8 @@ export class HttpTracingInterceptor implements NestInterceptor {
     const parentObject = parent ? { childOf: parent } : {};
     const span = this.tracer.startSpan(request.headers.host + request.path, parentObject);
 
+    const requestId = request.headers.traceid ?? request.id;
+
     const createJaegerInstance = (): TracingType => {
       return {
         span: span,
@@ -49,12 +51,13 @@ export class HttpTracingInterceptor implements NestInterceptor {
         axios: (options: AxiosRequestConfig = {}): AxiosInstance => {
           const headers = {};
           this.tracer.inject(span, FORMAT_HTTP_HEADERS, headers);
-          options.headers = { ...options.headers, ...headers, traceid: request.id };
+          options.headers = { ...options.headers, ...headers };
 
           if (request.headers.authorization) {
             options.headers['authorization'] = `${request.headers.authorization}`;
           }
-          options.headers['traceid'] = request.headers.traceid;
+
+          options.headers['traceid'] = requestId;
 
           return axios.create(options);
         },
@@ -86,7 +89,7 @@ export class HttpTracingInterceptor implements NestInterceptor {
     request.tracing.setTag(Tags.HTTP_URL, request.path);
 
     if (request.id) {
-      request.tracing.setTag('traceId', request.id);
+      request.tracing.setTag('traceId', requestId);
     }
 
     return next.handle().pipe(

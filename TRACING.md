@@ -33,10 +33,25 @@
 - Call the instance HTTP and magic :).
 
   ```
+  # internal
   async execute(input: UserListInput, httpService: IHttpAdapter): Promise<UserListOutput> {
     const http = httpService.instance();
 
     await http.post('http://localhost:4000/api/cats', input);
+  }
+  ```
+
+  ```
+  # external
+  async execute(input: UserListInput, httpService: IHttpAdapter): Promise<UserListOutput> {
+    const http = httpService.instance();
+
+    const externalSpan = httpService.tracing.createSpan('https://www.google.com.br');
+    externalSpan.setTag(httpService.tracing.tags.PEER_SERVICE, 'www.google.com.br');
+    externalSpan.setTag(httpService.tracing.tags.SPAN_KIND, 'client');
+    externalSpan.setTag(httpService.tracing.tags.PEER_HOSTNAME, 'https://www.google.com.br');
+    await http.get('https://www.google.com.br');
+    externalSpan.finish();
   }
   ```
 

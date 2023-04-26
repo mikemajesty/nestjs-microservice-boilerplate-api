@@ -6,6 +6,9 @@
       "type": "node",
       "request": "launch",
       "cwd": "${workspaceFolder}",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
       "console": "integratedTerminal",
       "runtimeExecutable": "npm",
       "runtimeArgs": [

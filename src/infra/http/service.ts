@@ -3,17 +3,20 @@ import axios, { AxiosInstance } from 'axios';
 import axiosRetry from 'axios-retry';
 import * as https from 'https';
 
+import { TracingType } from '@/utils/request';
+
 import { ILoggerAdapter } from '../logger';
 import { IHttpAdapter } from './adapter';
 
 @Injectable()
 export class HttpService implements IHttpAdapter {
+  public tracing: Exclude<TracingType, 'axios'>;
+
   private axios: AxiosInstance;
 
   constructor(private readonly loggerService: ILoggerAdapter) {
     const httpsAgent = new https.Agent({
       keepAlive: true,
-      maxFreeSockets: 2000,
       rejectUnauthorized: false
     });
 
@@ -39,8 +42,8 @@ export class HttpService implements IHttpAdapter {
         return retryCount * 2000;
       },
       retryCondition: (error) => {
-        const status = [error?.response?.status, error.code, error.status].find(Boolean) || 500;
-        return [status === 'EAI_AGAIN', status === 503, status === 500, status === 422].some(Boolean);
+        const status = error?.response?.status || 500;
+        return [status === 503, status === 422, status === 408].some(Boolean);
       }
     });
   }
