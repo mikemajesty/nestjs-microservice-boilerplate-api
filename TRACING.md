@@ -46,7 +46,7 @@
   async execute(input: UserListInput, httpService: IHttpAdapter): Promise<UserListOutput> {
     const http = httpService.instance();
 
-    const externalSpan = httpService.tracing.createSpan('https://www.google.com.br');
+    const externalSpan = httpService.tracing.createSpan('google');
     externalSpan.setTag(httpService.tracing.tags.PEER_SERVICE, 'www.google.com.br');
     externalSpan.setTag(httpService.tracing.tags.SPAN_KIND, 'client');
     externalSpan.setTag(httpService.tracing.tags.PEER_HOSTNAME, 'https://www.google.com.br');
