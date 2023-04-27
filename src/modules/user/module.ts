@@ -43,7 +43,6 @@ import { UserRepository } from './repository';
         >(User.name, UserSchema);
 
         repository.connection = connection;
-        //
 
         // use if you not want transaction
         // const repository: PaginateModel<UserDocument> = connection.model<UserDocument, Model>(User.name, UserSchema);

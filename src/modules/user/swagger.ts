@@ -95,7 +95,7 @@ export const SwagggerRequest = {
     search: Swagger.defaultApiQueryOptions({
       name: 'search',
       required: false,
-      description: `<b>login:XPTO<login>`
+      description: `<b>login:value<login>`
     })
   }
 };
