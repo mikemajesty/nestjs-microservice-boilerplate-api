@@ -11,7 +11,7 @@ import { UserCreateInput, UserCreateUsecase } from '../user-create';
 
 const user = {
   login: 'login',
-  password: 'password',
+  password: '**********',
   roles: [UserRole.USER]
 } as UserCreateInput;
 

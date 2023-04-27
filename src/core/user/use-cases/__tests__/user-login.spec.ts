@@ -12,7 +12,7 @@ import { LoginUsecase } from '../user-login';
 const userResponse = {
   id: '61cc35f3-03d9-4b7f-9c63-59f32b013ef5',
   login: 'login',
-  password: 'password',
+  password: '**********',
   roles: [UserRole.USER],
   createdAt: new Date(),
   updatedAt: new Date()
