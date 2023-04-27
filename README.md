@@ -300,8 +300,7 @@ Creating a crud in Postgres and Mongo in seconds.
 │   │   │   ├── controller.ts
 │   │   │   ├── module.ts
 │   │   │   ├── repository.ts
-│   │   │   ├── swagger.ts
-│   │   │   └── types.ts
+│   │   │   └── swagger.ts
 │   │   ├── health
 │   │   │   ├── controller.ts
 │   │   │   ├── module.ts
@@ -311,22 +310,18 @@ Creating a crud in Postgres and Mongo in seconds.
 │   │   │   ├── adapter.ts
 │   │   │   ├── controller.ts
 │   │   │   ├── module.ts
-│   │   │   ├── swagger.ts
-│   │   │   └── types.ts
+│   │   │   └── swagger.ts
 │   │   ├── logout
 │   │   │   ├── adapter.ts
 │   │   │   ├── controller.ts
 │   │   │   ├── module.ts
-│   │   │   ├── swagger.ts
-│   │   │   └── types.ts
+│   │   │   └── swagger.ts
 │   │   └── user
 │   │       ├── adapter.ts
 │   │       ├── controller.ts
 │   │       ├── module.ts
 │   │       ├── repository.ts
-│   │       ├── swagger.ts
-│   │       └── types.ts
-│   ├── schemas
+│   │       └── swagger.ts
 │   └── utils
 │       ├── database
 │       │   ├── mongoose.ts
