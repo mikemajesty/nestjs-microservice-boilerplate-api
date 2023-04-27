@@ -5,14 +5,14 @@ import { ModelCtor } from 'sequelize-typescript';
 import { CatsEntity } from '@/core/cats/entity/cats';
 import { ICatsRepository } from '@/core/cats/repository/cats';
 import { CatsListInput, CatsListOutput } from '@/core/cats/use-cases/cats-list';
-import { CatSchema } from '@/infra/database/postgres/schemas/cats';
+import { CatsSchema } from '@/infra/database/postgres/schemas/cats';
 import { SequelizeRepository } from '@/infra/repository/postgres/repository';
 import { DatabaseOptionsSchema, DatabaseOptionsType } from '@/utils/database/sequelize';
 import { ConvertPaginateInputToSequelizeFilter } from '@/utils/decorators/database/postgres/convert-paginate-input-to-sequelize-filter.decorator';
 import { ValidateDatabaseSortAllowed } from '@/utils/decorators/database/validate-database-sort-allowed.decorator';
 import { SearchTypeEnum } from '@/utils/decorators/types';
 
-type Model = ModelCtor<CatSchema> & CatsEntity;
+type Model = ModelCtor<CatsSchema> & CatsEntity;
 
 @Injectable()
 export class CatsRepository extends SequelizeRepository<Model> implements ICatsRepository {

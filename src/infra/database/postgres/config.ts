@@ -4,7 +4,7 @@ import { config } from 'dotenv';
 import { writeFileSync } from 'fs';
 import { Sequelize } from 'sequelize-typescript';
 
-import { CatSchema } from '@/infra/database/postgres/schemas/cats';
+import { CatsSchema } from '@/infra/database/postgres/schemas/cats';
 
 config();
 
@@ -21,7 +21,7 @@ const sequelizeConfig = new Sequelize(connection, {
   logging: (msm) => console.log(blue('[sequelize]'), gray(msm))
 });
 
-sequelizeConfig.addModels([CatSchema]);
+sequelizeConfig.addModels([CatsSchema]);
 
 export { sequelizeConfig };
 

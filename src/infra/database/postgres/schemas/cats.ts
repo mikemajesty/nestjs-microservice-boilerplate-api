@@ -1,7 +1,7 @@
 import { Column, DataType, Model, Table } from 'sequelize-typescript';
 
 @Table({ timestamps: true, tableName: 'cats' })
-export class CatSchema extends Model {
+export class CatsSchema extends Model {
   @Column({ primaryKey: true, type: DataType.UUID })
   id: string;
 
