@@ -1,11 +1,19 @@
-import { CatsGetByIDInput, CatsGetByIDOutput } from '@/modules/cats/types';
-import { CatsGetByIdSchema } from '@/modules/cats/types';
+import { z } from 'zod';
+
+import { CatsEntitySchema } from '@/core/cats/entity/cats';
 import { DatabaseOptionsType } from '@/utils/database/sequelize';
 import { ValidateSchema } from '@/utils/decorators/validate-schema.decorator';
 import { ApiNotFoundException } from '@/utils/exception';
 
 import { CatsEntity } from '../entity/cats';
 import { ICatsRepository } from '../repository/cats';
+
+export const CatsGetByIdSchema = CatsEntitySchema.pick({
+  id: true
+});
+
+export type CatsGetByIDInput = z.infer<typeof CatsGetByIdSchema>;
+export type CatsGetByIDOutput = Promise<CatsEntity>;
 
 export class CatsGetByIdUsecase {
   constructor(private readonly catsRepository: ICatsRepository) {}

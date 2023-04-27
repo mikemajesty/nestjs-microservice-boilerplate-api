@@ -1,7 +1,17 @@
-import { CatsListInput, CatsListOutput, CatsListSchema } from '@/modules/cats/types';
+import { z } from 'zod';
+
+import { CatsEntity } from '@/core/cats/entity/cats';
 import { ValidateSchema } from '@/utils/decorators/validate-schema.decorator';
+import { PaginationInput, PaginationOutput, PaginationSchema } from '@/utils/pagination';
+import { SearchSchema } from '@/utils/search';
+import { SortSchema } from '@/utils/sort';
 
 import { ICatsRepository } from '../repository/cats';
+
+export const CatsListSchema = z.intersection(PaginationSchema, SortSchema.merge(SearchSchema));
+
+export type CatsListInput = PaginationInput<CatsEntity>;
+export type CatsListOutput = Promise<PaginationOutput<CatsEntity>>;
 
 export class CatsListUsecase {
   constructor(private readonly catsRepository: ICatsRepository) {}

@@ -32,8 +32,8 @@ export const PaginationSchema = z
     message: 'invalidInteger'
   });
 
-export type PaginationInput<T> = z.infer<typeof PaginationSchema> & SortInput & SearchInput<T>;
-export type PaginationOutput = z.infer<typeof PaginationSchema> & { total: number };
+export type PaginationInput<T> = z.infer<typeof PaginationSchema> & SortInput & SearchInput<Partial<T>>;
+export type PaginationOutput<T> = z.infer<typeof PaginationSchema> & { total: number; docs: T[] };
 
 export const calucaleSkip = (input: z.infer<typeof PaginationSchema>) => {
   return (input.page - 1) * input.limit;

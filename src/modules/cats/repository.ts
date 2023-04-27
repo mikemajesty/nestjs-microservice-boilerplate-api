@@ -4,9 +4,9 @@ import { ModelCtor } from 'sequelize-typescript';
 
 import { CatsEntity } from '@/core/cats/entity/cats';
 import { ICatsRepository } from '@/core/cats/repository/cats';
+import { CatsListInput, CatsListOutput } from '@/core/cats/use-cases/cats-list';
 import { CatSchema } from '@/infra/database/postgres/schemas/cats';
 import { SequelizeRepository } from '@/infra/repository/postgres/repository';
-import { CatsListInput, CatsListOutput } from '@/modules/cats/types';
 import { DatabaseOptionsSchema, DatabaseOptionsType } from '@/utils/database/sequelize';
 import { ConvertPaginateInputToSequelizeFilter } from '@/utils/decorators/database/postgres/convert-paginate-input-to-sequelize-filter.decorator';
 import { ValidateDatabaseSortAllowed } from '@/utils/decorators/database/validate-database-sort-allowed.decorator';
@@ -37,6 +37,6 @@ export class CatsRepository extends SequelizeRepository<Model> implements ICatsR
 
     const list = await this.repository.schema(schema).findAndCountAll(input);
 
-    return { docs: list.rows, limit: input.limit, page: input.page, total: list.count };
+    return { docs: list.rows.map((r) => new CatsEntity(r)), limit: input.limit, page: input.page, total: list.count };
   }
 }

@@ -1,11 +1,19 @@
+import { z } from 'zod';
+
 import { ICatsRepository } from '@/core/cats/repository/cats';
 import { ILoggerAdapter } from '@/infra/logger';
-import { CatsUpdateInput, CatsUpdateOutput, CatsUpdateSchema } from '@/modules/cats/types';
 import { DatabaseOptionsType } from '@/utils/database/sequelize';
 import { ValidateSchema } from '@/utils/decorators/validate-schema.decorator';
 import { ApiNotFoundException } from '@/utils/exception';
 
-import { CatsEntity } from './../entity/cats';
+import { CatsEntity, CatsEntitySchema } from './../entity/cats';
+
+export const CatsUpdateSchema = CatsEntitySchema.pick({
+  id: true
+}).merge(CatsEntitySchema.omit({ id: true }).partial());
+
+export type CatsUpdateInput = z.infer<typeof CatsUpdateSchema>;
+export type CatsUpdateOutput = Promise<CatsEntity>;
 
 export class CatsUpdateUsecase {
   constructor(private readonly catsRepository: ICatsRepository, private readonly loggerServide: ILoggerAdapter) {}

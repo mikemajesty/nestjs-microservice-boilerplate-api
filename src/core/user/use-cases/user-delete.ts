@@ -1,9 +1,17 @@
-import { UserDeleteInput, UserDeleteOutput, UserDeleteSchema } from '@/modules/user/types';
+import { z } from 'zod';
+
 import { ValidateSchema } from '@/utils/decorators/validate-schema.decorator';
 import { ApiNotFoundException } from '@/utils/exception';
 
-import { UserEntity } from '../entity/user';
+import { UserEntity, UserEntitySchema } from '../entity/user';
 import { IUserRepository } from '../repository/user';
+
+export const UserDeleteSchema = UserEntitySchema.pick({
+  id: true
+});
+
+export type UserDeleteInput = z.infer<typeof UserDeleteSchema>;
+export type UserDeleteOutput = Promise<UserEntity>;
 
 export class UserDeleteUsecase {
   constructor(private readonly userRepository: IUserRepository) {}
@@ -19,6 +27,7 @@ export class UserDeleteUsecase {
     const user = new UserEntity(model);
 
     user.setDelete();
+    user.anonymizePassword();
 
     await this.userRepository.updateOne({ id: user.id }, user);
 

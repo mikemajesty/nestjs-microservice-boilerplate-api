@@ -36,7 +36,9 @@ export class MongoRepository<T extends Document> implements Omit<IRepository<T>,
 
   async findById(id: string | number): Promise<T> {
     const model = await this.model.findById(id);
+
     if (!model) return null;
+
     return model.toObject({ virtuals: true });
   }
 
@@ -51,7 +53,9 @@ export class MongoRepository<T extends Document> implements Omit<IRepository<T>,
 
   @ConvertMongoFilterToBaseRepository()
   async findAll(filter?: FilterQuery<T>): Promise<T[]> {
-    return (await this.model.find(filter)).map((u) => u.toObject({ virtuals: true }));
+    const modelList = await this.model.find(filter);
+
+    return (modelList || []).map((u) => u.toObject({ virtuals: true }));
   }
 
   @ConvertMongoFilterToBaseRepository()

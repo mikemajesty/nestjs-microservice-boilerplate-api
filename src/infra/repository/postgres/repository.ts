@@ -26,7 +26,7 @@ export class SequelizeRepository<T extends ModelCtor & IEntity> implements Omit<
       where: filter as WhereOptions<T>
     });
 
-    return model.map((m) => m.toJSON());
+    return (model || []).map((m) => m.toJSON());
   }
 
   @ConvertSequelizeFilterToRepository()
@@ -37,7 +37,7 @@ export class SequelizeRepository<T extends ModelCtor & IEntity> implements Omit<
       where: filter as WhereOptions<T>
     });
 
-    return model.map((m) => m.toJSON());
+    return (model || []).map((m) => m.toJSON());
   }
 
   @ConvertSequelizeFilterToRepository()
@@ -62,6 +62,8 @@ export class SequelizeRepository<T extends ModelCtor & IEntity> implements Omit<
     const model = await this.Model.schema(schema).findOne({
       where: filter as WhereOptions<T>
     });
+
+    if (!model) return;
 
     return model.toJSON();
   }
@@ -137,6 +139,8 @@ export class SequelizeRepository<T extends ModelCtor & IEntity> implements Omit<
     const { schema } = DatabaseOptionsSchema.parse(options);
 
     const model = await this.Model.schema(schema).findOne({ where: { id, deletedAt: null } });
+
+    if (!model) return;
 
     return model.toJSON();
   }

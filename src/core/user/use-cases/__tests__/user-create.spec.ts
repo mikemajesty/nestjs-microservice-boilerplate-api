@@ -2,13 +2,12 @@ import { Test } from '@nestjs/testing';
 
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { IUserCreateAdapter } from '@/modules/user/adapter';
-import { UserCreateInput } from '@/modules/user/types';
 import { ApiConflictException } from '@/utils/exception';
 import { expectZodError } from '@/utils/tests';
 
 import { UserRole } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
-import { UserCreateUsecase } from '../user-create';
+import { UserCreateInput, UserCreateUsecase } from '../user-create';
 
 const user = {
   login: 'login',

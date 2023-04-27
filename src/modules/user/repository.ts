@@ -4,6 +4,7 @@ import { PaginateModel } from 'mongoose';
 
 import { UserEntity } from '@/core/user/entity/user';
 import { IUserRepository } from '@/core/user/repository/user';
+import { UserListInput, UserListOutput } from '@/core/user/use-cases/user-list';
 import { User, UserDocument } from '@/infra/database/mongo/schemas/user';
 import { MongoRepository } from '@/infra/repository';
 import { MongoRepositoryModelSessionType, MongoRepositorySession } from '@/utils/database/mongoose';
@@ -12,8 +13,6 @@ import {
   ValidateMongooseFilter
 } from '@/utils/decorators/database/mongo/validate-mongoose-filter.decorator';
 import { ValidateDatabaseSortAllowed } from '@/utils/decorators/database/validate-database-sort-allowed.decorator';
-
-import { UserListInput, UserListOutput } from './types';
 
 @Injectable()
 export class UserRepository extends MongoRepository<UserDocument> implements IUserRepository {

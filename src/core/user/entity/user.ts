@@ -48,4 +48,8 @@ export class UserEntity implements IEntity {
   setDelete() {
     this.deletedAt = new Date();
   }
+
+  anonymizePassword() {
+    this.password = '**********';
+  }
 }

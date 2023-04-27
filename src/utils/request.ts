@@ -21,6 +21,8 @@ export interface ApiRequest extends Body {
   readonly tracing: TracingType;
   readonly credentials: RequestCredentials;
   readonly destination: RequestDestination;
+  readonly params: { [key: string]: string };
+  readonly query: { [key: string]: string };
   readonly headers: Headers;
   readonly integrity: string;
   readonly keepalive: boolean;

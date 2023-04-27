@@ -1,10 +1,21 @@
+import { z } from 'zod';
+
 import { ILoggerAdapter } from '@/infra/logger';
-import { CatsCreateInput, CatsCreateOutput, CatsCreateSchema } from '@/modules/cats/types';
+import { CreatedModel } from '@/infra/repository';
 import { DatabaseOptionsType } from '@/utils/database/sequelize';
 import { ValidateSchema } from '@/utils/decorators/validate-schema.decorator';
 
 import { ICatsRepository } from '../repository/cats';
-import { CatsEntity } from './../entity/cats';
+import { CatsEntity, CatsEntitySchema } from './../entity/cats';
+
+export const CatsCreateSchema = CatsEntitySchema.pick({
+  name: true,
+  breed: true,
+  age: true
+});
+
+export type CatsCreateInput = z.infer<typeof CatsCreateSchema>;
+export type CatsCreateOutput = Promise<CreatedModel>;
 
 export class CatsCreateUsecase {
   constructor(private readonly catsRepository: ICatsRepository, private readonly loggerServide: ILoggerAdapter) {}

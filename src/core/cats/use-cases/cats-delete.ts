@@ -1,10 +1,18 @@
+import { z } from 'zod';
+
 import { ICatsRepository } from '@/core/cats/repository/cats';
-import { CatsDeleteInput, CatsDeleteOutput, CatsDeleteSchema } from '@/modules/cats/types';
 import { DatabaseOptionsType } from '@/utils/database/sequelize';
 import { ValidateSchema } from '@/utils/decorators/validate-schema.decorator';
 import { ApiNotFoundException } from '@/utils/exception';
 
-import { CatsEntity } from '../entity/cats';
+import { CatsEntity, CatsEntitySchema } from '../entity/cats';
+
+export const CatsDeleteSchema = CatsEntitySchema.pick({
+  id: true
+});
+
+export type CatsDeleteInput = z.infer<typeof CatsDeleteSchema>;
+export type CatsDeleteOutput = Promise<CatsEntity>;
 
 export class CatsDeleteUsecase {
   constructor(private readonly catsRepository: ICatsRepository) {}

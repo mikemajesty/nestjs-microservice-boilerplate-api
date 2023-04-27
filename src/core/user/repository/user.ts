@@ -1,8 +1,8 @@
 import { IRepository } from '@/infra/repository';
-import { UserListInput, UserListOutput } from '@/modules/user/types';
 import { MongoRepositorySession } from '@/utils/database/mongoose';
 
 import { UserEntity } from '../entity/user';
+import { UserListInput, UserListOutput } from '../use-cases/user-list';
 
 export abstract class IUserRepository extends IRepository<UserEntity> {
   abstract existsOnUpdate(

@@ -1,15 +1,8 @@
-import {
-  CatsCreateInput,
-  CatsCreateOutput,
-  CatsDeleteInput,
-  CatsDeleteOutput,
-  CatsGetByIDInput,
-  CatsGetByIDOutput,
-  CatsListInput,
-  CatsListOutput,
-  CatsUpdateInput,
-  CatsUpdateOutput
-} from './types';
+import { CatsCreateInput, CatsCreateOutput } from '@/core/cats/use-cases/cats-create';
+import { CatsDeleteInput, CatsDeleteOutput } from '@/core/cats/use-cases/cats-delete';
+import { CatsGetByIDInput, CatsGetByIDOutput } from '@/core/cats/use-cases/cats-getByID';
+import { CatsListInput, CatsListOutput } from '@/core/cats/use-cases/cats-list';
+import { CatsUpdateInput, CatsUpdateOutput } from '@/core/cats/use-cases/cats-update';
 
 export abstract class ICatsCreateAdapter {
   abstract execute(input: CatsCreateInput): Promise<CatsCreateOutput>;

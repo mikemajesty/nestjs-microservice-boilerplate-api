@@ -1,10 +1,21 @@
+import { z } from 'zod';
+
 import { ILoggerAdapter } from '@/infra/logger';
-import { UserCreateInput, UserCreateOutput, UserCreateSchema } from '@/modules/user/types';
+import { CreatedModel } from '@/infra/repository';
 import { ValidateSchema } from '@/utils/decorators/validate-schema.decorator';
 import { ApiConflictException } from '@/utils/exception';
 
-import { UserEntity } from '../entity/user';
+import { UserEntity, UserEntitySchema } from '../entity/user';
 import { IUserRepository } from '../repository/user';
+
+export const UserCreateSchema = UserEntitySchema.pick({
+  login: true,
+  password: true,
+  roles: true
+});
+
+export type UserCreateInput = z.infer<typeof UserCreateSchema>;
+export type UserCreateOutput = Promise<CreatedModel>;
 
 export class UserCreateUsecase {
   constructor(private readonly userRepository: IUserRepository, private readonly loggerServide: ILoggerAdapter) {}

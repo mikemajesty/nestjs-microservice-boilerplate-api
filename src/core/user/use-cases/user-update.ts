@@ -1,10 +1,18 @@
+import { z } from 'zod';
+
 import { ILoggerAdapter } from '@/infra/logger';
-import { UserUpdateInput, UserUpdateOutput, UserUpdateSchema } from '@/modules/user/types';
 import { ValidateSchema } from '@/utils/decorators/validate-schema.decorator';
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception';
 
-import { UserEntity } from '../entity/user';
+import { UserEntity, UserEntitySchema } from '../entity/user';
 import { IUserRepository } from '../repository/user';
+
+export const UserUpdateSchema = UserEntitySchema.pick({
+  id: true
+}).merge(UserEntitySchema.omit({ id: true }).partial());
+
+export type UserUpdateInput = Partial<z.infer<typeof UserUpdateSchema>>;
+export type UserUpdateOutput = Promise<UserEntity>;
 
 export class UserUpdateUsecase {
   constructor(private readonly userRepository: IUserRepository, private readonly loggerServide: ILoggerAdapter) {}
@@ -36,6 +44,10 @@ export class UserUpdateUsecase {
 
     const updated = await this.userRepository.findById(entity.id);
 
-    return new UserEntity(updated);
+    const entityUpdated = new UserEntity(updated);
+
+    entityUpdated.anonymizePassword();
+
+    return entityUpdated;
   }
 }
