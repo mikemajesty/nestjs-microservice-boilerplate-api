@@ -25,8 +25,7 @@ export class UserCreateUsecase {
     const entity = new UserEntity(input);
 
     const userExists = await this.userRepository.findOne({
-      login: entity.login,
-      password: entity.password
+      login: entity.login
     });
 
     if (userExists) {
