@@ -1,6 +1,7 @@
 import { Op } from 'sequelize';
 
 import { SearchTypeEnum } from '@/utils/decorators/types';
+import { ApiBadRequestException } from '@/utils/exception';
 
 import { AllowedFilter } from '../../types';
 
@@ -20,6 +21,13 @@ export function ConvertPaginateInputToSequelizeFilter(allowedFilterList: Allowed
       const where = {
         deletedAt: null
       };
+
+      const filterNameList = allowedFilterList.map((f) => f.name);
+
+      Object.keys(input.search || {}).forEach((key) => {
+        const allowed = filterNameList.includes(key);
+        if (!allowed) throw new ApiBadRequestException(`allowed filters are: ${filterNameList.join(', ')}`);
+      });
 
       for (const allowedFilter of allowedFilterList) {
         if (!input.search) continue;

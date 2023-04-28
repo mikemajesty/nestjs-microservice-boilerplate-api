@@ -1,3 +1,5 @@
+import { ApiBadRequestException } from '@/utils/exception';
+
 import { skipParentheses } from '../../../database/mongoose';
 
 export enum SearchTypeEnum {
@@ -24,6 +26,13 @@ export function ValidateMongooseFilter(allowedFilterList: AllowedFilter[] = []) 
         where['_id'] = input.search.id.trim();
         delete input.search.id;
       }
+
+      const filterNameList = allowedFilterList.map((f) => f.name);
+
+      Object.keys(input.search || {}).forEach((key) => {
+        const allowed = filterNameList.includes(key);
+        if (!allowed) throw new ApiBadRequestException(`allowed filters are: ${filterNameList.join(', ')}`);
+      });
 
       for (const allowedFilter of allowedFilterList) {
         if (!input.search) continue;

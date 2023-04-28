@@ -9,7 +9,7 @@ export function ValidateDatabaseSortAllowed(allowedSortList: string[] = []) {
 
       Object.keys(input.sort || {}).forEach((key) => {
         const allowed = allowedSortList.includes(key);
-        if (!allowed) throw new ApiBadRequestException(`allowed sorts are:: ${allowedSortList.join(', ')}`);
+        if (!allowed) throw new ApiBadRequestException(`allowed sorts are: ${allowedSortList.join(', ')}`);
       });
 
       for (const allowedFilter of allowedSortList) {
