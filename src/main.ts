@@ -44,7 +44,7 @@ async function bootstrap() {
 
   process.on('uncaughtException', (error) => {
     if (!(error instanceof BaseException)) {
-      const customError = new ApiInternalServerException(error?.message || error);
+      const customError = new ApiInternalServerException(error?.message);
       customError.stack = error.stack;
       loggerService.fatal(customError);
     }
@@ -72,6 +72,8 @@ async function bootstrap() {
   loggerService.log(`🔵 Postgres listening at ${bold(POSTGRES_URL)}`);
   loggerService.log(`🔵 Mongo listening at ${bold(MONGO_URL)}`);
   loggerService.log(`🔵 jeager listening at ${bold(JEAGER_URL)}`);
+
+  loggerService.error(new ApiInternalServerException(undefined));
 
   const userRepository = app.get(IUserRepository);
 

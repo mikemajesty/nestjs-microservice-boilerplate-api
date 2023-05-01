@@ -24,7 +24,7 @@ export class SequelizeService implements IDataBaseAdapter {
       this.logger.log('Sequelize connected!');
       return conn as T;
     } catch (error) {
-      this.logger.error(error);
+      this.logger.fatal(error);
     }
   }
 

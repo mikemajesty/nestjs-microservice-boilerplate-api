@@ -74,7 +74,7 @@ export class LoggerService implements ILoggerAdapter {
 
     const response =
       error instanceof BaseException
-        ? { statusCode: error['statusCode'], message: error?.message }
+        ? { statusCode: error['statusCode'], message: error?.message, ...error?.parameters }
         : errorResponse?.value();
 
     const type = {
@@ -92,6 +92,7 @@ export class LoggerService implements ILoggerAdapter {
         timestamp: this.getDateFormat(),
         application: this.app,
         stack: error.stack,
+        ...error?.parameters,
         message: messageFind
       },
       messageFind
@@ -101,7 +102,7 @@ export class LoggerService implements ILoggerAdapter {
   fatal(error: ErrorType, message?: string, context?: string): void {
     this.logger.logger.fatal(
       {
-        ...(error.getResponse() as object),
+        message: error.message || message,
         context: [context, this.app].find(Boolean),
         type: error.name,
         traceid: this.getTraceId(error),
@@ -109,7 +110,7 @@ export class LoggerService implements ILoggerAdapter {
         application: this.app,
         stack: error.stack
       },
-      message
+      error.message || message
     );
     process.exit(1);
   }
@@ -212,7 +213,10 @@ export class LoggerService implements ILoggerAdapter {
       {
         conditional: isFunction && typeof error.getResponse() === 'string',
         value: () =>
-          new BaseException(error.getResponse(), [error.getStatus(), error['status']].find(Boolean)).getResponse()
+          new BaseException(
+            error.getResponse() as string,
+            [error.getStatus(), error['status']].find(Boolean)
+          ).getResponse()
       },
       {
         conditional: isFunction && typeof error.getResponse() === 'object',
