@@ -73,8 +73,6 @@ async function bootstrap() {
   loggerService.log(`🔵 Mongo listening at ${bold(MONGO_URL)}`);
   loggerService.log(`🔵 jeager listening at ${bold(JEAGER_URL)}`);
 
-  loggerService.error(new ApiInternalServerException(undefined));
-
   const userRepository = app.get(IUserRepository);
 
   await userRepository.seed([UserAdminSeed]);
