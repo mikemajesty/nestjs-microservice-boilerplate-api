@@ -30,7 +30,7 @@ export class CatsCreateUsecase {
 
       await transaction.commit();
 
-      this.loggerServide.info({ message: 'cats created.', obj: { cats } });
+      this.loggerServide.info({ message: 'cats created successfully.', obj: { cats } });
 
       return cats;
     } catch (error) {

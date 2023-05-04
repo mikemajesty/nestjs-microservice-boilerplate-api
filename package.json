@@ -10,7 +10,7 @@
     "build": "nest build",
     "start": "node dist/src/main",
     "start:dev": "nest start --watch",
-    "start:debug": "nest start --watch",
+    "start:debug": "nest start --debug --watch",
     "prettier": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "lint": "eslint \"{src,test}/**/*.ts\" --fix",
     "test": "jest --config=\"./jest.config.ts\" --detectOpenHandles",

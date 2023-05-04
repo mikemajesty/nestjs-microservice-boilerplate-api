@@ -9,6 +9,7 @@ import { IUserRepository } from '../repository/user';
 export const UserGetByIdSchema = UserEntitySchema.pick({
   id: true
 });
+
 export type UserGetByIDInput = z.infer<typeof UserGetByIdSchema>;
 export type UserGetByIDOutput = Promise<UserEntity>;
 

@@ -1,6 +1,7 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 import { initTracer, JaegerTracer, TracingConfig, TracingOptions } from 'jaeger-client';
+import { DateTime } from 'luxon';
 import { FORMAT_HTTP_HEADERS, Span, SpanOptions, Tags } from 'opentracing';
 import { name, version } from 'package.json';
 import { Observable, tap } from 'rxjs';
@@ -47,6 +48,7 @@ export class HttpTracingInterceptor implements NestInterceptor {
       return {
         span: span,
         tracer: this.tracer,
+        tracerId: requestId,
         tags: Tags,
         axios: (options: AxiosRequestConfig = {}): AxiosInstance => {
           const headers = {};
@@ -61,17 +63,15 @@ export class HttpTracingInterceptor implements NestInterceptor {
 
           return axios.create(options);
         },
-        log: (eventName, payload) => {
-          span.logEvent(eventName, payload);
+        log: (event: { [key: string]: unknown }) => {
+          const timestamp = DateTime.fromJSDate(new Date()).setZone(process.env.TZ).toMillis();
+          span.log(event, timestamp);
         },
         setTag: (key, value) => {
           span.setTag(key, value);
         },
         addTags: (object) => {
           span.addTags(object);
-        },
-        setTracingTag: (key, value) => {
-          span.setTag(key, value);
         },
         finish: () => {
           span.finish();

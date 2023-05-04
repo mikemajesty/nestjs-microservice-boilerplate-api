@@ -5,33 +5,21 @@ import { Span, Tags } from 'opentracing';
 export type TracingType = {
   span: Span;
   tracer: JaegerTracer;
+  tracerId: string;
   tags: typeof Tags;
   axios: (config?: AxiosRequestConfig) => AxiosInstance;
-  log: (event: string, payload: unknown) => void;
+  log: (event: { [key: string]: unknown }) => void;
   setTag: (key: string, value: unknown) => void;
   addTags: (object: object) => void;
-  setTracingTag: (tag: string, value: unknown) => void;
   createSpan: (name: string, parent?: Span) => Span;
   finish: () => void;
 };
 
-export interface ApiRequest extends Body {
-  readonly id: string;
-  readonly cache: RequestCache;
+export interface ApiRequest {
+  readonly body: ReadableStream<Uint8Array> | null;
   readonly tracing: TracingType;
-  readonly credentials: RequestCredentials;
-  readonly destination: RequestDestination;
   readonly params: { [key: string]: string };
   readonly query: { [key: string]: string };
-  readonly headers: Headers;
-  readonly integrity: string;
-  readonly keepalive: boolean;
-  readonly method: string;
-  readonly mode: RequestMode;
-  readonly redirect: RequestRedirect;
-  readonly referrer: string;
-  readonly referrerPolicy: ReferrerPolicy;
-  readonly signal: AbortSignal;
+  readonly headers: Headers & { authorization: string };
   readonly url: string;
-  clone(): Request;
 }

@@ -27,10 +27,10 @@ export class UserDeleteUsecase {
     const user = new UserEntity(model);
 
     user.setDelete();
-    user.anonymizePassword();
 
     await this.userRepository.updateOne({ id: user.id }, user);
 
+    user.anonymizePassword();
     return user;
   }
 }

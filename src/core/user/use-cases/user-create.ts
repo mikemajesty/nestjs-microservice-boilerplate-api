@@ -39,7 +39,7 @@ export class UserCreateUsecase {
 
       await session.commitTransaction();
 
-      this.loggerServide.info({ message: 'user created.', obj: { user } });
+      this.loggerServide.info({ message: 'user created successfully', obj: { user } });
       return user;
     } catch (error) {
       await session.abortTransaction();
