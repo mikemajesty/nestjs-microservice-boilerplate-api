@@ -45,13 +45,20 @@
   # external
   async execute(input: UserListInput, httpService: IHttpAdapter): Promise<UserListOutput> {
     const http = httpService.instance();
-
     const externalSpan = httpService.tracing.createSpan('google');
-    externalSpan.setTag(httpService.tracing.tags.PEER_SERVICE, 'www.google.com.br');
-    externalSpan.setTag(httpService.tracing.tags.SPAN_KIND, 'client');
-    externalSpan.setTag(httpService.tracing.tags.PEER_HOSTNAME, 'https://www.google.com.br');
-    await http.get('https://www.google.com.br');
-    externalSpan.finish();
+    try {
+      externalSpan.setTag(httpService.tracing.tags.PEER_SERVICE, 'www.google.com.br');
+      externalSpan.setTag(httpService.tracing.tags.SPAN_KIND, 'client');
+      externalSpan.setTag(httpService.tracing.tags.PEER_HOSTNAME, 'https://www.google.com.br');
+      await http.get('https://www.google.com.br');
+      externalSpan.finish();
+    } catch (error) {
+       externalSpan.setTag(httpService.tracing.tags.ERROR, true);
+       externalSpan.setTag('message', error.message);
+       externalSpan.setTag('statusCode', error.response.status);
+       externalSpan.finish();
+       throw error
+    }
   }
   ```
 
