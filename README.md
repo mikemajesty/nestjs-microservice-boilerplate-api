@@ -39,9 +39,9 @@ In this microservice I used the best architecture concepts: onion architecture, 
   $ yarn build
   ```
 
-### CRUD Scaffold
+### CRUD Scaffolding
 
-Creating a crud in Postgres and Mongo in seconds.
+Creating a CRUD in Postgres and Mongo in seconds.
 
 - run
   ```
