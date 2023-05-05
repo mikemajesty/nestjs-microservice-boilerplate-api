@@ -136,7 +136,10 @@ Creating a crud in Postgres and Mongo in seconds.
 - Commitlint
 - Secrets Service
 - HTTP Service
-- Logs Service
+- Logger Service
+  - traceid
+  - pinojs
+  - mongodb transport
 - Authentication
   - Login
   - Logout
@@ -148,10 +151,10 @@ Creating a crud in Postgres and Mongo in seconds.
 - Usecase Pattern
 - Anti Corruption Layer Pattern
 - Interface Adapter Pattern
-- Swaggger Documentation
 - Generic Repository Pattern
   - Mongo Repository (mongooose)
   - Postgres Repository (sequelize)
+- Swaggger Documentation
 - Cache Service
   - Redis
   - NodeCache
