@@ -30,7 +30,7 @@
   }
   ```
 
-- Call the instance HTTP and magic :).
+- Call the instance HTTP.
 
   ```
   # internal
