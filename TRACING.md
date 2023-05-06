@@ -64,5 +64,5 @@
 
 - Access Jaeger URL
   ```
-  http://0.0.0.0:16686/search
+  http://localhost:16686/search
   ```
