@@ -176,7 +176,6 @@ export class LoggerService implements ILoggerAdapter {
           traceid,
           application: this.app,
           context: context,
-          path,
           timestamp: this.getDateFormat()
         });
 

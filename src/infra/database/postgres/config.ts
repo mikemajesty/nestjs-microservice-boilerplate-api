@@ -1,5 +1,5 @@
 import { ConfigService } from '@nestjs/config';
-import { blue, gray } from 'colorette';
+import { blue, bold, gray } from 'colorette';
 import { config } from 'dotenv';
 import { writeFileSync } from 'fs';
 import { Sequelize } from 'sequelize-typescript';
@@ -18,7 +18,8 @@ const connection = `postgresql://${configService.get('POSTGRES_USER')}:${configS
 
 const sequelizeConfig = new Sequelize(connection, {
   dialect: 'postgres',
-  logging: (msm) => console.log(blue('[sequelize]'), gray(msm))
+  benchmark: true,
+  logging: (msm, timming) => console.log(blue(`[sequelize]`), gray(msm), `${blue(bold(`${timming}ms`))}`)
 });
 
 sequelizeConfig.addModels([CatsSchema]);
