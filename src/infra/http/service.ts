@@ -35,7 +35,7 @@ export class HttpService implements IHttpAdapter {
               axiosError.response?.data['status'],
               axiosError.code
             ].find(Boolean),
-            url: axiosError.config.url,
+            url: axiosError.config.url
           }
         });
         return retryCount * 2000;

@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
 
 import { HealthController } from './controller';
+import { HttpModule } from '@/infra/http';
 
 @Module({
-  imports: [],
+  imports: [HttpModule],
   controllers: [HealthController]
 })
 export class HealthModule {}

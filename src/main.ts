@@ -30,7 +30,7 @@ async function bootstrap() {
   app.useGlobalFilters(new AppExceptionFilter(loggerService));
 
   app.useGlobalInterceptors(
-    new ExceptionInterceptor(),
+    new ExceptionInterceptor(loggerService),
     new HttpLoggerInterceptor(loggerService),
     new HttpTracingInterceptor(loggerService)
   );

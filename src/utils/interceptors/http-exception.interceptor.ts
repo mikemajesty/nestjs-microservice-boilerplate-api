@@ -4,9 +4,15 @@ import { catchError } from 'rxjs/operators';
 import { ZodError } from 'zod';
 
 import { ApiRequest } from '@/utils/request';
+import { AxiosConverter } from '../axios';
+import { IHttpAdapter } from '@/infra/http';
+import { ILoggerAdapter } from '@/infra/logger';
 
 @Injectable()
 export class ExceptionInterceptor implements NestInterceptor {
+
+  constructor(private readonly loggerService: ILoggerAdapter) {}
+
   intercept(executionContext: ExecutionContext, next: CallHandler): Observable<unknown> {
     return next.handle().pipe(
       catchError((error) => {
@@ -15,6 +21,7 @@ export class ExceptionInterceptor implements NestInterceptor {
         const headers = executionContext.getArgs()[0]?.headers;
 
         const request: ApiRequest = executionContext.switchToHttp().getRequest();
+        const response = executionContext.switchToHttp().getResponse();
 
         this.sanitizeExternalError(error);
 
@@ -48,10 +55,13 @@ export class ExceptionInterceptor implements NestInterceptor {
 
   private sanitizeExternalError(error) {
     if (typeof error?.response === 'object' && error?.isAxiosError) {
-      error['getResponse'] = () => ({ ...error?.response?.data?.error });
-      error['getStatus'] = () => [error?.response?.data?.error?.code, error?.status].find(Boolean);
-      error.message = [error?.response?.data?.error?.message, error.message].find(Boolean);
-      error.traceid = error?.response?.data?.error?.traceid;
+      const message = [error?.response?.data?.message, error.message].find(Boolean);
+      const status = [error?.response?.data?.code, error?.status].find(Boolean)
+      error['getResponse'] = () => error?.response?.data;
+      error['getStatus'] = () => status
+      error.message = message
+      error.request.headers = error.request._headers
+      this.loggerService.logger(error.request, error.request.res)
     }
   }
 }
