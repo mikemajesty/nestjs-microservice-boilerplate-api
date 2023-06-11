@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import axios, { AxiosInstance } from 'axios';
+import axiosBetterStacktrace from 'axios-better-stacktrace';
 import axiosRetry from 'axios-retry';
 import * as https from 'https';
 
@@ -33,9 +34,10 @@ export class HttpService implements IHttpAdapter {
               axiosError.response?.status,
               axiosError.status,
               axiosError.response?.data['status'],
+              axiosError?.response?.data['code'],
               axiosError.code
             ].find(Boolean),
-            url: axiosError.config.url,
+            url: axiosError.config.url
           }
         });
         return retryCount * 2000;
@@ -45,6 +47,8 @@ export class HttpService implements IHttpAdapter {
         return [status === 503, status === 422, status === 408].some(Boolean);
       }
     });
+
+    axiosBetterStacktrace(this.axios);
   }
 
   instance(): AxiosInstance {
