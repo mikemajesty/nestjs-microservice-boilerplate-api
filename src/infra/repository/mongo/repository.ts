@@ -84,6 +84,10 @@ export class MongoRepository<T extends Document> implements Omit<IRepository<T>,
 
   async seed(entityList: T[]): Promise<void> {
     for (const model of entityList) {
+      if (model.id) {
+        throw new ApiInternalServerException('seed id is required');
+      }
+
       const data = await this.findById(model.id);
       if (!data) {
         await this.create(model);

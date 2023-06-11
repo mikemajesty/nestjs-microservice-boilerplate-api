@@ -86,7 +86,7 @@ export class LoggerService implements ILoggerAdapter {
     this.logger.logger.error(
       {
         ...response,
-        context: [context, this.app].find(Boolean),
+        context: context,
         type: [type, error?.name].find(Boolean),
         traceid: this.getTraceId(error),
         timestamp: this.getDateFormat(),
@@ -103,7 +103,7 @@ export class LoggerService implements ILoggerAdapter {
     this.logger.logger.fatal(
       {
         message: error.message || message,
-        context: [context, this.app].find(Boolean),
+        context: context,
         type: error.name,
         traceid: this.getTraceId(error),
         timestamp: this.getDateFormat(),
@@ -234,6 +234,6 @@ export class LoggerService implements ILoggerAdapter {
 
   private getTraceId(error): string {
     if (typeof error === 'string') return uuidv4();
-    return [error.traceid, this.logger.logger.bindings()?.tranceId].find(Boolean);
+    return [error.traceid, this.logger.logger.bindings()?.traceid].find(Boolean);
   }
 }
