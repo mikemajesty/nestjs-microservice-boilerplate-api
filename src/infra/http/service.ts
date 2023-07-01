@@ -5,6 +5,7 @@ import axiosRetry from 'axios-retry';
 import * as https from 'https';
 
 import { TracingType } from '@/utils/request';
+import { interceptAxiosResponseError } from '@/utils/response';
 
 import { ILoggerAdapter } from '../logger';
 import { IHttpAdapter } from './adapter';
@@ -49,6 +50,14 @@ export class HttpService implements IHttpAdapter {
     });
 
     axiosBetterStacktrace(this.axios);
+
+    this.axios.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        interceptAxiosResponseError(error, this.loggerService);
+        return Promise.reject(error);
+      }
+    );
   }
 
   instance(): AxiosInstance {

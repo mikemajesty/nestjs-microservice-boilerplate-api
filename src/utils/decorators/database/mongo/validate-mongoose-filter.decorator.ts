@@ -15,7 +15,7 @@ type AllowedFilter = {
 export function ValidateMongooseFilter(allowedFilterList: AllowedFilter[] = []) {
   return (target: unknown, propertyKey: string, descriptor: PropertyDescriptor) => {
     const originalMethod = descriptor.value;
-    descriptor.value = function (...args: any[]) {
+    descriptor.value = function (...args: { search: { [key: string]: string } }[]) {
       const input = args[0];
 
       const where = {};

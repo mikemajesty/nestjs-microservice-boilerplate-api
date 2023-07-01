@@ -1,5 +1,6 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
+import axiosBetterStacktrace from 'axios-better-stacktrace';
 import { initTracer, JaegerTracer, TracingConfig, TracingOptions } from 'jaeger-client';
 import { DateTime } from 'luxon';
 import { FORMAT_HTTP_HEADERS, Span, SpanOptions, Tags } from 'opentracing';
@@ -10,12 +11,13 @@ import { ILoggerAdapter } from '@/infra/logger';
 
 import { ApiInternalServerException } from '../exception';
 import { TracingType } from '../request';
+import { interceptAxiosResponseError } from '../response';
 
 @Injectable()
 export class HttpTracingInterceptor implements NestInterceptor {
   private tracer: JaegerTracer;
 
-  constructor(logger: ILoggerAdapter) {
+  constructor(private readonly logger: ILoggerAdapter) {
     const config: TracingConfig = {
       serviceName: name,
       sampler: {
@@ -61,7 +63,12 @@ export class HttpTracingInterceptor implements NestInterceptor {
 
           options.headers['traceid'] = requestId;
 
-          return axios.create(options);
+          const http = axios.create(options);
+          axiosBetterStacktrace(http);
+
+          interceptAxiosResponseError(http, this.logger);
+
+          return http;
         },
         log: (event: { [key: string]: unknown }) => {
           const timestamp = DateTime.fromJSDate(new Date()).setZone(process.env.TZ).toMillis();

@@ -1,8 +1,17 @@
+import { z } from 'zod';
+
+import { PaginationSchema } from '@/utils/pagination';
+import { SearchSchema } from '@/utils/search';
+import { SortSchema } from '@/utils/sort';
+
 import { ApiBadRequestException } from './../../exception';
+
+export const ListSchema = z.intersection(PaginationSchema, SortSchema.merge(SearchSchema));
+
 export function ValidateDatabaseSortAllowed(allowedSortList: string[] = []) {
   return (target: unknown, propertyKey: string, descriptor: PropertyDescriptor) => {
     const originalMethod = descriptor.value;
-    descriptor.value = function (...args: any[]) {
+    descriptor.value = function (...args: z.infer<typeof ListSchema>[]) {
       const input = args[0];
 
       const sort = {};

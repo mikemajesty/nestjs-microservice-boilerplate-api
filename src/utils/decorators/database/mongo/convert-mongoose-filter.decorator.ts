@@ -1,7 +1,7 @@
 export function ConvertMongoFilterToBaseRepository() {
   return (target: unknown, propertyKey: string, descriptor: PropertyDescriptor) => {
     const originalMethod = descriptor.value;
-    descriptor.value = function (...args: any[]) {
+    descriptor.value = function (...args: { id?: string }[]) {
       const input = args[0];
 
       input['deletedAt'] = null;

@@ -55,17 +55,17 @@ export class LoggerService implements ILoggerAdapter {
   }
 
   trace({ message, context, obj = {} }: MessageType): void {
-    Object.assign(obj, { context });
+    Object.assign(obj, { context, createdAt: this.getCreatedAtDate() });
     this.logger.logger.trace([obj, gray(message)].find(Boolean), gray(message));
   }
 
   info({ message, context, obj = {} }: MessageType): void {
-    Object.assign(obj, { context });
+    Object.assign(obj, { context, createdAt: this.getCreatedAtDate() });
     this.logger.logger.info([obj, message].find(Boolean), message);
   }
 
   warn({ message, context, obj = {} }: MessageType): void {
-    Object.assign(obj, { context });
+    Object.assign(obj, { context, createdAt: this.getCreatedAtDate() });
     this.logger.logger.warn([obj, message].find(Boolean), message);
   }
 
@@ -89,7 +89,7 @@ export class LoggerService implements ILoggerAdapter {
         context: context,
         type: [type, error?.name].find(Boolean),
         traceid: this.getTraceId(error),
-        timestamp: this.getDateFormat(),
+        createdAt: this.getCreatedAtDate(),
         application: this.app,
         stack: error.stack,
         ...error?.parameters,
@@ -106,7 +106,7 @@ export class LoggerService implements ILoggerAdapter {
         context: context,
         type: error.name,
         traceid: this.getTraceId(error),
-        timestamp: this.getDateFormat(),
+        createdAt: this.getCreatedAtDate(),
         application: this.app,
         stack: error.stack
       },
@@ -176,7 +176,7 @@ export class LoggerService implements ILoggerAdapter {
           traceid,
           application: this.app,
           context: context,
-          timestamp: this.getDateFormat()
+          createdAt: this.getCreatedAtDate()
         });
 
         return {
@@ -184,7 +184,7 @@ export class LoggerService implements ILoggerAdapter {
           application: this.app,
           context: context,
           path,
-          timestamp: this.getDateFormat()
+          createdAt: this.getCreatedAtDate()
         };
       },
       customLogLevel: (req: IncomingMessage, res: ServerResponse, error: Error) => {
@@ -228,8 +228,12 @@ export class LoggerService implements ILoggerAdapter {
     ].find((c) => c.conditional);
   }
 
-  private getDateFormat(date = new Date(), format = 'dd/MM/yyyy HH:mm:ss'): string {
-    return DateTime.fromJSDate(date).setZone(process.env.TZ).toFormat(format);
+  private getDateFormat(date = new Date(), format = 'dd/MM/yyyy HH:mm:ss MM'): string {
+    return DateTime.fromJSDate(date, { zone: 'utc' }).setZone(process.env.TZ).toFormat(format);
+  }
+
+  private getCreatedAtDate(): string {
+    return DateTime.fromJSDate(new Date(), { zone: 'utc' }).setZone(process.env.TZ).toJSON();
   }
 
   private getTraceId(error): string {

@@ -38,7 +38,7 @@ export class ExceptionInterceptor implements NestInterceptor {
     );
   }
 
-  private getStatusCode(error: any): number {
+  private getStatusCode(error): number {
     if (error instanceof ZodError) {
       return 400;
     }
