@@ -9,9 +9,9 @@ import { Observable, tap } from 'rxjs';
 
 import { ILoggerAdapter } from '@/infra/logger';
 
+import { interceptAxiosResponseError, requestRetry } from '../axios';
 import { ApiInternalServerException } from '../exception';
 import { TracingType } from '../request';
-import { interceptAxiosResponseError } from '../response';
 
 @Injectable()
 export class HttpTracingInterceptor implements NestInterceptor {
@@ -65,6 +65,7 @@ export class HttpTracingInterceptor implements NestInterceptor {
 
           const http = axios.create(options);
           axiosBetterStacktrace(http);
+          requestRetry({ axios: http, logger: this.logger });
 
           interceptAxiosResponseError(http, this.logger);
 

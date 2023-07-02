@@ -1,11 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import axios, { AxiosInstance } from 'axios';
 import axiosBetterStacktrace from 'axios-better-stacktrace';
-import axiosRetry from 'axios-retry';
 import * as https from 'https';
 
+import { interceptAxiosResponseError, requestRetry } from '@/utils/axios';
 import { TracingType } from '@/utils/request';
-import { interceptAxiosResponseError } from '@/utils/response';
 
 import { ILoggerAdapter } from '../logger';
 import { IHttpAdapter } from './adapter';
@@ -23,31 +22,7 @@ export class HttpService implements IHttpAdapter {
     });
 
     this.axios = axios.create({ proxy: false, httpsAgent });
-
-    axiosRetry(this.axios, {
-      shouldResetTimeout: true,
-      retryDelay: (retryCount, axiosError) => {
-        this.loggerService.warn({
-          message: `retry attempt: ${retryCount}`,
-          obj: {
-            statusText: [axiosError.response?.data['message'], axiosError.message].find(Boolean),
-            status: [
-              axiosError.response?.status,
-              axiosError.status,
-              axiosError.response?.data['status'],
-              axiosError?.response?.data['code'],
-              axiosError.code
-            ].find(Boolean),
-            url: axiosError.config.url
-          }
-        });
-        return retryCount * 2000;
-      },
-      retryCondition: (error) => {
-        const status = error?.response?.status || 500;
-        return [status === 503, status === 422, status === 408].some(Boolean);
-      }
-    });
+    requestRetry({ axios: this.axios, logger: this.loggerService });
 
     axiosBetterStacktrace(this.axios);
 
