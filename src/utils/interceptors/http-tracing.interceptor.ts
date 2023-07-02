@@ -102,6 +102,7 @@ export class HttpTracingInterceptor implements NestInterceptor {
 
     return next.handle().pipe(
       tap(() => {
+        this.logger.logger(request, res);
         request.tracing.setTag(Tags.HTTP_STATUS_CODE, res.statusCode);
         request.tracing.finish();
       })
