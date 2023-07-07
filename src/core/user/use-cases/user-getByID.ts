@@ -21,7 +21,7 @@ export class UserGetByIdUsecase {
     const user = await this.userRepository.findById(id);
 
     if (!user) {
-      throw new ApiNotFoundException('userNotFound');
+      throw new ApiNotFoundException({ message: 'user not found' });
     }
 
     const entity = new UserEntity(user);

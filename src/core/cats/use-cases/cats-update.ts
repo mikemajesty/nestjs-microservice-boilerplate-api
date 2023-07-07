@@ -23,7 +23,7 @@ export class CatsUpdateUsecase {
     const cats = await this.catsRepository.findById<DatabaseOptionsType>(input.id);
 
     if (!cats) {
-      throw new ApiNotFoundException('catsNotFound');
+      throw new ApiNotFoundException({ message: 'cats not found' });
     }
 
     const catsFinded = new CatsEntity(cats);

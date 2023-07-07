@@ -30,14 +30,14 @@ export class TokenService implements ITokenAdapter {
   async verify(token: string): Promise<jwt.JwtPayload | string> {
     return new Promise((res, rej) => {
       jwt.verify(token, this.secret.JWT_SECRET_KEY, (error, decoded) => {
-        if (error) rej(new ApiUnauthorizedException(error.message));
+        if (error) rej(new ApiUnauthorizedException({ message: error.message }));
 
         res(decoded);
       });
     });
   }
 
-  decode(token: string): DecodeOutput {
-    return jwt.decode(token) as unknown as DecodeOutput;
+  decode(token: string, complete?: boolean): DecodeOutput {
+    return jwt.decode(token, { complete }) as unknown as DecodeOutput;
   }
 }

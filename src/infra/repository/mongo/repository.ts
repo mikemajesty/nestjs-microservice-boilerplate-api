@@ -18,7 +18,8 @@ export class MongoRepository<T extends Document> implements Omit<IRepository<T>,
   constructor(private readonly model: Model<T>) {}
 
   isConnected(): boolean {
-    if (this.model.db.readyState !== 1) throw new ApiInternalServerException(`db ${this.model.db.name} disconnected`);
+    if (this.model.db.readyState !== 1)
+      throw new ApiInternalServerException({ message: `db ${this.model.db.name} disconnected` });
     return !!this.model.db.readyState;
   }
 
@@ -85,7 +86,7 @@ export class MongoRepository<T extends Document> implements Omit<IRepository<T>,
   async seed(entityList: T[]): Promise<void> {
     for (const model of entityList) {
       if (model.id) {
-        throw new ApiInternalServerException('seed id is required');
+        throw new ApiInternalServerException({ message: 'seed id is required' });
       }
 
       const data = await this.findById(model.id);
