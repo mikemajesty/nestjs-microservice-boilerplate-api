@@ -15,10 +15,10 @@ export class User {
   @Prop({ type: String })
   _id: string;
 
-  @Prop({ index: true, min: 0, max: 200, required: true, type: String })
+  @Prop({ min: 0, max: 200, required: true, type: String })
   login: string;
 
-  @Prop({ index: true, min: 0, max: 200, required: true, type: String })
+  @Prop({ min: 0, max: 200, required: true, type: String })
   password: string;
 
   @Prop({ enum: UserRole, type: Array, required: true })
@@ -30,7 +30,7 @@ export class User {
 
 const UserSchema = SchemaFactory.createForClass(User);
 
-UserSchema.index({ login: 1 }, { unique: true });
+UserSchema.index({ login: 1 }, { unique: true, partialFilterExpression: { deletedAt: { $eq: null } } });
 
 UserSchema.plugin(paginate);
 
