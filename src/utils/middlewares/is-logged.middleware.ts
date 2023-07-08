@@ -26,7 +26,7 @@ export class IsLoggedMiddleware implements NestMiddleware {
       response.status(401);
       request['id'] = request.headers.traceid;
       this.loggerService.logger(request, response);
-      throw new ApiUnauthorizedException({ message: 'no token provided' });
+      throw new ApiUnauthorizedException('no token provided');
     }
 
     const token = tokenHeader.split(' ')[1];
@@ -35,7 +35,7 @@ export class IsLoggedMiddleware implements NestMiddleware {
 
     if (expiredToken) {
       request.id = request.headers.traceid;
-      next(new ApiUnauthorizedException({ message: 'you have been logged out' }));
+      next(new ApiUnauthorizedException('you have been logged out'));
     }
 
     const userDecoded = await this.tokenService.verify(token).catch((error) => {

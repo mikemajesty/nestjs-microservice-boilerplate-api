@@ -29,7 +29,7 @@ export class UserCreateUsecase {
     });
 
     if (userExists) {
-      throw new ApiConflictException({ message: 'user exists' });
+      throw new ApiConflictException('user exists');
     }
 
     const session = await this.userRepository.startSession();

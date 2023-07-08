@@ -17,10 +17,8 @@ import { CreatedModel, RemovedModel, UpdatedModel } from '../types';
 export class MongoRepository<T extends Document> implements Omit<IRepository<T>, 'startSession'> {
   constructor(private readonly model: Model<T>) {}
 
-  isConnected(): boolean {
-    if (this.model.db.readyState !== 1)
-      throw new ApiInternalServerException({ message: `db ${this.model.db.name} disconnected` });
-    return !!this.model.db.readyState;
+  async insertMany<TOptions = unknown>(documents: T[], saveOptions?: TOptions): Promise<void> {
+    await this.model.insertMany(documents, saveOptions);
   }
 
   async create(document: T, saveOptions?: SaveOptions): Promise<CreatedModel> {
@@ -83,10 +81,16 @@ export class MongoRepository<T extends Document> implements Omit<IRepository<T>,
     return await this.model.updateMany(filter, updated, options);
   }
 
+  async findIn(input: { [key in keyof T]: string[] }): Promise<T[]> {
+    const key = Object.keys(input)[0];
+    const filter = { [key]: { $in: input[key === 'id' ? '_id' : key] }, deletedAt: null };
+    return await this.model.find(filter);
+  }
+
   async seed(entityList: T[]): Promise<void> {
     for (const model of entityList) {
       if (model.id) {
-        throw new ApiInternalServerException({ message: 'seed id is required' });
+        throw new ApiInternalServerException('seed id is required');
       }
 
       const data = await this.findById(model.id);

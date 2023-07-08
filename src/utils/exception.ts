@@ -31,42 +31,38 @@ export class BaseException extends HttpException {
   }
 }
 
-type ErrorParameters = {
-  message?: string;
-  parameters?: ParametersType;
-};
 export class ApiInternalServerException extends BaseException {
-  constructor({ message = 'Internal Server Exception', parameters }: ErrorParameters) {
-    super(message ?? ApiInternalServerException.name, 500, parameters);
+  constructor(message?: string, parameters?: ParametersType) {
+    super(message ?? 'InternalServerException', 500, parameters);
   }
 }
 
 export class ApiNotFoundException extends BaseException {
-  constructor({ message = 'Not Found Exception', parameters }: ErrorParameters) {
-    super(message ?? ApiNotFoundException.name, 404, parameters);
+  constructor(message?: string, parameters?: ParametersType) {
+    super(message ?? 'NotFoundException', 404, parameters);
   }
 }
 
 export class ApiConflictException extends BaseException {
-  constructor({ message = 'Conflict Exception', parameters }: ErrorParameters) {
-    super(message ?? ApiConflictException.name, 409, parameters);
+  constructor(message?: string, parameters?: ParametersType) {
+    super(message ?? 'ConflictException', 409, parameters);
   }
 }
 
 export class ApiUnauthorizedException extends BaseException {
-  constructor({ message = 'Unauthorized Exception', parameters }: ErrorParameters) {
-    super(message ?? ApiUnauthorizedException.name, 401, parameters);
+  constructor(message?: string, parameters?: ParametersType) {
+    super(message ?? 'UnauthorizedException', 401, parameters);
   }
 }
 
 export class ApiBadRequestException extends BaseException {
-  constructor({ message = 'BadRequest Exception', parameters }: ErrorParameters) {
-    super(message ?? ApiBadRequestException.name, 400, parameters);
+  constructor(message?: string, parameters?: ParametersType) {
+    super(message ?? 'BadRequestException', 400, parameters);
   }
 }
 
 export class ApiForbiddenException extends BaseException {
-  constructor({ message = 'ForbiddenException', parameters }: ErrorParameters) {
-    super(message ?? ApiBadRequestException.name, 403, parameters);
+  constructor(message?: string, parameters?: ParametersType) {
+    super(message ?? 'BadRequestException', 403, parameters);
   }
 }

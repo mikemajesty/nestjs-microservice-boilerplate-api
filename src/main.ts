@@ -44,7 +44,7 @@ async function bootstrap() {
 
   process.on('uncaughtException', (error) => {
     if (!(error instanceof BaseException)) {
-      const customError = new ApiInternalServerException({ message: error?.message });
+      const customError = new ApiInternalServerException(error?.message);
       customError.stack = error.stack;
       loggerService.fatal(customError);
     }

@@ -1,4 +1,5 @@
-import { WhereOptions } from 'sequelize';
+import { Optional, WhereOptions } from 'sequelize';
+import sequelize from 'sequelize';
 import { MakeNullishOptional } from 'sequelize/types/utils';
 import { Model, ModelCtor } from 'sequelize-typescript';
 
@@ -12,10 +13,6 @@ export class SequelizeRepository<T extends ModelCtor & IEntity> implements Omit<
 
   constructor(Model: T) {
     this.Model = Model;
-  }
-
-  isConnected(): boolean | Promise<boolean> {
-    return this.Model.isInitialized;
   }
 
   @ConvertSequelizeFilterToRepository()
@@ -35,6 +32,21 @@ export class SequelizeRepository<T extends ModelCtor & IEntity> implements Omit<
 
     const model = await this.Model.schema(schema).findAll({
       where: filter as WhereOptions<T>
+    });
+
+    return (model || []).map((m) => m.toJSON());
+  }
+
+  async findIn<TOptions = DatabaseOptionsType>(
+    filter: { [key in keyof Partial<T>]: string[] },
+    options?: TOptions
+  ): Promise<T[]> {
+    const { schema } = DatabaseOptionsSchema.parse(options);
+
+    const key = Object.keys(filter)[0];
+
+    const model = await this.Model.schema(schema).findAll({
+      where: { [key]: { [sequelize.Op.in]: filter[key] } } as WhereOptions<T>
     });
 
     return (model || []).map((m) => m.toJSON());
@@ -133,6 +145,14 @@ export class SequelizeRepository<T extends ModelCtor & IEntity> implements Omit<
     const model = await savedDoc.save();
 
     return { id: model.id, created: !!model.id };
+  }
+
+  async insertMany<TOptions = SaveOptionsType>(documents: T[], saveOptions?: TOptions): Promise<void> {
+    const { schema, transaction } = DatabaseOptionsSchema.parse(saveOptions);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await this.Model.schema(schema).bulkCreate<Model<T[]>>(documents as unknown as Optional<T[], any>[], {
+      transaction
+    });
   }
 
   async findById<TOpt = DatabaseOptionsType>(id: string, options: TOpt): Promise<T> {

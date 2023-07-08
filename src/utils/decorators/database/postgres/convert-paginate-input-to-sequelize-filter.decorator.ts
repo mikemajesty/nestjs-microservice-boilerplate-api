@@ -32,8 +32,7 @@ export function ConvertPaginateInputToSequelizeFilter(allowedFilterList: Allowed
 
       Object.keys(input.search || {}).forEach((key) => {
         const allowed = filterNameList.includes(key);
-        if (!allowed)
-          throw new ApiBadRequestException({ message: `allowed filters are: ${filterNameList.join(', ')}` });
+        if (!allowed) throw new ApiBadRequestException(`allowed filters are: ${filterNameList.join(', ')}`);
       });
 
       for (const allowedFilter of allowedFilterList) {

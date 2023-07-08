@@ -23,7 +23,7 @@ export class CatsGetByIdUsecase {
     const cats = await this.catsRepository.findById<DatabaseOptionsType>(id);
 
     if (!cats) {
-      throw new ApiNotFoundException({ message: 'cats not found' });
+      throw new ApiNotFoundException();
     }
 
     return new CatsEntity(cats);

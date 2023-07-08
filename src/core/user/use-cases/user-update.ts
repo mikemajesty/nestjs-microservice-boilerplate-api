@@ -22,7 +22,7 @@ export class UserUpdateUsecase {
     const user = await this.userRepository.findById(input.id);
 
     if (!user) {
-      throw new ApiNotFoundException({ message: 'user not found' });
+      throw new ApiNotFoundException();
     }
 
     const userFinded = new UserEntity(user);
@@ -35,7 +35,7 @@ export class UserUpdateUsecase {
     );
 
     if (userExists) {
-      throw new ApiConflictException({ message: 'user exists' });
+      throw new ApiConflictException('user exists');
     }
 
     await this.userRepository.updateOne({ id: entity.id }, entity);

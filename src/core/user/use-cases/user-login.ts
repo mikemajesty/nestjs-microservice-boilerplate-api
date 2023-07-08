@@ -26,7 +26,7 @@ export class LoginUsecase {
     });
 
     if (!login) {
-      throw new ApiNotFoundException({ message: 'user not found' });
+      throw new ApiNotFoundException();
     }
 
     return this.tokenService.sign({

@@ -71,6 +71,6 @@ export class RedisService implements Partial<ICacheAdapter<RedisClientType>> {
   }
 
   private throwException(error: string) {
-    throw new ApiInternalServerException({ message: error });
+    throw new ApiInternalServerException(error);
   }
 }

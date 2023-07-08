@@ -57,6 +57,6 @@ export class MemoryCacheService implements Partial<ICacheAdapter<NodeCache>> {
   }
 
   private throwException(error: string) {
-    throw new ApiInternalServerException({ message: error });
+    throw new ApiInternalServerException(error);
   }
 }

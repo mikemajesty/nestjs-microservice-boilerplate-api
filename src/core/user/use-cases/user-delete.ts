@@ -21,7 +21,7 @@ export class UserDeleteUsecase {
     const model = await this.userRepository.findById(id);
 
     if (!model) {
-      throw new ApiNotFoundException({ message: 'user not found' });
+      throw new ApiNotFoundException();
     }
 
     const user = new UserEntity(model);

@@ -22,7 +22,7 @@ export class CatsDeleteUsecase {
     const model = await this.catsRepository.findById<DatabaseOptionsType>(id);
 
     if (!model) {
-      throw new ApiNotFoundException({ message: 'cats not found' });
+      throw new ApiNotFoundException();
     }
 
     const cats = new CatsEntity(model);
