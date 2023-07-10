@@ -8,3 +8,11 @@ case $AUDIT in
     exit 1
     ;;
 esac
+
+SUB2='critical'
+
+case $AUDIT in
+  *"$SUB2"*)
+    exit 1
+    ;;
+esac
