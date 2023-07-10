@@ -1,18 +1,18 @@
 #!/bin/bash
 AUDIT=$(npm audit --omit=dev)
 
-SUB='high'
+high='high'
 
 case $AUDIT in
-  *"$SUB"*)
+  *"$high"*)
     exit 1
     ;;
 esac
 
-SUB2='critical'
+critical='critical'
 
 case $AUDIT in
-  *"$SUB2"*)
+  *"$critical"*)
     exit 1
     ;;
 esac
