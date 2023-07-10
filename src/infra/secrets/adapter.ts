@@ -18,11 +18,4 @@ export abstract class ISecretsAdapter {
   TOKEN_EXPIRATION: number;
 
   JWT_SECRET_KEY: string;
-
-  rabbitMQ: {
-    user: string;
-    pass: string;
-    host: string;
-    port: number;
-  };
 }

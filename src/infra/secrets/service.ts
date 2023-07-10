@@ -30,11 +30,4 @@ export class SecretsService extends ConfigService implements ISecretsAdapter {
   TOKEN_EXPIRATION = this.get<number>('TOKEN_EXPIRATION');
 
   JWT_SECRET_KEY = this.get('JWT_SECRET_KEY');
-
-  rabbitMQ = {
-    user: this.get('RABBITMQ_USER'),
-    pass: this.get('RABBITMQ_PASS'),
-    port: this.get<number>('RABBITMQ_PORT'),
-    host: this.get('RABBITMQ_HOST')
-  };
 }

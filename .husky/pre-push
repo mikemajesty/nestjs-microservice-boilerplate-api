@@ -1,6 +1,7 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
+sh scripts/npm-audit.sh
 npm run test
 npx swc --out-dir dist src
 npm run make-badges
