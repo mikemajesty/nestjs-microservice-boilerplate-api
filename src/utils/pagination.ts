@@ -7,15 +7,15 @@ const maxLimit = (limit: number) => (limit > 100 ? 100 : limit);
 
 export const PaginationSchema = z
   .object({
-    page: z.number().or(z.string()).default(1),
-    limit: z.number().or(z.string()).default(10)
+    page: z.number().or(z.string()).or(z.nan()).default(1),
+    limit: z.number().or(z.string()).or(z.nan()).default(10)
   })
   .transform((pagination) => {
     const limit = Number(pagination.limit);
     const page = Number(pagination.page);
 
     if (isNaN(limit) || isNaN(page)) {
-      return { limit, page };
+      return { limit: 10, page: 1 };
     }
 
     return {
