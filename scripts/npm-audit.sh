@@ -8,6 +8,7 @@ case $AUDIT in
     echo ""
     echo  "\033[0;31mnpm high audit"
     echo ""
+    echo "run npm audit --omit=dev and fixit"
     exit 1
     ;;
 esac
@@ -19,6 +20,7 @@ case $AUDIT in
     echo ""
     echo "\033[0;31mnpm critical audit"
     echo ""
+    echo "run npm audit --omit=dev and fixit"
     exit 1
     ;;
 esac
