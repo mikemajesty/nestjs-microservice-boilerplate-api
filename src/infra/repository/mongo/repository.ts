@@ -14,7 +14,7 @@ import { ApiInternalServerException } from '@/utils/exception';
 import { IRepository } from '../adapter';
 import { CreatedModel, RemovedModel, UpdatedModel } from '../types';
 
-export class MongoRepository<T extends Document> implements Omit<IRepository<T>, 'startSession'> {
+export class MongoRepository<T extends Document> implements IRepository<T> {
   constructor(private readonly model: Model<T>) {}
 
   async insertMany<TOptions = unknown>(documents: T[], saveOptions?: TOptions): Promise<void> {

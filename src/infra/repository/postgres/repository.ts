@@ -8,7 +8,7 @@ import { DatabaseOptionsSchema, DatabaseOptionsType, SaveOptionsType } from '@/u
 import { ConvertSequelizeFilterToRepository } from '@/utils/decorators/database/postgres/convert-sequelize-filter.decorator';
 import { IEntity } from '@/utils/entity';
 
-export class SequelizeRepository<T extends ModelCtor & IEntity> implements Omit<IRepository<T>, 'startSession'> {
+export class SequelizeRepository<T extends ModelCtor & IEntity> implements IRepository<T> {
   protected Model!: T;
 
   constructor(Model: T) {
