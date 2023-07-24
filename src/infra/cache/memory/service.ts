@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import * as NodeCache from 'node-cache';
 
 import { ILoggerAdapter } from '@/infra/logger';
-import { ApiInternalServerException } from '@/utils/exception';
 
 import { ICacheAdapter } from '../adapter';
 import { MemoryCacheKeyArgument, MemoryCacheSetType, MemoryCacheTTL, MemoryCacheValeuArgument } from './types';
@@ -17,10 +16,6 @@ export class MemoryCacheService implements Partial<ICacheAdapter<NodeCache>> {
     this.client = new NodeCache(config || { stdTTL: 3600, checkperiod: 3600 });
     this.logger.log('CacheMemory connected!');
     return this.client;
-  }
-
-  isConnected(): void {
-    if (!this.client) this.throwException('redis disconnected.');
   }
 
   mSet<TSet extends MemoryCacheSetType = MemoryCacheSetType>(model: TSet[]): boolean {
@@ -40,8 +35,7 @@ export class MemoryCacheService implements Partial<ICacheAdapter<NodeCache>> {
     value: TValeu,
     config?: TConf
   ): void {
-    const setResult = this.client.set(key as MemoryCacheKeyArgument, value, config as MemoryCacheTTL);
-    if (!setResult) this.throwException(`cache ${this.set.name} error: ${key} ${value}`);
+    this.client.set(key as MemoryCacheKeyArgument, value, config as MemoryCacheTTL);
   }
 
   del<TKey = MemoryCacheKeyArgument>(key: TKey): boolean {
@@ -54,9 +48,5 @@ export class MemoryCacheService implements Partial<ICacheAdapter<NodeCache>> {
 
   pExpire<TCache = MemoryCacheKeyArgument>(key: TCache, ttl: number): boolean {
     return this.client.ttl(key as MemoryCacheKeyArgument, ttl);
-  }
-
-  private throwException(error: string) {
-    throw new ApiInternalServerException(error);
   }
 }
