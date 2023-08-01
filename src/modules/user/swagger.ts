@@ -1,15 +1,10 @@
-import { UserRole } from '@/core/user/entity/user';
 import { CreatedModel } from '@/infra/repository';
+import { userCreateMock, userResponseMock } from '@/utils/mocks/user';
 import { Swagger } from '@/utils/swagger';
 
-const entity = {
-  id: '<id>',
-  login: '<login>',
-  password: '<password>',
-  roles: [UserRole.USER]
-};
+const entity = userCreateMock;
 
-const entityFull = { ...entity, deletedAt: '<deletedAt>', createdAt: '<createdAt>', updatedAt: '<updatedAt>' };
+const entityFull = userResponseMock;
 
 export const SwagggerResponse = {
   create: {

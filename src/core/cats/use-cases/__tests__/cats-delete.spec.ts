@@ -4,17 +4,10 @@ import { CatsDeleteUsecase } from '@/core/cats/use-cases/cats-delete';
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { ICatsDeleteAdapter } from '@/modules/cats/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
+import { catResponseMock } from '@/utils/mocks/cats';
 import { expectZodError, generateUUID } from '@/utils/tests';
 
 import { ICatsRepository } from '../../repository/cats';
-import { CatsEntity } from './../../entity/cats';
-
-const catResponse = {
-  id: generateUUID(),
-  age: 10,
-  breed: 'dummy',
-  name: 'dummy'
-} as CatsEntity;
 
 describe('CatsDeleteUsecase', () => {
   let usecase: ICatsDeleteAdapter;
@@ -57,10 +50,10 @@ describe('CatsDeleteUsecase', () => {
   });
 
   test('should delete successfully', async () => {
-    repository.findById = jest.fn().mockResolvedValue(catResponse);
+    repository.findById = jest.fn().mockResolvedValue(catResponseMock);
     repository.updateOne = jest.fn();
     await expect(usecase.execute({ id: generateUUID() })).resolves.toEqual({
-      ...catResponse,
+      ...catResponseMock,
       deletedAt: expect.any(Date)
     });
   });

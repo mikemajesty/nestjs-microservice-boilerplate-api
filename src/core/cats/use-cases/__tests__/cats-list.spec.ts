@@ -3,19 +3,10 @@ import { Test } from '@nestjs/testing';
 import { CatsListUsecase } from '@/core/cats/use-cases/cats-list';
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { ICatsListAdapter } from '@/modules/cats/adapter';
-import { expectZodError, generateUUID } from '@/utils/tests';
+import { catsResponseMock } from '@/utils/mocks/cats';
+import { expectZodError } from '@/utils/tests';
 
 import { ICatsRepository } from '../../repository/cats';
-import { CatsEntity } from './../../entity/cats';
-
-const catResponse = {
-  id: generateUUID(),
-  age: 10,
-  breed: 'dummy',
-  name: 'dummy',
-  createdAt: new Date(),
-  updatedAt: new Date()
-} as CatsEntity;
 
 describe('CatsListUsecase', () => {
   let usecase: ICatsListAdapter;
@@ -53,10 +44,10 @@ describe('CatsListUsecase', () => {
   });
 
   test('should list successfully', async () => {
-    const response = { docs: [catResponse], page: 1, limit: 1, total: 1 };
+    const response = { docs: [catsResponseMock], page: 1, limit: 1, total: 1 };
     repository.paginate = jest.fn().mockResolvedValue(response);
     await expect(usecase.execute({ limit: 1, page: 1, search: {}, sort: { createdAt: -1 } })).resolves.toEqual({
-      docs: [catResponse],
+      docs: [catsResponseMock],
       page: 1,
       limit: 1,
       total: 1

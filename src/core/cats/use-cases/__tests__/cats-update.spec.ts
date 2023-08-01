@@ -3,18 +3,11 @@ import { Test } from '@nestjs/testing';
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { ICatsUpdateAdapter } from '@/modules/cats/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
+import { catResponseMock } from '@/utils/mocks/cats';
 import { expectZodError, generateUUID } from '@/utils/tests';
 
-import { CatsEntity } from '../../entity/cats';
 import { ICatsRepository } from '../../repository/cats';
 import { CatsUpdateUsecase } from '../cats-update';
-
-const catResponse = {
-  id: generateUUID(),
-  age: 10,
-  breed: 'dummy',
-  name: 'dummy'
-} as CatsEntity;
 
 describe('CatsUpdateUsecase', () => {
   let usecase: ICatsUpdateAdapter;
@@ -57,8 +50,8 @@ describe('CatsUpdateUsecase', () => {
   });
 
   test('should update successfully', async () => {
-    repository.findById = jest.fn().mockResolvedValue(catResponse);
+    repository.findById = jest.fn().mockResolvedValue(catResponseMock);
     repository.updateOne = jest.fn().mockResolvedValue(null);
-    await expect(usecase.execute({ id: generateUUID() })).resolves.toEqual(catResponse);
+    await expect(usecase.execute({ id: generateUUID() })).resolves.toEqual(catResponseMock);
   });
 });

@@ -1,13 +1,10 @@
 import { CreatedModel } from '@/infra/repository/types';
+import { catCreateMock, catResponseMock } from '@/utils/mocks/cats';
 import { Swagger } from '@/utils/swagger';
 
-const entity = {
-  name: '<name>',
-  breed: '<breed>',
-  age: 1
-};
+const entity = catCreateMock;
 
-const entityFull = { ...entity, updatedAt: '<updatedAt>', createdAt: '<createdAt>', deletedAt: '<deletedAt>' };
+const entityFull = catResponseMock;
 
 export const SwagggerResponse = {
   create: {

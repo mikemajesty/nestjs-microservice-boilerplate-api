@@ -1,20 +1,11 @@
 import { Test } from '@nestjs/testing';
 
 import { IUserListAdapter } from '@/modules/user/adapter';
+import { usersResponseMock } from '@/utils/mocks/user';
 import { expectZodError } from '@/utils/tests';
 
-import { UserEntity, UserRole } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
 import { UserListUsecase } from '../user-list';
-
-const userResponse = {
-  id: '61cc35f3-03d9-4b7f-9c63-59f32b013ef5',
-  login: 'login',
-  password: '**********',
-  roles: [UserRole.USER],
-  createdAt: new Date(),
-  updatedAt: new Date()
-} as UserEntity;
 
 describe('UserListUsecase', () => {
   let usecase: IUserListAdapter;
@@ -52,10 +43,10 @@ describe('UserListUsecase', () => {
   });
 
   test('should list successfully', async () => {
-    const response = { docs: [userResponse], page: 1, limit: 1, total: 1 };
+    const response = { docs: [usersResponseMock], page: 1, limit: 1, total: 1 };
     repository.paginate = jest.fn().mockResolvedValue(response);
     await expect(usecase.execute({ limit: 1, page: 1, search: {}, sort: { createdAt: -1 } })).resolves.toEqual({
-      docs: [userResponse],
+      docs: [usersResponseMock],
       page: 1,
       limit: 1,
       total: 1

@@ -3,17 +3,11 @@ import { Test } from '@nestjs/testing';
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { IUserCreateAdapter } from '@/modules/user/adapter';
 import { ApiConflictException } from '@/utils/exception';
+import { userCreateMock } from '@/utils/mocks/user';
 import { expectZodError } from '@/utils/tests';
 
-import { UserRole } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
-import { UserCreateInput, UserCreateUsecase } from '../user-create';
-
-const user = {
-  login: 'login',
-  password: '**********',
-  roles: [UserRole.USER]
-} as UserCreateInput;
+import { UserCreateUsecase } from '../user-create';
 
 describe('UserCreateUsecase', () => {
   let usecase: IUserCreateAdapter;
@@ -43,25 +37,25 @@ describe('UserCreateUsecase', () => {
 
   test('should create successfully', async () => {
     repository.findOne = jest.fn().mockResolvedValue(null);
-    repository.create = jest.fn().mockResolvedValue(user);
+    repository.create = jest.fn().mockResolvedValue(userCreateMock);
     repository.startSession = jest.fn().mockResolvedValue({
       commitTransaction: jest.fn()
     });
 
-    await expect(usecase.execute(user)).resolves.toEqual(user);
+    await expect(usecase.execute(userCreateMock)).resolves.toEqual(userCreateMock);
   });
 
   test('should throw error when start transaction', async () => {
     repository.findOne = jest.fn().mockResolvedValue(null);
-    repository.create = jest.fn().mockResolvedValue(user);
+    repository.create = jest.fn().mockResolvedValue(userCreateMock);
     repository.startSession = jest.fn().mockRejectedValue(new Error('startSessionError'));
 
-    await expect(usecase.execute(user)).rejects.toThrowError('startSessionError');
+    await expect(usecase.execute(userCreateMock)).rejects.toThrowError('startSessionError');
   });
 
   test('should throw error when user exists', async () => {
-    repository.findOne = jest.fn().mockResolvedValue(user);
-    await expect(usecase.execute(user)).rejects.toThrowError(ApiConflictException);
+    repository.findOne = jest.fn().mockResolvedValue(userCreateMock);
+    await expect(usecase.execute(userCreateMock)).rejects.toThrowError(ApiConflictException);
   });
 
   test('should throw error when invalid parameters', async () => {

@@ -3,25 +3,11 @@ import { Test } from '@nestjs/testing';
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { IUserUpdateAdapter } from '@/modules/user/adapter';
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception';
+import { userResponseMock } from '@/utils/mocks/user';
 import { expectZodError } from '@/utils/tests';
 
-import { UserEntity, UserRole } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
-import { UserUpdateInput, UserUpdateUsecase } from '../user-update';
-
-const userBody = {
-  id: '61cc35f3-03d9-4b7f-9c63-59f32b013ef5',
-  login: 'login',
-  password: '**********',
-  roles: [UserRole.USER]
-} as UserUpdateInput;
-
-const userResponse = {
-  id: '61cc35f3-03d9-4b7f-9c63-59f32b013ef5',
-  login: 'login',
-  password: '**********',
-  roles: [UserRole.USER]
-} as UserEntity;
+import { UserUpdateUsecase } from '../user-update';
 
 describe('UserUpdateUsecase', () => {
   let usecase: IUserUpdateAdapter;
@@ -59,20 +45,20 @@ describe('UserUpdateUsecase', () => {
   });
 
   test('should update successfully', async () => {
-    repository.findById = jest.fn().mockResolvedValue(userResponse);
+    repository.findById = jest.fn().mockResolvedValue(userResponseMock);
     repository.existsOnUpdate = jest.fn().mockResolvedValue(null);
     repository.updateOne = jest.fn().mockResolvedValue(null);
-    await expect(usecase.execute(userBody)).resolves.toEqual(userResponse);
+    await expect(usecase.execute(userResponseMock)).resolves.toEqual(userResponseMock);
   });
 
   test('should throw error when user not found', async () => {
     repository.findById = jest.fn().mockResolvedValue(null);
-    await expect(usecase.execute(userBody)).rejects.toThrowError(ApiNotFoundException);
+    await expect(usecase.execute(userResponseMock)).rejects.toThrowError(ApiNotFoundException);
   });
 
   test('should throw error when user exists', async () => {
-    repository.findById = jest.fn().mockResolvedValue(userResponse);
-    repository.existsOnUpdate = jest.fn().mockResolvedValue(userResponse);
-    await expect(usecase.execute(userBody)).rejects.toThrowError(ApiConflictException);
+    repository.findById = jest.fn().mockResolvedValue(userResponseMock);
+    repository.existsOnUpdate = jest.fn().mockResolvedValue(userResponseMock);
+    await expect(usecase.execute(userResponseMock)).rejects.toThrowError(ApiConflictException);
   });
 });
