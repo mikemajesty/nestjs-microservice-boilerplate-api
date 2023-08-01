@@ -26,8 +26,8 @@ export class CatsRepository extends SequelizeRepository<Model> implements ICatsR
     return transaction as TTransaction;
   }
 
-  @ValidateDatabaseSortAllowed(['createdAt', 'name', 'breed', 'age'])
-  @ConvertPaginateInputToSequelizeFilter([
+  @ValidateDatabaseSortAllowed<CatsEntity>('createdAt', 'breed')
+  @ConvertPaginateInputToSequelizeFilter<CatsEntity>([
     { name: 'name', type: SearchTypeEnum.like },
     { name: 'breed', type: SearchTypeEnum.like },
     { name: 'age', type: SearchTypeEnum.equal }

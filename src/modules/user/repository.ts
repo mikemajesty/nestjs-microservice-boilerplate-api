@@ -8,11 +8,9 @@ import { UserListInput, UserListOutput } from '@/core/user/use-cases/user-list';
 import { User, UserDocument } from '@/infra/database/mongo/schemas/user';
 import { MongoRepository } from '@/infra/repository';
 import { MongoRepositoryModelSessionType, MongoRepositorySession } from '@/utils/database/mongoose';
-import {
-  SearchTypeEnum,
-  ValidateMongooseFilter
-} from '@/utils/decorators/database/mongo/validate-mongoose-filter.decorator';
+import { ValidateMongooseFilter } from '@/utils/decorators/database/mongo/validate-mongoose-filter.decorator';
 import { ValidateDatabaseSortAllowed } from '@/utils/decorators/database/validate-database-sort-allowed.decorator';
+import { SearchTypeEnum } from '@/utils/decorators/types';
 
 @Injectable()
 export class UserRepository extends MongoRepository<UserDocument> implements IUserRepository {
@@ -36,8 +34,8 @@ export class UserRepository extends MongoRepository<UserDocument> implements IUs
     return !!user;
   }
 
-  @ValidateMongooseFilter([{ name: 'login', type: SearchTypeEnum.like }])
-  @ValidateDatabaseSortAllowed(['login', 'createdAt'])
+  @ValidateMongooseFilter<UserEntity>([{ name: 'login', type: SearchTypeEnum.like }])
+  @ValidateDatabaseSortAllowed<UserEntity>('login', 'createdAt')
   async paginate({ limit, page, sort, search }: UserListInput): Promise<UserListOutput> {
     const users = await this.entity.paginate(search, { page, limit, sort });
 

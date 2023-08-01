@@ -8,7 +8,9 @@ import { ApiBadRequestException } from './../../exception';
 
 export const ListSchema = z.intersection(PaginationSchema, SortSchema.merge(SearchSchema));
 
-export function ValidateDatabaseSortAllowed(allowedSortList: string[] = []) {
+type AllowedSort<T> = keyof T;
+
+export function ValidateDatabaseSortAllowed<T>(...allowedSortList: AllowedSort<T>[]) {
   return (target: unknown, propertyKey: string, descriptor: PropertyDescriptor) => {
     const originalMethod = descriptor.value;
     descriptor.value = function (...args: z.infer<typeof ListSchema>[]) {
@@ -16,12 +18,14 @@ export function ValidateDatabaseSortAllowed(allowedSortList: string[] = []) {
 
       const sort = {};
 
+      const sortList = (allowedSortList || []) as unknown as string[];
+
       Object.keys(input.sort || {}).forEach((key) => {
-        const allowed = allowedSortList.includes(key);
-        if (!allowed) throw new ApiBadRequestException(`allowed sorts are: ${allowedSortList.join(', ')}`);
+        const allowed = sortList.includes(key);
+        if (!allowed) throw new ApiBadRequestException(`allowed sorts are: ${sortList.join(', ')}`);
       });
 
-      for (const allowedFilter of allowedSortList) {
+      for (const allowedFilter of sortList) {
         if (!input.sort) continue;
         const filter = input.sort[allowedFilter];
         if (filter) {

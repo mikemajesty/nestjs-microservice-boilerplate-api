@@ -1,9 +1,9 @@
-export type AllowedFilter = {
-  type: SearchTypeEnum;
-  name: string;
-};
-
 export enum SearchTypeEnum {
   'like',
   'equal'
 }
+
+export type AllowedFilter<T> = {
+  type: SearchTypeEnum;
+  name: keyof T;
+};

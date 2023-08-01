@@ -1,18 +1,9 @@
 import { ApiBadRequestException } from '@/utils/exception';
 
 import { skipParentheses } from '../../../database/mongoose';
+import { AllowedFilter, SearchTypeEnum } from '../../types';
 
-export enum SearchTypeEnum {
-  'like',
-  'equal'
-}
-
-type AllowedFilter = {
-  type: SearchTypeEnum;
-  name: string;
-};
-
-export function ValidateMongooseFilter(allowedFilterList: AllowedFilter[] = []) {
+export function ValidateMongooseFilter<T>(allowedFilterList: AllowedFilter<T>[] = []) {
   return (target: unknown, propertyKey: string, descriptor: PropertyDescriptor) => {
     const originalMethod = descriptor.value;
     descriptor.value = function (...args: { search: { [key: string]: string } }[]) {
@@ -27,7 +18,7 @@ export function ValidateMongooseFilter(allowedFilterList: AllowedFilter[] = []) 
         delete input.search.id;
       }
 
-      const filterNameList = allowedFilterList.map((f) => f.name);
+      const filterNameList = allowedFilterList.map((f) => f.name as string);
 
       Object.keys(input.search || {}).forEach((key) => {
         const allowed = filterNameList.includes(key);
@@ -36,16 +27,16 @@ export function ValidateMongooseFilter(allowedFilterList: AllowedFilter[] = []) 
 
       for (const allowedFilter of allowedFilterList) {
         if (!input.search) continue;
-        const filter = input.search[allowedFilter.name];
+        const filter = input.search[allowedFilter.name as string];
 
         if (!filter) continue;
 
         if (allowedFilter.type === SearchTypeEnum.equal) {
-          where[allowedFilter.name] = filter;
+          where[allowedFilter.name as string] = filter;
         }
 
         if (allowedFilter.type === SearchTypeEnum.like) {
-          where[allowedFilter.name] = new RegExp(skipParentheses(filter), 'gi');
+          where[allowedFilter.name as string] = new RegExp(skipParentheses(filter), 'gi');
         }
       }
 

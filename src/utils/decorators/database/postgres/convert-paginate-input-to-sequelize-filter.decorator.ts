@@ -1,13 +1,11 @@
 import { Op } from 'sequelize';
 import { z } from 'zod';
 
-import { SearchTypeEnum } from '@/utils/decorators/types';
+import { AllowedFilter, SearchTypeEnum } from '@/utils/decorators/types';
 import { ApiBadRequestException } from '@/utils/exception';
 import { PaginationSchema } from '@/utils/pagination';
 import { SearchSchema } from '@/utils/search';
 import { SortSchema } from '@/utils/sort';
-
-import { AllowedFilter } from '../../types';
 
 const SequelizeSort = {
   '1': 'ASC',
@@ -16,7 +14,7 @@ const SequelizeSort = {
 
 export const ListSchema = z.intersection(PaginationSchema, SortSchema.merge(SearchSchema));
 
-export function ConvertPaginateInputToSequelizeFilter(allowedFilterList: AllowedFilter[] = []) {
+export function ConvertPaginateInputToSequelizeFilter<T extends object>(allowedFilterList: AllowedFilter<T>[]) {
   return (target: unknown, propertyKey: string, descriptor: PropertyDescriptor) => {
     const originalMethod = descriptor.value;
     descriptor.value = function (...args: z.infer<typeof ListSchema>[]) {
@@ -28,7 +26,7 @@ export function ConvertPaginateInputToSequelizeFilter(allowedFilterList: Allowed
         deletedAt: null
       };
 
-      const filterNameList = allowedFilterList.map((f) => f.name);
+      const filterNameList = allowedFilterList.map((f) => f.name as string);
 
       Object.keys(input.search || {}).forEach((key) => {
         const allowed = filterNameList.includes(key);
@@ -37,16 +35,16 @@ export function ConvertPaginateInputToSequelizeFilter(allowedFilterList: Allowed
 
       for (const allowedFilter of allowedFilterList) {
         if (!input.search) continue;
-        const filter = input.search[allowedFilter.name];
+        const filter = input.search[allowedFilter.name as string];
 
         if (!filter) continue;
 
         if (allowedFilter.type === SearchTypeEnum.equal) {
-          where[allowedFilter.name] = filter;
+          where[allowedFilter.name as string] = filter;
         }
 
         if (allowedFilter.type === SearchTypeEnum.like) {
-          where[allowedFilter.name] = { [Op.iLike]: `%${filter}%` };
+          where[allowedFilter.name as string] = { [Op.iLike]: `%${filter}%` };
         }
       }
 
