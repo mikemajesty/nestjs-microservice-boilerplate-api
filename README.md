@@ -175,6 +175,7 @@ Creating a CRUD in Postgres and Mongo in seconds.
 ```
 .
 ├── commitlint.config.js
+├── database.json
 ├── docker-compose.yml
 ├── jest.config.ts
 ├── nest-cli.json
@@ -184,6 +185,7 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │   ├── mongo
 │   │   ├── rs-init.sh
 │   │   └── start-replicaset.sh
+│   ├── npm-audit.sh
 │   └── postgres
 │       └── create-database.sql
 ├── src
@@ -326,6 +328,7 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │   │       ├── repository.ts
 │   │       └── swagger.ts
 │   └── utils
+│       ├── axios.ts
 │       ├── database
 │       │   ├── mongoose.ts
 │       │   └── sequelize.ts
@@ -352,6 +355,9 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │       │   └── http-tracing.interceptor.ts
 │       ├── middlewares
 │       │   └── is-logged.middleware.ts
+│       ├── mocks
+│       │   ├── cats.ts
+│       │   └── user.ts
 │       ├── pagination.ts
 │       ├── request.ts
 │       ├── search.ts
