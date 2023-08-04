@@ -17,7 +17,7 @@ export class UserGetByIdUsecase {
   constructor(private readonly userRepository: IUserRepository) {}
 
   @ValidateSchema(UserGetByIdSchema)
-  async execute({ id }: UserGetByIDInput): Promise<UserGetByIDOutput> {
+  async execute({ id }: UserGetByIDInput): UserGetByIDOutput {
     const user = await this.userRepository.findById(id);
 
     if (!user) {

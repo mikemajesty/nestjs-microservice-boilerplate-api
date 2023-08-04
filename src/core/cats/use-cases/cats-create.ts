@@ -21,7 +21,7 @@ export class CatsCreateUsecase {
   constructor(private readonly catsRepository: ICatsRepository, private readonly loggerServide: ILoggerAdapter) {}
 
   @ValidateSchema(CatsCreateSchema)
-  async execute(input: CatsCreateInput): Promise<CatsCreateOutput> {
+  async execute(input: CatsCreateInput): CatsCreateOutput {
     const entity = new CatsEntity(input);
 
     const transaction = await this.catsRepository.startSession();

@@ -19,7 +19,7 @@ export class CatsGetByIdUsecase {
   constructor(private readonly catsRepository: ICatsRepository) {}
 
   @ValidateSchema(CatsGetByIdSchema)
-  async execute({ id }: CatsGetByIDInput): Promise<CatsGetByIDOutput> {
+  async execute({ id }: CatsGetByIDInput): CatsGetByIDOutput {
     const cats = await this.catsRepository.findById<DatabaseOptionsType>(id);
 
     if (!cats) {

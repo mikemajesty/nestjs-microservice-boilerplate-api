@@ -17,7 +17,7 @@ export class CatsListUsecase {
   constructor(private readonly catsRepository: ICatsRepository) {}
 
   @ValidateSchema(CatsListSchema)
-  async execute(input: CatsListInput): Promise<CatsListOutput> {
+  async execute(input: CatsListInput): CatsListOutput {
     return await this.catsRepository.paginate(input);
   }
 }

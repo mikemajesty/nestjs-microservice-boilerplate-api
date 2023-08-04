@@ -19,7 +19,7 @@ export class CatsUpdateUsecase {
   constructor(private readonly catsRepository: ICatsRepository, private readonly loggerServide: ILoggerAdapter) {}
 
   @ValidateSchema(CatsUpdateSchema)
-  async execute(input: CatsUpdateInput): Promise<CatsUpdateOutput> {
+  async execute(input: CatsUpdateInput): CatsUpdateOutput {
     const cats = await this.catsRepository.findById<DatabaseOptionsType>(input.id);
 
     if (!cats) {

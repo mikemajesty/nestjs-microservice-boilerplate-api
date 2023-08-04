@@ -17,7 +17,7 @@ export class UserListUsecase {
   constructor(private readonly userRepository: IUserRepository) {}
 
   @ValidateSchema(UserListSchema)
-  async execute(input: UserListInput): Promise<UserListOutput> {
+  async execute(input: UserListInput): UserListOutput {
     const users = await this.userRepository.paginate(input);
 
     return {

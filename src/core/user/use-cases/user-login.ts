@@ -19,7 +19,7 @@ export class LoginUsecase {
   constructor(private readonly loginRepository: IUserRepository, private readonly tokenService: ITokenAdapter) {}
 
   @ValidateSchema(LoginSchema)
-  async execute(input: LoginInput): Promise<LoginOutput> {
+  async execute(input: LoginInput): LoginOutput {
     const login = await this.loginRepository.findOne({
       login: input.login,
       password: input.password

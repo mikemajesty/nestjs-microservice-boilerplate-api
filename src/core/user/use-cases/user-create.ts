@@ -21,7 +21,7 @@ export class UserCreateUsecase {
   constructor(private readonly userRepository: IUserRepository, private readonly loggerServide: ILoggerAdapter) {}
 
   @ValidateSchema(UserCreateSchema)
-  async execute(input: UserCreateInput): Promise<UserCreateOutput> {
+  async execute(input: UserCreateInput): UserCreateOutput {
     const entity = new UserEntity(input);
 
     const userExists = await this.userRepository.findOne({

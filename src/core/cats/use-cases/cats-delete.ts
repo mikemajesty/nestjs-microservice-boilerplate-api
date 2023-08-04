@@ -18,7 +18,7 @@ export class CatsDeleteUsecase {
   constructor(private readonly catsRepository: ICatsRepository) {}
 
   @ValidateSchema(CatsDeleteSchema)
-  async execute({ id }: CatsDeleteInput): Promise<CatsDeleteOutput> {
+  async execute({ id }: CatsDeleteInput): CatsDeleteOutput {
     const model = await this.catsRepository.findById<DatabaseOptionsType>(id);
 
     if (!model) {

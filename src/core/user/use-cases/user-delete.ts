@@ -17,7 +17,7 @@ export class UserDeleteUsecase {
   constructor(private readonly userRepository: IUserRepository) {}
 
   @ValidateSchema(UserDeleteSchema)
-  async execute({ id }: UserDeleteInput): Promise<UserDeleteOutput> {
+  async execute({ id }: UserDeleteInput): UserDeleteOutput {
     const model = await this.userRepository.findById(id);
 
     if (!model) {

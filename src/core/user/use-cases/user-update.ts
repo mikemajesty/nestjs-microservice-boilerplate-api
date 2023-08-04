@@ -18,7 +18,7 @@ export class UserUpdateUsecase {
   constructor(private readonly userRepository: IUserRepository, private readonly loggerServide: ILoggerAdapter) {}
 
   @ValidateSchema(UserUpdateSchema)
-  async execute(input: UserUpdateInput): Promise<UserUpdateOutput> {
+  async execute(input: UserUpdateInput): UserUpdateOutput {
     const user = await this.userRepository.findById(input.id);
 
     if (!user) {
