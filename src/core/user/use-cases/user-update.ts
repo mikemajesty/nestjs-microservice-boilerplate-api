@@ -25,9 +25,7 @@ export class UserUpdateUsecase {
       throw new ApiNotFoundException();
     }
 
-    const userFinded = new UserEntity(user);
-
-    const entity = new UserEntity({ ...userFinded, ...input });
+    const entity = new UserEntity({ ...user, ...input });
 
     const userExists = await this.userRepository.existsOnUpdate(
       { login: entity.login, password: entity.password },

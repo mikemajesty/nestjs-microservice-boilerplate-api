@@ -26,9 +26,7 @@ export class CatsUpdateUsecase {
       throw new ApiNotFoundException();
     }
 
-    const catsFinded = new CatsEntity(cats);
-
-    const entity = new CatsEntity({ ...catsFinded, ...input });
+    const entity = new CatsEntity({ ...cats, ...input });
 
     await this.catsRepository.updateOne({ id: entity.id }, entity);
 
