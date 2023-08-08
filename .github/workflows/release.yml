@@ -10,8 +10,7 @@ jobs:
       - uses: actions/checkout@v2 
       - uses: actions/setup-node@v2 
         with: 
-          node-version: 16
+          node-version: 18
       - run: npm i @nestjs/cli
-      - run: npm i
       - run: npm run build
       - run: npx semantic-release
