@@ -1,11 +1,13 @@
 name: Release
 
 on: 
-  push: 
+  push:
 
 jobs: 
   release:
     runs-on: "ubuntu-latest"
+    permissions:
+      contents: write
     steps: 
       - uses: actions/checkout@v2 
       - uses: actions/setup-node@v2 
@@ -14,3 +16,4 @@ jobs:
       - run: npm i @nestjs/cli
       - run: npm run build
       - run: npx semantic-release
+  
