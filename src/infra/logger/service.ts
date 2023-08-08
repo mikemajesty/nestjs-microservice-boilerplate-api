@@ -92,7 +92,7 @@ export class LoggerService implements ILoggerAdapter {
         createdAt: this.getCreatedAtDate(),
         application: this.app,
         stack: error.stack,
-        ...error?.parameters,
+        // ...error?.parameters,
         message: messageFind
       },
       messageFind

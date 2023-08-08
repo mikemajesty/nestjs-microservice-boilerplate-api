@@ -67,7 +67,13 @@ export class HttpTracingInterceptor implements NestInterceptor {
           axiosBetterStacktrace(http);
           requestRetry({ axios: http, logger: this.logger });
 
-          interceptAxiosResponseError(http, this.logger);
+          http.interceptors.response.use(
+            (response) => response,
+            (error) => {
+              interceptAxiosResponseError(error, this.logger);
+              return Promise.reject(error);
+            }
+          );
 
           return http;
         },
