@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/v1.4.0...v1.5.0) (2023-08-09)
+
+
+### Features
+
+* add new version ([f61980c](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/f61980cf6d0e70b36045dd785ec5faa2b4165d5d))
+
 # [1.4.0](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/v1.3.0...v1.4.0) (2023-08-09)
 
 
