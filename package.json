@@ -91,7 +91,6 @@
     "jest": "^29.1.1",
     "prettier": "^2.3.2",
     "semantic-release": "^21.0.7",
-    "semantic-release-ado": "^1.4.0",
     "sequelize-cli": "^5.3.0",
     "source-map-support": "^0.5.20",
     "supertest": "^6.1.3",
