@@ -35,6 +35,8 @@ async function bootstrap() {
     new HttpTracingInterceptor(loggerService)
   );
 
+  console.log('aff');
+
   app.setGlobalPrefix('api', {
     exclude: [
       { path: 'health', method: RequestMethod.GET },

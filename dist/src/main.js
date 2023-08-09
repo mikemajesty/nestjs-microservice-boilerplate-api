@@ -24,7 +24,8 @@ async function bootstrap() {
     loggerService.setApplication(package_json_1.name);
     app.useLogger(loggerService);
     app.useGlobalFilters(new http_exception_filter_1.AppExceptionFilter(loggerService));
-    app.useGlobalInterceptors(new http_exception_interceptor_1.ExceptionInterceptor(), new http_logger_interceptor_1.HttpLoggerInterceptor(), new http_tracing_interceptor_1.HttpTracingInterceptor(loggerService));
+    app.useGlobalInterceptors(new http_exception_interceptor_1.ExceptionInterceptor(loggerService), new http_logger_interceptor_1.HttpLoggerInterceptor(), new http_tracing_interceptor_1.HttpTracingInterceptor(loggerService));
+    console.log('aff');
     app.setGlobalPrefix('api', {
         exclude: [
             { path: 'health', method: common_1.RequestMethod.GET },
