@@ -92,7 +92,7 @@ export class LoggerService implements ILoggerAdapter {
         createdAt: this.getCreatedAtDate(),
         application: this.app,
         stack: error.stack,
-        ...error?.parameters,
+        // ...error?.parameters,
         message: messageFind
       },
       messageFind
@@ -142,7 +142,7 @@ export class LoggerService implements ILoggerAdapter {
       logger: pinoLogger,
       quietReqLogger: true,
       customSuccessMessage: (req: IncomingMessage, res: ServerResponse) => {
-        return `request ${res.statusCode >= 400 ? 'errro' : 'success'} with status code: ${res.statusCode}`;
+        return `request ${res.statusCode >= 400 ? 'erro' : 'success'} with status code: ${res.statusCode}`;
       },
       customErrorMessage: (req: IncomingMessage, res: ServerResponse, error: Error) => {
         return `request ${error.name} with status code: ${res.statusCode} `;

@@ -43,7 +43,7 @@ export class AppExceptionFilter implements ExceptionFilter {
 
     if (exception instanceof AxiosError) {
       if ((exception as AxiosError).response?.data) {
-        return (exception as AxiosError).response?.data['message'];
+        return (exception as AxiosError).message;
       }
     }
 
