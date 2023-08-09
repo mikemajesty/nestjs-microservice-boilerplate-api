@@ -10,19 +10,19 @@ const config = {
       }
     ],
     [
+      '@semantic-release/npm',
+      {
+        pkgRoot: 'dist'
+      }
+    ],
+    [
       '@semantic-release/git',
       {
         assets: ['dist/**/*.{js,css}', 'CHANGELOG.md', 'package.json'],
         message: 'chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}'
       }
     ],
-    '@semantic-release/github',
-    [
-      '@semantic-release/npm',
-      {
-        pkgRoot: 'dist'
-      }
-    ]
+    '@semantic-release/github'
     // ["semantic-release-ado", {
     //   "varName": "version",
     //   "setOnlyOnRelease": true,
