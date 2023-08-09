@@ -12,7 +12,8 @@ const config = {
     [
       '@semantic-release/npm',
       {
-        pkgRoot: 'dist/'
+        npmPublish: false,
+        tarballDir: 'dist'
       }
     ],
     [
