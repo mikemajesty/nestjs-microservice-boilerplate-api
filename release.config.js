@@ -11,8 +11,8 @@ const config = {
         message: 'chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}'
       }
     ],
-    '@semantic-release/npm',
-    '@semantic-release/github'
+    '@semantic-release/github',
+    '@semantic-release/npm'
     // ["semantic-release-ado", {
     //   "varName": "version",
     //   "setOnlyOnRelease": true,
