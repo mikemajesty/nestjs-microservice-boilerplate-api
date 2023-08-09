@@ -63,7 +63,10 @@ let HttpTracingInterceptor = class HttpTracingInterceptor {
                     const http = axios_1.default.create(options);
                     (0, axios_better_stacktrace_1.default)(http);
                     (0, axios_2.requestRetry)({ axios: http, logger: this.logger });
-                    (0, axios_2.interceptAxiosResponseError)(http, this.logger);
+                    http.interceptors.response.use((response) => response, (error) => {
+                        (0, axios_2.interceptAxiosResponseError)(error, this.logger);
+                        return Promise.reject(error);
+                    });
                     return http;
                 },
                 log: (event) => {
@@ -92,7 +95,6 @@ let HttpTracingInterceptor = class HttpTracingInterceptor {
             request.tracing.setTag('traceId', requestId);
         }
         return next.handle().pipe((0, rxjs_1.tap)(() => {
-            this.logger.logger(request, res);
             request.tracing.setTag(opentracing_1.Tags.HTTP_STATUS_CODE, res.statusCode);
             request.tracing.finish();
         }));

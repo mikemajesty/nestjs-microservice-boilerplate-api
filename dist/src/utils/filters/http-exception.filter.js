@@ -39,13 +39,13 @@ let AppExceptionFilter = class AppExceptionFilter {
         });
     }
     getMessage(exception) {
-        var _a, _b;
+        var _a;
         if (exception instanceof zod_1.ZodError) {
             return exception.issues.map((i) => `${i.path}: ${i.message}`).join(',');
         }
         if (exception instanceof axios_1.AxiosError) {
             if ((_a = exception.response) === null || _a === void 0 ? void 0 : _a.data) {
-                return (_b = exception.response) === null || _b === void 0 ? void 0 : _b.data['message'];
+                return exception.message;
             }
         }
         return exception.message;
