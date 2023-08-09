@@ -17,7 +17,12 @@ const config = {
       }
     ],
     '@semantic-release/github',
-    '@semantic-release/npm'
+    [
+      '@semantic-release/npm',
+      {
+        pkgRoot: 'dist'
+      }
+    ]
     // ["semantic-release-ado", {
     //   "varName": "version",
     //   "setOnlyOnRelease": true,
