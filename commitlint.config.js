@@ -12,7 +12,6 @@ module.exports = {
       "api",
       "segments",
       "configuration"
-    ]],
-    "subject-empty": [2, "never"],
+    ]]
   }
 };
