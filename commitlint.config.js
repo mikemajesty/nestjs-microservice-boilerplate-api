@@ -1,3 +1,3 @@
 module.exports = {
-  extends: ['@commitlint/config-conventional'], ignores: [(message) => /^Bumps \[.+]\(.+\) from .+ to .+\.$/m.test(message)],
+  extends: ['@commitlint/config-conventional'], ignores: [(message) => message.includes('release')],
 };
