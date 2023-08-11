@@ -14,6 +14,7 @@ import { AppExceptionFilter } from './utils/filters/http-exception.filter';
 import { ExceptionInterceptor } from './utils/interceptors/http-exception.interceptor';
 import { HttpLoggerInterceptor } from './utils/interceptors/http-logger.interceptor';
 import { HttpTracingInterceptor } from './utils/interceptors/http-tracing.interceptor';
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true,
