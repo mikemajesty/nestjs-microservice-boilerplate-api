@@ -11,6 +11,8 @@ for (const path of getDirectories('./src').map((p) => `./src/${p}`)) {
   scopes.push(...files.filter((item) => item.isDirectory()).map((item) => item.name));
 }
 
+scopes.push('remove')
+
 module.exports = {
   extends: ['@commitlint/config-conventional'],
   ignores: [(message) => message.includes('release')],
