@@ -2,7 +2,6 @@ import { RequestMethod } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { bold } from 'colorette';
-import * as fs from 'fs';
 
 import { description, name, version } from '../package.json';
 import { AppModule } from './app.module';
