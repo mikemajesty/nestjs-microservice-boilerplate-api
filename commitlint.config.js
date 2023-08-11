@@ -3,16 +3,6 @@ module.exports = {
   ignores: [(message) => message.includes('release')],
   rules: {
     "scope-empty": [2, "never"],
-    "scope-enum": [2, "never", [
-      "logging",
-      "services",
-      "docs",
-      "dependencies",
-      "profiles",
-      "users",
-      "api",
-      "segments",
-      "configuration"
-    ]]
+    "scope-enum": [2, "always"]
   }
 };

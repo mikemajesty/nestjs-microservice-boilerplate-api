@@ -2,6 +2,7 @@ import { RequestMethod } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { bold } from 'colorette';
+import * as fs from 'fs';
 
 import { description, name, version } from '../package.json';
 import { AppModule } from './app.module';
@@ -14,7 +15,6 @@ import { AppExceptionFilter } from './utils/filters/http-exception.filter';
 import { ExceptionInterceptor } from './utils/interceptors/http-exception.interceptor';
 import { HttpLoggerInterceptor } from './utils/interceptors/http-logger.interceptor';
 import { HttpTracingInterceptor } from './utils/interceptors/http-tracing.interceptor';
-
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true,
@@ -34,8 +34,6 @@ async function bootstrap() {
     new HttpLoggerInterceptor(),
     new HttpTracingInterceptor(loggerService)
   );
-
-  console.log('aff');
 
   app.setGlobalPrefix('api', {
     exclude: [
