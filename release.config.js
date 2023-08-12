@@ -1,5 +1,5 @@
 const config = {
-  branches: ['teste'],
+  branches: ['semantic-release'],
   tagFormat: 'release-${version}',
   plugins: [
     '@semantic-release/commit-analyzer',
