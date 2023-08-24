@@ -1,0 +1,20 @@
+name: Release
+
+on: 
+  push:
+env:
+  GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+jobs: 
+  release:
+    runs-on: "ubuntu-latest"
+    permissions:
+      contents: write
+    steps: 
+      - uses: actions/checkout@v2 
+      - uses: actions/setup-node@v2 
+        with: 
+          node-version: 18
+      - run: npm i @nestjs/cli
+      - run: npm run build
+      - run: npx semantic-release
+  
