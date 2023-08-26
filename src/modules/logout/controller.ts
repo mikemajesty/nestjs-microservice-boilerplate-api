@@ -17,7 +17,7 @@ export class LogoutController {
   @ApiResponse(SwagggerResponse.logout[200])
   @ApiBody(SwagggerRequest.body)
   @HttpCode(401)
-  async logout(@Req() { body }: ApiRequest): LogoutOutput {
-    return this.logoutService.execute(body as LogoutInput);
+  async logout(@Req() { body, user, tracing }: ApiRequest): LogoutOutput {
+    return this.logoutService.execute(body as LogoutInput, { user, tracing });
   }
 }

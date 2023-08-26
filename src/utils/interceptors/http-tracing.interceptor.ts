@@ -84,6 +84,9 @@ export class HttpTracingInterceptor implements NestInterceptor {
         setTag: (key, value) => {
           span.setTag(key, value);
         },
+        logEvent: (key, value) => {
+          span.logEvent(key, value);
+        },
         addTags: (object) => {
           span.addTags(object);
         },
@@ -102,7 +105,7 @@ export class HttpTracingInterceptor implements NestInterceptor {
     request.tracing.setTag(Tags.HTTP_METHOD, request.method);
     request.tracing.setTag(Tags.HTTP_URL, request.path);
 
-    if (request.id) {
+    if (requestId) {
       request.tracing.setTag('traceId', requestId);
     }
 

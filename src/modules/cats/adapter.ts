@@ -3,13 +3,14 @@ import { CatsDeleteInput, CatsDeleteOutput } from '@/core/cats/use-cases/cats-de
 import { CatsGetByIDInput, CatsGetByIDOutput } from '@/core/cats/use-cases/cats-getByID';
 import { CatsListInput, CatsListOutput } from '@/core/cats/use-cases/cats-list';
 import { CatsUpdateInput, CatsUpdateOutput } from '@/core/cats/use-cases/cats-update';
+import { ApiTrancingInput } from '@/utils/request';
 
 export abstract class ICatsCreateAdapter {
-  abstract execute(input: CatsCreateInput): Promise<CatsCreateOutput>;
+  abstract execute(input: CatsCreateInput, trace: ApiTrancingInput): Promise<CatsCreateOutput>;
 }
 
 export abstract class ICatsUpdateAdapter {
-  abstract execute(input: CatsUpdateInput): Promise<CatsUpdateOutput>;
+  abstract execute(input: CatsUpdateInput, trace: ApiTrancingInput): Promise<CatsUpdateOutput>;
 }
 
 export abstract class ICatsGetByIDAdapter {
@@ -21,5 +22,5 @@ export abstract class ICatsListAdapter {
 }
 
 export abstract class ICatsDeleteAdapter {
-  abstract execute(input: CatsDeleteInput): Promise<CatsDeleteOutput>;
+  abstract execute(input: CatsDeleteInput, trace: ApiTrancingInput): Promise<CatsDeleteOutput>;
 }

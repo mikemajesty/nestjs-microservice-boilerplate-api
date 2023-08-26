@@ -16,7 +16,7 @@ export class LoginController {
   @ApiResponse(SwagggerResponse.login[200])
   @ApiResponse(SwagggerResponse.login[404])
   @ApiBody(SwagggerRequest.body)
-  async login(@Req() { body }: ApiRequest): LoginOutput {
-    return this.loginService.execute(body as LoginInput);
+  async login(@Req() { body, user, tracing }: ApiRequest): LoginOutput {
+    return this.loginService.execute(body as LoginInput, { user, tracing });
   }
 }

@@ -4,6 +4,7 @@ import { ICatsRepository } from '@/core/cats/repository/cats';
 import { DatabaseOptionsType } from '@/utils/database/sequelize';
 import { ValidateSchema } from '@/utils/decorators/validate-schema.decorator';
 import { ApiNotFoundException } from '@/utils/exception';
+import { ApiTrancingInput } from '@/utils/request';
 
 import { CatsEntity, CatsEntitySchema } from '../entity/cats';
 
@@ -18,7 +19,7 @@ export class CatsDeleteUsecase {
   constructor(private readonly catsRepository: ICatsRepository) {}
 
   @ValidateSchema(CatsDeleteSchema)
-  async execute({ id }: CatsDeleteInput): CatsDeleteOutput {
+  async execute({ id }: CatsDeleteInput, { tracing, user }: ApiTrancingInput): CatsDeleteOutput {
     const model = await this.catsRepository.findById<DatabaseOptionsType>(id);
 
     if (!model) {
@@ -30,6 +31,7 @@ export class CatsDeleteUsecase {
     cats.setDelete();
 
     await this.catsRepository.updateOne({ id: cats.id }, cats);
+    tracing.logEvent('cats-deleted', `cats deleted by: ${user.login}`);
 
     return cats;
   }

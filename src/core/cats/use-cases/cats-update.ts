@@ -5,6 +5,7 @@ import { ILoggerAdapter } from '@/infra/logger';
 import { DatabaseOptionsType } from '@/utils/database/sequelize';
 import { ValidateSchema } from '@/utils/decorators/validate-schema.decorator';
 import { ApiNotFoundException } from '@/utils/exception';
+import { ApiTrancingInput } from '@/utils/request';
 
 import { CatsEntity, CatsEntitySchema } from './../entity/cats';
 
@@ -19,7 +20,7 @@ export class CatsUpdateUsecase {
   constructor(private readonly catsRepository: ICatsRepository, private readonly loggerServide: ILoggerAdapter) {}
 
   @ValidateSchema(CatsUpdateSchema)
-  async execute(input: CatsUpdateInput): CatsUpdateOutput {
+  async execute(input: CatsUpdateInput, { tracing, user }: ApiTrancingInput): CatsUpdateOutput {
     const cats = await this.catsRepository.findById<DatabaseOptionsType>(input.id);
 
     if (!cats) {
@@ -33,6 +34,8 @@ export class CatsUpdateUsecase {
     this.loggerServide.info({ message: 'cats updated.', obj: { cats: input } });
 
     const updated = await this.catsRepository.findById<DatabaseOptionsType>(entity.id);
+
+    tracing.logEvent('cats-updated', `cats updated by: ${user.login}`);
 
     return new CatsEntity(updated);
   }

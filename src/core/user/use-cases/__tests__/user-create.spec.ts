@@ -4,7 +4,7 @@ import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { IUserCreateAdapter } from '@/modules/user/adapter';
 import { ApiConflictException } from '@/utils/exception';
 import { userCreateMock } from '@/utils/mocks/user';
-import { expectZodError } from '@/utils/tests';
+import { expectZodError, trancingMock } from '@/utils/tests';
 
 import { IUserRepository } from '../../repository/user';
 import { UserCreateUsecase } from '../user-create';
@@ -42,7 +42,7 @@ describe('UserCreateUsecase', () => {
       commitTransaction: jest.fn()
     });
 
-    await expect(usecase.execute(userCreateMock)).resolves.toEqual(userCreateMock);
+    await expect(usecase.execute(userCreateMock, trancingMock)).resolves.toEqual(userCreateMock);
   });
 
   test('should throw error when start transaction', async () => {
@@ -50,17 +50,17 @@ describe('UserCreateUsecase', () => {
     repository.create = jest.fn().mockResolvedValue(userCreateMock);
     repository.startSession = jest.fn().mockRejectedValue(new Error('startSessionError'));
 
-    await expect(usecase.execute(userCreateMock)).rejects.toThrowError('startSessionError');
+    await expect(usecase.execute(userCreateMock, trancingMock)).rejects.toThrowError('startSessionError');
   });
 
   test('should throw error when user exists', async () => {
     repository.findOne = jest.fn().mockResolvedValue(userCreateMock);
-    await expect(usecase.execute(userCreateMock)).rejects.toThrowError(ApiConflictException);
+    await expect(usecase.execute(userCreateMock, trancingMock)).rejects.toThrowError(ApiConflictException);
   });
 
   test('should throw error when invalid parameters', async () => {
     await expectZodError(
-      () => usecase.execute({}),
+      () => usecase.execute({}, trancingMock),
       (issues) => {
         expect(issues).toEqual([
           { message: 'Required', path: 'login' },

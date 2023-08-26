@@ -2,6 +2,8 @@ import { AxiosInstance, AxiosRequestConfig } from 'axios';
 import { JaegerTracer } from 'jaeger-client';
 import { Span, Tags } from 'opentracing';
 
+import { UserEntity } from '@/core/user/entity/user';
+
 export type TracingType = {
   span: Span;
   tracer: JaegerTracer;
@@ -10,6 +12,7 @@ export type TracingType = {
   axios: (config?: AxiosRequestConfig) => AxiosInstance;
   log: (event: { [key: string]: unknown }) => void;
   setTag: (key: string, value: unknown) => void;
+  logEvent: (key: string, value: unknown) => void;
   addTags: (object: object) => void;
   createSpan: (name: string, parent?: Span) => Span;
   finish: () => void;
@@ -18,6 +21,7 @@ export type TracingType = {
 export interface ApiRequest {
   readonly body: ReadableStream<Uint8Array> | null;
   readonly tracing: TracingType;
+  readonly user: UserEntity;
   readonly params: { [key: string]: string };
   readonly query: { [key: string]: string };
   readonly headers: Headers & { authorization: string };
@@ -31,3 +35,5 @@ export interface ApiRequest {
     size: number;
   }[];
 }
+
+export type ApiTrancingInput = Pick<ApiRequest, 'user' | 'tracing'>;

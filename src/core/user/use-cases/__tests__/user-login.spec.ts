@@ -4,7 +4,7 @@ import { ITokenAdapter, TokenModule } from '@/libs/auth';
 import { ILoginAdapter } from '@/modules/login/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
 import { usersResponseMock } from '@/utils/mocks/user';
-import { expectZodError } from '@/utils/tests';
+import { expectZodError, trancingMock } from '@/utils/tests';
 
 import { IUserRepository } from '../../repository/user';
 import { LoginUsecase } from '../user-login';
@@ -37,7 +37,7 @@ describe('LoginUsecase', () => {
 
   test('should throw error when invalid parameters', async () => {
     await expectZodError(
-      () => usecase.execute({}),
+      () => usecase.execute({}, trancingMock),
       (issues) => {
         expect(issues).toEqual([
           { message: 'Required', path: 'login' },
@@ -49,12 +49,14 @@ describe('LoginUsecase', () => {
 
   test('should throw erron when login or password not found', async () => {
     repository.findOne = jest.fn().mockResolvedValue(null);
-    await expect(usecase.execute({ login: 'login', password: 'password' })).rejects.toThrowError(ApiNotFoundException);
+    await expect(usecase.execute({ login: 'login', password: 'password' }, trancingMock)).rejects.toThrowError(
+      ApiNotFoundException
+    );
   });
 
   test('should login successfully', async () => {
     repository.findOne = jest.fn().mockResolvedValue(usersResponseMock);
-    await expect(usecase.execute({ login: 'login', password: 'password' })).resolves.toEqual({
+    await expect(usecase.execute({ login: 'login', password: 'password' }, trancingMock)).resolves.toEqual({
       token: expect.any(String)
     });
   });

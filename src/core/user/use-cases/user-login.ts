@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { ITokenAdapter } from '@/libs/auth';
 import { ValidateSchema } from '@/utils/decorators/validate-schema.decorator';
 import { ApiNotFoundException } from '@/utils/exception';
+import { ApiTrancingInput } from '@/utils/request';
 
 import { UserEntitySchema } from '../entity/user';
 import { IUserRepository } from '../repository/user';
@@ -19,7 +20,7 @@ export class LoginUsecase {
   constructor(private readonly loginRepository: IUserRepository, private readonly tokenService: ITokenAdapter) {}
 
   @ValidateSchema(LoginSchema)
-  async execute(input: LoginInput): LoginOutput {
+  async execute(input: LoginInput, { tracing }: ApiTrancingInput): LoginOutput {
     const login = await this.loginRepository.findOne({
       login: input.login,
       password: input.password
@@ -28,6 +29,8 @@ export class LoginUsecase {
     if (!login) {
       throw new ApiNotFoundException();
     }
+
+    tracing.logEvent('user-login', `${login.login}`);
 
     return this.tokenService.sign({
       login: login.login,
