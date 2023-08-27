@@ -2,8 +2,6 @@ FROM node:18-alpine as build
 
 WORKDIR /app
 
-ENV SERA ${ENV}
-
 COPY . .
 
 RUN npm i -g @nestjs/cli
