@@ -40,8 +40,8 @@ import { CatsRepository } from './repository';
     },
     {
       provide: ICatsCreateAdapter,
-      useFactory: (logger: ILoggerAdapter, repository: ICatsRepository) => new CatsCreateUsecase(repository, logger),
-      inject: [ILoggerAdapter, ICatsRepository]
+      useFactory: (repository: ICatsRepository) => new CatsCreateUsecase(repository),
+      inject: [ICatsRepository]
     },
     {
       provide: ICatsUpdateAdapter,

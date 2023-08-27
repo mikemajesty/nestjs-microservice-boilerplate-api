@@ -38,8 +38,8 @@ export class UserController {
   @ApiResponse(SwagggerResponse.create[200])
   @ApiResponse(SwagggerResponse.create[409])
   @ApiBody(SwagggerRequest.createBody)
-  async create(@Req() { body }: ApiRequest): UserCreateOutput {
-    return this.userCreateUsecase.execute(body as UserCreateInput);
+  async create(@Req() { body, user, tracing }: ApiRequest): UserCreateOutput {
+    return this.userCreateUsecase.execute(body as UserCreateInput, { user, tracing });
   }
 
   @Put('/users')
@@ -47,8 +47,8 @@ export class UserController {
   @ApiResponse(SwagggerResponse.update[404])
   @ApiResponse(SwagggerResponse.update[409])
   @ApiBody(SwagggerRequest.updateBody)
-  async update(@Req() { body }: ApiRequest): UserUpdateOutput {
-    return this.userUpdateUsecase.execute(body as UserUpdateInput);
+  async update(@Req() { body, user, tracing }: ApiRequest): UserUpdateOutput {
+    return this.userUpdateUsecase.execute(body as UserUpdateInput, { user, tracing });
   }
 
   @Get('/users')
@@ -80,7 +80,7 @@ export class UserController {
   @ApiParam({ name: 'id', required: true })
   @ApiResponse(SwagggerResponse.delete[200])
   @ApiResponse(SwagggerResponse.delete[404])
-  async delete(@Req() { params }: ApiRequest): UserDeleteOutput {
-    return await this.userDeleteUsecase.execute(params as UserDeleteInput);
+  async delete(@Req() { params, user, tracing }: ApiRequest): UserDeleteOutput {
+    return await this.userDeleteUsecase.execute(params as UserDeleteInput, { user, tracing });
   }
 }

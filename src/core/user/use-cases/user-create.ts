@@ -4,6 +4,7 @@ import { ILoggerAdapter } from '@/infra/logger';
 import { CreatedModel } from '@/infra/repository';
 import { ValidateSchema } from '@/utils/decorators/validate-schema.decorator';
 import { ApiConflictException } from '@/utils/exception';
+import { ApiTrancingInput } from '@/utils/request';
 
 import { UserEntity, UserEntitySchema } from '../entity/user';
 import { IUserRepository } from '../repository/user';
@@ -21,7 +22,7 @@ export class UserCreateUsecase {
   constructor(private readonly userRepository: IUserRepository, private readonly loggerServide: ILoggerAdapter) {}
 
   @ValidateSchema(UserCreateSchema)
-  async execute(input: UserCreateInput): UserCreateOutput {
+  async execute(input: UserCreateInput, { tracing, user: userData }: ApiTrancingInput): UserCreateOutput {
     const entity = new UserEntity(input);
 
     const userExists = await this.userRepository.findOne({
@@ -40,6 +41,9 @@ export class UserCreateUsecase {
       await session.commitTransaction();
 
       this.loggerServide.info({ message: 'user created successfully', obj: { user } });
+
+      tracing.logEvent('user-created', `user: ${entity.login} created by: ${userData.login}`);
+
       return user;
     } catch (error) {
       await session.abortTransaction();

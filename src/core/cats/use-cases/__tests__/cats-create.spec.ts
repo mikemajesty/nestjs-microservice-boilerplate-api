@@ -1,10 +1,10 @@
 import { Test } from '@nestjs/testing';
 
-import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
+import { LoggerModule } from '@/infra/logger';
 import { ICatsCreateAdapter } from '@/modules/cats/adapter';
 import { ApiInternalServerException } from '@/utils/exception';
 import { catCreateMock } from '@/utils/mocks/cats';
-import { expectZodError } from '@/utils/tests';
+import { expectZodError, trancingMock } from '@/utils/tests';
 
 import { ICatsRepository } from '../../repository/cats';
 import { CatsCreateUsecase } from '../cats-create';
@@ -23,10 +23,10 @@ describe('CatsCreateUsecase', () => {
         },
         {
           provide: ICatsCreateAdapter,
-          useFactory: (catsRepository: ICatsRepository, logger: ILoggerAdapter) => {
-            return new CatsCreateUsecase(catsRepository, logger);
+          useFactory: (catsRepository: ICatsRepository) => {
+            return new CatsCreateUsecase(catsRepository);
           },
-          inject: [ICatsRepository, ILoggerAdapter]
+          inject: [ICatsRepository]
         }
       ]
     }).compile();
@@ -37,7 +37,7 @@ describe('CatsCreateUsecase', () => {
 
   test('should throw error when invalid parameters', async () => {
     await expectZodError(
-      () => usecase.execute({}),
+      () => usecase.execute({}, trancingMock),
       (issues) => {
         expect(issues).toEqual([
           { message: 'Required', path: 'name' },
@@ -54,7 +54,7 @@ describe('CatsCreateUsecase', () => {
       commit: jest.fn(),
       rollback: jest.fn()
     });
-    await expect(usecase.execute(catCreateMock)).resolves.toEqual(catCreateMock);
+    await expect(usecase.execute(catCreateMock, trancingMock)).resolves.toEqual(catCreateMock);
   });
 
   test('should throw error when create with transaction', async () => {
@@ -63,6 +63,6 @@ describe('CatsCreateUsecase', () => {
       rollback: jest.fn()
     });
     repository.create = jest.fn().mockRejectedValue(new ApiInternalServerException('transactionError'));
-    await expect(usecase.execute(catCreateMock)).rejects.toThrow(ApiInternalServerException);
+    await expect(usecase.execute(catCreateMock, trancingMock)).rejects.toThrow(ApiInternalServerException);
   });
 });

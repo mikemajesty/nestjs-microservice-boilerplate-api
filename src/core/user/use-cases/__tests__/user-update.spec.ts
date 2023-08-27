@@ -4,7 +4,7 @@ import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { IUserUpdateAdapter } from '@/modules/user/adapter';
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception';
 import { userResponseMock } from '@/utils/mocks/user';
-import { expectZodError } from '@/utils/tests';
+import { expectZodError, trancingMock } from '@/utils/tests';
 
 import { IUserRepository } from '../../repository/user';
 import { UserUpdateUsecase } from '../user-update';
@@ -37,7 +37,7 @@ describe('UserUpdateUsecase', () => {
 
   test('should throw error when invalid parameters', async () => {
     await expectZodError(
-      () => usecase.execute({}),
+      () => usecase.execute({}, trancingMock),
       (issues) => {
         expect(issues).toEqual([{ message: 'Required', path: 'id' }]);
       }
@@ -48,17 +48,17 @@ describe('UserUpdateUsecase', () => {
     repository.findById = jest.fn().mockResolvedValue(userResponseMock);
     repository.existsOnUpdate = jest.fn().mockResolvedValue(null);
     repository.updateOne = jest.fn().mockResolvedValue(null);
-    await expect(usecase.execute(userResponseMock)).resolves.toEqual(userResponseMock);
+    await expect(usecase.execute(userResponseMock, trancingMock)).resolves.toEqual(userResponseMock);
   });
 
   test('should throw error when user not found', async () => {
     repository.findById = jest.fn().mockResolvedValue(null);
-    await expect(usecase.execute(userResponseMock)).rejects.toThrowError(ApiNotFoundException);
+    await expect(usecase.execute(userResponseMock, trancingMock)).rejects.toThrowError(ApiNotFoundException);
   });
 
   test('should throw error when user exists', async () => {
     repository.findById = jest.fn().mockResolvedValue(userResponseMock);
     repository.existsOnUpdate = jest.fn().mockResolvedValue(userResponseMock);
-    await expect(usecase.execute(userResponseMock)).rejects.toThrowError(ApiConflictException);
+    await expect(usecase.execute(userResponseMock, trancingMock)).rejects.toThrowError(ApiConflictException);
   });
 });

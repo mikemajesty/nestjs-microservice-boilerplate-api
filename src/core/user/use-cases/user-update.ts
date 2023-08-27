@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { ILoggerAdapter } from '@/infra/logger';
 import { ValidateSchema } from '@/utils/decorators/validate-schema.decorator';
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception';
+import { ApiTrancingInput } from '@/utils/request';
 
 import { UserEntity, UserEntitySchema } from '../entity/user';
 import { IUserRepository } from '../repository/user';
@@ -18,7 +19,7 @@ export class UserUpdateUsecase {
   constructor(private readonly userRepository: IUserRepository, private readonly loggerServide: ILoggerAdapter) {}
 
   @ValidateSchema(UserUpdateSchema)
-  async execute(input: UserUpdateInput): UserUpdateOutput {
+  async execute(input: UserUpdateInput, { tracing, user: userData }: ApiTrancingInput): UserUpdateOutput {
     const user = await this.userRepository.findById(input.id);
 
     if (!user) {
@@ -45,6 +46,7 @@ export class UserUpdateUsecase {
     const entityUpdated = new UserEntity(updated);
 
     entityUpdated.anonymizePassword();
+    tracing.logEvent('user-updated', `user: ${user.login} updated by: ${userData.login}`);
 
     return entityUpdated;
   }

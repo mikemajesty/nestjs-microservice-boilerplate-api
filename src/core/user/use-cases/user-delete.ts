@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import { ValidateSchema } from '@/utils/decorators/validate-schema.decorator';
 import { ApiNotFoundException } from '@/utils/exception';
+import { ApiTrancingInput } from '@/utils/request';
 
 import { UserEntity, UserEntitySchema } from '../entity/user';
 import { IUserRepository } from '../repository/user';
@@ -17,20 +18,23 @@ export class UserDeleteUsecase {
   constructor(private readonly userRepository: IUserRepository) {}
 
   @ValidateSchema(UserDeleteSchema)
-  async execute({ id }: UserDeleteInput): UserDeleteOutput {
-    const model = await this.userRepository.findById(id);
+  async execute({ id }: UserDeleteInput, { tracing, user: userData }: ApiTrancingInput): UserDeleteOutput {
+    const entity = await this.userRepository.findById(id);
 
-    if (!model) {
+    if (!entity) {
       throw new ApiNotFoundException();
     }
 
-    const user = new UserEntity(model);
+    const user = new UserEntity(entity);
 
     user.setDelete();
 
     await this.userRepository.updateOne({ id: user.id }, user);
 
     user.anonymizePassword();
+
+    tracing.logEvent('user-deleted', `user: ${entity.login} deleted by: ${userData.login}`);
+
     return user;
   }
 }

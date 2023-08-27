@@ -37,16 +37,16 @@ export class CatsController {
   @Post('/cats')
   @ApiResponse(SwagggerResponse.create[200])
   @ApiBody(SwagggerRequest.createBody)
-  async create(@Req() { body }: ApiRequest): CatsCreateOutput {
-    return await this.catsCreate.execute(body as CatsCreateInput);
+  async create(@Req() { body, user, tracing }: ApiRequest): CatsCreateOutput {
+    return await this.catsCreate.execute(body as CatsCreateInput, { user, tracing });
   }
 
   @Put('/cats')
   @ApiResponse(SwagggerResponse.update[200])
   @ApiResponse(SwagggerResponse.update[404])
   @ApiBody(SwagggerRequest.updateBody)
-  async update(@Req() { body }: ApiRequest): CatsUpdateOutput {
-    return await this.catsUpdate.execute(body as CatsUpdateInput);
+  async update(@Req() { body, user, tracing }: ApiRequest): CatsUpdateOutput {
+    return await this.catsUpdate.execute(body as CatsUpdateInput, { user, tracing });
   }
 
   @Get('/cats/:id')
@@ -78,7 +78,7 @@ export class CatsController {
   @ApiParam({ name: 'id', required: true })
   @ApiResponse(SwagggerResponse.delete[200])
   @ApiResponse(SwagggerResponse.delete[404])
-  async delete(@Req() { params }: ApiRequest): CatsDeleteOutput {
-    return await this.catsDelete.execute(params as CatsDeleteInput);
+  async delete(@Req() { params, user, tracing }: ApiRequest): CatsDeleteOutput {
+    return await this.catsDelete.execute(params as CatsDeleteInput, { user, tracing });
   }
 }

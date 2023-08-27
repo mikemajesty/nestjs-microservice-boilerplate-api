@@ -4,7 +4,7 @@ import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { ICatsUpdateAdapter } from '@/modules/cats/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
 import { catResponseMock } from '@/utils/mocks/cats';
-import { expectZodError, generateUUID } from '@/utils/tests';
+import { expectZodError, generateUUID, trancingMock } from '@/utils/tests';
 
 import { ICatsRepository } from '../../repository/cats';
 import { CatsUpdateUsecase } from '../cats-update';
@@ -37,7 +37,7 @@ describe('CatsUpdateUsecase', () => {
 
   test('should throw error when invalid parameters', async () => {
     await expectZodError(
-      () => usecase.execute({}),
+      () => usecase.execute({}, trancingMock),
       (issues) => {
         expect(issues).toEqual([{ message: 'Required', path: 'id' }]);
       }
@@ -46,12 +46,12 @@ describe('CatsUpdateUsecase', () => {
 
   test('should throw error when cats not found', async () => {
     repository.findById = jest.fn().mockResolvedValue(null);
-    await expect(usecase.execute({ id: generateUUID() })).rejects.toThrowError(ApiNotFoundException);
+    await expect(usecase.execute({ id: generateUUID() }, trancingMock)).rejects.toThrowError(ApiNotFoundException);
   });
 
   test('should update successfully', async () => {
     repository.findById = jest.fn().mockResolvedValue(catResponseMock);
     repository.updateOne = jest.fn().mockResolvedValue(null);
-    await expect(usecase.execute({ id: generateUUID() })).resolves.toEqual(catResponseMock);
+    await expect(usecase.execute({ id: generateUUID() }, trancingMock)).resolves.toEqual(catResponseMock);
   });
 });
