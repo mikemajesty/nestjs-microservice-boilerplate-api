@@ -1,6 +1,6 @@
 {
   "name": "nestjs-boilerplate-api",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Nestjs boilerplate api",
   "author": "mike.rodrigues.lima@gmail.com",
   "private": true,
