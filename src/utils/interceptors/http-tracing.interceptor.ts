@@ -1,4 +1,5 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
+import { Context } from '@opentelemetry/api';
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 import axiosBetterStacktrace from 'axios-better-stacktrace';
 import { initTracer, JaegerTracer, TracingConfig, TracingOptions } from 'jaeger-client';
@@ -12,7 +13,6 @@ import { ILoggerAdapter } from '@/infra/logger';
 import { interceptAxiosResponseError, requestRetry } from '../axios';
 import { ApiInternalServerException } from '../exception';
 import { TracingType } from '../request';
-import { Context } from '@opentelemetry/api';
 
 @Injectable()
 export class HttpTracingInterceptor implements NestInterceptor {
@@ -36,13 +36,12 @@ export class HttpTracingInterceptor implements NestInterceptor {
 
     this.tracer = initTracer(config, options);
 
-    const span = this.tracer.startSpan("MIKE");
+    const span = this.tracer.startSpan('MIKE');
 
-    span.log({ aff: 'AAAAAA' })
+    span.log({ aff: 'AAAAAA' });
 
-    span.finish()
+    span.finish();
   }
-
 
   intercept(executionContext: ExecutionContext, next: CallHandler): Observable<unknown> {
     const request = executionContext.switchToHttp().getRequest();
@@ -52,7 +51,7 @@ export class HttpTracingInterceptor implements NestInterceptor {
     const parentObject = parent ? { childOf: parent } : {};
     const span = this.tracer.startSpan(request.headers.host + request.path, parentObject);
 
-    span.log({ aff: 'AAAAAA' })
+    span.log({ aff: 'AAAAAA' });
     const requestId = request.headers.traceid ?? request.id;
 
     const createJaegerInstance = (): any => {

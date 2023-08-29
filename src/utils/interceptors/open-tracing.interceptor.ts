@@ -1,8 +1,25 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
+import opentelemetry, {
+  AttributeValue,
+  Context,
+  SpanAttributes,
+  SpanKind,
+  SpanOptions,
+  SpanStatus,
+  TimeInput,
+  Tracer
+} from '@opentelemetry/api';
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
+import { registerInstrumentations } from '@opentelemetry/instrumentation';
+import { ExpressInstrumentation } from '@opentelemetry/instrumentation-express';
+import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
+import { NestInstrumentation } from '@opentelemetry/instrumentation-nestjs-core';
+import { Resource } from '@opentelemetry/resources';
+import { BasicTracerProvider, BatchSpanProcessor, ConsoleSpanExporter } from '@opentelemetry/sdk-trace-node';
+import { SemanticAttributes, SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 import axiosBetterStacktrace from 'axios-better-stacktrace';
 import { DateTime } from 'luxon';
-import { Resource } from '@opentelemetry/resources';
 import { name, version } from 'package.json';
 import { Observable, tap } from 'rxjs';
 
@@ -11,32 +28,12 @@ import { ILoggerAdapter } from '@/infra/logger';
 import { interceptAxiosResponseError, requestRetry } from '../axios';
 import { ApiInternalServerException } from '../exception';
 import { TracingType } from '../request';
-import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
-
-
-import opentelemetry, {
-  Tracer,
-  SpanKind,
-  SpanOptions,
-  AttributeValue,
-  SpanAttributes,
-  TimeInput,
-  SpanStatus,
-  Context
-} from '@opentelemetry/api';
-import { registerInstrumentations } from '@opentelemetry/instrumentation';
-import { ExpressInstrumentation } from '@opentelemetry/instrumentation-express';
-import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
-import { BatchSpanProcessor, ConsoleSpanExporter, BasicTracerProvider } from '@opentelemetry/sdk-trace-node';
-import { SemanticAttributes, SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
-import { NestInstrumentation } from '@opentelemetry/instrumentation-nestjs-core';
 
 @Injectable()
 export class OpenTracingInterceptor implements NestInterceptor {
   private tracer: Tracer;
 
   constructor(private readonly logger: ILoggerAdapter) {
-
     // const provider = new BasicTracerProvider({
     //   resource: new Resource({
     //     [SemanticResourceAttributes.SERVICE_NAME]: name,
@@ -45,14 +42,12 @@ export class OpenTracingInterceptor implements NestInterceptor {
     //   })
     // });
 
-
     // const traceExporter = new OTLPTraceExporter();
 
     // const exporter = new ConsoleSpanExporter();
 
     // provider.addSpanProcessor(new BatchSpanProcessor(traceExporter));
     // provider.addSpanProcessor(new BatchSpanProcessor(exporter));
-
 
     // registerInstrumentations({
     //   instrumentations: [new ExpressInstrumentation(), new HttpInstrumentation({
@@ -65,14 +60,14 @@ export class OpenTracingInterceptor implements NestInterceptor {
 
     // provider.register()
 
-    this.tracer = opentelemetry.trace.getTracerProvider().getTracer(name, version)
+    this.tracer = opentelemetry.trace.getTracerProvider().getTracer(name, version);
 
-    const span = this.tracer.startSpan('ola')
+    const span = this.tracer.startSpan('ola');
 
-    span.addEvent('AFF', { TESTE: 'aff' })
+    span.addEvent('AFF', { TESTE: 'aff' });
 
-    span.setAttribute('stop', "EITGH")
-    span.end()
+    span.setAttribute('stop', 'EITGH');
+    span.end();
   }
 
   intercept(executionContext: ExecutionContext, next: CallHandler): Observable<unknown> {
@@ -90,7 +85,6 @@ export class OpenTracingInterceptor implements NestInterceptor {
         tracerId: requestId,
         attributes: SemanticAttributes,
         axios: (options: AxiosRequestConfig = {}): AxiosInstance => {
-
           if (request.headers.authorization) {
             options.headers['authorization'] = `${request.headers.authorization}`;
           }
@@ -126,7 +120,7 @@ export class OpenTracingInterceptor implements NestInterceptor {
           span.end();
         },
         createSpan: (name, parent: Context) => {
-          return this.tracer.startSpan(name, { root: false, }, parent);
+          return this.tracer.startSpan(name, { root: false }, parent);
         }
       };
     };

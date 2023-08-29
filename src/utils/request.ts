@@ -1,10 +1,10 @@
+import { AttributeValue, Context, SpanStatus, TimeInput } from '@opentelemetry/api';
+import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
 import { AxiosInstance, AxiosRequestConfig } from 'axios';
+
 // import { JaegerTracer } from 'jaeger-client';
 // import { Span, Tags } from 'opentracing';
-
 import { UserEntity } from '@/core/user/entity/user';
-import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
-import { AttributeValue, Context, SpanStatus, TimeInput } from '@opentelemetry/api';
 
 type LogEventType = AttributeValue | TimeInput;
 
