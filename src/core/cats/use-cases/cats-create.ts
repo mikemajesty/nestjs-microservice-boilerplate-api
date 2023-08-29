@@ -32,8 +32,6 @@ export class CatsCreateUsecase {
 
       await transaction.commit();
 
-      tracing.log({ message: 'cats created successfully.', cats });
-
       return cats;
     } catch (error) {
       await transaction.rollback();

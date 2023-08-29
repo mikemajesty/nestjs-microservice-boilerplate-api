@@ -14,7 +14,6 @@ const common_1 = require("@nestjs/common");
 const axios_1 = require("axios");
 const axios_better_stacktrace_1 = require("axios-better-stacktrace");
 const jaeger_client_1 = require("jaeger-client");
-const luxon_1 = require("luxon");
 const opentracing_1 = require("opentracing");
 const package_json_1 = require("../../../package.json");
 const rxjs_1 = require("rxjs");
@@ -37,6 +36,9 @@ let HttpTracingInterceptor = class HttpTracingInterceptor {
             app: package_json_1.name
         };
         this.tracer = (0, jaeger_client_1.initTracer)(config, options);
+        const span = this.tracer.startSpan("MIKE");
+        span.log({ aff: 'AAAAAA' });
+        span.finish();
     }
     intercept(executionContext, next) {
         var _a;
@@ -45,13 +47,14 @@ let HttpTracingInterceptor = class HttpTracingInterceptor {
         const parent = this.tracer.extract(opentracing_1.FORMAT_HTTP_HEADERS, request.headers);
         const parentObject = parent ? { childOf: parent } : {};
         const span = this.tracer.startSpan(request.headers.host + request.path, parentObject);
+        span.log({ aff: 'AAAAAA' });
         const requestId = (_a = request.headers.traceid) !== null && _a !== void 0 ? _a : request.id;
         const createJaegerInstance = () => {
             return {
                 span: span,
                 tracer: this.tracer,
                 tracerId: requestId,
-                tags: opentracing_1.Tags,
+                attributes: [],
                 axios: (options = {}) => {
                     const headers = {};
                     this.tracer.inject(span, opentracing_1.FORMAT_HTTP_HEADERS, headers);
@@ -69,10 +72,6 @@ let HttpTracingInterceptor = class HttpTracingInterceptor {
                     });
                     return http;
                 },
-                log: (event) => {
-                    const timestamp = luxon_1.DateTime.fromJSDate(new Date()).setZone(process.env.TZ).toMillis();
-                    span.log(event, timestamp);
-                },
                 setTag: (key, value) => {
                     span.setTag(key, value);
                 },
@@ -86,8 +85,7 @@ let HttpTracingInterceptor = class HttpTracingInterceptor {
                     span.finish();
                 },
                 createSpan: (name, parent) => {
-                    const parentObject = parent ? { childOf: parent } : { childOf: span };
-                    return this.tracer.startSpan(name, parentObject);
+                    return this.tracer.startSpan(name, {});
                 }
             };
         };

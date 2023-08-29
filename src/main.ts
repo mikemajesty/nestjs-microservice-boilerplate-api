@@ -13,9 +13,10 @@ import { ApiInternalServerException, BaseException } from './utils/exception';
 import { AppExceptionFilter } from './utils/filters/http-exception.filter';
 import { ExceptionInterceptor } from './utils/interceptors/http-exception.interceptor';
 import { HttpLoggerInterceptor } from './utils/interceptors/http-logger.interceptor';
-import { HttpTracingInterceptor } from './utils/interceptors/http-tracing.interceptor';
+import { OpenTracingInterceptor } from './utils/interceptors/open-tracing.interceptor';
 
 async function bootstrap() {
+  require('./utils/tracing');
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true,
     cors: true
@@ -32,7 +33,8 @@ async function bootstrap() {
   app.useGlobalInterceptors(
     new ExceptionInterceptor(loggerService),
     new HttpLoggerInterceptor(),
-    new HttpTracingInterceptor(loggerService)
+    new OpenTracingInterceptor(loggerService)
+    // new HttpTracingInterceptor(loggerService)
   );
 
   app.setGlobalPrefix('api', {
@@ -69,6 +71,7 @@ async function bootstrap() {
 
   await app.listen(PORT);
 
+  // tracingSDK.start()
   loggerService.log(`🔵 Postgres listening at ${bold(POSTGRES_URL)}`);
   loggerService.log(`🔵 Mongo listening at ${bold(MONGO_URL)}`);
   loggerService.log(`🔵 jeager listening at ${bold(JEAGER_URL)}`);

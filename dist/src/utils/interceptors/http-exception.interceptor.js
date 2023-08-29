@@ -33,9 +33,7 @@ let ExceptionInterceptor = class ExceptionInterceptor {
             const context = `${executionContext.getClass().name}/${executionContext.getHandler().name}`;
             error.context = error.context = context;
             if (request === null || request === void 0 ? void 0 : request.tracing) {
-                request.tracing.setTag(request.tracing.tags.ERROR, true);
-                request.tracing.setTag('message', error.message);
-                request.tracing.setTag('statusCode', error.status);
+                request.tracing.setStatus({ message: error.message, code: error.status });
                 request.tracing.finish();
             }
             throw error;

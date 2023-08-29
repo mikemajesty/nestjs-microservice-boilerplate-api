@@ -62,7 +62,7 @@ describe('CatsCreateUsecase', () => {
       commit: jest.fn(),
       rollback: jest.fn()
     });
-    repository.create = jest.fn().mockRejectedValue(new ApiInternalServerException('transactionError'));
+    repository.create = jest.fn().mockRejectedValue(new ApiInternalServerException());
     await expect(usecase.execute(catCreateMock, trancingMock)).rejects.toThrow(ApiInternalServerException);
   });
 });

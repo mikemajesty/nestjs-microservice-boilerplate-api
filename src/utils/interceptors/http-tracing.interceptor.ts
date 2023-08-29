@@ -12,6 +12,7 @@ import { ILoggerAdapter } from '@/infra/logger';
 import { interceptAxiosResponseError, requestRetry } from '../axios';
 import { ApiInternalServerException } from '../exception';
 import { TracingType } from '../request';
+import { Context } from '@opentelemetry/api';
 
 @Injectable()
 export class HttpTracingInterceptor implements NestInterceptor {
@@ -34,7 +35,14 @@ export class HttpTracingInterceptor implements NestInterceptor {
     };
 
     this.tracer = initTracer(config, options);
+
+    const span = this.tracer.startSpan("MIKE");
+
+    span.log({ aff: 'AAAAAA' })
+
+    span.finish()
   }
+
 
   intercept(executionContext: ExecutionContext, next: CallHandler): Observable<unknown> {
     const request = executionContext.switchToHttp().getRequest();
@@ -44,15 +52,16 @@ export class HttpTracingInterceptor implements NestInterceptor {
     const parentObject = parent ? { childOf: parent } : {};
     const span = this.tracer.startSpan(request.headers.host + request.path, parentObject);
 
+    span.log({ aff: 'AAAAAA' })
     const requestId = request.headers.traceid ?? request.id;
 
-    const createJaegerInstance = (): TracingType => {
+    const createJaegerInstance = (): any => {
       return {
         span: span,
         tracer: this.tracer,
         tracerId: requestId,
-        tags: Tags,
-        axios: (options: AxiosRequestConfig = {}): AxiosInstance => {
+        attributes: [] as any,
+        axios: (options: AxiosRequestConfig = {}): any => {
           const headers = {};
           this.tracer.inject(span, FORMAT_HTTP_HEADERS, headers);
           options.headers = { ...options.headers, ...headers };
@@ -77,10 +86,6 @@ export class HttpTracingInterceptor implements NestInterceptor {
 
           return http;
         },
-        log: (event: { [key: string]: unknown }) => {
-          const timestamp = DateTime.fromJSDate(new Date()).setZone(process.env.TZ).toMillis();
-          span.log(event, timestamp);
-        },
         setTag: (key, value) => {
           span.setTag(key, value);
         },
@@ -93,9 +98,8 @@ export class HttpTracingInterceptor implements NestInterceptor {
         finish: () => {
           span.finish();
         },
-        createSpan: (name, parent: Span) => {
-          const parentObject: SpanOptions = parent ? { childOf: parent } : { childOf: span };
-          return this.tracer.startSpan(name, parentObject);
+        createSpan: (name, parent: Context) => {
+          return this.tracer.startSpan(name, {} as any);
         }
       };
     };

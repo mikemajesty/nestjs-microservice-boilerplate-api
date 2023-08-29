@@ -22,7 +22,7 @@ exports.trancingMock = {
         logEvent(key, value) {
             return key + value;
         },
-        log(event) {
+        setStatus(event) {
             return event;
         }
     },

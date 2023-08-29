@@ -1,5 +1,6 @@
 # compiled output
-dist
+./dist
+dist/*
 node_modules
 
 # Logs
@@ -17,7 +18,7 @@ lerna-debug.log*
 # Tests
 /coverage
 /.nyc_output
-
+dist
 # IDEs and editors
 /.idea
 .project

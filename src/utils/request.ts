@@ -1,20 +1,23 @@
 import { AxiosInstance, AxiosRequestConfig } from 'axios';
-import { JaegerTracer } from 'jaeger-client';
-import { Span, Tags } from 'opentracing';
+// import { JaegerTracer } from 'jaeger-client';
+// import { Span, Tags } from 'opentracing';
 
 import { UserEntity } from '@/core/user/entity/user';
+import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
+import { AttributeValue, Context, SpanStatus, TimeInput } from '@opentelemetry/api';
+
+type LogEventType = AttributeValue | TimeInput;
 
 export type TracingType = {
-  span: Span;
-  tracer: JaegerTracer;
+  span: any;
+  tracer: any;
   tracerId: string;
-  tags: typeof Tags;
+  attributes: typeof SemanticAttributes;
   axios: (config?: AxiosRequestConfig) => AxiosInstance;
-  log: (event: { [key: string]: unknown }) => void;
-  setTag: (key: string, value: unknown) => void;
-  logEvent: (key: string, value: unknown) => void;
-  addTags: (object: object) => void;
-  createSpan: (name: string, parent?: Span) => Span;
+  setStatus: (status: SpanStatus) => void;
+  logEvent: (name: string, attributesOrStartTime?: AttributeValue | TimeInput) => void;
+  addAttribute: (key: string, value: AttributeValue) => void;
+  createSpan: (name: string, parent?: Context) => any;
   finish: () => void;
 };
 

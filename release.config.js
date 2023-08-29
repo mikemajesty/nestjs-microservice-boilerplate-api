@@ -1,6 +1,6 @@
 const config = {
   branches: ['master'],
-  tagFormat: 'release-${version}',
+  tagFormat: 'release-v${version}',
   plugins: [
     '@semantic-release/commit-analyzer',
     '@semantic-release/release-notes-generator',

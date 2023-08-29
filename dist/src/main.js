@@ -14,8 +14,9 @@ const exception_1 = require("./utils/exception");
 const http_exception_filter_1 = require("./utils/filters/http-exception.filter");
 const http_exception_interceptor_1 = require("./utils/interceptors/http-exception.interceptor");
 const http_logger_interceptor_1 = require("./utils/interceptors/http-logger.interceptor");
-const http_tracing_interceptor_1 = require("./utils/interceptors/http-tracing.interceptor");
+const open_tracing_interceptor_1 = require("./utils/interceptors/open-tracing.interceptor");
 async function bootstrap() {
+    require('./utils/tracing');
     const app = await core_1.NestFactory.create(app_module_1.AppModule, {
         bufferLogs: true,
         cors: true
@@ -24,7 +25,7 @@ async function bootstrap() {
     loggerService.setApplication(package_json_1.name);
     app.useLogger(loggerService);
     app.useGlobalFilters(new http_exception_filter_1.AppExceptionFilter(loggerService));
-    app.useGlobalInterceptors(new http_exception_interceptor_1.ExceptionInterceptor(loggerService), new http_logger_interceptor_1.HttpLoggerInterceptor(), new http_tracing_interceptor_1.HttpTracingInterceptor(loggerService));
+    app.useGlobalInterceptors(new http_exception_interceptor_1.ExceptionInterceptor(loggerService), new http_logger_interceptor_1.HttpLoggerInterceptor(), new open_tracing_interceptor_1.OpenTracingInterceptor(loggerService));
     app.setGlobalPrefix('api', {
         exclude: [
             { path: 'health', method: common_1.RequestMethod.GET },

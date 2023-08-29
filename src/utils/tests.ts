@@ -24,7 +24,7 @@ export const trancingMock: ApiTrancingInput = {
     logEvent(key, value) {
       return key + value;
     },
-    log(event) {
+    setStatus(event) {
       return event;
     }
   } as Partial<TracingType> as TracingType,
