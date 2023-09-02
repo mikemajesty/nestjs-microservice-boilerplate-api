@@ -1,4 +1,6 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
+import { SpanStatusCode } from '@opentelemetry/api';
+import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
 import { Observable } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { ZodError } from 'zod';
@@ -32,7 +34,8 @@ export class ExceptionInterceptor implements NestInterceptor {
         error.context = error.context = context;
 
         if (request?.tracing) {
-          request.tracing.setStatus({ message: error.message, code: error.status });
+          request.tracing.addAttribute(SemanticAttributes.HTTP_STATUS_CODE, error.status);
+          request.tracing.setStatus({ message: error.message, code: SpanStatusCode.ERROR });
           request.tracing.finish();
         }
 

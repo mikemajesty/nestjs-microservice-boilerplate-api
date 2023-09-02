@@ -1,9 +1,10 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import opentelemetry, {
+  Attributes,
   AttributeValue,
   Context,
-  SpanAttributes,
   SpanStatus,
+  SpanStatusCode,
   TimeInput,
   Tracer
 } from '@opentelemetry/api';
@@ -16,14 +17,14 @@ import { Observable, tap } from 'rxjs';
 import { ILoggerAdapter } from '@/infra/logger';
 
 import { interceptAxiosResponseError, requestRetry } from '../axios';
-import { TracingType } from '../request';
+import { getPathWithoutUUID, TracingType } from '../request';
 
 @Injectable()
 export class OpenTracingInterceptor implements NestInterceptor {
   private tracer: Tracer;
 
   constructor(private readonly logger: ILoggerAdapter) {
-    this.tracer = opentelemetry.trace.getTracerProvider().getTracer(name, version);
+    this.tracer = opentelemetry.trace.getTracer(name, version);
   }
 
   intercept(executionContext: ExecutionContext, next: CallHandler): Observable<unknown> {
@@ -32,7 +33,9 @@ export class OpenTracingInterceptor implements NestInterceptor {
 
     const requestId = request.headers.traceid ?? request.id;
 
-    const span = this.tracer.startSpan(request.path);
+    const controller = `${executionContext.getClass().name}.${executionContext.getHandler().name}`;
+
+    const span = this.tracer.startSpan(getPathWithoutUUID(request.path));
 
     const createJaegerInstance = (): TracingType => {
       return {
@@ -67,7 +70,7 @@ export class OpenTracingInterceptor implements NestInterceptor {
           span.setStatus(status);
         },
         logEvent: (key, value) => {
-          span.addEvent(key, value as SpanAttributes | TimeInput);
+          span.addEvent(key, value as Attributes | TimeInput);
         },
         addAttribute: (key: string, value: AttributeValue) => {
           span.setAttribute(key, value);
@@ -85,14 +88,16 @@ export class OpenTracingInterceptor implements NestInterceptor {
 
     request.tracing.addAttribute(SemanticAttributes.HTTP_METHOD, request.method);
     request.tracing.addAttribute(SemanticAttributes.HTTP_URL, request.path);
+    request.tracing.addAttribute('context', controller);
 
     if (requestId) {
-      request.tracing.addAttribute('traceId', requestId);
+      request.tracing.addAttribute('traceid', requestId);
     }
 
     return next.handle().pipe(
       tap(() => {
-        request.tracing.setStatus({ message: 'OK', code: res.statusCode });
+        request.tracing.setStatus({ code: SpanStatusCode.OK });
+        request.tracing.addAttribute(SemanticAttributes.HTTP_STATUS_CODE, res.statusCode);
         request.tracing.finish();
       })
     );

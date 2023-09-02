@@ -1,3 +1,5 @@
+import './utils/tracing';
+
 import { RequestMethod } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -16,7 +18,6 @@ import { HttpLoggerInterceptor } from './utils/interceptors/http-logger.intercep
 import { OpenTracingInterceptor } from './utils/interceptors/open-tracing.interceptor';
 
 async function bootstrap() {
-  require('./utils/tracing');
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true,
     cors: true
@@ -34,7 +35,6 @@ async function bootstrap() {
     new ExceptionInterceptor(loggerService),
     new HttpLoggerInterceptor(),
     new OpenTracingInterceptor(loggerService)
-    // new HttpTracingInterceptor(loggerService)
   );
 
   app.setGlobalPrefix('api', {
@@ -71,7 +71,6 @@ async function bootstrap() {
 
   await app.listen(PORT);
 
-  // tracingSDK.start()
   loggerService.log(`🔵 Postgres listening at ${bold(POSTGRES_URL)}`);
   loggerService.log(`🔵 Mongo listening at ${bold(MONGO_URL)}`);
   loggerService.log(`🔵 jeager listening at ${bold(JEAGER_URL)}`);
