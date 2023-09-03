@@ -28,11 +28,9 @@ export class CatsCreateUsecase {
     try {
       const cats = await this.catsRepository.create<DatabaseOptionsType>(entity, { transaction });
 
-      tracing.logEvent('cats-created', `cats created by: ${user.login}`);
-
       await transaction.commit();
 
-      tracing.log({ message: 'cats created successfully.', cats });
+      tracing.logEvent('cats-created', `cats created by: ${user.login}`);
 
       return cats;
     } catch (error) {

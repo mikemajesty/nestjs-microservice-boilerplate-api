@@ -1,3 +1,5 @@
+import './utils/tracing';
+
 import { RequestMethod } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -13,7 +15,7 @@ import { ApiInternalServerException, BaseException } from './utils/exception';
 import { AppExceptionFilter } from './utils/filters/http-exception.filter';
 import { ExceptionInterceptor } from './utils/interceptors/http-exception.interceptor';
 import { HttpLoggerInterceptor } from './utils/interceptors/http-logger.interceptor';
-import { HttpTracingInterceptor } from './utils/interceptors/http-tracing.interceptor';
+import { OpenTracingInterceptor } from './utils/interceptors/open-tracing.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -32,7 +34,7 @@ async function bootstrap() {
   app.useGlobalInterceptors(
     new ExceptionInterceptor(loggerService),
     new HttpLoggerInterceptor(),
-    new HttpTracingInterceptor(loggerService)
+    new OpenTracingInterceptor(loggerService)
   );
 
   app.setGlobalPrefix('api', {
