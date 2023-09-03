@@ -1,3 +1,11 @@
+# [1.1.0](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/release-v1.0.0...release-v1.1.0) (2023-09-03)
+
+
+### Features
+
+* **config:** update version ([4eb29c4](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/4eb29c485d319b1aa72f21611380d7ea427797d4))
+* run lint ([2efa10e](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/2efa10e8f41f840239d2dd8e6f244132c535967e))
+
 # [1.1.0](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/release-1.0.0...release-1.1.0) (2023-08-27)
 
 
