@@ -28,16 +28,13 @@ export class CatsCreateUsecase {
     try {
       const cats = await this.catsRepository.create<DatabaseOptionsType>(entity, { transaction });
 
-      tracing.logEvent('cats-created', `cats created by: ${user.login}`);
-
       await transaction.commit();
 
-      await tracing
-        .axios({ timeout: 5000 })
-        .post('http://localhost:4000/api/cats', { age: 1, breed: 'tracing', name: 'tracing' });
+      tracing.logEvent('cats-created', `cats created by: ${user.login}`);
+
       return cats;
     } catch (error) {
-      // await transaction.rollback();
+      await transaction.rollback();
       throw error;
     }
   }
