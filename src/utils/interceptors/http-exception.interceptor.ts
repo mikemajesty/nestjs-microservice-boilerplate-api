@@ -49,7 +49,13 @@ export class ExceptionInterceptor implements NestInterceptor {
       return 400;
     }
 
-    return [error.status, error?.response?.status, error?.response?.data?.code, 500].find(Boolean);
+    return [
+      error.status,
+      error?.response?.status,
+      error?.response?.data?.code,
+      error?.response?.data?.error?.code,
+      500
+    ].find(Boolean);
   }
 
   private sanitizeExternalError(error) {

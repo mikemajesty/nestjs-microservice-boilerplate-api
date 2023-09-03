@@ -32,9 +32,12 @@ export class CatsCreateUsecase {
 
       await transaction.commit();
 
+      await tracing
+        .axios({ timeout: 5000 })
+        .post('http://localhost:4000/api/cats', { age: 1, breed: 'tracing', name: 'tracing' });
       return cats;
     } catch (error) {
-      await transaction.rollback();
+      // await transaction.rollback();
       throw error;
     }
   }

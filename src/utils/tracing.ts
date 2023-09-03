@@ -86,5 +86,7 @@ const updateSpanName = (span: Span, request: ClientRequest | IncomingMessage) =>
     return `${span['name']} => ${request['protocol']}//${request['host']}${getPathWithoutUUID(request['path'])}`;
   }
 
-  return `${span['name']} => ${request['headers']?.origin || request['host']}${getPathWithoutUUID(request['url'])}`;
+  return `${span['name']} => ${[request['headers']?.origin, request['host'], request['headers']?.host].find(
+    Boolean
+  )}${getPathWithoutUUID(request['url'])}`;
 };

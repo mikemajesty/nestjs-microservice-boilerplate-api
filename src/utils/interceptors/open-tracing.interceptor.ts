@@ -43,17 +43,16 @@ export class OpenTracingInterceptor implements NestInterceptor {
         tracer: this.tracer,
         tracerId: requestId,
         attributes: SemanticAttributes,
-        axios: (options: AxiosRequestConfig = {}): AxiosInstance => {
-          if (request.headers.authorization) {
-            options.headers['authorization'] = `${request.headers.authorization}`;
-          }
+        axios: (options: Omit<AxiosRequestConfig, 'headers'>): AxiosInstance => {
+          request.headers.traceid = requestId;
 
-          options.headers['traceid'] = requestId;
+          const http = axios.create({
+            ...options,
+            headers: { traceid: request.id, authorization: request.headers.authorization }
+          });
 
-          options.headers = { traceid: request.id, ...request.headers, ...options.headers };
-
-          const http = axios.create(options);
           axiosBetterStacktrace(http);
+
           requestRetry({ axios: http, logger: this.logger });
 
           http.interceptors.response.use(
