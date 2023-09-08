@@ -7,13 +7,10 @@ import { MongoDBInstrumentation } from '@opentelemetry/instrumentation-mongodb';
 import { PgInstrumentation } from '@opentelemetry/instrumentation-pg';
 import { RedisInstrumentation } from '@opentelemetry/instrumentation-redis-4';
 import { Resource } from '@opentelemetry/resources';
+import { ConsoleMetricExporter, PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
+import { NodeSDK } from '@opentelemetry/sdk-node';
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
 import { v4 as uuidv4 } from 'uuid';
-import { NodeSDK } from '@opentelemetry/sdk-node';
-import {
-  PeriodicExportingMetricReader,
-  ConsoleMetricExporter,
-} from '@opentelemetry/sdk-metrics';
 
 import { name, version } from '../../package.json';
 import { getPathWithoutUUID } from './request';
@@ -73,7 +70,7 @@ const sdk = new NodeSDK({
   ]
 });
 
-sdk.start()
+sdk.start();
 
 process.on('SIGTERM', () => {
   sdk
