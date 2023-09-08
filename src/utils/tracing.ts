@@ -10,7 +10,6 @@ import { Resource } from '@opentelemetry/resources';
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
 import { v4 as uuidv4 } from 'uuid';
 import { NodeSDK } from '@opentelemetry/sdk-node';
-
 import {
   PeriodicExportingMetricReader,
   ConsoleMetricExporter,
@@ -31,6 +30,7 @@ const sdk = new NodeSDK({
   traceExporter: traceExporter,
   metricReader: new PeriodicExportingMetricReader({
     exporter: new ConsoleMetricExporter(),
+    exportTimeoutMillis: 5000
   }),
   instrumentations: [
     new HttpInstrumentation({
@@ -40,7 +40,7 @@ const sdk = new NodeSDK({
         }
       },
       requestHook: (span: Span, request: ClientRequest | IncomingMessage) => {
-        const id = [request['id'], request['traceid'], request['headers'].traceid].find(Boolean);
+        const id = [request['id'], request['traceid'], request['headers']?.traceid].find(Boolean);
 
         if (!id) {
           request['headers'].traceid = uuidv4();
