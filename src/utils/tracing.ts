@@ -1,37 +1,27 @@
 import { ClientRequest, IncomingMessage, ServerResponse } from 'node:http';
 
-import { diag, DiagConsoleLogger, DiagLogLevel, Span } from '@opentelemetry/api';
-import { JaegerExporter } from '@opentelemetry/exporter-jaeger';
-import { registerInstrumentations } from '@opentelemetry/instrumentation';
+import { Span } from '@opentelemetry/api';
 import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
 import { MongoDBInstrumentation } from '@opentelemetry/instrumentation-mongodb';
 import { PgInstrumentation } from '@opentelemetry/instrumentation-pg';
 import { RedisInstrumentation } from '@opentelemetry/instrumentation-redis-4';
 import { Resource } from '@opentelemetry/resources';
-import { BatchSpanProcessor, NodeTracerProvider } from '@opentelemetry/sdk-trace-node';
+import { NodeSDK } from '@opentelemetry/sdk-node';
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
 import { v4 as uuidv4 } from 'uuid';
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-proto';
 
 import { name, version } from '../../package.json';
 import { getPathWithoutUUID } from './request';
 
-diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.DEBUG);
+const tracerExporter = new OTLPTraceExporter()
 
-const traceExporter = new JaegerExporter({ tags: [] });
-
-const provide = new NodeTracerProvider({
+const sdk = new NodeSDK({
   resource: new Resource({
     [SemanticResourceAttributes.SERVICE_NAME]: name,
     [SemanticResourceAttributes.SERVICE_VERSION]: version
-  })
-});
-
-provide.addSpanProcessor(new BatchSpanProcessor(traceExporter));
-
-provide.register();
-
-registerInstrumentations({
-  tracerProvider: provide,
+  }),
+  traceExporter: tracerExporter,
   instrumentations: [
     new HttpInstrumentation({
       responseHook: (span: Span, res: IncomingMessage | ServerResponse) => {
@@ -40,7 +30,7 @@ registerInstrumentations({
         }
       },
       requestHook: (span: Span, request: ClientRequest | IncomingMessage) => {
-        const id = [request['id'], request['traceid'], request['headers'].traceid].find(Boolean);
+        const id = [request['id'], request['traceid'], request['headers']?.traceid].find(Boolean);
 
         if (!id) {
           request['headers'].traceid = uuidv4();
@@ -73,8 +63,10 @@ registerInstrumentations({
   ]
 });
 
+sdk.start();
+
 process.on('SIGTERM', () => {
-  provide
+  sdk
     .shutdown()
     .then(() => console.log('Tracing terminated'))
     .catch((error) => console.log('Error terminating tracing', error))
