@@ -130,7 +130,8 @@ Creating a CRUD in Postgres and Mongo in seconds.
 - Docker
 - Observability
   - tracing
-  - Jeager
+  - log
+  - metrics: Soon
 - Git hooks
   - Husky
 - Commitlint
@@ -361,6 +362,7 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │       ├── pagination.ts
 │       ├── request.ts
 │       ├── search.ts
+│       ├── tracing.ts
 │       ├── sort.ts
 │       ├── static
 │       │   └── htttp-status.json
