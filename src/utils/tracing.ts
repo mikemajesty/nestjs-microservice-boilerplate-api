@@ -1,6 +1,6 @@
 import { ClientRequest, IncomingMessage, ServerResponse } from 'node:http';
 
-import { Span } from '@opentelemetry/api';
+import { DiagConsoleLogger, DiagLogLevel, Span, diag } from '@opentelemetry/api';
 import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
 import { MongoDBInstrumentation } from '@opentelemetry/instrumentation-mongodb';
 import { PgInstrumentation } from '@opentelemetry/instrumentation-pg';
@@ -8,19 +8,51 @@ import { RedisInstrumentation } from '@opentelemetry/instrumentation-redis-4';
 import { Resource } from '@opentelemetry/resources';
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
+import { MeterProvider, PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
 import { v4 as uuidv4 } from 'uuid';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-proto';
 
 import { name, version } from '../../package.json';
 import { getPathWithoutUUID } from './request';
 
+import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
+
+
+diag.setLogger(
+  new DiagConsoleLogger(),
+  DiagLogLevel.DEBUG
+)
+
 const tracerExporter = new OTLPTraceExporter()
 
+const resource = new Resource({
+  [SemanticResourceAttributes.SERVICE_NAME]: name,
+  [SemanticResourceAttributes.SERVICE_VERSION]: version
+});
+
+const meterProvider = new MeterProvider({
+  resource,
+});
+
+const metricExporter = new OTLPMetricExporter();
+
+meterProvider.addMetricReader(
+  new PeriodicExportingMetricReader({
+    exporter: metricExporter,
+    exportIntervalMillis: 10000,
+  })
+);
+
+const meter = meterProvider.getMeter('example-exporter-collector');
+
+const requestCounter = meter.createCounter('requests', {
+  description: 'Example of a Counter',
+});
+
+requestCounter.add(1, { pid: process.pid, environment: 'staging' });
+
 const sdk = new NodeSDK({
-  resource: new Resource({
-    [SemanticResourceAttributes.SERVICE_NAME]: name,
-    [SemanticResourceAttributes.SERVICE_VERSION]: version
-  }),
+  resource,
   traceExporter: tracerExporter,
   instrumentations: [
     new HttpInstrumentation({

@@ -73,22 +73,36 @@ services:
       - nestjs-microservice-redis:/data
     ports:
       - 6379:6379
-  jaegertracing:
-    container_name: nestjs-microservice-jaegertracing
-    image: jaegertracing/all-in-one:latest
+  zipkin-all-in-one:
+    image: openzipkin/zipkin:latest
+    ports:
+      - "9411:9411"
+    env_file:
+      - .env
+  prometheus:
+    container_name: nestjs-microservice-prometheus
+    image: prom/prometheus:v2.47.0
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--enable-feature=otlp-write-receiver'
+      - '--enable-feature=exemplar-storage'
     env_file:
       - .env
     ports:
-      - '6831:6831/udp'
-      - '6832:6832/udp'
-      - '5778:5778'
-      - '16686:16686'
-      - '4317:4317'
-      - '4318:4318'
-      - '14250:14250'
-      - '14268:14268'
-      - '14269:14269'
-      - '9411:9411'
+      - '9090:9090'
+    volumes:
+      - ./scripts/prometheus/config.yml:/etc/prometheus/prometheus.yml
+  collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    command: [ "--config=/conf/collector-config.yaml" ]
+    volumes:
+      - ./scripts/prometheus/collector-config.yaml:/conf/collector-config.yaml
+    ports:
+      - "9464:9464"
+      - "4317:4317"
+      - "4318:4318"
+    depends_on:
+      - zipkin-all-in-one
 
 volumes:
   nestjs-microservice-postgres:
