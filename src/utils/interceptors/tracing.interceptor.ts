@@ -3,7 +3,6 @@ import opentelemetry, {
   Attributes,
   AttributeValue,
   Context,
-  Meter,
   SpanStatus,
   SpanStatusCode,
   TimeInput,
