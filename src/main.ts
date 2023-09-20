@@ -15,8 +15,8 @@ import { ApiInternalServerException, BaseException } from './utils/exception';
 import { AppExceptionFilter } from './utils/filters/http-exception.filter';
 import { ExceptionInterceptor } from './utils/interceptors/http-exception.interceptor';
 import { HttpLoggerInterceptor } from './utils/interceptors/http-logger.interceptor';
-import { TracingInterceptor } from './utils/interceptors/tracing.interceptor';
 import { MetricsInterceptor } from './utils/interceptors/metrics.interceptor';
+import { TracingInterceptor } from './utils/interceptors/tracing.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {

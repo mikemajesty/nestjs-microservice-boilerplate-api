@@ -1,6 +1,6 @@
 import { ClientRequest, IncomingMessage, ServerResponse } from 'node:http';
 
-import { diag, DiagConsoleLogger, DiagLogLevel, Span, ValueType } from '@opentelemetry/api';
+import { diag, DiagConsoleLogger, DiagLogLevel, Span } from '@opentelemetry/api';
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-proto';
 import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
@@ -9,10 +9,7 @@ import { PgInstrumentation } from '@opentelemetry/instrumentation-pg';
 import { RedisInstrumentation } from '@opentelemetry/instrumentation-redis-4';
 import { Resource } from '@opentelemetry/resources';
 import {
-  ExponentialHistogramAggregation,
-  MeterProvider,
   PeriodicExportingMetricReader,
-  View,
 } from '@opentelemetry/sdk-metrics';
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
@@ -49,9 +46,6 @@ const sdk = new NodeSDK({
         }
       },
       requestHook: (span: Span, request: ClientRequest | IncomingMessage) => {
-        const method = (request as IncomingMessage).method;
-        const url = span['attributes']['http.url']
-
         const id = [request['id'], request['traceid'], request['headers']?.traceid].find(Boolean);
         if (!id) {
           request['headers'].traceid = uuidv4();
