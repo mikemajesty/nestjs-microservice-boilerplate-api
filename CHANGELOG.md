@@ -1,3 +1,14 @@
+# [1.8.0](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/1.7.0...1.8.0) (2023-09-20)
+
+
+### Features
+
+* **config:** add opentelemetry metrics ([02d0ea3](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/02d0ea3e7a2f1c1c9734568636460e258c7e5cd0))
+* **config:** add opentelemetry metrics ([4315ae0](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/4315ae01be8f09a91ac7e420ebe9970d48927c39))
+* **interceptors:** add metrics interceptors ([e4fe51d](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/e4fe51d1c21ab3a0be3ff405a49be379aad13917))
+* **interceptors:** add metrics interceptors ([6690443](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/669044300ae1a2238a7033c551e70e2268f142b6))
+* **interceptors:** add metrics interceptors ([7f91dc7](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/7f91dc7a43884fddbf33629e52bfd9b3dbf947f3))
+
 # [1.7.0](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/v1.6.0...1.7.0) (2023-09-03)
 
 
