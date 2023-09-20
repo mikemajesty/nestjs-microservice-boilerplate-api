@@ -131,15 +131,13 @@ Creating a CRUD in Postgres and Mongo in seconds.
 - Observability
   - tracing
   - log
-  - metrics: Soon
+  - metrics
 - Git hooks
   - Husky
 - Commitlint
 - Secrets Service
 - HTTP Service
 - Logger Service
-  - traceid
-  - pinojs
   - mongodb transport
 - Authentication
   - Login
@@ -188,7 +186,10 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │   │   └── start-replicaset.sh
 │   ├── npm-audit.sh
 │   └── postgres
-│       └── create-database.sql
+│   |    └── create-database.sql
+│   └── prometheus
+│       └── collector-config.yaml
+│       └── config.yml
 ├── src
 │   ├── app.module.ts
 │   ├── core

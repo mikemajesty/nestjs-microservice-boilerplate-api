@@ -54,7 +54,7 @@ async function bootstrap() {
     }
   });
 
-  const { ENV, MONGO_URL, POSTGRES_URL, PORT, HOST, JEAGER_URL } = app.get(ISecretsAdapter);
+  const { ENV, MONGO_URL, POSTGRES_URL, PORT, HOST, ZIPKIN_URL, PROMETHUES_URL } = app.get(ISecretsAdapter);
 
   const config = new DocumentBuilder()
     .setTitle(name)
@@ -74,8 +74,9 @@ async function bootstrap() {
   await app.listen(PORT);
 
   loggerService.log(`🔵 Postgres listening at ${bold(POSTGRES_URL)}`);
-  loggerService.log(`🔵 Mongo listening at ${bold(MONGO_URL)}`);
-  loggerService.log(`🔵 jeager listening at ${bold(JEAGER_URL)}`);
+  loggerService.log(`🔵 Mongo listening at ${bold(MONGO_URL)}\n`);
+  loggerService.log(`⚪ Zipkin[${bold('Tracing')}] listening at ${bold(ZIPKIN_URL)}`);
+  loggerService.log(`⚪ Promethues[${bold('Metrics')}] listening at ${bold(PROMETHUES_URL)}`);
 
   const userRepository = app.get(IUserRepository);
 

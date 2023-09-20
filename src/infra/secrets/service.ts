@@ -25,7 +25,9 @@ export class SecretsService extends ConfigService implements ISecretsAdapter {
 
   MONGO_URL = this.get('MONGO_URL');
 
-  JEAGER_URL = this.get('JEAGER_URL');
+  ZIPKIN_URL = this.get('ZIPKIN_URL');
+
+  PROMETHUES_URL = this.get('PROMETHUES_URL');
 
   TOKEN_EXPIRATION = this.get<number>('TOKEN_EXPIRATION');
 

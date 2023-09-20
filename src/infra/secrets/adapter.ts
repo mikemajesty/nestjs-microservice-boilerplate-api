@@ -13,7 +13,9 @@ export abstract class ISecretsAdapter {
 
   REDIS_URL: string;
 
-  JEAGER_URL: string;
+  ZIPKIN_URL: string;
+
+  PROMETHUES_URL: string;
 
   TOKEN_EXPIRATION: number;
 
