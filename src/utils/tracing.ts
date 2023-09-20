@@ -1,6 +1,6 @@
 import { ClientRequest, IncomingMessage, ServerResponse } from 'node:http';
 
-import { diag, DiagConsoleLogger, DiagLogLevel, Span } from '@opentelemetry/api';
+import { diag, DiagConsoleLogger, DiagLogLevel, Span, ValueType } from '@opentelemetry/api';
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-proto';
 import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
@@ -8,7 +8,12 @@ import { MongoDBInstrumentation } from '@opentelemetry/instrumentation-mongodb';
 import { PgInstrumentation } from '@opentelemetry/instrumentation-pg';
 import { RedisInstrumentation } from '@opentelemetry/instrumentation-redis-4';
 import { Resource } from '@opentelemetry/resources';
-import { MeterProvider, PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
+import {
+  ExponentialHistogramAggregation,
+  MeterProvider,
+  PeriodicExportingMetricReader,
+  View,
+} from '@opentelemetry/sdk-metrics';
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
 import { v4 as uuidv4 } from 'uuid';
@@ -16,7 +21,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { name, version } from '../../package.json';
 import { getPathWithoutUUID } from './request';
 
-diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.DEBUG);
+diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.ERROR);
 
 const tracerExporter = new OTLPTraceExporter();
 
@@ -25,30 +30,17 @@ const resource = new Resource({
   [SemanticResourceAttributes.SERVICE_VERSION]: version
 });
 
-const meterProvider = new MeterProvider({
-  resource
-});
-
 const metricExporter = new OTLPMetricExporter();
 
-meterProvider.addMetricReader(
-  new PeriodicExportingMetricReader({
-    exporter: metricExporter,
-    exportIntervalMillis: 10000
-  })
-);
-
-const meter = meterProvider.getMeter('example-exporter-collector');
-
-const requestCounter = meter.createCounter('requests', {
-  description: 'Example of a Counter'
+const metricReader = new PeriodicExportingMetricReader({
+  exporter: metricExporter,
+  exportIntervalMillis: 10000
 });
-
-requestCounter.add(1, { pid: process.pid, environment: 'staging' });
 
 const sdk = new NodeSDK({
   resource,
   traceExporter: tracerExporter,
+  metricReader: metricReader,
   instrumentations: [
     new HttpInstrumentation({
       responseHook: (span: Span, res: IncomingMessage | ServerResponse) => {
@@ -57,8 +49,10 @@ const sdk = new NodeSDK({
         }
       },
       requestHook: (span: Span, request: ClientRequest | IncomingMessage) => {
-        const id = [request['id'], request['traceid'], request['headers']?.traceid].find(Boolean);
+        const method = (request as IncomingMessage).method;
+        const url = span['attributes']['http.url']
 
+        const id = [request['id'], request['traceid'], request['headers']?.traceid].find(Boolean);
         if (!id) {
           request['headers'].traceid = uuidv4();
           request['id'] = request['headers'].traceid;

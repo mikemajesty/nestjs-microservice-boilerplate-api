@@ -3,6 +3,7 @@ import opentelemetry, {
   Attributes,
   AttributeValue,
   Context,
+  Meter,
   SpanStatus,
   SpanStatusCode,
   TimeInput,
@@ -20,7 +21,7 @@ import { interceptAxiosResponseError, requestRetry } from '../axios';
 import { getPathWithoutUUID, TracingType } from '../request';
 
 @Injectable()
-export class OpenTracingInterceptor implements NestInterceptor {
+export class TracingInterceptor implements NestInterceptor {
   private tracer: Tracer;
 
   constructor(private readonly logger: ILoggerAdapter) {

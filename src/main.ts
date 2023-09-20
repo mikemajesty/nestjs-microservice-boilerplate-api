@@ -15,7 +15,8 @@ import { ApiInternalServerException, BaseException } from './utils/exception';
 import { AppExceptionFilter } from './utils/filters/http-exception.filter';
 import { ExceptionInterceptor } from './utils/interceptors/http-exception.interceptor';
 import { HttpLoggerInterceptor } from './utils/interceptors/http-logger.interceptor';
-import { OpenTracingInterceptor } from './utils/interceptors/open-tracing.interceptor';
+import { TracingInterceptor } from './utils/interceptors/tracing.interceptor';
+import { MetricsInterceptor } from './utils/interceptors/metrics.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -34,7 +35,8 @@ async function bootstrap() {
   app.useGlobalInterceptors(
     new ExceptionInterceptor(loggerService),
     new HttpLoggerInterceptor(),
-    new OpenTracingInterceptor(loggerService)
+    new TracingInterceptor(loggerService),
+    new MetricsInterceptor()
   );
 
   app.setGlobalPrefix('api', {
