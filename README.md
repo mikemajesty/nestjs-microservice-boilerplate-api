@@ -96,12 +96,9 @@ Creating a CRUD in Postgres and Mongo in seconds.
   ```
 - run
   ```
-  $ yarn migration:run
+  $ yarn migration:run  ***/
+
   ```
-
-### Tracing usage
-
-[Jeager Observability](./TRACING.md)
 
 ### Test
 
