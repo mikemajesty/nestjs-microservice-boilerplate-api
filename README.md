@@ -145,7 +145,6 @@ Creating a CRUD in Postgres and Mongo in seconds.
 - Libs Structure
 - Dependency Inversion Pattern
 - Usecase Pattern
-- Anti Corruption Layer Pattern
 - Interface Adapter Pattern
 - Generic Repository Pattern
   - Mongo Repository (mongooose)
