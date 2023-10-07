@@ -1,3 +1,11 @@
+# [1.9.0](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/1.8.0...1.9.0) (2023-10-08)
+
+
+### Features
+
+* **repository:** add findOne and findAll with include and exclude fields ([0dc5f6e](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/0dc5f6e469c252ee5f843da97ff81978c6510909))
+* **repository:** add findOne and findAll with include and exclude fields ([0ca002c](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/0ca002ce37ad7a1a6f6e9a2e9affb9ee2f14d2bb))
+
 # [1.8.0](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/1.7.0...1.8.0) (2023-09-20)
 
 
