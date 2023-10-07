@@ -39,8 +39,8 @@ export abstract class IRepository<T> {
   ): Promise<T>;
 
   abstract findAllWithExcludeFields<TQuery = Partial<T>, TOptions = unknown>(
-    filter: TQuery | null,
     excludeProperties: Array<keyof T>,
+    filter?: TQuery | null,
     options?: TOptions
   ): Promise<T[]>;
 
@@ -51,8 +51,8 @@ export abstract class IRepository<T> {
   ): Promise<T>;
 
   abstract findAllWithIncludeFields<TQuery = Partial<T>, TOptions = unknown>(
-    filter: TQuery | null,
     includeProperties: Array<keyof T>,
+    filter?: TQuery | null,
     options?: TOptions
   ): Promise<T[]>;
 

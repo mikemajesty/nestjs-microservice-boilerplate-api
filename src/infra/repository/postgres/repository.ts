@@ -177,24 +177,18 @@ export class SequelizeRepository<T extends ModelCtor & IEntity> implements IRepo
 
   @ConvertSequelizeFilterToRepository()
   async findAllWithExcludeFields<TQuery = Partial<T>, TOptions = DatabaseOptionsType>(
-    filter: TQuery,
     includeProperties: (keyof T)[],
+    filter?: TQuery,
     options?: TOptions
   ): Promise<T[]> {
     const { schema } = DatabaseOptionsSchema.parse(options);
 
     const exclude = includeProperties.map((e) => `${e.toString()}`);
 
-    if (filter) {
-      const model = await this.Model.schema(schema).findAll({
-        where: filter as WhereOptions<T>,
-        attributes: { exclude }
-      });
-
-      return model.map((m) => m.toJSON());
-    }
+    Object.assign(filter || {}, { deletedAt: null });
 
     const model = await this.Model.schema(schema).findAll({
+      where: filter as WhereOptions<T>,
       attributes: { exclude }
     });
 
@@ -223,24 +217,18 @@ export class SequelizeRepository<T extends ModelCtor & IEntity> implements IRepo
 
   @ConvertSequelizeFilterToRepository()
   async findAllWithIncludeFields<TQuery = Partial<T>, TOptions = DatabaseOptionsType>(
-    filter: TQuery,
     includeProperties: (keyof T)[],
+    filter?: TQuery,
     options?: TOptions
   ): Promise<T[]> {
     const { schema } = DatabaseOptionsSchema.parse(options);
 
     const include = includeProperties.map((e) => `${e.toString()}`);
 
-    if (filter) {
-      const model = await this.Model.schema(schema).findAll({
-        where: filter as WhereOptions<T>,
-        attributes: include
-      });
-
-      return model.map((m) => m.toJSON());
-    }
+    Object.assign(filter || {}, { deletedAt: null });
 
     const model = await this.Model.schema(schema).findAll({
+      where: filter as WhereOptions<T>,
       attributes: include
     });
 

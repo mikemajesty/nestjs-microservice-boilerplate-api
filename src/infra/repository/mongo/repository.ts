@@ -102,13 +102,19 @@ export class MongoRepository<T extends Document> implements IRepository<T> {
     return data.toObject({ virtuals: true });
   }
 
-  @ConvertMongoFilterToBaseRepository()
   async findAllWithExcludeFields(
-    filter: FilterQuery<T>,
     excludeProperties: Array<keyof T>,
+    filter?: FilterQuery<T>,
     options?: QueryOptions
   ): Promise<T[]> {
     const exclude = excludeProperties.map((e) => `-${e.toString()}`);
+
+    Object.assign(filter || {}, { deletedAt: null });
+
+    if (filter.id) {
+      filter._id = filter.id;
+      delete filter.id;
+    }
 
     const data = await this.model.find(filter, undefined, options).select(exclude.join(' '));
 
@@ -130,13 +136,19 @@ export class MongoRepository<T extends Document> implements IRepository<T> {
     return data.toObject({ virtuals: true });
   }
 
-  @ConvertMongoFilterToBaseRepository()
   async findAllWithIncludeFields(
-    filter: FilterQuery<T>,
     includeProperties: Array<keyof T>,
+    filter?: FilterQuery<T>,
     options?: QueryOptions
   ): Promise<T[]> {
     const exclude = includeProperties.map((e) => `${e.toString()}`);
+
+    Object.assign(filter || {}, { deletedAt: null });
+
+    if (filter.id) {
+      filter._id = filter.id;
+      delete filter.id;
+    }
 
     const data = await this.model.find(filter, undefined, options).select(exclude.join(' '));
 
