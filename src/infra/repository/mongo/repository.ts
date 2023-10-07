@@ -110,10 +110,9 @@ export class MongoRepository<T extends Document> implements IRepository<T> {
     const exclude = excludeProperties.map((e) => `-${e.toString()}`);
 
     if (!filter) {
-      filter = { deletedAt: null }
+      filter = { deletedAt: null };
     }
 
-    console.log("filter", filter);
     if (filter?.id) {
       filter._id = filter.id;
       delete filter.id;
@@ -147,7 +146,7 @@ export class MongoRepository<T extends Document> implements IRepository<T> {
     const exclude = includeProperties.map((e) => `${e.toString()}`);
 
     if (!filter) {
-      filter = { deletedAt: null }
+      filter = { deletedAt: null };
     }
 
     if (filter.id) {

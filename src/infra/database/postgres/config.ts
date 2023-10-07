@@ -19,6 +19,7 @@ const connection = `postgresql://${configService.get('POSTGRES_USER')}:${configS
 const sequelizeConfig = new Sequelize(connection, {
   dialect: 'postgres',
   benchmark: true,
+  // eslint-disable-next-line no-console
   logging: (msm, timming) => console.log(blue(`[sequelize]`), gray(msm), `${blue(bold(`${timming}ms`))}`)
 });
 
