@@ -22,6 +22,7 @@ export const SearchHttpSchema = z
         .split(',')
         .every((s) => {
           const [value] = s.split(':').reverse();
+
           if (!value) return false;
           return true;
         });
@@ -37,7 +38,9 @@ export const SearchHttpSchema = z
     String(searchString)
       .split(',')
       .forEach((s) => {
-        const [field, value] = s.split(':');
+        const propertyIndex = s.indexOf(':');
+        const value = s.slice(propertyIndex + 1, s.length);
+        const [field] = s.split(':');
         search[field] = value.trim();
       });
 

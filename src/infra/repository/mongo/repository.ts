@@ -87,6 +87,62 @@ export class MongoRepository<T extends Document> implements IRepository<T> {
     return await this.model.find(filter);
   }
 
+  @ConvertMongoFilterToBaseRepository()
+  async findOneWithExcludeFields(
+    filter: FilterQuery<T>,
+    excludeProperties: Array<keyof T>,
+    options?: QueryOptions
+  ): Promise<T> {
+    const exclude = excludeProperties.map((e) => `-${e.toString()}`);
+
+    const data = await this.model.findOne(filter, undefined, options).select(exclude.join(' '));
+
+    if (!data) return null;
+
+    return data.toObject({ virtuals: true });
+  }
+
+  @ConvertMongoFilterToBaseRepository()
+  async findAllWithExcludeFields(
+    filter: FilterQuery<T>,
+    excludeProperties: Array<keyof T>,
+    options?: QueryOptions
+  ): Promise<T[]> {
+    const exclude = excludeProperties.map((e) => `-${e.toString()}`);
+
+    const data = await this.model.find(filter, undefined, options).select(exclude.join(' '));
+
+    return data.map((d) => d.toObject({ virtuals: true }));
+  }
+
+  @ConvertMongoFilterToBaseRepository()
+  async findOneWithIncludeFields(
+    filter: FilterQuery<T>,
+    includeProperties: Array<keyof T>,
+    options?: QueryOptions
+  ): Promise<T> {
+    const exclude = includeProperties.map((e) => `${e.toString()}`);
+
+    const data = await this.model.findOne(filter, undefined, options).select(exclude.join(' '));
+
+    if (!data) return null;
+
+    return data.toObject({ virtuals: true });
+  }
+
+  @ConvertMongoFilterToBaseRepository()
+  async findAllWithIncludeFields(
+    filter: FilterQuery<T>,
+    includeProperties: Array<keyof T>,
+    options?: QueryOptions
+  ): Promise<T[]> {
+    const exclude = includeProperties.map((e) => `${e.toString()}`);
+
+    const data = await this.model.find(filter, undefined, options).select(exclude.join(' '));
+
+    return data.map((d) => d.toObject({ virtuals: true }));
+  }
+
   async seed(entityList: T[]): Promise<void> {
     const allHasId = entityList.some((e) => !e.id);
 

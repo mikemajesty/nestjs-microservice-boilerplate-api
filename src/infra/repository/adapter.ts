@@ -32,5 +32,29 @@ export abstract class IRepository<T> {
     options?: TOptions
   ): Promise<UpdatedModel>;
 
+  abstract findOneWithExcludeFields<TQuery = Partial<T>, TOptions = unknown>(
+    filter: TQuery,
+    excludeProperties: Array<keyof T>,
+    options?: TOptions
+  ): Promise<T>;
+
+  abstract findAllWithExcludeFields<TQuery = Partial<T>, TOptions = unknown>(
+    filter: TQuery | null,
+    excludeProperties: Array<keyof T>,
+    options?: TOptions
+  ): Promise<T[]>;
+
+  abstract findOneWithIncludeFields<TQuery = Partial<T>, TOptions = unknown>(
+    filter: TQuery,
+    includeProperties: Array<keyof T>,
+    options?: TOptions
+  ): Promise<T>;
+
+  abstract findAllWithIncludeFields<TQuery = Partial<T>, TOptions = unknown>(
+    filter: TQuery | null,
+    includeProperties: Array<keyof T>,
+    options?: TOptions
+  ): Promise<T[]>;
+
   abstract seed<TOpt = unknown>(entityList: T[], options?: TOpt): Promise<void>;
 }

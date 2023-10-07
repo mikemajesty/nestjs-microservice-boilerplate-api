@@ -155,6 +155,98 @@ export class SequelizeRepository<T extends ModelCtor & IEntity> implements IRepo
     });
   }
 
+  @ConvertSequelizeFilterToRepository()
+  async findOneWithExcludeFields<TQuery = Partial<T>, TOptions = DatabaseOptionsType>(
+    filter: TQuery,
+    excludeProperties?: (keyof T)[],
+    options?: TOptions
+  ): Promise<T> {
+    const { schema } = DatabaseOptionsSchema.parse(options);
+
+    const exclude = excludeProperties.map((e) => `${e.toString()}`);
+
+    const model = await this.Model.schema(schema).findOne({
+      where: filter as WhereOptions<T>,
+      attributes: { exclude }
+    });
+
+    if (!model) return;
+
+    return model.toJSON();
+  }
+
+  @ConvertSequelizeFilterToRepository()
+  async findAllWithExcludeFields<TQuery = Partial<T>, TOptions = DatabaseOptionsType>(
+    filter: TQuery,
+    includeProperties: (keyof T)[],
+    options?: TOptions
+  ): Promise<T[]> {
+    const { schema } = DatabaseOptionsSchema.parse(options);
+
+    const exclude = includeProperties.map((e) => `${e.toString()}`);
+
+    if (filter) {
+      const model = await this.Model.schema(schema).findAll({
+        where: filter as WhereOptions<T>,
+        attributes: { exclude }
+      });
+
+      return model.map((m) => m.toJSON());
+    }
+
+    const model = await this.Model.schema(schema).findAll({
+      attributes: { exclude }
+    });
+
+    return model.map((m) => m.toJSON());
+  }
+
+  @ConvertSequelizeFilterToRepository()
+  async findOneWithIncludeFields<TQuery = Partial<T>, TOptions = DatabaseOptionsType>(
+    filter: TQuery,
+    includeProperties: (keyof T)[],
+    options?: TOptions
+  ): Promise<T> {
+    const { schema } = DatabaseOptionsSchema.parse(options);
+
+    const include = includeProperties.map((e) => `${e.toString()}`);
+
+    const model = await this.Model.schema(schema).findOne({
+      where: filter as WhereOptions<T>,
+      attributes: include
+    });
+
+    if (!model) return;
+
+    return model.toJSON();
+  }
+
+  @ConvertSequelizeFilterToRepository()
+  async findAllWithIncludeFields<TQuery = Partial<T>, TOptions = DatabaseOptionsType>(
+    filter: TQuery,
+    includeProperties: (keyof T)[],
+    options?: TOptions
+  ): Promise<T[]> {
+    const { schema } = DatabaseOptionsSchema.parse(options);
+
+    const include = includeProperties.map((e) => `${e.toString()}`);
+
+    if (filter) {
+      const model = await this.Model.schema(schema).findAll({
+        where: filter as WhereOptions<T>,
+        attributes: include
+      });
+
+      return model.map((m) => m.toJSON());
+    }
+
+    const model = await this.Model.schema(schema).findAll({
+      attributes: include
+    });
+
+    return model.map((m) => m.toJSON());
+  }
+
   async findById<TOpt = DatabaseOptionsType>(id: string, options: TOpt): Promise<T> {
     const { schema } = DatabaseOptionsSchema.parse(options);
 
