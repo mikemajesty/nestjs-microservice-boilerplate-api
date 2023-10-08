@@ -175,7 +175,6 @@ export class SequelizeRepository<T extends ModelCtor & IEntity> implements IRepo
     return model.toJSON();
   }
 
-  @ConvertSequelizeFilterToRepository()
   async findAllWithExcludeFields<TQuery = Partial<T>, TOptions = DatabaseOptionsType>(
     includeProperties: (keyof T)[],
     filter?: TQuery,
@@ -185,7 +184,9 @@ export class SequelizeRepository<T extends ModelCtor & IEntity> implements IRepo
 
     const exclude = includeProperties.map((e) => `${e.toString()}`);
 
-    Object.assign(filter || {}, { deletedAt: null });
+    if (!filter) {
+      filter = { deletedAt: null } as TQuery
+    }
 
     const model = await this.Model.schema(schema).findAll({
       where: filter as WhereOptions<T>,
@@ -196,7 +197,7 @@ export class SequelizeRepository<T extends ModelCtor & IEntity> implements IRepo
   }
 
   @ConvertSequelizeFilterToRepository()
-  async findOneWithIncludeFields<TQuery = Partial<T>, TOptions = DatabaseOptionsType>(
+  async findOneWithSelectFields<TQuery = Partial<T>, TOptions = DatabaseOptionsType>(
     filter: TQuery,
     includeProperties: (keyof T)[],
     options?: TOptions
@@ -215,8 +216,7 @@ export class SequelizeRepository<T extends ModelCtor & IEntity> implements IRepo
     return model.toJSON();
   }
 
-  @ConvertSequelizeFilterToRepository()
-  async findAllWithIncludeFields<TQuery = Partial<T>, TOptions = DatabaseOptionsType>(
+  async findAllWithSelectFields<TQuery = Partial<T>, TOptions = DatabaseOptionsType>(
     includeProperties: (keyof T)[],
     filter?: TQuery,
     options?: TOptions
@@ -225,7 +225,9 @@ export class SequelizeRepository<T extends ModelCtor & IEntity> implements IRepo
 
     const include = includeProperties.map((e) => `${e.toString()}`);
 
-    Object.assign(filter || {}, { deletedAt: null });
+    if (!filter) {
+      filter = { deletedAt: null } as TQuery
+    }
 
     const model = await this.Model.schema(schema).findAll({
       where: filter as WhereOptions<T>,

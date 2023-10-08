@@ -44,13 +44,13 @@ export abstract class IRepository<T> {
     options?: TOptions
   ): Promise<T[]>;
 
-  abstract findOneWithIncludeFields<TQuery = Partial<T>, TOptions = unknown>(
+  abstract findOneWithSelectFields<TQuery = Partial<T>, TOptions = unknown>(
     filter: TQuery,
     includeProperties: Array<keyof T>,
     options?: TOptions
   ): Promise<T>;
 
-  abstract findAllWithIncludeFields<TQuery = Partial<T>, TOptions = unknown>(
+  abstract findAllWithSelectFields<TQuery = Partial<T>, TOptions = unknown>(
     includeProperties: Array<keyof T>,
     filter?: TQuery | null,
     options?: TOptions

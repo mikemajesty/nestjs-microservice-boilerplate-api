@@ -109,14 +109,7 @@ export class MongoRepository<T extends Document> implements IRepository<T> {
   ): Promise<T[]> {
     const exclude = excludeProperties.map((e) => `-${e.toString()}`);
 
-    if (!filter) {
-      filter = { deletedAt: null };
-    }
-
-    if (filter?.id) {
-      filter._id = filter.id;
-      delete filter.id;
-    }
+    filter = this.applyFilterWhenFilterParameterIsNotFirstOption(filter);
 
     const data = await this.model.find(filter, undefined, options).select(exclude.join(' '));
 
@@ -124,7 +117,7 @@ export class MongoRepository<T extends Document> implements IRepository<T> {
   }
 
   @ConvertMongoFilterToBaseRepository()
-  async findOneWithIncludeFields(
+  async findOneWithSelectFields(
     filter: FilterQuery<T>,
     includeProperties: Array<keyof T>,
     options?: QueryOptions
@@ -138,21 +131,14 @@ export class MongoRepository<T extends Document> implements IRepository<T> {
     return data.toObject({ virtuals: true });
   }
 
-  async findAllWithIncludeFields(
+  async findAllWithSelectFields(
     includeProperties: Array<keyof T>,
     filter?: FilterQuery<T>,
     options?: QueryOptions
   ): Promise<T[]> {
     const exclude = includeProperties.map((e) => `${e.toString()}`);
 
-    if (!filter) {
-      filter = { deletedAt: null };
-    }
-
-    if (filter.id) {
-      filter._id = filter.id;
-      delete filter.id;
-    }
+    filter = this.applyFilterWhenFilterParameterIsNotFirstOption(filter)
 
     const data = await this.model.find(filter, undefined, options).select(exclude.join(' '));
 
@@ -172,5 +158,18 @@ export class MongoRepository<T extends Document> implements IRepository<T> {
         await this.create(model);
       }
     }
+  }
+
+  private applyFilterWhenFilterParameterIsNotFirstOption(filter: FilterQuery<T>) {
+    if (!filter) {
+      filter = { deletedAt: null };
+    }
+
+    if (filter?.id) {
+      filter._id = filter.id;
+      delete filter.id;
+    }
+
+    return filter;
   }
 }

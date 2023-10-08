@@ -10,11 +10,18 @@ export function ConvertSequelizeFilterToRepository() {
   return (target: unknown, propertyKey: string, descriptor: PropertyDescriptor) => {
     const originalMethod = descriptor.value;
     descriptor.value = function (...args: z.infer<typeof ListSchema>[]) {
+
       const input = args[0];
 
-      input['deletedAt'] = null;
+      if (!input) {
+        const result = originalMethod.apply(this, args);
+        return result;
+      }
 
-      args[0] = input;
+      Object.assign(input, { createdAt: null })
+
+      args[0] = input
+
       const result = originalMethod.apply(this, args);
       return result;
     };
