@@ -15,6 +15,5 @@ jobs:
         with: 
           node-version: 18
       - run: npm i @nestjs/cli
-      - run: npm run build
       - run: npx semantic-release
   
