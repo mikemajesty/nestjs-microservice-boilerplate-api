@@ -185,7 +185,7 @@ export class SequelizeRepository<T extends ModelCtor & IEntity> implements IRepo
     const exclude = includeProperties.map((e) => `${e.toString()}`);
 
     if (!filter) {
-      filter = { deletedAt: null } as TQuery
+      filter = { deletedAt: null } as TQuery;
     }
 
     const model = await this.Model.schema(schema).findAll({
@@ -226,7 +226,7 @@ export class SequelizeRepository<T extends ModelCtor & IEntity> implements IRepo
     const include = includeProperties.map((e) => `${e.toString()}`);
 
     if (!filter) {
-      filter = { deletedAt: null } as TQuery
+      filter = { deletedAt: null } as TQuery;
     }
 
     const model = await this.Model.schema(schema).findAll({

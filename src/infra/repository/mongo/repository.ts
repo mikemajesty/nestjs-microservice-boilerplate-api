@@ -138,7 +138,7 @@ export class MongoRepository<T extends Document> implements IRepository<T> {
   ): Promise<T[]> {
     const exclude = includeProperties.map((e) => `${e.toString()}`);
 
-    filter = this.applyFilterWhenFilterParameterIsNotFirstOption(filter)
+    filter = this.applyFilterWhenFilterParameterIsNotFirstOption(filter);
 
     const data = await this.model.find(filter, undefined, options).select(exclude.join(' '));
 
