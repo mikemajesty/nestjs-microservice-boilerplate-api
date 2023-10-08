@@ -8,6 +8,19 @@
 
 ### Features
 
+* **config:** update build ([140a30e](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/140a30e76360386a5ff0f0d74e4db071b92fae1b))
+* **repository:** add findOne and findAll with include and exclude fields ([113a36b](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/113a36b23062a6fdbde4096fb32f1b30424268a4))
+
+# [1.10.0](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/1.9.0...1.10.0) (2023-10-08)
+
+
+### Bug Fixes
+
+* **repository:** change generic repository pattern method name ([be289fe](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/be289fe09a70d258300613e026af804144fcdcea))
+
+
+### Features
+
 * **repository:** add findOne and findAll with include and exclude fields ([113a36b](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/113a36b23062a6fdbde4096fb32f1b30424268a4))
 
 # [1.10.0](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/1.9.0...1.10.0) (2023-10-08)
