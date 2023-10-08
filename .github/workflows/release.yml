@@ -14,6 +14,9 @@ jobs:
       - uses: actions/setup-node@v2 
         with: 
           node-version: 18
+      - run: rm -rf dist
       - run: npm i @nestjs/cli
+      - run: npm run build
       - run: npx semantic-release
+      - run: rm -rf dist
   
