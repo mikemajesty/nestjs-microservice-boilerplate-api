@@ -3,8 +3,9 @@ import { Test } from '@nestjs/testing';
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { IUserUpdateAdapter } from '@/modules/user/adapter';
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception';
-import { userResponseMock } from '@/utils/mocks/user';
-import { expectZodError, trancingMock } from '@/utils/tests';
+import { trancingMock } from '@/utils/tests/mocks/request';
+import { userResponseMock } from '@/utils/tests/mocks/user';
+import { expectZodError } from '@/utils/tests/tests';
 
 import { IUserRepository } from '../../repository/user';
 import { UserUpdateUsecase } from '../user-update';

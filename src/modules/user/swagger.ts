@@ -1,6 +1,6 @@
 import { CreatedModel } from '@/infra/repository';
-import { userCreateMock, userResponseMock } from '@/utils/mocks/user';
 import { Swagger } from '@/utils/swagger';
+import { userCreateMock, userResponseMock } from '@/utils/tests/mocks/user';
 
 const entity = userCreateMock;
 

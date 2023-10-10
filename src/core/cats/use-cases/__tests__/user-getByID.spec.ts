@@ -3,8 +3,8 @@ import { Test } from '@nestjs/testing';
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { ICatsGetByIDAdapter } from '@/modules/cats/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
-import { catResponseMock } from '@/utils/mocks/cats';
-import { expectZodError, generateUUID } from '@/utils/tests';
+import { catResponseMock } from '@/utils/tests/mocks/cats';
+import { expectZodError, generateUUID } from '@/utils/tests/tests';
 
 import { ICatsRepository } from '../../repository/cats';
 import { CatsGetByIdUsecase } from '../cats-getByID';

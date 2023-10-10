@@ -4,9 +4,10 @@ import { ICacheAdapter } from '@/infra/cache';
 import { ISecretsAdapter, SecretsModule } from '@/infra/secrets';
 import { TokenModule } from '@/libs/auth';
 import { ILogoutAdapter } from '@/modules/logout/adapter';
-import { expectZodError, trancingMock } from '@/utils/tests';
+import { expectZodError } from '@/utils/tests/tests';
 
 import { LogoutUsecase } from '../user-logout';
+import { trancingMock } from '@/utils/tests/mocks/request';
 
 describe('LogoutUsecase', () => {
   let usecase: ILogoutAdapter;

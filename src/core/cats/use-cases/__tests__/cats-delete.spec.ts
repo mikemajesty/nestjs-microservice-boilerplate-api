@@ -4,8 +4,9 @@ import { CatsDeleteUsecase } from '@/core/cats/use-cases/cats-delete';
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { ICatsDeleteAdapter } from '@/modules/cats/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
-import { catResponseMock } from '@/utils/mocks/cats';
-import { expectZodError, generateUUID, trancingMock } from '@/utils/tests';
+import { catResponseMock } from '@/utils/tests/mocks/cats';
+import { trancingMock } from '@/utils/tests/mocks/request';
+import { expectZodError, generateUUID } from '@/utils/tests/tests';
 
 import { ICatsRepository } from '../../repository/cats';
 

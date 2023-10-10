@@ -3,8 +3,9 @@ import { Test } from '@nestjs/testing';
 import { LoggerModule } from '@/infra/logger';
 import { ICatsCreateAdapter } from '@/modules/cats/adapter';
 import { ApiInternalServerException } from '@/utils/exception';
-import { catCreateMock } from '@/utils/mocks/cats';
-import { expectZodError, trancingMock } from '@/utils/tests';
+import { catCreateMock } from '@/utils/tests/mocks/cats';
+import { trancingMock } from '@/utils/tests/mocks/request';
+import { expectZodError } from '@/utils/tests/tests';
 
 import { ICatsRepository } from '../../repository/cats';
 import { CatsCreateUsecase } from '../cats-create';

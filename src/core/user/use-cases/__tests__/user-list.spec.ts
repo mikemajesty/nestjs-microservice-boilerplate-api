@@ -1,8 +1,8 @@
 import { Test } from '@nestjs/testing';
 
 import { IUserListAdapter } from '@/modules/user/adapter';
-import { usersResponseMock } from '@/utils/mocks/user';
-import { expectZodError } from '@/utils/tests';
+import { usersResponseMock } from '@/utils/tests/mocks/user';
+import { expectZodError } from '@/utils/tests/tests';
 
 import { IUserRepository } from '../../repository/user';
 import { UserListUsecase } from '../user-list';

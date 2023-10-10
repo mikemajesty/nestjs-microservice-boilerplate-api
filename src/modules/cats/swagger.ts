@@ -1,6 +1,6 @@
 import { CreatedModel } from '@/infra/repository/types';
-import { catCreateMock, catResponseMock } from '@/utils/mocks/cats';
 import { Swagger } from '@/utils/swagger';
+import { catCreateMock, catResponseMock } from '@/utils/tests/mocks/cats';
 
 const entity = catCreateMock;
 

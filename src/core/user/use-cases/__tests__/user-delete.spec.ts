@@ -2,8 +2,9 @@ import { Test } from '@nestjs/testing';
 
 import { IUserDeleteAdapter } from '@/modules/user/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
-import { userResponseMock } from '@/utils/mocks/user';
-import { expectZodError, generateUUID, trancingMock } from '@/utils/tests';
+import { trancingMock } from '@/utils/tests/mocks/request';
+import { userResponseMock } from '@/utils/tests/mocks/user';
+import { expectZodError, generateUUID } from '@/utils/tests/tests';
 
 import { IUserRepository } from '../../repository/user';
 import { UserDeleteUsecase } from '../user-delete';
