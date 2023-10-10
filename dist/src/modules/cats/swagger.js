@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SwagggerRequest = exports.SwagggerResponse = void 0;
-const cats_1 = require("../../utils/mocks/cats");
 const swagger_1 = require("../../utils/swagger");
+const cats_1 = require("../../utils/tests/mocks/cats");
 const entity = cats_1.catCreateMock;
 const entityFull = cats_1.catResponseMock;
 exports.SwagggerResponse = {

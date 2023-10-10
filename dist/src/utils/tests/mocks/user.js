@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.usersResponseMock = exports.userResponseMock = exports.userCreateMock = void 0;
-const user_1 = require("../../core/user/entity/user");
+const user_1 = require("../../../core/user/entity/user");
 const tests_1 = require("../tests");
 exports.userCreateMock = {
     login: 'login',

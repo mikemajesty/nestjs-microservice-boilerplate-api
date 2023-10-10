@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.trancingMock = exports.generateUUID = exports.expectZodError = void 0;
+exports.generateUUID = exports.expectZodError = void 0;
 const uuid_1 = require("uuid");
 const zod_1 = require("zod");
 const expectZodError = async (callback, expected) => {
@@ -17,15 +17,4 @@ const expectZodError = async (callback, expected) => {
 exports.expectZodError = expectZodError;
 const generateUUID = () => (0, uuid_1.v4)();
 exports.generateUUID = generateUUID;
-exports.trancingMock = {
-    tracing: {
-        logEvent(key, value) {
-            return key + value;
-        },
-        setStatus(event) {
-            return event;
-        }
-    },
-    user: { login: 'test' }
-};
 //# sourceMappingURL=tests.js.map
