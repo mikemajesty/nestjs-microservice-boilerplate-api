@@ -3,8 +3,8 @@ import { Test } from '@nestjs/testing';
 import { ITokenAdapter, TokenModule } from '@/libs/auth';
 import { ILoginAdapter } from '@/modules/login/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
-import { trancingMock } from '@/utils/tests/mocks/request';
-import { usersResponseMock } from '@/utils/tests/mocks/user';
+import { RequestMock } from '@/utils/tests/mocks/request';
+import { UserMock } from '@/utils/tests/mocks/user';
 import { expectZodError } from '@/utils/tests/tests';
 
 import { IUserRepository } from '../../repository/user';
@@ -38,7 +38,7 @@ describe('LoginUsecase', () => {
 
   test('should throw error when invalid parameters', async () => {
     await expectZodError(
-      () => usecase.execute({}, trancingMock),
+      () => usecase.execute({}, RequestMock.trancingMock),
       (issues) => {
         expect(issues).toEqual([
           { message: 'Required', path: 'login' },
@@ -50,14 +50,14 @@ describe('LoginUsecase', () => {
 
   test('should throw erron when login or password not found', async () => {
     repository.findOne = jest.fn().mockResolvedValue(null);
-    await expect(usecase.execute({ login: 'login', password: 'password' }, trancingMock)).rejects.toThrowError(
-      ApiNotFoundException
-    );
+    await expect(
+      usecase.execute({ login: 'login', password: 'password' }, RequestMock.trancingMock)
+    ).rejects.toThrowError(ApiNotFoundException);
   });
 
   test('should login successfully', async () => {
-    repository.findOne = jest.fn().mockResolvedValue(usersResponseMock);
-    await expect(usecase.execute({ login: 'login', password: 'password' }, trancingMock)).resolves.toEqual({
+    repository.findOne = jest.fn().mockResolvedValue(UserMock.usersResponseMock);
+    await expect(usecase.execute({ login: 'login', password: 'password' }, RequestMock.trancingMock)).resolves.toEqual({
       token: expect.any(String)
     });
   });

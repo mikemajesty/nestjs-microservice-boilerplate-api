@@ -3,8 +3,8 @@ import { Test } from '@nestjs/testing';
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { IUserUpdateAdapter } from '@/modules/user/adapter';
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception';
-import { trancingMock } from '@/utils/tests/mocks/request';
-import { userResponseMock } from '@/utils/tests/mocks/user';
+import { RequestMock } from '@/utils/tests/mocks/request';
+import { UserMock } from '@/utils/tests/mocks/user';
 import { expectZodError } from '@/utils/tests/tests';
 
 import { IUserRepository } from '../../repository/user';
@@ -38,7 +38,7 @@ describe('UserUpdateUsecase', () => {
 
   test('should throw error when invalid parameters', async () => {
     await expectZodError(
-      () => usecase.execute({}, trancingMock),
+      () => usecase.execute({}, RequestMock.trancingMock),
       (issues) => {
         expect(issues).toEqual([{ message: 'Required', path: 'id' }]);
       }
@@ -46,20 +46,26 @@ describe('UserUpdateUsecase', () => {
   });
 
   test('should update successfully', async () => {
-    repository.findById = jest.fn().mockResolvedValue(userResponseMock);
+    repository.findById = jest.fn().mockResolvedValue(UserMock.userResponseMock);
     repository.existsOnUpdate = jest.fn().mockResolvedValue(null);
     repository.updateOne = jest.fn().mockResolvedValue(null);
-    await expect(usecase.execute(userResponseMock, trancingMock)).resolves.toEqual(userResponseMock);
+    await expect(usecase.execute(UserMock.userResponseMock, RequestMock.trancingMock)).resolves.toEqual(
+      UserMock.userResponseMock
+    );
   });
 
   test('should throw error when user not found', async () => {
     repository.findById = jest.fn().mockResolvedValue(null);
-    await expect(usecase.execute(userResponseMock, trancingMock)).rejects.toThrowError(ApiNotFoundException);
+    await expect(usecase.execute(UserMock.userResponseMock, RequestMock.trancingMock)).rejects.toThrowError(
+      ApiNotFoundException
+    );
   });
 
   test('should throw error when user exists', async () => {
-    repository.findById = jest.fn().mockResolvedValue(userResponseMock);
-    repository.existsOnUpdate = jest.fn().mockResolvedValue(userResponseMock);
-    await expect(usecase.execute(userResponseMock, trancingMock)).rejects.toThrowError(ApiConflictException);
+    repository.findById = jest.fn().mockResolvedValue(UserMock.userResponseMock);
+    repository.existsOnUpdate = jest.fn().mockResolvedValue(UserMock.userResponseMock);
+    await expect(usecase.execute(UserMock.userResponseMock, RequestMock.trancingMock)).rejects.toThrowError(
+      ApiConflictException
+    );
   });
 });

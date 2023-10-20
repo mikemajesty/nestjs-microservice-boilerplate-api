@@ -65,7 +65,7 @@ let LoggerService = class LoggerService {
             Error: exception_1.BaseException.name
         }[error === null || error === void 0 ? void 0 : error.name];
         const messageFind = [message, response === null || response === void 0 ? void 0 : response.message, error.message].find(Boolean);
-        this.logger.logger.error(Object.assign(Object.assign({}, response), { context: context, type: [type, error === null || error === void 0 ? void 0 : error.name].find(Boolean), traceid: this.getTraceId(error), createdAt: this.getCreatedAtDate(), application: this.app, stack: error.stack, message: messageFind }), messageFind);
+        this.logger.logger.error(Object.assign(Object.assign(Object.assign(Object.assign({}, response), { context: context, type: [type, error === null || error === void 0 ? void 0 : error.name].find(Boolean), traceid: this.getTraceId(error), createdAt: this.getCreatedAtDate(), application: this.app, stack: error.stack }), error === null || error === void 0 ? void 0 : error.parameters), { message: messageFind }), messageFind);
     }
     fatal(error, message, context) {
         this.logger.logger.fatal({

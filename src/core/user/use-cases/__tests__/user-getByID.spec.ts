@@ -2,7 +2,7 @@ import { Test } from '@nestjs/testing';
 
 import { IUserGetByIDAdapter } from '@/modules/user/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
-import { userResponseMock } from '@/utils/tests/mocks/user';
+import { UserMock } from '@/utils/tests/mocks/user';
 import { expectZodError, generateUUID } from '@/utils/tests/tests';
 
 import { IUserRepository } from '../../repository/user';
@@ -49,7 +49,7 @@ describe('UserGetByIdUsecase', () => {
   });
 
   test('should getById successfully', async () => {
-    repository.findById = jest.fn().mockResolvedValue(userResponseMock);
-    await expect(usecase.execute({ id: generateUUID() })).resolves.toEqual(userResponseMock);
+    repository.findById = jest.fn().mockResolvedValue(UserMock.userResponseMock);
+    await expect(usecase.execute({ id: generateUUID() })).resolves.toEqual(UserMock.userResponseMock);
   });
 });

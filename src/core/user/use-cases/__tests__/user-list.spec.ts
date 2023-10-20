@@ -1,7 +1,7 @@
 import { Test } from '@nestjs/testing';
 
 import { IUserListAdapter } from '@/modules/user/adapter';
-import { usersResponseMock } from '@/utils/tests/mocks/user';
+import { UserMock } from '@/utils/tests/mocks/user';
 import { expectZodError } from '@/utils/tests/tests';
 
 import { IUserRepository } from '../../repository/user';
@@ -43,10 +43,10 @@ describe('UserListUsecase', () => {
   });
 
   test('should list successfully', async () => {
-    const response = { docs: [usersResponseMock], page: 1, limit: 1, total: 1 };
+    const response = { docs: [UserMock.usersResponseMock], page: 1, limit: 1, total: 1 };
     repository.paginate = jest.fn().mockResolvedValue(response);
     await expect(usecase.execute({ limit: 1, page: 1, search: {}, sort: { createdAt: -1 } })).resolves.toEqual({
-      docs: [usersResponseMock],
+      docs: [UserMock.usersResponseMock],
       page: 1,
       limit: 1,
       total: 1

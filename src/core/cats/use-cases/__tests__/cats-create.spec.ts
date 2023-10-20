@@ -3,8 +3,8 @@ import { Test } from '@nestjs/testing';
 import { LoggerModule } from '@/infra/logger';
 import { ICatsCreateAdapter } from '@/modules/cats/adapter';
 import { ApiInternalServerException } from '@/utils/exception';
-import { catCreateMock } from '@/utils/tests/mocks/cats';
-import { trancingMock } from '@/utils/tests/mocks/request';
+import { CatsMock } from '@/utils/tests/mocks/cats';
+import { RequestMock } from '@/utils/tests/mocks/request';
 import { expectZodError } from '@/utils/tests/tests';
 
 import { ICatsRepository } from '../../repository/cats';
@@ -38,7 +38,7 @@ describe('CatsCreateUsecase', () => {
 
   test('should throw error when invalid parameters', async () => {
     await expectZodError(
-      () => usecase.execute({}, trancingMock),
+      () => usecase.execute({}, RequestMock.trancingMock),
       (issues) => {
         expect(issues).toEqual([
           { message: 'Required', path: 'name' },
@@ -50,12 +50,14 @@ describe('CatsCreateUsecase', () => {
   });
 
   test('should cats create successfully', async () => {
-    repository.create = jest.fn().mockResolvedValue(catCreateMock);
+    repository.create = jest.fn().mockResolvedValue(CatsMock.catCreateMock);
     repository.startSession = jest.fn().mockResolvedValue({
       commit: jest.fn(),
       rollback: jest.fn()
     });
-    await expect(usecase.execute(catCreateMock, trancingMock)).resolves.toEqual(catCreateMock);
+    await expect(usecase.execute(CatsMock.catCreateMock, RequestMock.trancingMock)).resolves.toEqual(
+      CatsMock.catCreateMock
+    );
   });
 
   test('should throw error when create with transaction', async () => {
@@ -64,6 +66,8 @@ describe('CatsCreateUsecase', () => {
       rollback: jest.fn()
     });
     repository.create = jest.fn().mockRejectedValue(new ApiInternalServerException());
-    await expect(usecase.execute(catCreateMock, trancingMock)).rejects.toThrow(ApiInternalServerException);
+    await expect(usecase.execute(CatsMock.catCreateMock, RequestMock.trancingMock)).rejects.toThrow(
+      ApiInternalServerException
+    );
   });
 });

@@ -4,8 +4,8 @@ import { CatsDeleteUsecase } from '@/core/cats/use-cases/cats-delete';
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { ICatsDeleteAdapter } from '@/modules/cats/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
-import { catResponseMock } from '@/utils/tests/mocks/cats';
-import { trancingMock } from '@/utils/tests/mocks/request';
+import { CatsMock } from '@/utils/tests/mocks/cats';
+import { RequestMock } from '@/utils/tests/mocks/request';
 import { expectZodError, generateUUID } from '@/utils/tests/tests';
 
 import { ICatsRepository } from '../../repository/cats';
@@ -38,7 +38,7 @@ describe('CatsDeleteUsecase', () => {
 
   test('should throw error when invalid parameters', async () => {
     await expectZodError(
-      () => usecase.execute({}, trancingMock),
+      () => usecase.execute({}, RequestMock.trancingMock),
       (issues) => {
         expect(issues).toEqual([{ message: 'Required', path: 'id' }]);
       }
@@ -47,14 +47,16 @@ describe('CatsDeleteUsecase', () => {
 
   test('should throw error when cats not found', async () => {
     repository.findById = jest.fn().mockResolvedValue(null);
-    await expect(usecase.execute({ id: generateUUID() }, trancingMock)).rejects.toThrowError(ApiNotFoundException);
+    await expect(usecase.execute({ id: generateUUID() }, RequestMock.trancingMock)).rejects.toThrowError(
+      ApiNotFoundException
+    );
   });
 
   test('should delete successfully', async () => {
-    repository.findById = jest.fn().mockResolvedValue(catResponseMock);
+    repository.findById = jest.fn().mockResolvedValue(CatsMock.catResponseMock);
     repository.updateOne = jest.fn();
-    await expect(usecase.execute({ id: generateUUID() }, trancingMock)).resolves.toEqual({
-      ...catResponseMock,
+    await expect(usecase.execute({ id: generateUUID() }, RequestMock.trancingMock)).resolves.toEqual({
+      ...CatsMock.catResponseMock,
       deletedAt: expect.any(Date)
     });
   });

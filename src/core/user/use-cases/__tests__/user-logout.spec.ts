@@ -4,10 +4,10 @@ import { ICacheAdapter } from '@/infra/cache';
 import { ISecretsAdapter, SecretsModule } from '@/infra/secrets';
 import { TokenModule } from '@/libs/auth';
 import { ILogoutAdapter } from '@/modules/logout/adapter';
+import { RequestMock } from '@/utils/tests/mocks/request';
 import { expectZodError } from '@/utils/tests/tests';
 
 import { LogoutUsecase } from '../user-logout';
-import { trancingMock } from '@/utils/tests/mocks/request';
 
 describe('LogoutUsecase', () => {
   let usecase: ILogoutAdapter;
@@ -39,7 +39,7 @@ describe('LogoutUsecase', () => {
 
   test('should throw error when invalid parameters', async () => {
     await expectZodError(
-      () => usecase.execute({}, trancingMock),
+      () => usecase.execute({}, RequestMock.trancingMock),
       (issues) => {
         expect(issues).toEqual([{ message: 'Required', path: 'token' }]);
       }
@@ -48,6 +48,6 @@ describe('LogoutUsecase', () => {
 
   test('should logout successfully', async () => {
     cache.set = jest.fn();
-    await expect(usecase.execute({ token: '12345678910' }, trancingMock)).resolves.toBeUndefined();
+    await expect(usecase.execute({ token: '12345678910' }, RequestMock.trancingMock)).resolves.toBeUndefined();
   });
 });

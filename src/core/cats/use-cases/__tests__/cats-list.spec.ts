@@ -3,7 +3,7 @@ import { Test } from '@nestjs/testing';
 import { CatsListUsecase } from '@/core/cats/use-cases/cats-list';
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { ICatsListAdapter } from '@/modules/cats/adapter';
-import { catsResponseMock } from '@/utils/tests/mocks/cats';
+import { CatsMock } from '@/utils/tests/mocks/cats';
 import { expectZodError } from '@/utils/tests/tests';
 
 import { ICatsRepository } from '../../repository/cats';
@@ -44,10 +44,10 @@ describe('CatsListUsecase', () => {
   });
 
   test('should list successfully', async () => {
-    const response = { docs: [catsResponseMock], page: 1, limit: 1, total: 1 };
+    const response = { docs: [CatsMock.catsResponseMock], page: 1, limit: 1, total: 1 };
     repository.paginate = jest.fn().mockResolvedValue(response);
     await expect(usecase.execute({ limit: 1, page: 1, search: {}, sort: { createdAt: -1 } })).resolves.toEqual({
-      docs: [catsResponseMock],
+      docs: [CatsMock.catsResponseMock],
       page: 1,
       limit: 1,
       total: 1

@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SwagggerRequest = exports.SwagggerResponse = void 0;
-const user_1 = require("../../utils/mocks/user");
 const swagger_1 = require("../../utils/swagger");
-const entity = user_1.userCreateMock;
-const entityFull = user_1.userResponseMock;
+const user_1 = require("../../utils/tests/mocks/user");
+const entity = user_1.UserMock.userCreateMock;
+const entityFull = user_1.UserMock.userResponseMock;
 exports.SwagggerResponse = {
     create: {
         200: swagger_1.Swagger.defaultResponseJSON({

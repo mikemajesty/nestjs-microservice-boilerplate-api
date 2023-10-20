@@ -3,7 +3,7 @@ import { Test } from '@nestjs/testing';
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { ICatsGetByIDAdapter } from '@/modules/cats/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
-import { catResponseMock } from '@/utils/tests/mocks/cats';
+import { CatsMock } from '@/utils/tests/mocks/cats';
 import { expectZodError, generateUUID } from '@/utils/tests/tests';
 
 import { ICatsRepository } from '../../repository/cats';
@@ -50,7 +50,7 @@ describe('CatsGetByIdUsecase', () => {
   });
 
   test('should getById successfully', async () => {
-    repository.findById = jest.fn().mockResolvedValue(catResponseMock);
-    await expect(usecase.execute({ id: generateUUID() })).resolves.toEqual(catResponseMock);
+    repository.findById = jest.fn().mockResolvedValue(CatsMock.catResponseMock);
+    await expect(usecase.execute({ id: generateUUID() })).resolves.toEqual(CatsMock.catResponseMock);
   });
 });
