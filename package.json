@@ -50,7 +50,7 @@
     "luxon": "^3.2.1",
     "mongoose": "^6.9.0",
     "mongoose-paginate-v2": "^1.7.1",
-    "nestjs-convert-to-curl": "^0.0.21",
+    "nestjs-convert-to-curl": "^0.0.22",
     "node-cache": "^5.1.2",
     "pg": "^8.10.0",
     "pg-hstore": "^2.3.4",
