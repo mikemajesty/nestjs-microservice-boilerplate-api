@@ -2,9 +2,10 @@ import { Test } from '@nestjs/testing';
 
 import { IUserGetByIDAdapter } from '@/modules/user/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
-import { UserMock } from '@/utils/tests/mocks/user';
+import { UserResponseMock } from '@/utils/tests/mocks/user';
 import { expectZodError, generateUUID } from '@/utils/tests/tests';
 
+import { UserEntity } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
 import { UserGetByIdUsecase } from '../user-getByID';
 
@@ -34,22 +35,22 @@ describe('UserGetByIdUsecase', () => {
     repository = app.get(IUserRepository);
   });
 
-  test('should throw error when invalid parameters', async () => {
+  test('when no input is specified, should expect an error', async () => {
     await expectZodError(
       () => usecase.execute({}),
       (issues) => {
-        expect(issues).toEqual([{ message: 'Required', path: 'id' }]);
+        expect(issues).toEqual([{ message: 'Required', path: UserEntity.nameof('id') }]);
       }
     );
   });
 
-  test('should throw error when user not found', async () => {
+  test('when user not found, should expect an errror', async () => {
     repository.findById = jest.fn().mockResolvedValue(null);
     await expect(usecase.execute({ id: generateUUID() })).rejects.toThrowError(ApiNotFoundException);
   });
 
-  test('should getById successfully', async () => {
-    repository.findById = jest.fn().mockResolvedValue(UserMock.userResponseMock);
-    await expect(usecase.execute({ id: generateUUID() })).resolves.toEqual(UserMock.userResponseMock);
+  test('when user getById successfully, should expect a user', async () => {
+    repository.findById = jest.fn().mockResolvedValue(UserResponseMock.userMock);
+    await expect(usecase.execute({ id: generateUUID() })).resolves.toEqual(UserResponseMock.userMock);
   });
 });

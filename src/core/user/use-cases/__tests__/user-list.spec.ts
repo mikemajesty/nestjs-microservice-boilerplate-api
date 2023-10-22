@@ -1,7 +1,7 @@
 import { Test } from '@nestjs/testing';
 
 import { IUserListAdapter } from '@/modules/user/adapter';
-import { UserMock } from '@/utils/tests/mocks/user';
+import { UserResponseMock } from '@/utils/tests/mocks/user';
 import { expectZodError } from '@/utils/tests/tests';
 
 import { IUserRepository } from '../../repository/user';
@@ -33,7 +33,7 @@ describe('UserListUsecase', () => {
     repository = app.get(IUserRepository);
   });
 
-  test('should throw error when invalid parameters', async () => {
+  test('when no input is specified, should expect an error', async () => {
     await expectZodError(
       () => usecase.execute({ search: null, sort: null, limit: 10, page: 1 }),
       (issues) => {
@@ -42,18 +42,18 @@ describe('UserListUsecase', () => {
     );
   });
 
-  test('should list successfully', async () => {
-    const response = { docs: [UserMock.usersResponseMock], page: 1, limit: 1, total: 1 };
+  test('when users are found, should expect an user list', async () => {
+    const response = { docs: UserResponseMock.usersMock, page: 1, limit: 1, total: 1 };
     repository.paginate = jest.fn().mockResolvedValue(response);
     await expect(usecase.execute({ limit: 1, page: 1, search: {}, sort: { createdAt: -1 } })).resolves.toEqual({
-      docs: [UserMock.usersResponseMock],
+      docs: UserResponseMock.usersMock,
       page: 1,
       limit: 1,
       total: 1
     });
   });
 
-  test('should list successfully when docs is empty', async () => {
+  test('when users not found, should expect an empty list', async () => {
     const response = { docs: [], page: 1, limit: 1, total: 1 };
     repository.paginate = jest.fn().mockResolvedValue(response);
     await expect(usecase.execute({ limit: 1, page: 1, search: {}, sort: { createdAt: -1 } })).resolves.toEqual(

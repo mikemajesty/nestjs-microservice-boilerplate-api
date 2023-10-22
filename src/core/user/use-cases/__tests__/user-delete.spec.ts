@@ -3,9 +3,10 @@ import { Test } from '@nestjs/testing';
 import { IUserDeleteAdapter } from '@/modules/user/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
 import { RequestMock } from '@/utils/tests/mocks/request';
-import { UserMock } from '@/utils/tests/mocks/user';
+import { UserResponseMock } from '@/utils/tests/mocks/user';
 import { expectZodError, generateUUID } from '@/utils/tests/tests';
 
+import { UserEntity } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
 import { UserDeleteUsecase } from '../user-delete';
 
@@ -35,27 +36,27 @@ describe('UserDeleteUsecase', () => {
     repository = app.get(IUserRepository);
   });
 
-  test('should throw error when invalid parameters', async () => {
+  test('when no input is specified, should expect an error', async () => {
     await expectZodError(
       () => usecase.execute({ id: 'uuid' }, RequestMock.trancingMock),
       (issues) => {
-        expect(issues).toEqual([{ message: 'Invalid uuid', path: 'id' }]);
+        expect(issues).toEqual([{ message: 'Invalid uuid', path: UserEntity.nameof('id') }]);
       }
     );
   });
 
-  test('should throw error when user not found', async () => {
+  test('when user not found, should expect an error', async () => {
     repository.findById = jest.fn().mockResolvedValue(null);
     await expect(usecase.execute({ id: generateUUID() }, RequestMock.trancingMock)).rejects.toThrowError(
       ApiNotFoundException
     );
   });
 
-  test('should delete successfully', async () => {
-    repository.findById = jest.fn().mockResolvedValue(UserMock.userResponseMock);
+  test('when user deleted successfully, should expect an user that has been deleted.', async () => {
+    repository.findById = jest.fn().mockResolvedValue(UserResponseMock.userMock);
     repository.updateOne = jest.fn();
     await expect(usecase.execute({ id: generateUUID() }, RequestMock.trancingMock)).resolves.toEqual({
-      ...UserMock.userResponseMock,
+      ...UserResponseMock.userMock,
       deletedAt: expect.any(Date)
     });
   });

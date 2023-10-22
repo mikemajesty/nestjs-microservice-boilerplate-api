@@ -1,22 +1,18 @@
 import { CatsEntity } from '@/core/cats/entity/cats';
 
-import { generateUUID } from '../tests';
-
-export class CatsMock {
-  static catCreateMock = {
+export class CatsResponseMock {
+  static readonly catMock = new CatsEntity({
     age: 10,
     breed: 'dummy',
     name: 'dummy'
-  } as CatsEntity;
+  });
 
-  static catResponseMock = {
-    id: generateUUID(),
-    ...this.catCreateMock
-  } as CatsEntity;
-
-  static catsResponseMock = {
-    ...this.catResponseMock,
-    createdAt: new Date(),
-    updatedAt: new Date()
-  } as CatsEntity;
+  static readonly catsMock = [
+    new CatsEntity({
+      ...this.catMock,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: null
+    })
+  ];
 }

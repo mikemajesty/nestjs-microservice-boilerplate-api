@@ -41,6 +41,8 @@ export class UserEntity implements IEntity {
 
   deletedAt?: Date;
 
+  static nameof = (name: keyof UserEntity) => name;
+
   constructor(entity: User) {
     Object.assign(this, UserEntitySchema.parse(withID(entity)));
   }

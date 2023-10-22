@@ -3,12 +3,18 @@ import { Test } from '@nestjs/testing';
 import { LoggerModule } from '@/infra/logger';
 import { ICatsCreateAdapter } from '@/modules/cats/adapter';
 import { ApiInternalServerException } from '@/utils/exception';
-import { CatsMock } from '@/utils/tests/mocks/cats';
 import { RequestMock } from '@/utils/tests/mocks/request';
 import { expectZodError } from '@/utils/tests/tests';
 
+import { CatsEntity } from '../../entity/cats';
 import { ICatsRepository } from '../../repository/cats';
 import { CatsCreateUsecase } from '../cats-create';
+
+const catCreateMock = {
+  age: 10,
+  breed: 'dummy',
+  name: 'dummy'
+} as CatsEntity;
 
 describe('CatsCreateUsecase', () => {
   let usecase: ICatsCreateAdapter;
@@ -36,38 +42,34 @@ describe('CatsCreateUsecase', () => {
     repository = app.get(ICatsRepository);
   });
 
-  test('should throw error when invalid parameters', async () => {
+  test('when no input is specified, should expect an error', async () => {
     await expectZodError(
       () => usecase.execute({}, RequestMock.trancingMock),
       (issues) => {
         expect(issues).toEqual([
-          { message: 'Required', path: 'name' },
-          { message: 'Required', path: 'breed' },
-          { message: 'Required', path: 'age' }
+          { message: 'Required', path: CatsEntity.nameof('name') },
+          { message: 'Required', path: CatsEntity.nameof('breed') },
+          { message: 'Required', path: CatsEntity.nameof('age') }
         ]);
       }
     );
   });
 
-  test('should cats create successfully', async () => {
-    repository.create = jest.fn().mockResolvedValue(CatsMock.catCreateMock);
+  test('when cats created successfully, should expect a cats that has been created', async () => {
+    repository.create = jest.fn().mockResolvedValue(catCreateMock);
     repository.startSession = jest.fn().mockResolvedValue({
       commit: jest.fn(),
       rollback: jest.fn()
     });
-    await expect(usecase.execute(CatsMock.catCreateMock, RequestMock.trancingMock)).resolves.toEqual(
-      CatsMock.catCreateMock
-    );
+    await expect(usecase.execute(catCreateMock, RequestMock.trancingMock)).resolves.toEqual(catCreateMock);
   });
 
-  test('should throw error when create with transaction', async () => {
+  test('when transaction throw an error, should expect an error', async () => {
     repository.startSession = jest.fn().mockResolvedValue({
       commit: jest.fn(),
       rollback: jest.fn()
     });
     repository.create = jest.fn().mockRejectedValue(new ApiInternalServerException());
-    await expect(usecase.execute(CatsMock.catCreateMock, RequestMock.trancingMock)).rejects.toThrow(
-      ApiInternalServerException
-    );
+    await expect(usecase.execute(catCreateMock, RequestMock.trancingMock)).rejects.toThrow(ApiInternalServerException);
   });
 });

@@ -1,22 +1,18 @@
 import { UserEntity, UserRole } from '@/core/user/entity/user';
 
-import { generateUUID } from '../tests';
-
-export class UserMock {
-  static userCreateMock = {
+export class UserResponseMock {
+  static readonly userMock = new UserEntity({
     login: 'login',
     password: '**********',
     roles: [UserRole.USER]
-  } as UserEntity;
+  });
 
-  static userResponseMock = {
-    id: generateUUID(),
-    ...this.userCreateMock
-  } as UserEntity;
-
-  static usersResponseMock = {
-    ...this.userResponseMock,
-    createdAt: new Date(),
-    updatedAt: new Date()
-  } as UserEntity;
+  static readonly usersMock = [
+    new UserEntity({
+      ...this.userMock,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: null
+    })
+  ];
 }

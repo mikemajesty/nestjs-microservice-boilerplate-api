@@ -37,7 +37,7 @@ describe('LogoutUsecase', () => {
     cache = app.get(ICacheAdapter);
   });
 
-  test('should throw error when invalid parameters', async () => {
+  test('when no input is specified, should expect an error', async () => {
     await expectZodError(
       () => usecase.execute({}, RequestMock.trancingMock),
       (issues) => {
@@ -46,7 +46,7 @@ describe('LogoutUsecase', () => {
     );
   });
 
-  test('should logout successfully', async () => {
+  test('when user logout, should expect set token to blacklist', async () => {
     cache.set = jest.fn();
     await expect(usecase.execute({ token: '12345678910' }, RequestMock.trancingMock)).resolves.toBeUndefined();
   });

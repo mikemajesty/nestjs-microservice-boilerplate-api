@@ -37,6 +37,8 @@ export class CatsEntity implements IEntity {
 
   updatedAt: Date;
 
+  static nameof = (name: keyof CatsEntity) => name;
+
   constructor(entity: Cat) {
     Object.assign(this, CatsEntitySchema.parse(withID(entity)));
   }

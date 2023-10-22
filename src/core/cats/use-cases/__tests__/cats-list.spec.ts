@@ -3,7 +3,7 @@ import { Test } from '@nestjs/testing';
 import { CatsListUsecase } from '@/core/cats/use-cases/cats-list';
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { ICatsListAdapter } from '@/modules/cats/adapter';
-import { CatsMock } from '@/utils/tests/mocks/cats';
+import { CatsResponseMock } from '@/utils/tests/mocks/cats';
 import { expectZodError } from '@/utils/tests/tests';
 
 import { ICatsRepository } from '../../repository/cats';
@@ -34,7 +34,7 @@ describe('CatsListUsecase', () => {
     repository = app.get(ICatsRepository);
   });
 
-  test('should throw error when invalid parameters', async () => {
+  test('when no input is specified, should expect an error', async () => {
     await expectZodError(
       () => usecase.execute({ search: null, sort: null, limit: 10, page: 1 }),
       (issues) => {
@@ -43,18 +43,18 @@ describe('CatsListUsecase', () => {
     );
   });
 
-  test('should list successfully', async () => {
-    const response = { docs: [CatsMock.catsResponseMock], page: 1, limit: 1, total: 1 };
+  test('when cats are found, should expect an user list', async () => {
+    const response = { docs: CatsResponseMock.catsMock, page: 1, limit: 1, total: 1 };
     repository.paginate = jest.fn().mockResolvedValue(response);
     await expect(usecase.execute({ limit: 1, page: 1, search: {}, sort: { createdAt: -1 } })).resolves.toEqual({
-      docs: [CatsMock.catsResponseMock],
+      docs: CatsResponseMock.catsMock,
       page: 1,
       limit: 1,
       total: 1
     });
   });
 
-  test('should list successfully when docs is empty', async () => {
+  test('when cats not found, should expect an empty list', async () => {
     const response = { docs: [], page: 1, limit: 1, total: 1 };
     repository.paginate = jest.fn().mockResolvedValue(response);
     await expect(usecase.execute({ limit: 1, page: 1, search: {}, sort: { createdAt: -1 } })).resolves.toEqual(

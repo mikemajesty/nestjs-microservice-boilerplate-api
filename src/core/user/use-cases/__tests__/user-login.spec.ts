@@ -4,9 +4,10 @@ import { ITokenAdapter, TokenModule } from '@/libs/auth';
 import { ILoginAdapter } from '@/modules/login/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
 import { RequestMock } from '@/utils/tests/mocks/request';
-import { UserMock } from '@/utils/tests/mocks/user';
+import { UserResponseMock } from '@/utils/tests/mocks/user';
 import { expectZodError } from '@/utils/tests/tests';
 
+import { UserEntity } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
 import { LoginUsecase } from '../user-login';
 
@@ -36,27 +37,27 @@ describe('LoginUsecase', () => {
     repository = app.get(IUserRepository);
   });
 
-  test('should throw error when invalid parameters', async () => {
+  test('when no input is specified, should expect an error', async () => {
     await expectZodError(
       () => usecase.execute({}, RequestMock.trancingMock),
       (issues) => {
         expect(issues).toEqual([
-          { message: 'Required', path: 'login' },
-          { message: 'Required', path: 'password' }
+          { message: 'Required', path: UserEntity.nameof('login') },
+          { message: 'Required', path: UserEntity.nameof('password') }
         ]);
       }
     );
   });
 
-  test('should throw erron when login or password not found', async () => {
+  test('when user not found, should expect an error', async () => {
     repository.findOne = jest.fn().mockResolvedValue(null);
     await expect(
       usecase.execute({ login: 'login', password: 'password' }, RequestMock.trancingMock)
     ).rejects.toThrowError(ApiNotFoundException);
   });
 
-  test('should login successfully', async () => {
-    repository.findOne = jest.fn().mockResolvedValue(UserMock.usersResponseMock);
+  test('when user found, should expect a token', async () => {
+    repository.findOne = jest.fn().mockResolvedValue(UserResponseMock.userMock);
     await expect(usecase.execute({ login: 'login', password: 'password' }, RequestMock.trancingMock)).resolves.toEqual({
       token: expect.any(String)
     });
