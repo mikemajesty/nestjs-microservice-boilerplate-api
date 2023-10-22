@@ -1,16 +1,12 @@
-import { CreatedModel } from '@/infra/repository';
-import { Swagger } from '@/utils/swagger';
-import { UserResponseMock } from '@/utils/tests/mocks/user';
-
-const entity = UserResponseMock.userCreateMock;
-
-const entityFull = UserResponseMock.userMock;
+import { UsersRequest } from '@/utils/docs/data/user/request';
+import { UsersResponse } from '@/utils/docs/data/user/response';
+import { Swagger } from '@/utils/docs/swagger';
 
 export const SwagggerResponse = {
   create: {
     200: Swagger.defaultResponseJSON({
       status: 200,
-      json: { created: true, id: '<uuid>' } as CreatedModel,
+      json: UsersResponse.create,
       description: 'user created.'
     }),
     409: Swagger.defaultResponseError({
@@ -23,7 +19,7 @@ export const SwagggerResponse = {
   update: {
     200: Swagger.defaultResponseJSON({
       status: 200,
-      json: entityFull,
+      json: UsersResponse.update,
       description: 'user updated.'
     }),
     404: Swagger.defaultResponseError({
@@ -42,7 +38,7 @@ export const SwagggerResponse = {
   getByID: {
     200: Swagger.defaultResponseJSON({
       status: 200,
-      json: entityFull,
+      json: UsersResponse.getByID,
       description: 'user found.'
     }),
     404: Swagger.defaultResponseError({
@@ -55,7 +51,7 @@ export const SwagggerResponse = {
   delete: {
     200: Swagger.defaultResponseJSON({
       status: 200,
-      json: entityFull,
+      json: UsersResponse.delete,
       description: 'user found.'
     }),
     404: Swagger.defaultResponseError({
@@ -68,15 +64,15 @@ export const SwagggerResponse = {
   list: {
     200: Swagger.defaultResponseJSON({
       status: 200,
-      json: { docs: { docs: [entityFull], page: 1, limit: 1, total: 1 } },
+      json: UsersResponse.list,
       description: 'user created.'
     })
   }
 };
 
 export const SwagggerRequest = {
-  createBody: Swagger.defaultRequestJSON({ ...entity, id: undefined }),
-  updateBody: Swagger.defaultRequestJSON({ ...entity, id: '<id>' }),
+  createBody: Swagger.defaultRequestJSON(UsersRequest.create),
+  updateBody: Swagger.defaultRequestJSON(UsersRequest.update),
   listQuery: {
     pagination: {
       limit: Swagger.defaultApiQueryOptions({ example: 10, name: 'limit', required: false }),

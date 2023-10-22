@@ -13,13 +13,13 @@ export const CatsDeleteSchema = CatsEntitySchema.pick({
 });
 
 export type CatsDeleteInput = z.infer<typeof CatsDeleteSchema>;
-export type CatsDeleteOutput = Promise<CatsEntity>;
+export type CatsDeleteOutput = CatsEntity;
 
 export class CatsDeleteUsecase {
   constructor(private readonly catsRepository: ICatsRepository) {}
 
   @ValidateSchema(CatsDeleteSchema)
-  async execute({ id }: CatsDeleteInput, { tracing, user }: ApiTrancingInput): CatsDeleteOutput {
+  async execute({ id }: CatsDeleteInput, { tracing, user }: ApiTrancingInput): Promise<CatsDeleteOutput> {
     const model = await this.catsRepository.findById<DatabaseOptionsType>(id);
 
     if (!model) {

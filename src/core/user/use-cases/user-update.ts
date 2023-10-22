@@ -13,13 +13,13 @@ export const UserUpdateSchema = UserEntitySchema.pick({
 }).merge(UserEntitySchema.omit({ id: true }).partial());
 
 export type UserUpdateInput = Partial<z.infer<typeof UserUpdateSchema>>;
-export type UserUpdateOutput = Promise<UserEntity>;
+export type UserUpdateOutput = UserEntity;
 
 export class UserUpdateUsecase {
   constructor(private readonly userRepository: IUserRepository, private readonly loggerServide: ILoggerAdapter) {}
 
   @ValidateSchema(UserUpdateSchema)
-  async execute(input: UserUpdateInput, { tracing, user: userData }: ApiTrancingInput): UserUpdateOutput {
+  async execute(input: UserUpdateInput, { tracing, user: userData }: ApiTrancingInput): Promise<UserUpdateOutput> {
     const user = await this.userRepository.findById(input.id);
 
     if (!user) {

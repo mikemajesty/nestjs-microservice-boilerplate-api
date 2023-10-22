@@ -14,13 +14,13 @@ export const CatsUpdateSchema = CatsEntitySchema.pick({
 }).merge(CatsEntitySchema.omit({ id: true }).partial());
 
 export type CatsUpdateInput = z.infer<typeof CatsUpdateSchema>;
-export type CatsUpdateOutput = Promise<CatsEntity>;
+export type CatsUpdateOutput = CatsEntity;
 
 export class CatsUpdateUsecase {
   constructor(private readonly catsRepository: ICatsRepository, private readonly loggerServide: ILoggerAdapter) {}
 
   @ValidateSchema(CatsUpdateSchema)
-  async execute(input: CatsUpdateInput, { tracing, user }: ApiTrancingInput): CatsUpdateOutput {
+  async execute(input: CatsUpdateInput, { tracing, user }: ApiTrancingInput): Promise<CatsUpdateOutput> {
     const cats = await this.catsRepository.findById<DatabaseOptionsType>(input.id);
 
     if (!cats) {

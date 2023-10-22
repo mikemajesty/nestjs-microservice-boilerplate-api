@@ -12,13 +12,13 @@ export const UserDeleteSchema = UserEntitySchema.pick({
 });
 
 export type UserDeleteInput = z.infer<typeof UserDeleteSchema>;
-export type UserDeleteOutput = Promise<UserEntity>;
+export type UserDeleteOutput = UserEntity;
 
 export class UserDeleteUsecase {
   constructor(private readonly userRepository: IUserRepository) {}
 
   @ValidateSchema(UserDeleteSchema)
-  async execute({ id }: UserDeleteInput, { tracing, user: userData }: ApiTrancingInput): UserDeleteOutput {
+  async execute({ id }: UserDeleteInput, { tracing, user: userData }: ApiTrancingInput): Promise<UserDeleteOutput> {
     const entity = await this.userRepository.findById(id);
 
     if (!entity) {

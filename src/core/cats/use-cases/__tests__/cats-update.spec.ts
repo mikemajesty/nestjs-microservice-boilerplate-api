@@ -3,13 +3,18 @@ import { Test } from '@nestjs/testing';
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { ICatsUpdateAdapter } from '@/modules/cats/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
-import { CatsResponseMock } from '@/utils/tests/mocks/cats';
 import { RequestMock } from '@/utils/tests/mocks/request';
 import { expectZodError, generateUUID } from '@/utils/tests/tests';
 
 import { CatsEntity } from '../../entity/cats';
 import { ICatsRepository } from '../../repository/cats';
 import { CatsUpdateUsecase } from '../cats-update';
+
+const catMock = new CatsEntity({
+  age: 10,
+  breed: 'dummy',
+  name: 'dummy'
+});
 
 describe('CatsUpdateUsecase', () => {
   let usecase: ICatsUpdateAdapter;
@@ -54,10 +59,8 @@ describe('CatsUpdateUsecase', () => {
   });
 
   test('when cats updated successfully, should expect an cat that has been updated', async () => {
-    repository.findById = jest.fn().mockResolvedValue(CatsResponseMock.catMock);
+    repository.findById = jest.fn().mockResolvedValue(catMock);
     repository.updateOne = jest.fn().mockResolvedValue(null);
-    await expect(usecase.execute({ id: generateUUID() }, RequestMock.trancingMock)).resolves.toEqual(
-      CatsResponseMock.catMock
-    );
+    await expect(usecase.execute({ id: generateUUID() }, RequestMock.trancingMock)).resolves.toEqual(catMock);
   });
 });

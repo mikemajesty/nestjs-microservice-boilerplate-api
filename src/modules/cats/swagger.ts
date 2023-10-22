@@ -1,23 +1,19 @@
-import { CreatedModel } from '@/infra/repository/types';
-import { Swagger } from '@/utils/swagger';
-import { CatsResponseMock } from '@/utils/tests/mocks/cats';
-
-const entity = CatsResponseMock.catCreateMock;
-
-const entityFull = CatsResponseMock.catMock;
+import { CatsRequest } from '@/utils/docs/data/cats/request';
+import { CatsResponse } from '@/utils/docs/data/cats/response';
+import { Swagger } from '@/utils/docs/swagger';
 
 export const SwagggerResponse = {
   create: {
     200: Swagger.defaultResponseJSON({
       status: 200,
-      json: { created: true, id: '<uuid>' } as CreatedModel,
+      json: CatsResponse.create,
       description: 'cat created.'
     })
   },
   update: {
     200: Swagger.defaultResponseJSON({
       status: 200,
-      json: entityFull,
+      json: CatsResponse.update,
       description: 'cat updated.'
     }),
     404: Swagger.defaultResponseError({
@@ -30,7 +26,7 @@ export const SwagggerResponse = {
   getByID: {
     200: Swagger.defaultResponseJSON({
       status: 200,
-      json: entityFull,
+      json: CatsResponse.getByID,
       description: 'cat found.'
     }),
     404: Swagger.defaultResponseError({
@@ -43,7 +39,7 @@ export const SwagggerResponse = {
   delete: {
     200: Swagger.defaultResponseJSON({
       status: 200,
-      json: entityFull,
+      json: CatsResponse.delete,
       description: 'cat found.'
     }),
     404: Swagger.defaultResponseError({
@@ -56,15 +52,15 @@ export const SwagggerResponse = {
   list: {
     200: Swagger.defaultResponseJSON({
       status: 200,
-      json: { docs: { docs: [entityFull], page: 1, limit: 1, total: 1 } },
+      json: CatsResponse.list,
       description: 'cat created.'
     })
   }
 };
 
 export const SwagggerRequest = {
-  createBody: Swagger.defaultRequestJSON({ ...entity, id: undefined }),
-  updateBody: Swagger.defaultRequestJSON({ ...entity, id: '<id>' }),
+  createBody: Swagger.defaultRequestJSON(CatsRequest.create),
+  updateBody: Swagger.defaultRequestJSON(CatsRequest.update),
   listQuery: {
     pagination: {
       limit: Swagger.defaultApiQueryOptions({ example: 10, name: 'limit', required: false }),

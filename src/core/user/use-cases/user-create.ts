@@ -16,13 +16,13 @@ export const UserCreateSchema = UserEntitySchema.pick({
 });
 
 export type UserCreateInput = z.infer<typeof UserCreateSchema>;
-export type UserCreateOutput = Promise<CreatedModel>;
+export type UserCreateOutput = CreatedModel;
 
 export class UserCreateUsecase {
   constructor(private readonly userRepository: IUserRepository, private readonly loggerServide: ILoggerAdapter) {}
 
   @ValidateSchema(UserCreateSchema)
-  async execute(input: UserCreateInput, { tracing, user: userData }: ApiTrancingInput): UserCreateOutput {
+  async execute(input: UserCreateInput, { tracing, user: userData }: ApiTrancingInput): Promise<UserCreateOutput> {
     const entity = new UserEntity(input);
 
     const userExists = await this.userRepository.findOne({

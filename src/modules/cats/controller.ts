@@ -37,7 +37,7 @@ export class CatsController {
   @Post('/cats')
   @ApiResponse(SwagggerResponse.create[200])
   @ApiBody(SwagggerRequest.createBody)
-  async create(@Req() { body, user, tracing }: ApiRequest): CatsCreateOutput {
+  async create(@Req() { body, user, tracing }: ApiRequest): Promise<CatsCreateOutput> {
     return await this.catsCreate.execute(body as CatsCreateInput, { user, tracing });
   }
 
@@ -45,7 +45,7 @@ export class CatsController {
   @ApiResponse(SwagggerResponse.update[200])
   @ApiResponse(SwagggerResponse.update[404])
   @ApiBody(SwagggerRequest.updateBody)
-  async update(@Req() { body, user, tracing }: ApiRequest): CatsUpdateOutput {
+  async update(@Req() { body, user, tracing }: ApiRequest): Promise<CatsUpdateOutput> {
     return await this.catsUpdate.execute(body as CatsUpdateInput, { user, tracing });
   }
 
@@ -53,7 +53,7 @@ export class CatsController {
   @ApiParam({ name: 'id', required: true })
   @ApiResponse(SwagggerResponse.getByID[200])
   @ApiResponse(SwagggerResponse.getByID[404])
-  async getById(@Req() { params }: ApiRequest): CatsGetByIDOutput {
+  async getById(@Req() { params }: ApiRequest): Promise<CatsGetByIDOutput> {
     return await this.catsGetByID.execute(params as CatsGetByIDInput);
   }
 
@@ -63,7 +63,7 @@ export class CatsController {
   @ApiQuery(SwagggerRequest.listQuery.sort)
   @ApiQuery(SwagggerRequest.listQuery.search)
   @ApiResponse(SwagggerResponse.list[200])
-  async list(@Req() { query }: ApiRequest): CatsListOutput {
+  async list(@Req() { query }: ApiRequest): Promise<CatsListOutput> {
     const input: CatsListInput = {
       sort: SortHttpSchema.parse(query.sort),
       search: SearchHttpSchema.parse(query.search),
@@ -78,7 +78,7 @@ export class CatsController {
   @ApiParam({ name: 'id', required: true })
   @ApiResponse(SwagggerResponse.delete[200])
   @ApiResponse(SwagggerResponse.delete[404])
-  async delete(@Req() { params, user, tracing }: ApiRequest): CatsDeleteOutput {
+  async delete(@Req() { params, user, tracing }: ApiRequest): Promise<CatsDeleteOutput> {
     return await this.catsDelete.execute(params as CatsDeleteInput, { user, tracing });
   }
 }

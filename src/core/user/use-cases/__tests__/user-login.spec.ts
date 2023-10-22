@@ -4,12 +4,17 @@ import { ITokenAdapter, TokenModule } from '@/libs/auth';
 import { ILoginAdapter } from '@/modules/login/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
 import { RequestMock } from '@/utils/tests/mocks/request';
-import { UserResponseMock } from '@/utils/tests/mocks/user';
 import { expectZodError } from '@/utils/tests/tests';
 
-import { UserEntity } from '../../entity/user';
+import { UserEntity, UserRole } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
 import { LoginUsecase } from '../user-login';
+
+const userMock = {
+  login: 'login',
+  password: '**********',
+  roles: [UserRole.USER]
+} as UserEntity;
 
 describe('LoginUsecase', () => {
   let usecase: ILoginAdapter;
@@ -57,7 +62,7 @@ describe('LoginUsecase', () => {
   });
 
   test('when user found, should expect a token', async () => {
-    repository.findOne = jest.fn().mockResolvedValue(UserResponseMock.userMock);
+    repository.findOne = jest.fn().mockResolvedValue(userMock);
     await expect(usecase.execute({ login: 'login', password: 'password' }, RequestMock.trancingMock)).resolves.toEqual({
       token: expect.any(String)
     });

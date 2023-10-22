@@ -11,13 +11,13 @@ export const UserGetByIdSchema = UserEntitySchema.pick({
 });
 
 export type UserGetByIDInput = z.infer<typeof UserGetByIdSchema>;
-export type UserGetByIDOutput = Promise<UserEntity>;
+export type UserGetByIDOutput = UserEntity;
 
 export class UserGetByIdUsecase {
   constructor(private readonly userRepository: IUserRepository) {}
 
   @ValidateSchema(UserGetByIdSchema)
-  async execute({ id }: UserGetByIDInput): UserGetByIDOutput {
+  async execute({ id }: UserGetByIDInput): Promise<UserGetByIDOutput> {
     const user = await this.userRepository.findById(id);
 
     if (!user) {

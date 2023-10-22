@@ -38,7 +38,7 @@ export class UserController {
   @ApiResponse(SwagggerResponse.create[200])
   @ApiResponse(SwagggerResponse.create[409])
   @ApiBody(SwagggerRequest.createBody)
-  async create(@Req() { body, user, tracing }: ApiRequest): UserCreateOutput {
+  async create(@Req() { body, user, tracing }: ApiRequest): Promise<UserCreateOutput> {
     return this.userCreateUsecase.execute(body as UserCreateInput, { user, tracing });
   }
 
@@ -47,7 +47,7 @@ export class UserController {
   @ApiResponse(SwagggerResponse.update[404])
   @ApiResponse(SwagggerResponse.update[409])
   @ApiBody(SwagggerRequest.updateBody)
-  async update(@Req() { body, user, tracing }: ApiRequest): UserUpdateOutput {
+  async update(@Req() { body, user, tracing }: ApiRequest): Promise<UserUpdateOutput> {
     return this.userUpdateUsecase.execute(body as UserUpdateInput, { user, tracing });
   }
 
@@ -57,7 +57,7 @@ export class UserController {
   @ApiQuery(SwagggerRequest.listQuery.sort)
   @ApiQuery(SwagggerRequest.listQuery.search)
   @ApiResponse(SwagggerResponse.list[200])
-  async list(@Req() { query }: ApiRequest): UserListOutput {
+  async list(@Req() { query }: ApiRequest): Promise<UserListOutput> {
     const input: UserListInput = {
       sort: SortHttpSchema.parse(query.sort),
       search: SearchHttpSchema.parse(query.search),
@@ -72,7 +72,7 @@ export class UserController {
   @ApiParam({ name: 'id', required: true })
   @ApiResponse(SwagggerResponse.getByID[200])
   @ApiResponse(SwagggerResponse.getByID[404])
-  async getById(@Req() { params }: ApiRequest): UserGetByIDOutput {
+  async getById(@Req() { params }: ApiRequest): Promise<UserGetByIDOutput> {
     return await this.userGetByIDUsecase.execute(params as UserGetByIDInput);
   }
 
@@ -80,7 +80,7 @@ export class UserController {
   @ApiParam({ name: 'id', required: true })
   @ApiResponse(SwagggerResponse.delete[200])
   @ApiResponse(SwagggerResponse.delete[404])
-  async delete(@Req() { params, user, tracing }: ApiRequest): UserDeleteOutput {
+  async delete(@Req() { params, user, tracing }: ApiRequest): Promise<UserDeleteOutput> {
     return await this.userDeleteUsecase.execute(params as UserDeleteInput, { user, tracing });
   }
 }

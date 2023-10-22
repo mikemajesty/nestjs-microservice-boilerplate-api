@@ -10,7 +10,7 @@ import { UserEntity, UserRole } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
 import { UserCreateUsecase } from '../user-create';
 
-const userCreateMock = {
+const userMock = {
   login: 'login',
   password: '**********',
   roles: [UserRole.USER]
@@ -44,25 +44,25 @@ describe('UserCreateUsecase', () => {
 
   test('when the user is created successfully, should expect an user that has been created', async () => {
     repository.findOne = jest.fn().mockResolvedValue(null);
-    repository.create = jest.fn().mockResolvedValue(userCreateMock);
+    repository.create = jest.fn().mockResolvedValue(userMock);
     repository.startSession = jest.fn().mockResolvedValue({
       commitTransaction: jest.fn()
     });
 
-    await expect(usecase.execute(userCreateMock, RequestMock.trancingMock)).resolves.toEqual(userCreateMock);
+    await expect(usecase.execute(userMock, RequestMock.trancingMock)).resolves.toEqual(userMock);
   });
 
   test('when transaction throw an error, should expect an error', async () => {
     repository.findOne = jest.fn().mockResolvedValue(null);
-    repository.create = jest.fn().mockResolvedValue(userCreateMock);
+    repository.create = jest.fn().mockResolvedValue(userMock);
     repository.startSession = jest.fn().mockRejectedValue(new Error('startSessionError'));
 
-    await expect(usecase.execute(userCreateMock, RequestMock.trancingMock)).rejects.toThrowError('startSessionError');
+    await expect(usecase.execute(userMock, RequestMock.trancingMock)).rejects.toThrowError('startSessionError');
   });
 
   test('when user already exists, should expect an error', async () => {
-    repository.findOne = jest.fn().mockResolvedValue(userCreateMock);
-    await expect(usecase.execute(userCreateMock, RequestMock.trancingMock)).rejects.toThrowError(ApiConflictException);
+    repository.findOne = jest.fn().mockResolvedValue(userMock);
+    await expect(usecase.execute(userMock, RequestMock.trancingMock)).rejects.toThrowError(ApiConflictException);
   });
 
   test('when no input is specified, should expect an error', async () => {

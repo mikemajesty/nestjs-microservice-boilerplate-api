@@ -1,4 +1,5 @@
-import { Swagger } from '@/utils/swagger';
+import { LoginInput } from '@/core/user/use-cases/user-login';
+import { Swagger } from '@/utils/docs/swagger';
 
 export const SwagggerResponse = {
   login: {
@@ -20,5 +21,5 @@ export const SwagggerRequest = {
   body: Swagger.defaultRequestJSON({
     login: 'admin',
     password: 'admin'
-  })
+  } as LoginInput)
 };

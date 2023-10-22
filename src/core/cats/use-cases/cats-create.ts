@@ -15,13 +15,13 @@ export const CatsCreateSchema = CatsEntitySchema.pick({
 });
 
 export type CatsCreateInput = z.infer<typeof CatsCreateSchema>;
-export type CatsCreateOutput = Promise<CreatedModel>;
+export type CatsCreateOutput = CreatedModel;
 
 export class CatsCreateUsecase {
   constructor(private readonly catsRepository: ICatsRepository) {}
 
   @ValidateSchema(CatsCreateSchema)
-  async execute(input: CatsCreateInput, { tracing, user }: ApiTrancingInput): CatsCreateOutput {
+  async execute(input: CatsCreateInput, { tracing, user }: ApiTrancingInput): Promise<CatsCreateOutput> {
     const entity = new CatsEntity(input);
 
     const transaction = await this.catsRepository.startSession();

@@ -11,13 +11,13 @@ import { ICatsRepository } from '../repository/cats';
 export const CatsListSchema = z.intersection(PaginationSchema, SortSchema.merge(SearchSchema));
 
 export type CatsListInput = PaginationInput<CatsEntity>;
-export type CatsListOutput = Promise<PaginationOutput<CatsEntity>>;
+export type CatsListOutput = PaginationOutput<CatsEntity>;
 
 export class CatsListUsecase {
   constructor(private readonly catsRepository: ICatsRepository) {}
 
   @ValidateSchema(CatsListSchema)
-  async execute(input: CatsListInput): CatsListOutput {
+  async execute(input: CatsListInput): Promise<CatsListOutput> {
     return await this.catsRepository.paginate(input);
   }
 }

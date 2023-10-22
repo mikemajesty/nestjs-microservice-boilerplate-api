@@ -3,12 +3,17 @@ import { Test } from '@nestjs/testing';
 import { IUserDeleteAdapter } from '@/modules/user/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
 import { RequestMock } from '@/utils/tests/mocks/request';
-import { UserResponseMock } from '@/utils/tests/mocks/user';
 import { expectZodError, generateUUID } from '@/utils/tests/tests';
 
-import { UserEntity } from '../../entity/user';
+import { UserEntity, UserRole } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
 import { UserDeleteUsecase } from '../user-delete';
+
+const userMock = new UserEntity({
+  login: 'login',
+  password: '**********',
+  roles: [UserRole.USER]
+});
 
 describe('UserDeleteUsecase', () => {
   let usecase: IUserDeleteAdapter;
@@ -53,10 +58,10 @@ describe('UserDeleteUsecase', () => {
   });
 
   test('when user deleted successfully, should expect an user that has been deleted.', async () => {
-    repository.findById = jest.fn().mockResolvedValue(UserResponseMock.userMock);
+    repository.findById = jest.fn().mockResolvedValue(userMock);
     repository.updateOne = jest.fn();
     await expect(usecase.execute({ id: generateUUID() }, RequestMock.trancingMock)).resolves.toEqual({
-      ...UserResponseMock.userMock,
+      ...userMock,
       deletedAt: expect.any(Date)
     });
   });
