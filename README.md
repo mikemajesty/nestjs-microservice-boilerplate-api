@@ -96,7 +96,7 @@ Creating a CRUD in Postgres and Mongo in seconds.
   ```
 - run
   ```
-  $ yarn migration:run  ***/
+  $ yarn migration:run
 
   ```
 
