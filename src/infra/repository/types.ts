@@ -1,14 +1,5 @@
 import { ObjectId } from 'mongoose';
 
-export type ConnectionModel = {
-  URI: string;
-  host: string;
-  port: string | number;
-  user: string;
-  pass: string;
-  dbName: string;
-};
-
 export type UpdatedModel = {
   matchedCount: number;
   modifiedCount: number;
