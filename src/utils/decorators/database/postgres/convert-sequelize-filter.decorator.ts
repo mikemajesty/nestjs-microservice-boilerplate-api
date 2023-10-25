@@ -17,7 +17,7 @@ export function ConvertSequelizeFilterToRepository() {
         return result;
       }
 
-      Object.assign(input, { createdAt: null });
+      Object.assign(input, { deletedAt: null });
 
       args[0] = input;
 

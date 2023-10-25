@@ -26,3 +26,9 @@ export type CreatedModel = {
   id: string;
   created: boolean;
 };
+
+export type CreatedOrUpdateModel = {
+  id: string;
+  created: boolean;
+  updated: boolean;
+};

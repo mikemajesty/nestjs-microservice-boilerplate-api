@@ -1,7 +1,12 @@
-import { CreatedModel, RemovedModel, UpdatedModel } from './types';
+import { CreatedModel, CreatedOrUpdateModel, RemovedModel, UpdatedModel } from './types';
 
 export abstract class IRepository<T> {
   abstract create<TOptions = unknown>(document: T, saveOptions?: TOptions): Promise<CreatedModel>;
+
+  abstract createOrUpdate<TUpdate = Partial<T>, TOptions = unknown>(
+    updated: TUpdate,
+    options?: TOptions
+  ): Promise<CreatedOrUpdateModel>;
 
   abstract insertMany<TOptions = unknown>(document: T[], saveOptions?: TOptions): Promise<void>;
 

@@ -9,10 +9,10 @@ import {
 } from 'mongoose';
 
 import { ConvertMongoFilterToBaseRepository } from '@/utils/decorators/database/mongo/convert-mongoose-filter.decorator';
-import { ApiInternalServerException } from '@/utils/exception';
+import { ApiBadRequestException, ApiInternalServerException } from '@/utils/exception';
 
 import { IRepository } from '../adapter';
-import { CreatedModel, RemovedModel, UpdatedModel } from '../types';
+import { CreatedModel, CreatedOrUpdateModel, RemovedModel, UpdatedModel } from '../types';
 
 export class MongoRepository<T extends Document> implements IRepository<T> {
   constructor(private readonly model: Model<T>) {}
@@ -26,6 +26,28 @@ export class MongoRepository<T extends Document> implements IRepository<T> {
     const savedResult = await createdEntity.save(saveOptions);
 
     return { id: savedResult.id, created: !!savedResult.id };
+  }
+
+  async createOrUpdate(
+    document: UpdateWithAggregationPipeline | UpdateQuery<T>,
+    options?: QueryOptions
+  ): Promise<CreatedOrUpdateModel> {
+    if (!document['id']) {
+      throw new ApiBadRequestException('id is required');
+    }
+
+    const exists = await this.findById(document['id']);
+
+    if (!exists) {
+      const createdEntity = new this.model({ ...document, _id: document['id'] });
+      const savedResult = await createdEntity.save(options);
+
+      return { id: savedResult.id, created: true, updated: false };
+    }
+
+    await this.model.updateOne({ _id: exists.id }, document, options);
+
+    return { id: exists.id, created: false, updated: true };
   }
 
   @ConvertMongoFilterToBaseRepository()

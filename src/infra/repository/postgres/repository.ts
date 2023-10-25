@@ -3,16 +3,47 @@ import sequelize from 'sequelize';
 import { MakeNullishOptional } from 'sequelize/types/utils';
 import { Model, ModelCtor } from 'sequelize-typescript';
 
-import { CreatedModel, IRepository, RemovedModel, UpdatedModel } from '@/infra/repository';
+import { CreatedModel, CreatedOrUpdateModel, IRepository, RemovedModel, UpdatedModel } from '@/infra/repository';
 import { DatabaseOptionsSchema, DatabaseOptionsType, SaveOptionsType } from '@/utils/database/sequelize';
 import { ConvertSequelizeFilterToRepository } from '@/utils/decorators/database/postgres/convert-sequelize-filter.decorator';
 import { IEntity } from '@/utils/entity';
+import { ApiBadRequestException } from '@/utils/exception';
 
 export class SequelizeRepository<T extends ModelCtor & IEntity> implements IRepository<T> {
   protected Model!: T;
 
   constructor(Model: T) {
     this.Model = Model;
+  }
+
+  async createOrUpdate<TUpdate = Partial<T>, TOptions = DatabaseOptionsType>(
+    document: TUpdate,
+    options?: TOptions
+  ): Promise<CreatedOrUpdateModel> {
+    const { schema, transaction } = DatabaseOptionsSchema.parse(options);
+
+    if (!document['id']) {
+      throw new ApiBadRequestException('id is required');
+    }
+
+    const exists = await this.findById(document['id'], options);
+
+    if (!exists) {
+      const savedDoc = await this.Model.schema(schema).create<Model<T>>(document as unknown as MakeNullishOptional<T>, {
+        transaction
+      });
+
+      const model = await savedDoc.save();
+
+      return { id: model.id, created: true, updated: false };
+    }
+
+    await this.Model.schema(schema).update(document, {
+      where: { id: exists.id } as WhereOptions<T>,
+      transaction
+    });
+
+    return { id: exists.id, created: false, updated: true };
   }
 
   @ConvertSequelizeFilterToRepository()
