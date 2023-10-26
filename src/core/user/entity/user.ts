@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { IEntity, withID } from '@/utils/entity';
+import { BaseEntity, withID } from '@/utils/entity';
 
 const ID = z.string().uuid();
 const Login = z.string().trim().min(1).max(200);
@@ -26,29 +26,16 @@ export const UserEntitySchema = z.object({
 
 type User = z.infer<typeof UserEntitySchema>;
 
-export class UserEntity implements IEntity {
-  id: string;
-
+export class UserEntity extends BaseEntity<UserEntity>() {
   login: string;
 
   password: string;
 
   roles: UserRole[];
 
-  createdAt: Date;
-
-  updatedAt: Date;
-
-  deletedAt?: Date;
-
-  static nameof = (name: keyof UserEntity) => name;
-
   constructor(entity: User) {
+    super();
     Object.assign(this, UserEntitySchema.parse(withID(entity)));
-  }
-
-  setDelete() {
-    this.deletedAt = new Date();
   }
 
   anonymizePassword() {

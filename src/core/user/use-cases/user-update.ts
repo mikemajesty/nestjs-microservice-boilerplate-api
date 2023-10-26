@@ -46,6 +46,7 @@ export class UserUpdateUsecase {
     const entityUpdated = new UserEntity(updated);
 
     entityUpdated.anonymizePassword();
+
     tracing.logEvent('user-updated', `user: ${user.login} updated by: ${userData.login}`);
 
     return entityUpdated;

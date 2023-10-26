@@ -18,7 +18,8 @@ export type TracingType = {
 };
 
 export interface ApiRequest {
-  readonly body: ReadableStream<Uint8Array> | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  readonly body: any;
   readonly tracing: TracingType;
   readonly user: UserEntity;
   readonly params: { [key: string]: string };

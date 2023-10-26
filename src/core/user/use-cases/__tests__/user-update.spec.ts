@@ -10,12 +10,12 @@ import { UserEntity, UserRole } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
 import { UserUpdateUsecase } from '../user-update';
 
-const userMock = {
+const userMock = new UserEntity({
   id: generateUUID(),
   login: 'login',
   password: '**********',
   roles: [UserRole.USER]
-} as UserEntity;
+});
 
 describe('UserUpdateUsecase', () => {
   let usecase: IUserUpdateAdapter;

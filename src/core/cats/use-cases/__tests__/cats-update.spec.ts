@@ -11,6 +11,7 @@ import { ICatsRepository } from '../../repository/cats';
 import { CatsUpdateUsecase } from '../cats-update';
 
 const catMock = new CatsEntity({
+  id: generateUUID(),
   age: 10,
   breed: 'dummy',
   name: 'dummy'

@@ -39,6 +39,11 @@ export class UserRepository extends MongoRepository<UserDocument> implements IUs
   async paginate({ limit, page, sort, search }: UserListInput): Promise<UserListOutput> {
     const users = await this.entity.paginate(search, { page, limit, sort });
 
-    return { docs: users.docs.map((u) => u.toObject({ virtuals: true })), limit, page, total: users.totalDocs };
+    return {
+      docs: users.docs.map((u) => new UserEntity(u.toObject({ virtuals: true }))),
+      limit,
+      page,
+      total: users.totalDocs
+    };
   }
 }
