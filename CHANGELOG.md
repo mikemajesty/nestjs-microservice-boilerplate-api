@@ -1,3 +1,10 @@
+# [1.11.0](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/1.10.0...1.11.0) (2023-10-27)
+
+
+### Features
+
+* **entity:** add base entity ([4a71128](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/4a71128a062f295012d6ee6b31c3ed3c9acb5ac6))
+
 # [1.10.0](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/1.9.0...1.10.0) (2023-10-23)
 
 
