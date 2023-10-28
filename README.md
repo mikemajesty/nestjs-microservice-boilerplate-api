@@ -172,20 +172,21 @@ Creating a CRUD in Postgres and Mongo in seconds.
 .
 ├── commitlint.config.js
 ├── database.json
+├── docker-compose-infra.yml
 ├── docker-compose.yml
 ├── jest.config.ts
 ├── nest-cli.json
 ├── package.json
-├── README.md
+├── release.config.js
 ├── scripts
 │   ├── mongo
 │   │   ├── rs-init.sh
 │   │   └── start-replicaset.sh
 │   ├── npm-audit.sh
-│   └── postgres
-│   |    └── create-database.sql
+│   ├── postgres
+│   │   └── create-database.sql
 │   └── prometheus
-│       └── collector-config.yaml
+│       ├── collector-config.yaml
 │       └── config.yml
 ├── src
 │   ├── app.module.ts
@@ -196,17 +197,17 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │   │   │   ├── repository
 │   │   │   │   └── cats.ts
 │   │   │   └── use-cases
+│   │   │       ├── __tests__
+│   │   │       │   ├── cats-create.spec.ts
+│   │   │       │   ├── cats-delete.spec.ts
+│   │   │       │   ├── cats-list.spec.ts
+│   │   │       │   ├── cats-update.spec.ts
+│   │   │       │   └── user-getByID.spec.ts
 │   │   │       ├── cats-create.ts
 │   │   │       ├── cats-delete.ts
 │   │   │       ├── cats-getByID.ts
 │   │   │       ├── cats-list.ts
-│   │   │       ├── cats-update.ts
-│   │   │       └── __tests__
-│   │   │           ├── cats-create.spec.ts
-│   │   │           ├── cats-delete.spec.ts
-│   │   │           ├── cats-list.spec.ts
-│   │   │           ├── cats-update.spec.ts
-│   │   │           └── user-getByID.spec.ts
+│   │   │       └── cats-update.ts
 │   │   └── user
 │   │       ├── entity
 │   │       │   └── user.ts
@@ -306,10 +307,10 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │   │   │   ├── repository.ts
 │   │   │   └── swagger.ts
 │   │   ├── health
+│   │   │   ├── __tests__
+│   │   │   │   └── controller.spec.ts
 │   │   │   ├── controller.ts
-│   │   │   ├── module.ts
-│   │   │   └── __tests__
-│   │   │       └── controller.spec.ts
+│   │   │   └── module.ts
 │   │   ├── login
 │   │   │   ├── adapter.ts
 │   │   │   ├── controller.ts
@@ -343,6 +344,15 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │       │   ├── role.decorator.ts
 │       │   ├── types.ts
 │       │   └── validate-schema.decorator.ts
+│       ├── docs
+│       │   ├── data
+│       │   │   ├── cats
+│       │   │   │   ├── request.ts
+│       │   │   │   └── response.ts
+│       │   │   └── user
+│       │   │       ├── request.ts
+│       │   │       └── response.ts
+│       │   └── swagger.ts
 │       ├── entity.ts
 │       ├── exception.ts
 │       ├── filters
@@ -351,24 +361,23 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │       │   ├── auth-guard.interceptor.ts
 │       │   ├── http-exception.interceptor.ts
 │       │   ├── http-logger.interceptor.ts
-│       │   └── http-tracing.interceptor.ts
+│       │   ├── metrics.interceptor.ts
+│       │   └── tracing.interceptor.ts
 │       ├── middlewares
 │       │   └── is-logged.middleware.ts
-│       ├── mocks
-│       │   ├── cats.ts
-│       │   └── user.ts
 │       ├── pagination.ts
 │       ├── request.ts
 │       ├── search.ts
-│       ├── tracing.ts
 │       ├── sort.ts
 │       ├── static
 │       │   └── htttp-status.json
-│       ├── swagger.ts
-│       └── tests.ts
+│       ├── tests
+│       │   ├── mocks
+│       │   │   └── request.ts
+│       │   └── tests.ts
+│       └── tracing.ts
 ├── test
 │   └── initializaion.ts
-├── TRACING.md
 ├── tsconfig.build.json
 └── tsconfig.json
 ```
