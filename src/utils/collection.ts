@@ -12,7 +12,7 @@ export class CollectionUtil {
     }, {});
   };
 
-  static group = (collection: string[] | number[]) => {
+  static group = (collection: unknown[]) => {
     return collection.reduce(function (rv, x: string | number) {
       (rv[x] = rv[x] || []).push(x);
       return rv;
