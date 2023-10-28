@@ -3,13 +3,14 @@ import { Test } from '@nestjs/testing';
 import { CatsListUsecase } from '@/core/cats/use-cases/cats-list';
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { ICatsListAdapter } from '@/modules/cats/adapter';
-import { expectZodError } from '@/utils/tests/tests';
+import { expectZodError, generateUUID } from '@/utils/tests/tests';
 
 import { CatsEntity } from '../../entity/cats';
 import { ICatsRepository } from '../../repository/cats';
 
 const catsMock = [
   new CatsEntity({
+    id: generateUUID(),
     age: 10,
     breed: 'dummy',
     name: 'dummy',

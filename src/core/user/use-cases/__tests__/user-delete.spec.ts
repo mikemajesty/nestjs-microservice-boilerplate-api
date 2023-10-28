@@ -10,6 +10,7 @@ import { IUserRepository } from '../../repository/user';
 import { UserDeleteUsecase } from '../user-delete';
 
 const userMock = new UserEntity({
+  id: generateUUID(),
   login: 'login',
   password: '**********',
   roles: [UserRole.USER]

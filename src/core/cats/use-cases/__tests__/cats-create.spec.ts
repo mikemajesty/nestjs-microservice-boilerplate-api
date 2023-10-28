@@ -4,17 +4,18 @@ import { LoggerModule } from '@/infra/logger';
 import { ICatsCreateAdapter } from '@/modules/cats/adapter';
 import { ApiInternalServerException } from '@/utils/exception';
 import { RequestMock } from '@/utils/tests/mocks/request';
-import { expectZodError } from '@/utils/tests/tests';
+import { expectZodError, generateUUID } from '@/utils/tests/tests';
 
 import { CatsEntity } from '../../entity/cats';
 import { ICatsRepository } from '../../repository/cats';
 import { CatsCreateUsecase } from '../cats-create';
 
-const catCreateMock = {
+const catCreateMock = new CatsEntity({
+  id: generateUUID(),
   age: 10,
   breed: 'dummy',
   name: 'dummy'
-} as CatsEntity;
+});
 
 describe('CatsCreateUsecase', () => {
   let usecase: ICatsCreateAdapter;

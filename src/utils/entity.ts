@@ -17,11 +17,11 @@ export interface IEntity {
 
 export const BaseEntity = <T>() => {
   abstract class Entity implements IEntity {
-    id: string;
+    readonly id: string;
 
-    createdAt: Date;
+    readonly createdAt: Date;
 
-    updatedAt: Date;
+    readonly updatedAt: Date;
 
     deletedAt?: Date;
 

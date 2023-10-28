@@ -4,17 +4,18 @@ import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { IUserCreateAdapter } from '@/modules/user/adapter';
 import { ApiConflictException } from '@/utils/exception';
 import { RequestMock } from '@/utils/tests/mocks/request';
-import { expectZodError } from '@/utils/tests/tests';
+import { expectZodError, generateUUID } from '@/utils/tests/tests';
 
 import { UserEntity, UserRole } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
 import { UserCreateUsecase } from '../user-create';
 
-const userMock = {
+const userMock = new UserEntity({
+  id: generateUUID(),
   login: 'login',
   password: '**********',
   roles: [UserRole.USER]
-} as UserEntity;
+});
 
 describe('UserCreateUsecase', () => {
   let usecase: IUserCreateAdapter;

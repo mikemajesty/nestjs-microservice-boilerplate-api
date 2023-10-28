@@ -11,6 +11,7 @@ import { CatsEntity } from '../../entity/cats';
 import { ICatsRepository } from '../../repository/cats';
 
 const catMock = new CatsEntity({
+  id: generateUUID(),
   age: 10,
   breed: 'dummy',
   name: 'dummy'
@@ -58,7 +59,7 @@ describe('CatsDeleteUsecase', () => {
     );
   });
 
-  test('when cats deleted successfully, should expec a cats that has been deleted', async () => {
+  test('when cats deleted successfully, should expect a cats that has been deleted', async () => {
     repository.findById = jest.fn().mockResolvedValue(catMock);
     repository.updateOne = jest.fn();
     await expect(usecase.execute({ id: generateUUID() }, RequestMock.trancingMock)).resolves.toEqual({

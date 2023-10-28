@@ -4,17 +4,18 @@ import { ITokenAdapter, TokenModule } from '@/libs/auth';
 import { ILoginAdapter } from '@/modules/login/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
 import { RequestMock } from '@/utils/tests/mocks/request';
-import { expectZodError } from '@/utils/tests/tests';
+import { expectZodError, generateUUID } from '@/utils/tests/tests';
 
 import { UserEntity, UserRole } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
 import { LoginUsecase } from '../user-login';
 
-const userMock = {
+const userMock = new UserEntity({
+  id: generateUUID(),
   login: 'login',
   password: '**********',
   roles: [UserRole.USER]
-} as UserEntity;
+});
 
 describe('LoginUsecase', () => {
   let usecase: ILoginAdapter;

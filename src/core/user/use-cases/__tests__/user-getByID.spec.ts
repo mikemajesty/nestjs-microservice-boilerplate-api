@@ -9,6 +9,7 @@ import { IUserRepository } from '../../repository/user';
 import { UserGetByIdUsecase } from '../user-getByID';
 
 const userMock = new UserEntity({
+  id: generateUUID(),
   login: 'login',
   password: '**********',
   roles: [UserRole.USER]
