@@ -131,6 +131,7 @@ Creating a CRUD in Postgres and Mongo in seconds.
   - metrics
 - Git hooks
   - Husky
+- Semantic Release
 - Commitlint
 - Secrets Service
 - HTTP Service
