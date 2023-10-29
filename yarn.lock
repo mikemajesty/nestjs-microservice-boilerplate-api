@@ -1374,10 +1374,10 @@
   resolved "https://registry.yarnpkg.com/@lukeed/csprng/-/csprng-1.1.0.tgz#1e3e4bd05c1cc7a0b2ddbd8a03f39f6e4b5e6cfe"
   integrity sha512-Z7C/xXCiGWsg0KuKsHTKJxbWhpI3Vs5GwLfOean7MGyVFGqdRgBbAjOCh6u4bbjPc/8MJ2pZmK/0DLdCbivLDA==
 
-"@mikemajesty/microservice-crud@0.1.6":
-  version "0.1.6"
-  resolved "https://registry.yarnpkg.com/@mikemajesty/microservice-crud/-/microservice-crud-0.1.6.tgz#6634ec565cc74518c7831ccdeb66e9f6926b28dc"
-  integrity sha512-1dK0Dp7i7s2OrlY3Gn9Wi8X0j2aeNipT0GH3+HmHwweA8syQx3c2lUPh0H0L5i7OMM6dw4FFXVRBiqYOf8oqEw==
+"@mikemajesty/microservice-crud@0.1.7":
+  version "0.1.7"
+  resolved "https://registry.yarnpkg.com/@mikemajesty/microservice-crud/-/microservice-crud-0.1.7.tgz#118e54cfa660188af51e7ba4b33e7eebc70d5120"
+  integrity sha512-hw8a1+umrTAaZkiy1WbZ8ogs73IuUU7tWsM0Pse4JKfORY/QvVHMlB+YjQTY4iO/5p7sxs6HaooLrcotPqWxBw==
   dependencies:
     arg "^5.0.1"
     chmod "^0.2.1"
