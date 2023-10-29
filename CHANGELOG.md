@@ -1,3 +1,12 @@
+# [1.12.0](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/1.11.0...1.12.0) (2023-10-29)
+
+
+### Features
+
+* **config:** add collection util ([8471479](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/84714791459921b471f77b739dc1070a886d4735))
+* **config:** rename max function ([30ffca8](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/30ffca812f853aa3f729762215c92e6ded228b32))
+* **dependencies:** upgrade cli version ([e914ca1](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/e914ca1e742edb754d1b7585d13b3ea99c1f1633))
+
 # [1.11.0](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/1.10.0...1.11.0) (2023-10-27)
 
 
