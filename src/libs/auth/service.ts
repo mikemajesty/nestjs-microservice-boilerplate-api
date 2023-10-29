@@ -1,21 +1,34 @@
 import { Injectable } from '@nestjs/common';
 import * as jwt from 'jsonwebtoken';
+import { z } from 'zod';
 
+import { UserEntitySchema } from '@/core/user/entity/user';
 import { ISecretsAdapter } from '@/infra/secrets';
 import { ApiUnauthorizedException } from '@/utils/exception';
 
 import { ITokenAdapter } from './adapter';
-import { AuthInput, AuthOutput } from './types';
 
 type DecodeOutput = {
   password: string;
+};
+
+const Schema = UserEntitySchema.pick({
+  login: true,
+  password: true,
+  roles: true
+});
+
+export type SignInput = z.infer<typeof Schema>;
+
+export type SignOutput = {
+  token: string;
 };
 
 @Injectable()
 export class TokenService implements ITokenAdapter {
   constructor(private readonly secret: ISecretsAdapter) {}
 
-  sign(model: AuthInput, options?: jwt.SignOptions): AuthOutput {
+  sign(model: SignInput, options?: jwt.SignOptions): SignOutput {
     const token = jwt.sign(
       model,
       this.secret.JWT_SECRET_KEY,
