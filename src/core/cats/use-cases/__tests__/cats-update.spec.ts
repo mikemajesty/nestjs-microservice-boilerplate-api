@@ -59,7 +59,7 @@ describe('CatsUpdateUsecase', () => {
     );
   });
 
-  test('when cats updated successfully, should expect an cat that has been updated', async () => {
+  test('when cats updated successfully, should expect an cats that has been updated', async () => {
     repository.findById = jest.fn().mockResolvedValue(catMock);
     repository.updateOne = jest.fn().mockResolvedValue(null);
     await expect(usecase.execute({ id: generateUUID() }, RequestMock.trancingMock)).resolves.toEqual(catMock);

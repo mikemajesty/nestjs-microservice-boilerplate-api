@@ -56,7 +56,7 @@ describe('CatsGetByIdUsecase', () => {
     await expect(usecase.execute({ id: generateUUID() })).rejects.toThrowError(ApiNotFoundException);
   });
 
-  test('when cats found, should expect a cats that has been found.', async () => {
+  test('when cats found, should expect a cats that has been found', async () => {
     repository.findById = jest.fn().mockResolvedValue(catMock);
     await expect(usecase.execute({ id: generateUUID() })).resolves.toEqual(catMock);
   });
