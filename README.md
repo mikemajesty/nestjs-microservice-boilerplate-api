@@ -127,7 +127,7 @@ Creating a CRUD in Postgres and Mongo in seconds.
 - Docker
 - Observability
   - tracing
-  - log
+  - logs
   - metrics
 - Git hooks
   - Husky

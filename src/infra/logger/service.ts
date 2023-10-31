@@ -3,7 +3,6 @@ import { IncomingMessage, ServerResponse } from 'node:http';
 import { Injectable, InternalServerErrorException, Scope } from '@nestjs/common';
 import { blue, gray, green, isColorSupported } from 'colorette';
 import { PinoRequestConverter } from 'convert-pino-request-to-curl';
-import { DateTime } from 'luxon';
 import { LevelWithSilent, Logger, multistream, pino } from 'pino';
 import { HttpLogger, Options, pinoHttp } from 'pino-http';
 import pinoPretty from 'pino-pretty';
@@ -13,6 +12,7 @@ import { BaseException } from '@/utils/exception';
 
 import { ILoggerAdapter } from './adapter';
 import { ErrorType, MessageType } from './types';
+import { DateUtils } from '@/utils/date';
 
 @Injectable({ scope: Scope.REQUEST })
 export class LoggerService implements ILoggerAdapter {
@@ -55,17 +55,17 @@ export class LoggerService implements ILoggerAdapter {
   }
 
   trace({ message, context, obj = {} }: MessageType): void {
-    Object.assign(obj, { context, createdAt: this.getCreatedAtDate() });
+    Object.assign(obj, { context, createdAt: DateUtils.getISODateString() });
     this.logger.logger.trace([obj, gray(message)].find(Boolean), gray(message));
   }
 
   info({ message, context, obj = {} }: MessageType): void {
-    Object.assign(obj, { context, createdAt: this.getCreatedAtDate() });
+    Object.assign(obj, { context, createdAt: DateUtils.getISODateString() });
     this.logger.logger.info([obj, message].find(Boolean), message);
   }
 
   warn({ message, context, obj = {} }: MessageType): void {
-    Object.assign(obj, { context, createdAt: this.getCreatedAtDate() });
+    Object.assign(obj, { context, createdAt: DateUtils.getISODateString() });
     this.logger.logger.warn([obj, message].find(Boolean), message);
   }
 
@@ -89,7 +89,7 @@ export class LoggerService implements ILoggerAdapter {
         context: context,
         type: [type, error?.name].find(Boolean),
         traceid: this.getTraceId(error),
-        createdAt: this.getCreatedAtDate(),
+        createdAt: DateUtils.getISODateString(),
         application: this.app,
         stack: error.stack,
         ...error?.parameters,
@@ -106,7 +106,7 @@ export class LoggerService implements ILoggerAdapter {
         context: context,
         type: error.name,
         traceid: this.getTraceId(error),
-        createdAt: this.getCreatedAtDate(),
+        createdAt: DateUtils.getISODateString(),
         application: this.app,
         stack: error.stack
       },
@@ -131,7 +131,7 @@ export class LoggerService implements ILoggerAdapter {
       },
       customPrettifiers: {
         time: () => {
-          return `[${this.getDateFormat()}]`;
+          return `[${DateUtils.getDateStringWithFormat()}]`;
         }
       }
     };
@@ -176,7 +176,7 @@ export class LoggerService implements ILoggerAdapter {
           traceid,
           application: this.app,
           context: context,
-          createdAt: this.getCreatedAtDate()
+          createdAt: DateUtils.getISODateString()
         });
 
         return {
@@ -184,7 +184,7 @@ export class LoggerService implements ILoggerAdapter {
           application: this.app,
           context: context,
           path,
-          createdAt: this.getCreatedAtDate()
+          createdAt: DateUtils.getISODateString()
         };
       },
       customLogLevel: (req: IncomingMessage, res: ServerResponse, error: Error) => {
@@ -226,14 +226,6 @@ export class LoggerService implements ILoggerAdapter {
         value: () => new InternalServerErrorException(error.message).getResponse()
       }
     ].find((c) => c.conditional);
-  }
-
-  private getDateFormat(date = new Date(), format = 'dd/MM/yyyy HH:mm:ss MM'): string {
-    return DateTime.fromJSDate(date, { zone: 'utc' }).setZone(process.env.TZ).toFormat(format);
-  }
-
-  private getCreatedAtDate(): string {
-    return DateTime.fromJSDate(new Date(), { zone: 'utc' }).setZone(process.env.TZ).toJSON();
   }
 
   private getTraceId(error): string {

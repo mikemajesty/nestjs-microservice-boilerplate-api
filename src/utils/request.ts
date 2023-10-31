@@ -21,7 +21,7 @@ export interface ApiRequest {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   readonly body: any;
   readonly tracing: TracingType;
-  readonly user: UserEntity;
+  readonly user: Pick<UserEntity, 'login'>;
   readonly params: { [key: string]: string };
   readonly query: { [key: string]: string };
   readonly headers: Headers & { authorization: string };

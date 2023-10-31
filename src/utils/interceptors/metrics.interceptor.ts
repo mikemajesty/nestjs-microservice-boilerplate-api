@@ -1,9 +1,9 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import opentelemetry, { Counter, Histogram, Meter } from '@opentelemetry/api';
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
-import { DateTime } from 'luxon';
 import { name, version } from 'package.json';
 import { Observable, tap } from 'rxjs';
+import { DateUtils } from '../date';
 
 @Injectable()
 export class MetricsInterceptor implements NestInterceptor {
@@ -21,7 +21,7 @@ export class MetricsInterceptor implements NestInterceptor {
     const request = executionContext.switchToHttp().getRequest();
     const res = executionContext.switchToHttp().getResponse();
 
-    const startTime = DateTime.now().setZone(process.env.TZ).toUTC().toJSDate().getTime();
+    const startTime = DateUtils.getDate().getTime();
 
     this.counter.add(1, {
       [SemanticAttributes.HTTP_URL]: request.url,
@@ -30,7 +30,7 @@ export class MetricsInterceptor implements NestInterceptor {
 
     return next.handle().pipe(
       tap(() => {
-        const endTime = DateTime.now().setZone(process.env.TZ).toUTC().toJSDate().getTime();
+        const endTime = DateUtils.getDate().getTime();
 
         const executionTime = endTime - startTime;
 

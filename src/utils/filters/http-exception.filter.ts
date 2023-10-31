@@ -1,12 +1,12 @@
 import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus } from '@nestjs/common';
 import { AxiosError } from 'axios';
-import { DateTime } from 'luxon';
 import { ZodError } from 'zod';
 
 import { ILoggerAdapter } from '@/infra/logger/adapter';
 import { BaseException, ErrorModel } from '@/utils/exception';
 
 import * as errorStatus from '../static/htttp-status.json';
+import { DateUtils } from '../date';
 
 @Catch()
 export class AppExceptionFilter implements ExceptionFilter {
@@ -30,7 +30,7 @@ export class AppExceptionFilter implements ExceptionFilter {
         code: status,
         traceid: exception.traceid,
         message: [errorStatus[String(status)], message].find(Boolean),
-        timestamp: DateTime.fromJSDate(new Date()).setZone(process.env.TZ).toFormat(process.env.DATE_FORMAT),
+        timestamp: DateUtils.getDateStringWithFormat(),
         path: request.url
       }
     } as ErrorModel);
