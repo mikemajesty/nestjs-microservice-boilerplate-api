@@ -3,6 +3,7 @@ import opentelemetry, { Counter, Histogram, Meter } from '@opentelemetry/api';
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
 import { name, version } from 'package.json';
 import { Observable, tap } from 'rxjs';
+
 import { DateUtils } from '../date';
 
 @Injectable()

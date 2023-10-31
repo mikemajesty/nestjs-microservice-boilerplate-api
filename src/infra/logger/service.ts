@@ -8,11 +8,11 @@ import { HttpLogger, Options, pinoHttp } from 'pino-http';
 import pinoPretty from 'pino-pretty';
 import { v4 as uuidv4 } from 'uuid';
 
+import { DateUtils } from '@/utils/date';
 import { BaseException } from '@/utils/exception';
 
 import { ILoggerAdapter } from './adapter';
 import { ErrorType, MessageType } from './types';
-import { DateUtils } from '@/utils/date';
 
 @Injectable({ scope: Scope.REQUEST })
 export class LoggerService implements ILoggerAdapter {

@@ -5,8 +5,8 @@ import { ZodError } from 'zod';
 import { ILoggerAdapter } from '@/infra/logger/adapter';
 import { BaseException, ErrorModel } from '@/utils/exception';
 
-import * as errorStatus from '../static/htttp-status.json';
 import { DateUtils } from '../date';
+import * as errorStatus from '../static/htttp-status.json';
 
 @Catch()
 export class AppExceptionFilter implements ExceptionFilter {
