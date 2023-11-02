@@ -1,4 +1,4 @@
-import { CreatedModel, CreatedOrUpdateModel, RemovedModel, UpdatedModel } from './types';
+import { CreatedModel, CreatedOrUpdateModel, DatabaseOperationCommand, RemovedModel, UpdatedModel } from './types';
 
 export abstract class IRepository<T> {
   abstract create<TOptions = unknown>(document: T, saveOptions?: TOptions): Promise<CreatedModel>;
@@ -18,6 +18,11 @@ export abstract class IRepository<T> {
 
   abstract findIn<TOptions = unknown>(
     filter: { [key in keyof Partial<T>]: string[] },
+    options?: TOptions | null
+  ): Promise<T[]>;
+
+  abstract findByCommands<TOptions = unknown>(
+    filterList: DatabaseOperationCommand<T>[],
     options?: TOptions | null
   ): Promise<T[]>;
 

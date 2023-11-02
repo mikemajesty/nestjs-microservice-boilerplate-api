@@ -12,7 +12,8 @@ import { ConvertMongoFilterToBaseRepository } from '@/utils/decorators/database/
 import { ApiBadRequestException, ApiInternalServerException } from '@/utils/exception';
 
 import { IRepository } from '../adapter';
-import { CreatedModel, CreatedOrUpdateModel, RemovedModel, UpdatedModel } from '../types';
+import { CreatedModel, CreatedOrUpdateModel, DatabaseOperationCommand, RemovedModel, UpdatedModel } from '../types';
+import { validateFindByCommandsFilter } from '../util';
 
 export class MongoRepository<T extends Document> implements IRepository<T> {
   constructor(private readonly model: Model<T>) {}
@@ -103,10 +104,40 @@ export class MongoRepository<T extends Document> implements IRepository<T> {
     return await this.model.updateMany(filter, updated, options);
   }
 
-  async findIn(input: { [key in keyof T]: string[] }): Promise<T[]> {
+  async findIn(input: { [key in keyof T]: string[] }, options?: QueryOptions): Promise<T[]> {
     const key = Object.keys(input)[0];
     const filter = { [key]: { $in: input[key === 'id' ? '_id' : key] }, deletedAt: null };
-    return await this.model.find(filter);
+    return await this.model.find(filter, null, options);
+  }
+
+  async findByCommands(filterList: DatabaseOperationCommand<T>[], options?: QueryOptions): Promise<T[]> {
+    const mongoSearch = {
+      equal: { type: '$in', like: false },
+      not_equal: { type: '$nin', like: false },
+      not_contains: { type: '$nin', like: true },
+      contains: { type: '$in', like: true }
+    };
+
+    const searchList = {};
+
+    validateFindByCommandsFilter(filterList);
+
+    for (const filter of filterList) {
+      const command = mongoSearch[filter.command];
+
+      if (command.like) {
+        Object.assign(searchList, {
+          [filter.property]: { [command.type]: filter.value.map((v) => new RegExp(`^${v}`, 'i')) }
+        });
+        continue;
+      }
+
+      Object.assign(searchList, { [filter.property]: { [command.type]: filter.value } });
+    }
+
+    Object.assign(searchList, { deletedAt: null });
+
+    return await this.model.find(searchList, null, options);
   }
 
   @ConvertMongoFilterToBaseRepository()

@@ -1,7 +1,8 @@
 import { ApiBadRequestException } from './exception';
 
 export class CollectionUtil {
-  static groupBy = (collection: unknown[] = [], key: string) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static groupBy = (collection: unknown[] = [], key: string): { [key: string]: any[] } => {
     if (!key.length) {
       throw new ApiBadRequestException();
     }
@@ -9,7 +10,7 @@ export class CollectionUtil {
     return collection.reduce(function (rv, x) {
       (rv[x[key]] = rv[x[key]] || []).push(x);
       return rv;
-    }, {});
+    }, {}) as { [key: string]: [] };
   };
 
   static group = (collection: unknown[]) => {

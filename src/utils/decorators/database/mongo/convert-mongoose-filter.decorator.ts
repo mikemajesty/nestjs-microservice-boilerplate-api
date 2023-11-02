@@ -4,6 +4,11 @@ export function ConvertMongoFilterToBaseRepository() {
     descriptor.value = function (...args: { id?: string }[]) {
       const input = args[0];
 
+      if (!input) {
+        const result = originalMethod.apply(this, args);
+        return result;
+      }
+
       input['deletedAt'] = null;
 
       if (input.id) {

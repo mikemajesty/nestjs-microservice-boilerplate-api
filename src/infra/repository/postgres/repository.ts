@@ -1,19 +1,67 @@
-import { Optional, WhereOptions } from 'sequelize';
+import { Op, Optional, WhereOptions } from 'sequelize';
 import sequelize from 'sequelize';
 import { MakeNullishOptional } from 'sequelize/types/utils';
 import { Model, ModelCtor } from 'sequelize-typescript';
 
-import { CreatedModel, CreatedOrUpdateModel, IRepository, RemovedModel, UpdatedModel } from '@/infra/repository';
+import {
+  CreatedModel,
+  CreatedOrUpdateModel,
+  DatabaseOperationCommand,
+  IRepository,
+  RemovedModel,
+  UpdatedModel
+} from '@/infra/repository';
 import { DatabaseOptionsSchema, DatabaseOptionsType, SaveOptionsType } from '@/utils/database/sequelize';
 import { ConvertSequelizeFilterToRepository } from '@/utils/decorators/database/postgres/convert-sequelize-filter.decorator';
 import { IEntity } from '@/utils/entity';
 import { ApiBadRequestException } from '@/utils/exception';
+
+import { validateFindByCommandsFilter } from '../util';
 
 export class SequelizeRepository<T extends ModelCtor & IEntity> implements IRepository<T> {
   protected Model!: T;
 
   constructor(Model: T) {
     this.Model = Model;
+  }
+
+  async findByCommands<TOptions = DatabaseOptionsType>(
+    filterList: DatabaseOperationCommand<T>[],
+    options?: TOptions
+  ): Promise<T[]> {
+    const { schema } = DatabaseOptionsSchema.parse(options);
+
+    const postgresSearch = {
+      equal: { type: Op.in, like: false },
+      not_equal: { type: Op.notIn, like: false },
+      not_contains: { type: Op.notILike, like: true },
+      contains: { type: Op.iLike, like: true }
+    };
+
+    const searchList = {};
+
+    validateFindByCommandsFilter(filterList);
+
+    for (const filter of filterList) {
+      const command = postgresSearch[filter.command];
+
+      if (command.like) {
+        Object.assign(searchList, {
+          [filter.property]: { [command.type]: { [Op.any]: filter.value.map((v) => `%${v}%`) } }
+        });
+        continue;
+      }
+
+      Object.assign(searchList, { [filter.property]: { [command.type]: filter.value } });
+    }
+
+    Object.assign(searchList, { deletedAt: null });
+
+    const model = await this.Model.schema(schema).findAll({
+      where: searchList as WhereOptions<T>
+    });
+
+    return model.map((m) => m.toJSON());
   }
 
   async createOrUpdate<TUpdate = Partial<T>, TOptions = DatabaseOptionsType>(
@@ -54,7 +102,7 @@ export class SequelizeRepository<T extends ModelCtor & IEntity> implements IRepo
       where: filter as WhereOptions<T>
     });
 
-    return (model || []).map((m) => m.toJSON());
+    return model.map((m) => m.toJSON());
   }
 
   @ConvertSequelizeFilterToRepository()
@@ -65,7 +113,7 @@ export class SequelizeRepository<T extends ModelCtor & IEntity> implements IRepo
       where: filter as WhereOptions<T>
     });
 
-    return (model || []).map((m) => m.toJSON());
+    return model.map((m) => m.toJSON());
   }
 
   async findIn<TOptions = DatabaseOptionsType>(
@@ -80,7 +128,7 @@ export class SequelizeRepository<T extends ModelCtor & IEntity> implements IRepo
       where: { [key]: { [sequelize.Op.in]: filter[key] } } as WhereOptions<T>
     });
 
-    return (model || []).map((m) => m.toJSON());
+    return model.map((m) => m.toJSON());
   }
 
   @ConvertSequelizeFilterToRepository()
