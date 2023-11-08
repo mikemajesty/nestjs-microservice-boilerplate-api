@@ -1,7 +1,7 @@
 import { ApiQueryOptions, ApiResponseOptions } from '@nestjs/swagger';
 
 import { ErrorModel } from '@/utils/exception';
-import * as htttpStatus from '@/utils/static/htttp-status.json';
+import htttpStatus from '@/utils/static/htttp-status.json';
 
 type SwaggerError = {
   status: number;

@@ -11,11 +11,15 @@ export const PaginationSchema = z
     limit: z.number().or(z.string()).or(z.nan()).default(10)
   })
   .transform((pagination) => {
-    const limit = Number(pagination.limit);
-    const page = Number(pagination.page);
+    let limit = Number(pagination.limit);
+    let page = Number(pagination.page);
 
-    if (isNaN(limit) || isNaN(page)) {
-      return { limit: 10, page: 1 };
+    if (isNaN(limit)) {
+      limit = 10;
+    }
+
+    if (isNaN(page)) {
+      page = 1;
     }
 
     return {

@@ -6,7 +6,7 @@ import { ILoggerAdapter } from '@/infra/logger/adapter';
 import { BaseException, ErrorModel } from '@/utils/exception';
 
 import { DateUtils } from '../date';
-import * as errorStatus from '../static/htttp-status.json';
+import errorStatus from '../static/htttp-status.json';
 
 @Catch()
 export class AppExceptionFilter implements ExceptionFilter {
