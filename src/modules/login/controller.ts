@@ -1,4 +1,4 @@
-import { Controller, Post, Req, Version } from '@nestjs/common';
+import { Controller, Post, Req } from '@nestjs/common';
 import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { LoginInput, LoginOutput } from '@/core/user/use-cases/user-login';
@@ -7,7 +7,7 @@ import { ApiRequest } from '@/utils/request';
 import { ILoginAdapter } from './adapter';
 import { SwagggerRequest, SwagggerResponse } from './swagger';
 
-@Controller({ version: "1" })
+@Controller({ version: '1' })
 @ApiTags('login')
 export class LoginController {
   constructor(private readonly loginService: ILoginAdapter) {}

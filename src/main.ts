@@ -46,7 +46,7 @@ async function bootstrap() {
     ]
   });
 
-  app.enableVersioning({ type: VersioningType.URI })
+  app.enableVersioning({ type: VersioningType.URI });
 
   process.on('uncaughtException', (error) => {
     if (!(error instanceof BaseException)) {
