@@ -1,6 +1,6 @@
 import './utils/tracing';
 
-import { RequestMethod } from '@nestjs/common';
+import { RequestMethod, VersioningType } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { bold } from 'colorette';
@@ -45,6 +45,8 @@ async function bootstrap() {
       { path: '/', method: RequestMethod.GET }
     ]
   });
+
+  app.enableVersioning({ type: VersioningType.URI })
 
   process.on('uncaughtException', (error) => {
     if (!(error instanceof BaseException)) {

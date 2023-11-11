@@ -21,7 +21,7 @@ import {
 } from './adapter';
 import { SwagggerRequest, SwagggerResponse } from './swagger';
 
-@Controller()
+@Controller({ version: "1" })
 @ApiTags('cats')
 @ApiBearerAuth()
 @Roles(UserRole.USER)

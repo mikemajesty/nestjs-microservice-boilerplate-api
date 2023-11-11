@@ -7,7 +7,7 @@ import { ApiRequest } from '@/utils/request';
 import { ILogoutAdapter } from './adapter';
 import { SwagggerRequest, SwagggerResponse } from './swagger';
 
-@Controller()
+@Controller({ version: "1" })
 @ApiTags('logout')
 @ApiBearerAuth()
 export class LogoutController {

@@ -199,17 +199,21 @@ export class MongoRepository<T extends Document> implements IRepository<T> {
   }
 
   async seed(entityList: T[]): Promise<void> {
-    const allHasId = entityList.some((e) => !e.id);
+    try {
+      const someHasNoID = entityList.some((e) => !e.id);
 
-    if (allHasId) {
-      throw new ApiInternalServerException('seed id is required');
-    }
-
-    for (const model of entityList) {
-      const data = await this.findById(model.id);
-      if (!data) {
-        await this.create(model);
+      if (someHasNoID) {
+        throw new ApiInternalServerException('seed id is required');
       }
+
+      for (const model of entityList) {
+        const data = await this.findById(model.id);
+        if (!data) {
+          await this.create(model);
+        }
+      }
+    } catch (error) {
+      console.error('MongoRepository:Error', error);
     }
   }
 
