@@ -83,4 +83,33 @@ export class CollectionUtil {
 
     return new Set(collection.map((c) => c[key])).size !== collection.length;
   };
+
+  static getMaxLengthPerKey = (collection: unknown[] = [], key: string): LastType => {
+    if (!key.length) {
+      throw new ApiBadRequestException('key is required');
+    }
+
+    const lastHash: LastType = {
+      length: 0,
+      key: null
+    };
+
+    collection.reduce((prev: { [key: string]: string[] }, next: { [key: string]: string }) => {
+      const length = (prev[next[key]] = prev[next[key]] || []).push(next.name);
+
+      if (length > lastHash.length) {
+        lastHash.key = next.name;
+        lastHash.length = length;
+      }
+
+      return prev;
+    }, {});
+
+    return lastHash;
+  };
 }
+
+export type LastType = {
+  key: string;
+  length: number | null;
+};

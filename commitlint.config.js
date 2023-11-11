@@ -11,7 +11,7 @@ for (const path of getDirectories('./src').map((p) => `./src/${p}`)) {
   scopes.push(...files.filter((item) => item.isDirectory()).map((item) => item.name));
 }
 
-scopes.push('remove', 'revert', 'conflict', "config", "entity", "utils", "dependencies")
+scopes.push('remove', 'revert', 'conflict', "config", "entity", "utils", "dependencies", "modules")
 
 module.exports = {
   extends: ['@commitlint/config-conventional'],

@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, Post, Put, Req } from '@nestjs/common';
+import { Controller, Delete, Get, Post, Put, Req, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { CatsCreateInput, CatsCreateOutput } from '@/core/cats/use-cases/cats-create';
@@ -21,7 +21,7 @@ import {
 } from './adapter';
 import { SwagggerRequest, SwagggerResponse } from './swagger';
 
-@Controller({ version: '1' })
+@Controller('cats')
 @ApiTags('cats')
 @ApiBearerAuth()
 @Roles(UserRole.USER)
@@ -34,35 +34,39 @@ export class CatsController {
     private readonly catsDelete: ICatsDeleteAdapter
   ) {}
 
-  @Post('/cats')
+  @Post()
   @ApiResponse(SwagggerResponse.create[200])
   @ApiBody(SwagggerRequest.createBody)
+  @Version('1')
   async create(@Req() { body, user, tracing }: ApiRequest): Promise<CatsCreateOutput> {
     return await this.catsCreate.execute(body as CatsCreateInput, { user, tracing });
   }
 
-  @Put('/cats')
+  @Put()
   @ApiResponse(SwagggerResponse.update[200])
   @ApiResponse(SwagggerResponse.update[404])
   @ApiBody(SwagggerRequest.updateBody)
+  @Version('1')
   async update(@Req() { body, user, tracing }: ApiRequest): Promise<CatsUpdateOutput> {
     return await this.catsUpdate.execute(body as CatsUpdateInput, { user, tracing });
   }
 
-  @Get('/cats/:id')
+  @Get('/:id')
   @ApiParam({ name: 'id', required: true })
   @ApiResponse(SwagggerResponse.getByID[200])
   @ApiResponse(SwagggerResponse.getByID[404])
+  @Version('1')
   async getById(@Req() { params }: ApiRequest): Promise<CatsGetByIDOutput> {
     return await this.catsGetByID.execute(params as CatsGetByIDInput);
   }
 
-  @Get('/cats')
+  @Get()
   @ApiQuery(SwagggerRequest.listQuery.pagination.limit)
   @ApiQuery(SwagggerRequest.listQuery.pagination.page)
   @ApiQuery(SwagggerRequest.listQuery.sort)
   @ApiQuery(SwagggerRequest.listQuery.search)
   @ApiResponse(SwagggerResponse.list[200])
+  @Version('1')
   async list(@Req() { query }: ApiRequest): Promise<CatsListOutput> {
     const input: CatsListInput = {
       sort: SortHttpSchema.parse(query.sort),
@@ -74,10 +78,11 @@ export class CatsController {
     return await this.catsList.execute(input);
   }
 
-  @Delete('/cats/:id')
+  @Delete('/:id')
   @ApiParam({ name: 'id', required: true })
   @ApiResponse(SwagggerResponse.delete[200])
   @ApiResponse(SwagggerResponse.delete[404])
+  @Version('1')
   async delete(@Req() { params, user, tracing }: ApiRequest): Promise<CatsDeleteOutput> {
     return await this.catsDelete.execute(params as CatsDeleteInput, { user, tracing });
   }

@@ -22,7 +22,7 @@ export class MetricsInterceptor implements NestInterceptor {
     const request = executionContext.switchToHttp().getRequest();
     const res = executionContext.switchToHttp().getResponse();
 
-    const startTime = DateUtils.getDate().getTime();
+    const startTime = DateUtils.getJSDate().getTime();
 
     this.counter.add(1, {
       [SemanticAttributes.HTTP_URL]: request.url,
@@ -31,7 +31,7 @@ export class MetricsInterceptor implements NestInterceptor {
 
     return next.handle().pipe(
       tap(() => {
-        const endTime = DateUtils.getDate().getTime();
+        const endTime = DateUtils.getJSDate().getTime();
 
         const executionTime = endTime - startTime;
 

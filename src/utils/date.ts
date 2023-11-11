@@ -22,7 +22,11 @@ export class DateUtils {
     return DateTime.fromJSDate(new Date(), { zone: 'utc' }).setZone(process.env.TZ).toJSON();
   }
 
-  static getDate(): Date {
+  static getJSDate(): Date {
     return DateTime.fromJSDate(new Date(), { zone: 'utc' }).setZone(process.env.TZ).toJSDate();
+  }
+
+  static getDate(): DateTime {
+    return DateTime.fromJSDate(new Date(), { zone: 'utc' }).setZone(process.env.TZ);
   }
 }
