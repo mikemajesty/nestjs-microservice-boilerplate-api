@@ -125,7 +125,7 @@ export class SequelizeRepository<T extends ModelCtor & IEntity> implements IRepo
     const key = Object.keys(filter)[0];
 
     const model = await this.Model.schema(schema).findAll({
-      where: { [key]: { [sequelize.Op.in]: filter[key] } } as WhereOptions<T>
+      where: { [key]: { [sequelize.Op.in]: filter[`${key}`] } } as WhereOptions<T>
     });
 
     return model.map((m) => m.toJSON());

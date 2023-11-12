@@ -7,7 +7,7 @@ export const validateFindByCommandsFilter = <T>(filterList: DatabaseOperationCom
   const groupList = CollectionUtil.groupBy(filterList, 'property');
 
   for (const key in groupList) {
-    const commands = groupList[key].map((g) => g.command);
+    const commands = groupList[`${key}`].map((g) => g.command);
     const isLikeNotAllowedOperation = commands.filter(
       (g) => g === DatabaseOperationEnum.CONTAINS || g === DatabaseOperationEnum.NOT_CONTAINS
     );

@@ -127,7 +127,7 @@ export class MongoRepository<T extends Document> implements IRepository<T> {
 
       if (command.like) {
         Object.assign(searchList, {
-          [filter.property]: { [command.type]: filter.value.map((v) => new RegExp(`^${v}`, 'i')) }
+          [filter.property]: { [command.type]: filter.value.map((value) => new RegExp(`^${value}`, 'i')) }
         });
         continue;
       }

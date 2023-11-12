@@ -3,7 +3,10 @@ import './utils/tracing';
 import { RequestMethod, VersioningType } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import bodyParser from 'body-parser';
 import { bold } from 'colorette';
+import { rateLimit } from 'express-rate-limit';
+import helmet from 'helmet';
 
 import { description, name, version } from '../package.json';
 import { AppModule } from './app.module';
@@ -46,6 +49,21 @@ async function bootstrap() {
     ]
   });
 
+  app.use(helmet());
+
+  const { ENV, MONGO_URL, POSTGRES_URL, PORT, HOST, ZIPKIN_URL, PROMETHUES_URL, RATE_LIMIT_BY_USER } =
+    app.get(ISecretsAdapter);
+
+  const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: RATE_LIMIT_BY_USER,
+    standardHeaders: 'draft-7',
+    legacyHeaders: false
+  });
+
+  app.use(limiter);
+  app.use(bodyParser.urlencoded());
+
   app.enableVersioning({ type: VersioningType.URI });
 
   process.on('uncaughtException', (error) => {
@@ -55,8 +73,6 @@ async function bootstrap() {
       loggerService.fatal(customError);
     }
   });
-
-  const { ENV, MONGO_URL, POSTGRES_URL, PORT, HOST, ZIPKIN_URL, PROMETHUES_URL } = app.get(ISecretsAdapter);
 
   const config = new DocumentBuilder()
     .setTitle(name)

@@ -1,3 +1,5 @@
 src/infra/database/postgres/migrations
+src/utils/collection.ts
+
 commitlint.config.js
 *.md

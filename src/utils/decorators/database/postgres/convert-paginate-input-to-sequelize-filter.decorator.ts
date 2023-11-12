@@ -49,8 +49,8 @@ export function ConvertPaginateInputToSequelizeFilter<T extends object>(allowedF
       }
 
       for (const key in input?.sort) {
-        const sort = input.sort[key];
-        postgresSort.push([key, SequelizeSort[sort]]);
+        const sort = input.sort[`${key}`];
+        postgresSort.push([key, SequelizeSort[`${sort}`]]);
       }
 
       const limit = Number(input.limit);

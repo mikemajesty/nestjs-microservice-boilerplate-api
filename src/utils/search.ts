@@ -41,7 +41,7 @@ export const SearchHttpSchema = z
         const propertyIndex = s.indexOf(':');
         const value = s.slice(propertyIndex + 1, s.length);
         const [field] = s.split(':');
-        search[field] = value.trim();
+        search[`${field}`] = value.trim();
       });
 
     return search;

@@ -27,9 +27,9 @@ export function ValidateDatabaseSortAllowed<T>(...allowedSortList: AllowedSort<T
 
       for (const allowedFilter of sortList) {
         if (!input.sort) continue;
-        const filter = input.sort[allowedFilter];
+        const filter = input.sort[`${allowedFilter}`];
         if (filter) {
-          sort[allowedFilter] = filter;
+          sort[`${allowedFilter}`] = filter;
         }
       }
 

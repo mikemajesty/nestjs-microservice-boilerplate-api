@@ -1,3 +1,5 @@
+const pluginSecurity = require('eslint-plugin-security');
+
 module.exports = {
   parser: '@typescript-eslint/parser',
   parserOptions: {
@@ -5,10 +7,11 @@ module.exports = {
     tsconfigRootDir: __dirname,
     sourceType: 'module',
   },
-  plugins: ['@typescript-eslint/eslint-plugin', 'simple-import-sort'],
+  plugins: ['@typescript-eslint/eslint-plugin', 'simple-import-sort', pluginSecurity.configs.recommended.plugins[0]],
   extends: [
     'plugin:@typescript-eslint/recommended',
     'plugin:prettier/recommended',
+    'plugin:you-dont-need-lodash-underscore/compatible'
   ],
   root: true,
   env: {
@@ -24,6 +27,8 @@ module.exports = {
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-explicit-any': 'error',
-    '@typescript-eslint/no-throw-literal': 'error'
+    '@typescript-eslint/no-throw-literal': 'error',
+    ...pluginSecurity.configs.recommended.rules,
+    "security/detect-non-literal-regexp": "off"
   },
 };

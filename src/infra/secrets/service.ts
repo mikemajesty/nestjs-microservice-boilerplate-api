@@ -32,4 +32,6 @@ export class SecretsService extends ConfigService implements ISecretsAdapter {
   TOKEN_EXPIRATION = this.get<number>('TOKEN_EXPIRATION');
 
   JWT_SECRET_KEY = this.get('JWT_SECRET_KEY');
+
+  RATE_LIMIT_BY_USER = this.get<number>('RATE_LIMIT_BY_USER');
 }
