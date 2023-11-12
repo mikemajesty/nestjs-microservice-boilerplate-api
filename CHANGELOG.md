@@ -1,3 +1,12 @@
+# [1.13.0](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/1.12.0...1.13.0) (2023-11-12)
+
+
+### Features
+
+* **middlewares:** implement security middlaware ([7af28f0](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/7af28f0b8094b23c8e29f6a87882fbb4288e4a20))
+* **modules:** add version tags ([1916981](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/191698161734d29fa3ee0b919dffb6767207071d))
+* **repository:** add findByCommands function ([64d2df9](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/64d2df9ed3c9d08e5657190bdc11da2bf10e7a89))
+
 # [1.12.0](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/1.11.0...1.12.0) (2023-10-29)
 
 
