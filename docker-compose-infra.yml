@@ -74,6 +74,7 @@ services:
     ports:
       - 6379:6379
   zipkin-all-in-one:
+    container_name: nestjs-microservice-zipkin-all-in-one
     image: openzipkin/zipkin:latest
     ports:
       - "9411:9411"
@@ -93,6 +94,7 @@ services:
     volumes:
       - ./scripts/prometheus/config.yml:/etc/prometheus/prometheus.yml
   collector:
+    container_name: nestjs-microservice-collector
     image: otel/opentelemetry-collector-contrib:latest
     command: [ "--config=/conf/collector-config.yaml" ]
     volumes:
