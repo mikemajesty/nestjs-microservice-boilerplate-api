@@ -96,6 +96,23 @@ export class MongoRepository<T extends Document> implements IRepository<T> {
   }
 
   @ConvertMongoFilterToBaseRepository()
+  async findOneAndUpdate(
+    filter: FilterQuery<T>,
+    updated: UpdateWithAggregationPipeline | UpdateQuery<T>,
+    options: QueryOptions = {}
+  ): Promise<T> {
+    Object.assign(options, { new: true });
+
+    const model = await this.model.findOneAndUpdate(filter, updated, options);
+
+    if (!model) {
+      return null;
+    }
+
+    return model.toObject({ virtuals: true });
+  }
+
+  @ConvertMongoFilterToBaseRepository()
   async updateMany(
     filter: FilterQuery<T>,
     updated: UpdateWithAggregationPipeline | UpdateQuery<T>,
@@ -137,7 +154,9 @@ export class MongoRepository<T extends Document> implements IRepository<T> {
 
     Object.assign(searchList, { deletedAt: null });
 
-    return await this.model.find(searchList, null, options);
+    const data = await this.model.find(searchList, null, options);
+
+    return data.map((d) => d.toObject({ virtuals: true }));
   }
 
   @ConvertMongoFilterToBaseRepository()

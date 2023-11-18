@@ -36,6 +36,12 @@ export abstract class IRepository<T> {
     options?: TOptions
   ): Promise<UpdatedModel>;
 
+  abstract findOneAndUpdate<TQuery = Partial<T>, TUpdate = Partial<T>, TOptions = unknown>(
+    filter: TQuery,
+    updated: TUpdate,
+    options?: TOptions
+  ): Promise<T>;
+
   abstract updateMany<TQuery = Partial<T>, TUpdate = Partial<T>, TOptions = unknown>(
     filter: TQuery,
     updated: TUpdate,

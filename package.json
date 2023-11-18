@@ -51,7 +51,7 @@
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.0",
     "luxon": "^3.4.0",
-    "mongoose": "^6.9.0",
+    "mongoose": "^8.0.1",
     "mongoose-paginate-v2": "^1.7.1",
     "nestjs-convert-to-curl": "^0.0.22",
     "node-cache": "^5.1.2",
@@ -74,7 +74,7 @@
   "devDependencies": {
     "@commitlint/cli": "^18.4.0",
     "@commitlint/config-conventional": "^18.4.0",
-    "@mikemajesty/microservice-crud": "0.2.9",
+    "@mikemajesty/microservice-crud": "0.3.8",
     "@nestjs/cli": "^10.0.2",
     "@nestjs/schematics": "^10.0.2",
     "@nestjs/testing": "^10.0.2",

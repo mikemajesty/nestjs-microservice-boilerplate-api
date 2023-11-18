@@ -1,6 +1,6 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { getConnectionToken } from '@nestjs/mongoose';
-import mongoose, { Connection, PaginateModel } from 'mongoose';
+import mongoose, { Connection, PaginateModel, Schema } from 'mongoose';
 
 import { IUserRepository } from '@/core/user/repository/user';
 import { UserCreateUsecase } from '@/core/user/use-cases/user-create';
@@ -36,16 +36,19 @@ import { UserRepository } from './repository';
       useFactory: async (connection: Connection) => {
         type Model = mongoose.PaginateModel<UserDocument>;
 
-        // use if you want transaction
+        //  use if you want transaction
         const repository: MongoRepositoryModelSessionType<PaginateModel<UserDocument>> = connection.model<
           UserDocument,
           Model
-        >(User.name, UserSchema);
+        >(User.name, UserSchema as Schema);
 
         repository.connection = connection;
 
         // use if you not want transaction
-        // const repository: PaginateModel<UserDocument> = connection.model<UserDocument, Model>(User.name, UserSchema);
+        // const repository: PaginateModel<UserDocument> = connection.model<UserDocument, Model>(
+        //   User.name,
+        //   UserSchema as Schema
+        // );
 
         return new UserRepository(repository);
       },

@@ -14,7 +14,7 @@ import {
 import { DatabaseOptionsSchema, DatabaseOptionsType, SaveOptionsType } from '@/utils/database/sequelize';
 import { ConvertSequelizeFilterToRepository } from '@/utils/decorators/database/postgres/convert-sequelize-filter.decorator';
 import { IEntity } from '@/utils/entity';
-import { ApiBadRequestException } from '@/utils/exception';
+import { ApiBadRequestException, ApiNotFoundException } from '@/utils/exception';
 
 import { validateFindByCommandsFilter } from '../util';
 
@@ -155,6 +155,30 @@ export class SequelizeRepository<T extends ModelCtor & IEntity> implements IRepo
     });
 
     if (!model) return;
+
+    return model.toJSON();
+  }
+
+  @ConvertSequelizeFilterToRepository()
+  async findOneAndUpdate<TQuery = Partial<T>, TUpdate = Partial<T>, TOptions = DatabaseOptionsType>(
+    filter: TQuery,
+    updated: TUpdate,
+    options?: TOptions
+  ): Promise<T> {
+    const { schema, transaction } = DatabaseOptionsSchema.parse(options);
+
+    const [rowsEffected] = await this.Model.schema(schema).update(updated, {
+      where: filter as WhereOptions<T>,
+      transaction
+    });
+
+    if (!rowsEffected) {
+      throw new ApiNotFoundException();
+    }
+
+    const model = await this.Model.schema(schema).findOne({
+      where: filter as WhereOptions<T>
+    });
 
     return model.toJSON();
   }
