@@ -4,34 +4,32 @@ import { ConfigService } from '@nestjs/config';
 import { ISecretsAdapter } from './adapter';
 
 @Injectable()
-export class SecretsService extends ConfigService implements ISecretsAdapter {
-  constructor() {
-    super();
-  }
+export class SecretsService implements ISecretsAdapter {
+  constructor(private readonly config: ConfigService) {}
 
-  ENV = this.get('ENV');
+  ENV = this.config.get('ENV');
 
-  PORT = this.get<number>('PORT');
+  PORT = this.config.get<number>('PORT');
 
-  HOST = this.get('HOST');
+  HOST = this.config.get('HOST');
 
-  LOGER_LEVEL = this.get('LOGER_LEVEL');
+  LOGER_LEVEL = this.config.get('LOGER_LEVEL');
 
-  REDIS_URL = this.get('REDIS_URL');
+  REDIS_URL = this.config.get('REDIS_URL');
 
-  POSTGRES_URL = `postgresql://${this.get('POSTGRES_USER')}:${this.get('POSTGRES_PASSWORD')}@${this.get(
-    'POSTGRES_HOST'
-  )}:${this.get('POSTGRES_PORT')}/${this.get('POSTGRES_DATABASE')}`;
+  POSTGRES_URL = `postgresql://${this.config.get('POSTGRES_USER')}:${this.config.get(
+    'POSTGRES_PASSWORD'
+  )}@${this.config.get('POSTGRES_HOST')}:${this.config.get('POSTGRES_PORT')}/${this.config.get('POSTGRES_DATABASE')}`;
 
-  MONGO_URL = this.get('MONGO_URL');
+  MONGO_URL = this.config.get('MONGO_URL');
 
-  ZIPKIN_URL = this.get('ZIPKIN_URL');
+  ZIPKIN_URL = this.config.get('ZIPKIN_URL');
 
-  PROMETHUES_URL = this.get('PROMETHUES_URL');
+  PROMETHUES_URL = this.config.get('PROMETHUES_URL');
 
-  TOKEN_EXPIRATION = this.get<number>('TOKEN_EXPIRATION');
+  TOKEN_EXPIRATION = this.config.get<number>('TOKEN_EXPIRATION');
 
-  JWT_SECRET_KEY = this.get('JWT_SECRET_KEY');
+  JWT_SECRET_KEY = this.config.get('JWT_SECRET_KEY');
 
-  RATE_LIMIT_BY_USER = this.get<number>('RATE_LIMIT_BY_USER');
+  RATE_LIMIT_BY_USER = this.config.get<number>('RATE_LIMIT_BY_USER');
 }

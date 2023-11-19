@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { BaseEntity, withID } from '@/utils/entity';
+import { BaseEntity } from '@/utils/entity';
 
 const ID = z.string().uuid();
 const Name = z.string().trim().min(1).max(200);
@@ -22,7 +22,7 @@ export const CatsEntitySchema = z.object({
 
 type Cat = z.infer<typeof CatsEntitySchema>;
 
-export class CatsEntity extends BaseEntity<CatsEntity>() {
+export class CatsEntity extends BaseEntity<CatsEntity>(CatsEntitySchema) {
   name: string;
 
   breed: string;
@@ -31,6 +31,6 @@ export class CatsEntity extends BaseEntity<CatsEntity>() {
 
   constructor(entity: Cat) {
     super();
-    Object.assign(this, CatsEntitySchema.parse(withID(entity)));
+    Object.assign(this, this.validate(entity));
   }
 }

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { BaseEntity, withID } from '@/utils/entity';
+import { BaseEntity } from '@/utils/entity';
 
 const ID = z.string().uuid();
 const Login = z.string().trim().min(1).max(200);
@@ -26,7 +26,7 @@ export const UserEntitySchema = z.object({
 
 type User = z.infer<typeof UserEntitySchema>;
 
-export class UserEntity extends BaseEntity<UserEntity>() {
+export class UserEntity extends BaseEntity<UserEntity>(UserEntitySchema) {
   login: string;
 
   password: string;
@@ -35,7 +35,7 @@ export class UserEntity extends BaseEntity<UserEntity>() {
 
   constructor(entity: User) {
     super();
-    Object.assign(this, UserEntitySchema.parse(withID(entity)));
+    Object.assign(this, this.validate(entity));
   }
 
   anonymizePassword() {

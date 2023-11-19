@@ -14,7 +14,7 @@ import {
 import { DatabaseOptionsSchema, DatabaseOptionsType, SaveOptionsType } from '@/utils/database/sequelize';
 import { ConvertSequelizeFilterToRepository } from '@/utils/decorators/database/postgres/convert-sequelize-filter.decorator';
 import { IEntity } from '@/utils/entity';
-import { ApiBadRequestException, ApiNotFoundException } from '@/utils/exception';
+import { ApiBadRequestException } from '@/utils/exception';
 
 import { validateFindByCommandsFilter } from '../util';
 
@@ -173,7 +173,7 @@ export class SequelizeRepository<T extends ModelCtor & IEntity> implements IRepo
     });
 
     if (!rowsEffected) {
-      throw new ApiNotFoundException();
+      return null;
     }
 
     const model = await this.Model.schema(schema).findOne({

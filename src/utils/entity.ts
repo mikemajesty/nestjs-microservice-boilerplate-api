@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
+import { ZodSchema, ZodType } from 'zod';
 
 export const withID = (entity: { _id?: string; id?: string }) => {
   entity.id = [entity?.id, entity?._id, uuidv4()].find(Boolean);
@@ -15,7 +16,7 @@ export interface IEntity {
   deletedAt?: Date;
 }
 
-export const BaseEntity = <T>() => {
+export const BaseEntity = <T>(schema: ZodSchema) => {
   abstract class Entity implements IEntity {
     readonly id: string;
 
@@ -29,6 +30,12 @@ export const BaseEntity = <T>() => {
 
     setDeleted() {
       this.deletedAt = new Date();
+    }
+
+    validate<T>(entity: T): ZodType {
+      Object.assign(entity, withID(entity));
+      Object.assign(this, { id: entity['id'] });
+      return schema.parse(entity);
     }
   }
 
