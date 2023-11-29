@@ -17,7 +17,7 @@ const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const adapter_1 = require("./adapter");
 const swagger_2 = require("./swagger");
-let LogoutController = exports.LogoutController = class LogoutController {
+let LogoutController = class LogoutController {
     constructor(logoutService) {
         this.logoutService = logoutService;
     }
@@ -36,10 +36,11 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Object)
 ], LogoutController.prototype, "logout", null);
-exports.LogoutController = LogoutController = __decorate([
+LogoutController = __decorate([
     (0, common_1.Controller)(),
     (0, swagger_1.ApiTags)('logout'),
     (0, swagger_1.ApiBearerAuth)(),
     __metadata("design:paramtypes", [adapter_1.ILogoutAdapter])
 ], LogoutController);
+exports.LogoutController = LogoutController;
 //# sourceMappingURL=controller.js.map

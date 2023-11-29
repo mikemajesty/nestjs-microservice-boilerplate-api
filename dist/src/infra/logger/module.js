@@ -11,9 +11,9 @@ const common_1 = require("@nestjs/common");
 const secrets_1 = require("../secrets");
 const adapter_1 = require("./adapter");
 const service_1 = require("./service");
-let LoggerModule = exports.LoggerModule = class LoggerModule {
+let LoggerModule = class LoggerModule {
 };
-exports.LoggerModule = LoggerModule = __decorate([
+LoggerModule = __decorate([
     (0, common_1.Module)({
         imports: [secrets_1.SecretsModule],
         providers: [
@@ -30,4 +30,5 @@ exports.LoggerModule = LoggerModule = __decorate([
         exports: [adapter_1.ILoggerAdapter]
     })
 ], LoggerModule);
+exports.LoggerModule = LoggerModule;
 //# sourceMappingURL=module.js.map

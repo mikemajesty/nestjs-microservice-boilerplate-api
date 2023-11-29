@@ -11,9 +11,9 @@ const common_1 = require("@nestjs/common");
 const secrets_1 = require("../../infra/secrets");
 const adapter_1 = require("./adapter");
 const service_1 = require("./service");
-let TokenModule = exports.TokenModule = class TokenModule {
+let TokenModule = class TokenModule {
 };
-exports.TokenModule = TokenModule = __decorate([
+TokenModule = __decorate([
     (0, common_1.Module)({
         imports: [secrets_1.SecretsModule],
         providers: [
@@ -26,4 +26,5 @@ exports.TokenModule = TokenModule = __decorate([
         exports: [adapter_1.ITokenAdapter]
     })
 ], TokenModule);
+exports.TokenModule = TokenModule;
 //# sourceMappingURL=module.js.map

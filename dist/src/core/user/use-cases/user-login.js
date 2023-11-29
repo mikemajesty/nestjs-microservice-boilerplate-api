@@ -38,11 +38,11 @@ class LoginUsecase {
         });
     }
 }
-exports.LoginUsecase = LoginUsecase;
 __decorate([
     (0, validate_schema_decorator_1.ValidateSchema)(exports.LoginSchema),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Object)
 ], LoginUsecase.prototype, "execute", null);
+exports.LoginUsecase = LoginUsecase;
 //# sourceMappingURL=user-login.js.map

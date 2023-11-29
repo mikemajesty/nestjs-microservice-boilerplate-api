@@ -25,12 +25,12 @@ const is_logged_middleware_1 = require("../../utils/middlewares/is-logged.middle
 const adapter_1 = require("./adapter");
 const controller_1 = require("./controller");
 const repository_1 = require("./repository");
-let UserModule = exports.UserModule = class UserModule {
+let UserModule = class UserModule {
     configure(consumer) {
         consumer.apply(is_logged_middleware_1.IsLoggedMiddleware).forRoutes(controller_1.UserController);
     }
 };
-exports.UserModule = UserModule = __decorate([
+UserModule = __decorate([
     (0, common_1.Module)({
         imports: [auth_1.TokenModule, secrets_1.SecretsModule, logger_1.LoggerModule, redis_1.RedisCacheModule],
         controllers: [controller_1.UserController],
@@ -90,4 +90,5 @@ exports.UserModule = UserModule = __decorate([
         ]
     })
 ], UserModule);
+exports.UserModule = UserModule;
 //# sourceMappingURL=module.js.map

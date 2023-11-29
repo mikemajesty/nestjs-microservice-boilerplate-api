@@ -16,7 +16,7 @@ const cache_1 = require("../../infra/cache");
 const logger_1 = require("../../infra/logger");
 const auth_1 = require("../../libs/auth");
 const exception_1 = require("../exception");
-let IsLoggedMiddleware = exports.IsLoggedMiddleware = class IsLoggedMiddleware {
+let IsLoggedMiddleware = class IsLoggedMiddleware {
     constructor(tokenService, loggerService, redisService) {
         this.tokenService = tokenService;
         this.loggerService = loggerService;
@@ -50,10 +50,11 @@ let IsLoggedMiddleware = exports.IsLoggedMiddleware = class IsLoggedMiddleware {
         next();
     }
 };
-exports.IsLoggedMiddleware = IsLoggedMiddleware = __decorate([
+IsLoggedMiddleware = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [auth_1.ITokenAdapter,
         logger_1.ILoggerAdapter,
         cache_1.ICacheAdapter])
 ], IsLoggedMiddleware);
+exports.IsLoggedMiddleware = IsLoggedMiddleware;
 //# sourceMappingURL=is-logged.middleware.js.map

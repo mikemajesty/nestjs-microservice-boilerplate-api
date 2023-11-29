@@ -6,7 +6,7 @@ var SortEnum;
 (function (SortEnum) {
     SortEnum[SortEnum["asc"] = 1] = "asc";
     SortEnum[SortEnum["desc"] = -1] = "desc";
-})(SortEnum || (exports.SortEnum = SortEnum = {}));
+})(SortEnum = exports.SortEnum || (exports.SortEnum = {}));
 exports.SortHttpSchema = zod_1.z
     .string()
     .optional()

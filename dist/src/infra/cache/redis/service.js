@@ -14,7 +14,7 @@ const common_1 = require("@nestjs/common");
 const redis_1 = require("redis");
 const logger_1 = require("../../logger");
 const exception_1 = require("../../../utils/exception");
-let RedisService = exports.RedisService = class RedisService {
+let RedisService = class RedisService {
     constructor(config, logger) {
         this.config = config;
         this.logger = logger;
@@ -68,8 +68,9 @@ let RedisService = exports.RedisService = class RedisService {
         throw new exception_1.ApiInternalServerException(error);
     }
 };
-exports.RedisService = RedisService = __decorate([
+RedisService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [Object, logger_1.ILoggerAdapter])
 ], RedisService);
+exports.RedisService = RedisService;
 //# sourceMappingURL=service.js.map

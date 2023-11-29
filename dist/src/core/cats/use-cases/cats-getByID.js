@@ -29,11 +29,11 @@ class CatsGetByIdUsecase {
         return new cats_2.CatsEntity(cats);
     }
 }
-exports.CatsGetByIdUsecase = CatsGetByIdUsecase;
 __decorate([
     (0, validate_schema_decorator_1.ValidateSchema)(exports.CatsGetByIdSchema),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], CatsGetByIdUsecase.prototype, "execute", null);
+exports.CatsGetByIdUsecase = CatsGetByIdUsecase;
 //# sourceMappingURL=cats-getByID.js.map

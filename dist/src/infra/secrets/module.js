@@ -11,9 +11,9 @@ const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
 const adapter_1 = require("./adapter");
 const service_1 = require("./service");
-let SecretsModule = exports.SecretsModule = class SecretsModule {
+let SecretsModule = class SecretsModule {
 };
-exports.SecretsModule = SecretsModule = __decorate([
+SecretsModule = __decorate([
     (0, common_1.Module)({
         imports: [
             config_1.ConfigModule.forRoot({
@@ -29,4 +29,5 @@ exports.SecretsModule = SecretsModule = __decorate([
         exports: [adapter_1.ISecretsAdapter]
     })
 ], SecretsModule);
+exports.SecretsModule = SecretsModule;
 //# sourceMappingURL=module.js.map

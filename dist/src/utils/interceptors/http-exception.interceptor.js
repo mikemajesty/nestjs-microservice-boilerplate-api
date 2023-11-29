@@ -16,7 +16,7 @@ const semantic_conventions_1 = require("@opentelemetry/semantic-conventions");
 const operators_1 = require("rxjs/operators");
 const zod_1 = require("zod");
 const logger_1 = require("../../infra/logger");
-let ExceptionInterceptor = exports.ExceptionInterceptor = class ExceptionInterceptor {
+let ExceptionInterceptor = class ExceptionInterceptor {
     constructor(logger) {
         this.logger = logger;
     }
@@ -65,8 +65,9 @@ let ExceptionInterceptor = exports.ExceptionInterceptor = class ExceptionInterce
         }
     }
 };
-exports.ExceptionInterceptor = ExceptionInterceptor = __decorate([
+ExceptionInterceptor = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [logger_1.ILoggerAdapter])
 ], ExceptionInterceptor);
+exports.ExceptionInterceptor = ExceptionInterceptor;
 //# sourceMappingURL=http-exception.interceptor.js.map

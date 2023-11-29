@@ -11,9 +11,9 @@ const common_1 = require("@nestjs/common");
 const logger_1 = require("../logger");
 const adapter_1 = require("./adapter");
 const service_1 = require("./service");
-let HttpModule = exports.HttpModule = class HttpModule {
+let HttpModule = class HttpModule {
 };
-exports.HttpModule = HttpModule = __decorate([
+HttpModule = __decorate([
     (0, common_1.Module)({
         imports: [logger_1.LoggerModule],
         providers: [
@@ -25,4 +25,5 @@ exports.HttpModule = HttpModule = __decorate([
         exports: [adapter_1.IHttpAdapter]
     })
 ], HttpModule);
+exports.HttpModule = HttpModule;
 //# sourceMappingURL=module.js.map

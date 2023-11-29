@@ -32,11 +32,11 @@ class CatsDeleteUsecase {
         return cats;
     }
 }
-exports.CatsDeleteUsecase = CatsDeleteUsecase;
 __decorate([
     (0, validate_schema_decorator_1.ValidateSchema)(exports.CatsDeleteSchema),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
 ], CatsDeleteUsecase.prototype, "execute", null);
+exports.CatsDeleteUsecase = CatsDeleteUsecase;
 //# sourceMappingURL=cats-delete.js.map

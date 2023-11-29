@@ -46,7 +46,7 @@ const rxjs_1 = require("rxjs");
 const logger_1 = require("../../infra/logger");
 const axios_2 = require("../axios");
 const request_1 = require("../request");
-let TracingInterceptor = exports.TracingInterceptor = class TracingInterceptor {
+let TracingInterceptor = class TracingInterceptor {
     constructor(logger) {
         this.logger = logger;
         this.tracer = api_1.default.trace.getTracer(package_json_1.name, package_json_1.version);
@@ -106,8 +106,9 @@ let TracingInterceptor = exports.TracingInterceptor = class TracingInterceptor {
         }));
     }
 };
-exports.TracingInterceptor = TracingInterceptor = __decorate([
+TracingInterceptor = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [logger_1.ILoggerAdapter])
 ], TracingInterceptor);
+exports.TracingInterceptor = TracingInterceptor;
 //# sourceMappingURL=tracing.interceptor.js.map

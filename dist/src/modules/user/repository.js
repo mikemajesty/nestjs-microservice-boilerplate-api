@@ -21,7 +21,7 @@ const repository_1 = require("../../infra/repository");
 const validate_mongoose_filter_decorator_1 = require("../../utils/decorators/database/mongo/validate-mongoose-filter.decorator");
 const validate_database_sort_allowed_decorator_1 = require("../../utils/decorators/database/validate-database-sort-allowed.decorator");
 const types_1 = require("../../utils/decorators/types");
-let UserRepository = exports.UserRepository = class UserRepository extends repository_1.MongoRepository {
+let UserRepository = class UserRepository extends repository_1.MongoRepository {
     constructor(entity) {
         super(entity);
         this.entity = entity;
@@ -52,9 +52,10 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], UserRepository.prototype, "paginate", null);
-exports.UserRepository = UserRepository = __decorate([
+UserRepository = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, mongoose_1.InjectModel)(user_2.User.name)),
     __metadata("design:paramtypes", [Object])
 ], UserRepository);
+exports.UserRepository = UserRepository;
 //# sourceMappingURL=repository.js.map

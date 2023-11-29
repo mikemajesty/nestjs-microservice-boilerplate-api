@@ -45,11 +45,11 @@ class UserCreateUsecase {
         }
     }
 }
-exports.UserCreateUsecase = UserCreateUsecase;
 __decorate([
     (0, validate_schema_decorator_1.ValidateSchema)(exports.UserCreateSchema),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
 ], UserCreateUsecase.prototype, "execute", null);
+exports.UserCreateUsecase = UserCreateUsecase;
 //# sourceMappingURL=user-create.js.map

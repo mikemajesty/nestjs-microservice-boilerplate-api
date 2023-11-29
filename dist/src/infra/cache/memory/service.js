@@ -16,7 +16,7 @@ exports.MemoryCacheService = void 0;
 const common_1 = require("@nestjs/common");
 const node_cache_1 = __importDefault(require("node-cache"));
 const logger_1 = require("../../logger");
-let MemoryCacheService = exports.MemoryCacheService = class MemoryCacheService {
+let MemoryCacheService = class MemoryCacheService {
     constructor(logger) {
         this.logger = logger;
     }
@@ -47,8 +47,9 @@ let MemoryCacheService = exports.MemoryCacheService = class MemoryCacheService {
         return this.client.ttl(key, ttl);
     }
 };
-exports.MemoryCacheService = MemoryCacheService = __decorate([
+MemoryCacheService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [logger_1.ILoggerAdapter])
 ], MemoryCacheService);
+exports.MemoryCacheService = MemoryCacheService;
 //# sourceMappingURL=service.js.map

@@ -9,7 +9,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.HttpLoggerInterceptor = void 0;
 const common_1 = require("@nestjs/common");
 const uuid_1 = require("uuid");
-let HttpLoggerInterceptor = exports.HttpLoggerInterceptor = class HttpLoggerInterceptor {
+let HttpLoggerInterceptor = class HttpLoggerInterceptor {
     intercept(executionContext, next) {
         var _a;
         const context = `${executionContext.getClass().name}/${executionContext.getHandler().name}`;
@@ -22,7 +22,8 @@ let HttpLoggerInterceptor = exports.HttpLoggerInterceptor = class HttpLoggerInte
         return next.handle();
     }
 };
-exports.HttpLoggerInterceptor = HttpLoggerInterceptor = __decorate([
+HttpLoggerInterceptor = __decorate([
     (0, common_1.Injectable)()
 ], HttpLoggerInterceptor);
+exports.HttpLoggerInterceptor = HttpLoggerInterceptor;
 //# sourceMappingURL=http-logger.interceptor.js.map

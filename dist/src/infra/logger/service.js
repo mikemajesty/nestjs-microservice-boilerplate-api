@@ -19,7 +19,7 @@ const pino_pretty_1 = __importDefault(require("pino-pretty"));
 const uuid_1 = require("uuid");
 const date_1 = require("../../utils/date");
 const exception_1 = require("../../utils/exception");
-let LoggerService = exports.LoggerService = class LoggerService {
+let LoggerService = class LoggerService {
     async connect(logLevel) {
         const pinoLogger = (0, pino_1.pino)({
             useLevelLabels: true,
@@ -187,7 +187,8 @@ let LoggerService = exports.LoggerService = class LoggerService {
         return [error.traceid, (_a = this.logger.logger.bindings()) === null || _a === void 0 ? void 0 : _a.traceid].find(Boolean);
     }
 };
-exports.LoggerService = LoggerService = __decorate([
+LoggerService = __decorate([
     (0, common_1.Injectable)({ scope: common_1.Scope.REQUEST })
 ], LoggerService);
+exports.LoggerService = LoggerService;
 //# sourceMappingURL=service.js.map

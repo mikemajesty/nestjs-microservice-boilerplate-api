@@ -33,11 +33,11 @@ class UserDeleteUsecase {
         return user;
     }
 }
-exports.UserDeleteUsecase = UserDeleteUsecase;
 __decorate([
     (0, validate_schema_decorator_1.ValidateSchema)(exports.UserDeleteSchema),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
 ], UserDeleteUsecase.prototype, "execute", null);
+exports.UserDeleteUsecase = UserDeleteUsecase;
 //# sourceMappingURL=user-delete.js.map

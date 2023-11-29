@@ -5,5 +5,5 @@ var SearchTypeEnum;
 (function (SearchTypeEnum) {
     SearchTypeEnum[SearchTypeEnum["like"] = 0] = "like";
     SearchTypeEnum[SearchTypeEnum["equal"] = 1] = "equal";
-})(SearchTypeEnum || (exports.SearchTypeEnum = SearchTypeEnum = {}));
+})(SearchTypeEnum = exports.SearchTypeEnum || (exports.SearchTypeEnum = {}));
 //# sourceMappingURL=types.js.map

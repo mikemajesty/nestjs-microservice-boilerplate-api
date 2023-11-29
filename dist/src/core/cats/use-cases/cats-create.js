@@ -36,11 +36,11 @@ class CatsCreateUsecase {
         }
     }
 }
-exports.CatsCreateUsecase = CatsCreateUsecase;
 __decorate([
     (0, validate_schema_decorator_1.ValidateSchema)(exports.CatsCreateSchema),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
 ], CatsCreateUsecase.prototype, "execute", null);
+exports.CatsCreateUsecase = CatsCreateUsecase;
 //# sourceMappingURL=cats-create.js.map

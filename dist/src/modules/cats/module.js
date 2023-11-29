@@ -24,12 +24,12 @@ const is_logged_middleware_1 = require("../../utils/middlewares/is-logged.middle
 const adapter_1 = require("./adapter");
 const controller_1 = require("./controller");
 const repository_1 = require("./repository");
-let CatsModule = exports.CatsModule = class CatsModule {
+let CatsModule = class CatsModule {
     configure(consumer) {
         consumer.apply(is_logged_middleware_1.IsLoggedMiddleware).forRoutes(controller_1.CatsController);
     }
 };
-exports.CatsModule = CatsModule = __decorate([
+CatsModule = __decorate([
     (0, common_1.Module)({
         imports: [auth_1.TokenModule, logger_1.LoggerModule, redis_1.RedisCacheModule, module_1.PostgresDatabaseModule],
         controllers: [controller_1.CatsController],
@@ -71,4 +71,5 @@ exports.CatsModule = CatsModule = __decorate([
         exports: []
     })
 ], CatsModule);
+exports.CatsModule = CatsModule;
 //# sourceMappingURL=module.js.map

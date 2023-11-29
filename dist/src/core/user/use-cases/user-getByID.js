@@ -30,11 +30,11 @@ class UserGetByIdUsecase {
         return entity;
     }
 }
-exports.UserGetByIdUsecase = UserGetByIdUsecase;
 __decorate([
     (0, validate_schema_decorator_1.ValidateSchema)(exports.UserGetByIdSchema),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], UserGetByIdUsecase.prototype, "execute", null);
+exports.UserGetByIdUsecase = UserGetByIdUsecase;
 //# sourceMappingURL=user-getByID.js.map

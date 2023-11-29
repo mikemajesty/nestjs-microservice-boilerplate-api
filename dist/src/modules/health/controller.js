@@ -13,7 +13,7 @@ exports.HealthController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const package_json_1 = require("../../../package.json");
-let HealthController = exports.HealthController = class HealthController {
+let HealthController = class HealthController {
     async getHealth() {
         return `${package_json_1.name}:${package_json_1.version} available!`;
     }
@@ -24,8 +24,9 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], HealthController.prototype, "getHealth", null);
-exports.HealthController = HealthController = __decorate([
+HealthController = __decorate([
     (0, common_1.Controller)(),
     (0, swagger_1.ApiTags)('health')
 ], HealthController);
+exports.HealthController = HealthController;
 //# sourceMappingURL=controller.js.map

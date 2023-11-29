@@ -17,9 +17,9 @@ const module_4 = require("./modules/login/module");
 const module_5 = require("./modules/logout/module");
 const module_6 = require("./modules/user/module");
 const auth_guard_interceptor_1 = require("./utils/interceptors/auth-guard.interceptor");
-let AppModule = exports.AppModule = class AppModule {
+let AppModule = class AppModule {
 };
-exports.AppModule = AppModule = __decorate([
+AppModule = __decorate([
     (0, common_1.Module)({
         providers: [
             {
@@ -30,4 +30,5 @@ exports.AppModule = AppModule = __decorate([
         imports: [module_1.InfraModule, module_3.HealthModule, module_6.UserModule, module_4.LoginModule, module_5.LogoutModule, auth_1.TokenModule, module_2.CatsModule]
     })
 ], AppModule);
+exports.AppModule = AppModule;
 //# sourceMappingURL=app.module.js.map

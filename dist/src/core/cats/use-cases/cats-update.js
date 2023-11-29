@@ -34,11 +34,11 @@ class CatsUpdateUsecase {
         return new cats_1.CatsEntity(updated);
     }
 }
-exports.CatsUpdateUsecase = CatsUpdateUsecase;
 __decorate([
     (0, validate_schema_decorator_1.ValidateSchema)(exports.CatsUpdateSchema),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
 ], CatsUpdateUsecase.prototype, "execute", null);
+exports.CatsUpdateUsecase = CatsUpdateUsecase;
 //# sourceMappingURL=cats-update.js.map

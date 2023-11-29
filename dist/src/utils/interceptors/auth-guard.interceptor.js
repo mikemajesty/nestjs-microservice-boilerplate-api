@@ -13,7 +13,7 @@ exports.RolesGuardInterceptor = void 0;
 const common_1 = require("@nestjs/common");
 const core_1 = require("@nestjs/core");
 const role_decorator_1 = require("../decorators/role.decorator");
-let RolesGuardInterceptor = exports.RolesGuardInterceptor = class RolesGuardInterceptor {
+let RolesGuardInterceptor = class RolesGuardInterceptor {
     constructor(reflector) {
         this.reflector = reflector;
     }
@@ -34,8 +34,9 @@ let RolesGuardInterceptor = exports.RolesGuardInterceptor = class RolesGuardInte
         return requiredRoles.some((role) => roles.includes(role));
     }
 };
-exports.RolesGuardInterceptor = RolesGuardInterceptor = __decorate([
+RolesGuardInterceptor = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [core_1.Reflector])
 ], RolesGuardInterceptor);
+exports.RolesGuardInterceptor = RolesGuardInterceptor;
 //# sourceMappingURL=auth-guard.interceptor.js.map

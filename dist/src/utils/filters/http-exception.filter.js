@@ -19,7 +19,7 @@ const zod_1 = require("zod");
 const adapter_1 = require("../../infra/logger/adapter");
 const date_1 = require("../date");
 const htttp_status_json_1 = __importDefault(require("../static/htttp-status.json"));
-let AppExceptionFilter = exports.AppExceptionFilter = class AppExceptionFilter {
+let AppExceptionFilter = class AppExceptionFilter {
     constructor(loggerService) {
         this.loggerService = loggerService;
     }
@@ -62,8 +62,9 @@ let AppExceptionFilter = exports.AppExceptionFilter = class AppExceptionFilter {
             : [exception['status'], common_1.HttpStatus.INTERNAL_SERVER_ERROR].find(Boolean);
     }
 };
-exports.AppExceptionFilter = AppExceptionFilter = __decorate([
+AppExceptionFilter = __decorate([
     (0, common_1.Catch)(),
     __metadata("design:paramtypes", [adapter_1.ILoggerAdapter])
 ], AppExceptionFilter);
+exports.AppExceptionFilter = AppExceptionFilter;
 //# sourceMappingURL=http-exception.filter.js.map

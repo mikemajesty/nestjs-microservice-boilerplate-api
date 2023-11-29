@@ -12,9 +12,9 @@ const logger_1 = require("../../logger");
 const adapter_1 = require("../adapter");
 const config_1 = require("./config");
 const service_1 = require("./service");
-let PostgresDatabaseModule = exports.PostgresDatabaseModule = class PostgresDatabaseModule {
+let PostgresDatabaseModule = class PostgresDatabaseModule {
 };
-exports.PostgresDatabaseModule = PostgresDatabaseModule = __decorate([
+PostgresDatabaseModule = __decorate([
     (0, common_1.Module)({
         imports: [logger_1.LoggerModule],
         providers: [
@@ -31,4 +31,5 @@ exports.PostgresDatabaseModule = PostgresDatabaseModule = __decorate([
         exports: [adapter_1.IDataBaseAdapter]
     })
 ], PostgresDatabaseModule);
+exports.PostgresDatabaseModule = PostgresDatabaseModule;
 //# sourceMappingURL=module.js.map

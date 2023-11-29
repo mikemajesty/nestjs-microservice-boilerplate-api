@@ -16,7 +16,7 @@ exports.UserSchema = exports.User = void 0;
 const mongoose_1 = require("@nestjs/mongoose");
 const mongoose_paginate_v2_1 = __importDefault(require("mongoose-paginate-v2"));
 const user_1 = require("../../../../core/user/entity/user");
-let User = exports.User = class User {
+let User = class User {
 };
 __decorate([
     (0, mongoose_1.Prop)({ type: String }),
@@ -38,13 +38,14 @@ __decorate([
     (0, mongoose_1.Prop)({ type: Date, default: null }),
     __metadata("design:type", Date)
 ], User.prototype, "deletedAt", void 0);
-exports.User = User = __decorate([
+User = __decorate([
     (0, mongoose_1.Schema)({
         collection: 'user-collection',
         autoIndex: true,
         timestamps: true
     })
 ], User);
+exports.User = User;
 const UserSchema = mongoose_1.SchemaFactory.createForClass(User);
 exports.UserSchema = UserSchema;
 UserSchema.index({ login: 1 }, { unique: true, partialFilterExpression: { deletedAt: { $eq: null } } });

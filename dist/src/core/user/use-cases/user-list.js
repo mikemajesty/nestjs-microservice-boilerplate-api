@@ -35,11 +35,11 @@ class UserListUsecase {
         };
     }
 }
-exports.UserListUsecase = UserListUsecase;
 __decorate([
     (0, validate_schema_decorator_1.ValidateSchema)(exports.UserListSchema),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], UserListUsecase.prototype, "execute", null);
+exports.UserListUsecase = UserListUsecase;
 //# sourceMappingURL=user-list.js.map

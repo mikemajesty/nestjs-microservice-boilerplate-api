@@ -21,7 +21,7 @@ const search_1 = require("../../utils/search");
 const sort_1 = require("../../utils/sort");
 const adapter_1 = require("./adapter");
 const swagger_2 = require("./swagger");
-let UserController = exports.UserController = class UserController {
+let UserController = class UserController {
     constructor(userCreateUsecase, userUpdateUsecase, userDeleteUsecase, userListUsecase, userGetByIDUsecase) {
         this.userCreateUsecase = userCreateUsecase;
         this.userUpdateUsecase = userUpdateUsecase;
@@ -109,7 +109,7 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], UserController.prototype, "delete", null);
-exports.UserController = UserController = __decorate([
+UserController = __decorate([
     (0, common_1.Controller)('users'),
     (0, swagger_1.ApiTags)('users'),
     (0, swagger_1.ApiBearerAuth)(),
@@ -120,4 +120,5 @@ exports.UserController = UserController = __decorate([
         adapter_1.IUserListAdapter,
         adapter_1.IUserGetByIDAdapter])
 ], UserController);
+exports.UserController = UserController;
 //# sourceMappingURL=controller.js.map

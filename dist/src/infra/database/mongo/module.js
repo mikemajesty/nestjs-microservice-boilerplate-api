@@ -12,9 +12,9 @@ const mongoose_1 = require("@nestjs/mongoose");
 const secrets_1 = require("../../secrets");
 const enum_1 = require("../enum");
 const service_1 = require("./service");
-let MongoDatabaseModule = exports.MongoDatabaseModule = class MongoDatabaseModule {
+let MongoDatabaseModule = class MongoDatabaseModule {
 };
-exports.MongoDatabaseModule = MongoDatabaseModule = __decorate([
+MongoDatabaseModule = __decorate([
     (0, common_1.Module)({
         imports: [
             mongoose_1.MongooseModule.forRootAsync({
@@ -28,4 +28,5 @@ exports.MongoDatabaseModule = MongoDatabaseModule = __decorate([
         ]
     })
 ], MongoDatabaseModule);
+exports.MongoDatabaseModule = MongoDatabaseModule;
 //# sourceMappingURL=module.js.map

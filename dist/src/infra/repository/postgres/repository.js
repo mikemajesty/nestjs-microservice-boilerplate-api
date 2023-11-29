@@ -227,7 +227,6 @@ class SequelizeRepository {
         return model.toJSON();
     }
 }
-exports.SequelizeRepository = SequelizeRepository;
 __decorate([
     (0, convert_sequelize_filter_decorator_1.ConvertSequelizeFilterToRepository)(),
     __metadata("design:type", Function),
@@ -282,4 +281,5 @@ __decorate([
     __metadata("design:paramtypes", [typeof (_v = typeof TQuery !== "undefined" && TQuery) === "function" ? _v : Object, Array, typeof (_w = typeof TOptions !== "undefined" && TOptions) === "function" ? _w : Object]),
     __metadata("design:returntype", Promise)
 ], SequelizeRepository.prototype, "findOneWithSelectFields", null);
+exports.SequelizeRepository = SequelizeRepository;
 //# sourceMappingURL=repository.js.map

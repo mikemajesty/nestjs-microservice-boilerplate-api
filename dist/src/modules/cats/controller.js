@@ -21,7 +21,7 @@ const search_1 = require("../../utils/search");
 const sort_1 = require("../../utils/sort");
 const adapter_1 = require("./adapter");
 const swagger_2 = require("./swagger");
-let CatsController = exports.CatsController = class CatsController {
+let CatsController = class CatsController {
     constructor(catsCreate, catsUpdate, catsGetByID, catsList, catsDelete) {
         this.catsCreate = catsCreate;
         this.catsUpdate = catsUpdate;
@@ -107,7 +107,7 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], CatsController.prototype, "delete", null);
-exports.CatsController = CatsController = __decorate([
+CatsController = __decorate([
     (0, common_1.Controller)('cats'),
     (0, swagger_1.ApiTags)('cats'),
     (0, swagger_1.ApiBearerAuth)(),
@@ -118,4 +118,5 @@ exports.CatsController = CatsController = __decorate([
         adapter_1.ICatsListAdapter,
         adapter_1.ICatsDeleteAdapter])
 ], CatsController);
+exports.CatsController = CatsController;
 //# sourceMappingURL=controller.js.map

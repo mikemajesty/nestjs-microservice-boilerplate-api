@@ -12,7 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.SecretsService = void 0;
 const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
-let SecretsService = exports.SecretsService = class SecretsService {
+let SecretsService = class SecretsService {
     constructor(config) {
         this.config = config;
         this.ENV = this.config.get('ENV');
@@ -29,8 +29,9 @@ let SecretsService = exports.SecretsService = class SecretsService {
         this.RATE_LIMIT_BY_USER = this.config.get('RATE_LIMIT_BY_USER');
     }
 };
-exports.SecretsService = SecretsService = __decorate([
+SecretsService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [config_1.ConfigService])
 ], SecretsService);
+exports.SecretsService = SecretsService;
 //# sourceMappingURL=service.js.map

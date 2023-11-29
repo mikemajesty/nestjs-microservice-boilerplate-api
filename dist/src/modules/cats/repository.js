@@ -17,7 +17,7 @@ const sequelize_1 = require("../../utils/database/sequelize");
 const convert_paginate_input_to_sequelize_filter_decorator_1 = require("../../utils/decorators/database/postgres/convert-paginate-input-to-sequelize-filter.decorator");
 const validate_database_sort_allowed_decorator_1 = require("../../utils/decorators/database/validate-database-sort-allowed.decorator");
 const types_1 = require("../../utils/decorators/types");
-let CatsRepository = exports.CatsRepository = class CatsRepository extends repository_1.SequelizeRepository {
+let CatsRepository = class CatsRepository extends repository_1.SequelizeRepository {
     constructor(repository) {
         super(repository);
         this.repository = repository;
@@ -43,8 +43,9 @@ __decorate([
     __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
 ], CatsRepository.prototype, "paginate", null);
-exports.CatsRepository = CatsRepository = __decorate([
+CatsRepository = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [Object])
 ], CatsRepository);
+exports.CatsRepository = CatsRepository;
 //# sourceMappingURL=repository.js.map

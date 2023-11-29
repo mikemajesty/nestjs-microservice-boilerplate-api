@@ -11,9 +11,9 @@ const common_1 = require("@nestjs/common");
 const logger_1 = require("../../logger");
 const adapter_1 = require("../adapter");
 const service_1 = require("./service");
-let MemoryCacheModule = exports.MemoryCacheModule = class MemoryCacheModule {
+let MemoryCacheModule = class MemoryCacheModule {
 };
-exports.MemoryCacheModule = MemoryCacheModule = __decorate([
+MemoryCacheModule = __decorate([
     (0, common_1.Module)({
         imports: [logger_1.LoggerModule],
         providers: [
@@ -30,4 +30,5 @@ exports.MemoryCacheModule = MemoryCacheModule = __decorate([
         exports: [adapter_1.ICacheAdapter]
     })
 ], MemoryCacheModule);
+exports.MemoryCacheModule = MemoryCacheModule;
 //# sourceMappingURL=module.js.map

@@ -40,11 +40,11 @@ class UserUpdateUsecase {
         return entityUpdated;
     }
 }
-exports.UserUpdateUsecase = UserUpdateUsecase;
 __decorate([
     (0, validate_schema_decorator_1.ValidateSchema)(exports.UserUpdateSchema),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
 ], UserUpdateUsecase.prototype, "execute", null);
+exports.UserUpdateUsecase = UserUpdateUsecase;
 //# sourceMappingURL=user-update.js.map

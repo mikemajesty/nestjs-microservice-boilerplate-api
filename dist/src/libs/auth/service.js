@@ -23,7 +23,7 @@ const Schema = user_1.UserEntitySchema.pick({
     password: true,
     roles: true
 });
-let TokenService = exports.TokenService = class TokenService {
+let TokenService = class TokenService {
     constructor(secret) {
         this.secret = secret;
     }
@@ -46,8 +46,9 @@ let TokenService = exports.TokenService = class TokenService {
         return jsonwebtoken_1.default.decode(token, { complete });
     }
 };
-exports.TokenService = TokenService = __decorate([
+TokenService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [secrets_1.ISecretsAdapter])
 ], TokenService);
+exports.TokenService = TokenService;
 //# sourceMappingURL=service.js.map

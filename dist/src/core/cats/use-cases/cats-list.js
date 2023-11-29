@@ -24,11 +24,11 @@ class CatsListUsecase {
         return await this.catsRepository.paginate(input);
     }
 }
-exports.CatsListUsecase = CatsListUsecase;
 __decorate([
     (0, validate_schema_decorator_1.ValidateSchema)(exports.CatsListSchema),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], CatsListUsecase.prototype, "execute", null);
+exports.CatsListUsecase = CatsListUsecase;
 //# sourceMappingURL=cats-list.js.map

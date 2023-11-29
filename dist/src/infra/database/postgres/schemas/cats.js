@@ -11,7 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CatsSchema = void 0;
 const sequelize_typescript_1 = require("sequelize-typescript");
-let CatsSchema = exports.CatsSchema = class CatsSchema extends sequelize_typescript_1.Model {
+let CatsSchema = class CatsSchema extends sequelize_typescript_1.Model {
 };
 __decorate([
     (0, sequelize_typescript_1.Column)({ primaryKey: true, type: sequelize_typescript_1.DataType.UUID }),
@@ -33,7 +33,8 @@ __decorate([
     (0, sequelize_typescript_1.Column)({ allowNull: true, type: sequelize_typescript_1.DataType.DATE }),
     __metadata("design:type", Date)
 ], CatsSchema.prototype, "deletedAt", void 0);
-exports.CatsSchema = CatsSchema = __decorate([
+CatsSchema = __decorate([
     (0, sequelize_typescript_1.Table)({ timestamps: true, tableName: 'cats' })
 ], CatsSchema);
+exports.CatsSchema = CatsSchema;
 //# sourceMappingURL=cats.js.map

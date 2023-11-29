@@ -13,7 +13,7 @@ var UserRole;
 (function (UserRole) {
     UserRole["USER"] = "USER";
     UserRole["BACKOFFICE"] = "BACKOFFICE";
-})(UserRole || (exports.UserRole = UserRole = {}));
+})(UserRole = exports.UserRole || (exports.UserRole = {}));
 exports.UserEntitySchema = zod_1.z.object({
     id: ID,
     login: Login,

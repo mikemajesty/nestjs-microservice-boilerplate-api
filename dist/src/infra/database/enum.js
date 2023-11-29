@@ -4,5 +4,5 @@ exports.ConnectionName = void 0;
 var ConnectionName;
 (function (ConnectionName) {
     ConnectionName["USER"] = "USER_CONNECTION";
-})(ConnectionName || (exports.ConnectionName = ConnectionName = {}));
+})(ConnectionName = exports.ConnectionName || (exports.ConnectionName = {}));
 //# sourceMappingURL=enum.js.map

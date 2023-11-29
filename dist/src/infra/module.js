@@ -15,9 +15,9 @@ const module_1 = require("./database/postgres/module");
 const http_1 = require("./http");
 const logger_1 = require("./logger");
 const secrets_1 = require("./secrets");
-let InfraModule = exports.InfraModule = class InfraModule {
+let InfraModule = class InfraModule {
 };
-exports.InfraModule = InfraModule = __decorate([
+InfraModule = __decorate([
     (0, common_1.Module)({
         imports: [
             secrets_1.SecretsModule,
@@ -30,4 +30,5 @@ exports.InfraModule = InfraModule = __decorate([
         ]
     })
 ], InfraModule);
+exports.InfraModule = InfraModule;
 //# sourceMappingURL=module.js.map

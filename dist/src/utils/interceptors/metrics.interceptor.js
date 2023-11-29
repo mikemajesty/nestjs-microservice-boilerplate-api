@@ -19,7 +19,7 @@ const semantic_conventions_1 = require("@opentelemetry/semantic-conventions");
 const package_json_1 = require("../../../package.json");
 const rxjs_1 = require("rxjs");
 const date_1 = require("../date");
-let MetricsInterceptor = exports.MetricsInterceptor = class MetricsInterceptor {
+let MetricsInterceptor = class MetricsInterceptor {
     constructor() {
         this.metrics = api_1.default.metrics.getMeter(package_json_1.name, package_json_1.version);
         this.counter = this.metrics.createCounter(`api_requests`, { description: 'Request Counter', unit: 'ms' });
@@ -44,8 +44,9 @@ let MetricsInterceptor = exports.MetricsInterceptor = class MetricsInterceptor {
         }));
     }
 };
-exports.MetricsInterceptor = MetricsInterceptor = __decorate([
+MetricsInterceptor = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [])
 ], MetricsInterceptor);
+exports.MetricsInterceptor = MetricsInterceptor;
 //# sourceMappingURL=metrics.interceptor.js.map

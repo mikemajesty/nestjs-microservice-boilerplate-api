@@ -157,7 +157,6 @@ class MongoRepository {
         return filter;
     }
 }
-exports.MongoRepository = MongoRepository;
 __decorate([
     (0, convert_mongoose_filter_decorator_1.ConvertMongoFilterToBaseRepository)(),
     __metadata("design:type", Function),
@@ -212,4 +211,5 @@ __decorate([
     __metadata("design:paramtypes", [Object, Array, Object]),
     __metadata("design:returntype", Promise)
 ], MongoRepository.prototype, "findOneWithSelectFields", null);
+exports.MongoRepository = MongoRepository;
 //# sourceMappingURL=repository.js.map

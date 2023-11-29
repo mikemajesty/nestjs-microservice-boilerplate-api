@@ -19,7 +19,7 @@ const axios_better_stacktrace_1 = __importDefault(require("axios-better-stacktra
 const https_1 = __importDefault(require("https"));
 const axios_2 = require("../../utils/axios");
 const logger_1 = require("../logger");
-let HttpService = exports.HttpService = class HttpService {
+let HttpService = class HttpService {
     constructor(loggerService) {
         this.loggerService = loggerService;
         const httpsAgent = new https_1.default.Agent({
@@ -38,8 +38,9 @@ let HttpService = exports.HttpService = class HttpService {
         return this.axios;
     }
 };
-exports.HttpService = HttpService = __decorate([
+HttpService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [logger_1.ILoggerAdapter])
 ], HttpService);
+exports.HttpService = HttpService;
 //# sourceMappingURL=service.js.map

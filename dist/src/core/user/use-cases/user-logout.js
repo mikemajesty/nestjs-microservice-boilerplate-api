@@ -23,11 +23,11 @@ class LogoutUsecase {
         tracing.logEvent('user-logout', `${user.login}`);
     }
 }
-exports.LogoutUsecase = LogoutUsecase;
 __decorate([
     (0, validate_schema_decorator_1.ValidateSchema)(exports.LogoutSchema),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Object)
 ], LogoutUsecase.prototype, "execute", null);
+exports.LogoutUsecase = LogoutUsecase;
 //# sourceMappingURL=user-logout.js.map

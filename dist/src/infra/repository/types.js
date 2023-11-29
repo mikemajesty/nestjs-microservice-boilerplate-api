@@ -7,5 +7,5 @@ var DatabaseOperationEnum;
     DatabaseOperationEnum["NOT_EQUAL"] = "not_equal";
     DatabaseOperationEnum["NOT_CONTAINS"] = "not_contains";
     DatabaseOperationEnum["CONTAINS"] = "contains";
-})(DatabaseOperationEnum || (exports.DatabaseOperationEnum = DatabaseOperationEnum = {}));
+})(DatabaseOperationEnum = exports.DatabaseOperationEnum || (exports.DatabaseOperationEnum = {}));
 //# sourceMappingURL=types.js.map

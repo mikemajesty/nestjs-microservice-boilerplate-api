@@ -12,9 +12,9 @@ const logger_1 = require("../../logger");
 const secrets_1 = require("../../secrets");
 const adapter_1 = require("../adapter");
 const service_1 = require("./service");
-let RedisCacheModule = exports.RedisCacheModule = class RedisCacheModule {
+let RedisCacheModule = class RedisCacheModule {
 };
-exports.RedisCacheModule = RedisCacheModule = __decorate([
+RedisCacheModule = __decorate([
     (0, common_1.Module)({
         imports: [logger_1.LoggerModule, secrets_1.SecretsModule],
         providers: [
@@ -31,4 +31,5 @@ exports.RedisCacheModule = RedisCacheModule = __decorate([
         exports: [adapter_1.ICacheAdapter]
     })
 ], RedisCacheModule);
+exports.RedisCacheModule = RedisCacheModule;
 //# sourceMappingURL=module.js.map

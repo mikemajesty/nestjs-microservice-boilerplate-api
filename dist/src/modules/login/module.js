@@ -14,9 +14,9 @@ const auth_1 = require("../../libs/auth");
 const module_1 = require("../user/module");
 const adapter_1 = require("./adapter");
 const controller_1 = require("./controller");
-let LoginModule = exports.LoginModule = class LoginModule {
+let LoginModule = class LoginModule {
 };
-exports.LoginModule = LoginModule = __decorate([
+LoginModule = __decorate([
     (0, common_1.Module)({
         imports: [auth_1.TokenModule, module_1.UserModule],
         controllers: [controller_1.LoginController],
@@ -31,4 +31,5 @@ exports.LoginModule = LoginModule = __decorate([
         ]
     })
 ], LoginModule);
+exports.LoginModule = LoginModule;
 //# sourceMappingURL=module.js.map

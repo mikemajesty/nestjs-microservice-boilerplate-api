@@ -17,7 +17,7 @@ const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const adapter_1 = require("./adapter");
 const swagger_2 = require("./swagger");
-let LoginController = exports.LoginController = class LoginController {
+let LoginController = class LoginController {
     constructor(loginService) {
         this.loginService = loginService;
     }
@@ -36,9 +36,10 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Object)
 ], LoginController.prototype, "login", null);
-exports.LoginController = LoginController = __decorate([
+LoginController = __decorate([
     (0, common_1.Controller)(),
     (0, swagger_1.ApiTags)('login'),
     __metadata("design:paramtypes", [adapter_1.ILoginAdapter])
 ], LoginController);
+exports.LoginController = LoginController;
 //# sourceMappingURL=controller.js.map
