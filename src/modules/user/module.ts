@@ -14,7 +14,6 @@ import { User, UserDocument, UserSchema } from '@/infra/database/mongo/schemas/u
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { SecretsModule } from '@/infra/secrets';
 import { TokenModule } from '@/libs/auth';
-import { MongoRepositoryModelSessionType } from '@/utils/database/mongoose';
 import { IsLoggedMiddleware } from '@/utils/middlewares/is-logged.middleware';
 
 import {
