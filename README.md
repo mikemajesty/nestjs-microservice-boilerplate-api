@@ -2,7 +2,7 @@
 
 In this microservice I used the best architecture concepts: onion architecture, DDD and clean architecture.
 
-#### This microservice has only been tested on Linux and WSL2. If you have connection problems with Mongodb(replicaset) user this branch: [branch](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/tree/feat/no-replica-set).
+#### This microservice has only been tested on Linux and WSL2. If you have connection problems with Mongodb(replicaset) use this branch: [branch](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/tree/feat/no-replica-set).
 
 | Statements                                                                               | Branches                                                                             | Functions                                                                              | Lines                                                                          |
 | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
