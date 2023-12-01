@@ -50,16 +50,7 @@ describe('UserCreateUsecase', ()=>{
     test('when the user is created successfully, should expect an user that has been created', async ()=>{
         repository.findOne = jest.fn().mockResolvedValue(null);
         repository.create = jest.fn().mockResolvedValue(userMock);
-        repository.startSession = jest.fn().mockResolvedValue({
-            commitTransaction: jest.fn()
-        });
         await expect(usecase.execute(userMock, _request.RequestMock.trancingMock)).resolves.toEqual(userMock);
-    });
-    test('when transaction throw an error, should expect an error', async ()=>{
-        repository.findOne = jest.fn().mockResolvedValue(null);
-        repository.create = jest.fn().mockResolvedValue(userMock);
-        repository.startSession = jest.fn().mockRejectedValue(new Error('startSessionError'));
-        await expect(usecase.execute(userMock, _request.RequestMock.trancingMock)).rejects.toThrowError('startSessionError');
     });
     test('when user already exists, should expect an error', async ()=>{
         repository.findOne = jest.fn().mockResolvedValue(userMock);

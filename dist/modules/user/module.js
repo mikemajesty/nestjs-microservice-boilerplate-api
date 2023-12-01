@@ -52,14 +52,7 @@ UserModule = _ts_decorate([
             {
                 provide: _user.IUserRepository,
                 useFactory: async (connection)=>{
-                    //  use if you want transaction
                     const repository = connection.model(_user1.User.name, _user1.UserSchema);
-                    repository.connection = connection;
-                    // use if you not want transaction
-                    // const repository: PaginateModel<UserDocument> = connection.model<UserDocument, Model>(
-                    //   User.name,
-                    //   UserSchema as Schema
-                    // );
                     return new _repository.UserRepository(repository);
                 },
                 inject: [

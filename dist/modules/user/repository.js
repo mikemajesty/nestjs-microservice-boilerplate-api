@@ -33,11 +33,6 @@ function _ts_param(paramIndex, decorator) {
     };
 }
 let UserRepository = class UserRepository extends _repository.MongoRepository {
-    async startSession() {
-        const session = await this.entity.connection.startSession();
-        session.startTransaction();
-        return session;
-    }
     async existsOnUpdate(equalFilter, notEqualFilter) {
         const user = await this.entity.findOne({
             ...equalFilter,
