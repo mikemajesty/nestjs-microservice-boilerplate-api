@@ -29,7 +29,7 @@ export class CatsEntity extends BaseEntity<CatsEntity>(CatsEntitySchema) {
 
   age: number;
 
-  constructor(readonly entity: Cat) {
+  constructor(entity: Cat) {
     super();
     Object.assign(this, this.validate(entity));
   }

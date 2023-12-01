@@ -33,7 +33,7 @@ export class UserEntity extends BaseEntity<UserEntity>(UserEntitySchema) {
 
   roles: UserRole[];
 
-  constructor(readonly entity: User) {
+  constructor(entity: User) {
     super();
     Object.assign(this, this.validate(entity));
   }
