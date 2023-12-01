@@ -1,3 +1,10 @@
+# [1.14.0](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/1.13.0...1.14.0) (2023-12-01)
+
+
+### Features
+
+* **repository:** add find and update to negeric repository ([59a46bf](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/59a46bf3e59c08ad6c6ed32b3e7707aba4123005))
+
 # [1.14.0](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/1.13.0...1.14.0) (2023-11-29)
 
 
