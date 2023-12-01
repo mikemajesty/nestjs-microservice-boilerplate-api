@@ -1,60 +1,17 @@
 version: '3'
 
 services:
-  nestjs-microservice-primary:
-    container_name: nestjs-microservice-primary
-    image: mongo:4.2.20
-    entrypoint:
-      [
-        '/usr/bin/mongod',
-        '--bind_ip_all',
-        '--replSet',
-        'app'
-      ]
+  mongo:
+    image: mongo
+    ports:
+      - "27017:27017"
     volumes:
-      - mongo-primary-data:/data/db
+      - mongo-data:/data/db
       - ./scripts/mongo/rs-init.sh:/scripts/mongo/rs-init.sh
-    ports:
-      - 27081:27017
     networks:
-      mongo-network:
-        ipv4_address: 10.5.0.5
-
-  nestjs-microservice-secondary:
-    container_name: nestjs-microservice-secondary
-    image: mongo:4.2.20
-    entrypoint:
-      [
-        '/usr/bin/mongod',
-        '--bind_ip_all',
-        '--replSet',
-        'app'
-      ]
-    volumes:
-      - mongo-secondary-data:/data/db
-    ports:
-      - 27082:27017
-    networks:
-      mongo-network:
-        ipv4_address: 10.5.0.6
-
-  nestjs-microservice-tertiary:
-    container_name: nestjs-microservice-tertiary
-    image: mongo:4.2.20
-    entrypoint:
-      [
-        '/usr/bin/mongod',
-        '--bind_ip_all',
-        '--replSet',
-        'app'
-      ]
-    volumes:
-      - mongo-tertiary-data:/data/db
-    ports:
-      - 27083:27017
-    networks:
-      mongo-network:
-        ipv4_address: 10.5.0.7
+      - mongo-compose-network
+    env_file:
+      - .env
   postgres:
     container_name: nestjs-microservice-postgres
     image: postgres
@@ -109,12 +66,7 @@ services:
 volumes:
   nestjs-microservice-postgres:
   nestjs-microservice-redis:
-  mongo-primary-data:
-  mongo-secondary-data:
-  mongo-tertiary-data:
-networks:
-  mongo-network:
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 10.5.0.0/16
+  mongo-data:
+networks: 
+    mongo-compose-network:
+      driver: bridge

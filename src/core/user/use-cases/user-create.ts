@@ -33,21 +33,12 @@ export class UserCreateUsecase {
       throw new ApiConflictException('user exists');
     }
 
-    const session = await this.userRepository.startSession();
+    const user = await this.userRepository.create(entity);
 
-    try {
-      const user = await this.userRepository.create(entity, { session });
+    this.loggerServide.info({ message: 'user created successfully', obj: { user } });
 
-      await session.commitTransaction();
+    tracing.logEvent('user-created', `user: ${entity.login} created by: ${userData.login}`);
 
-      this.loggerServide.info({ message: 'user created successfully', obj: { user } });
-
-      tracing.logEvent('user-created', `user: ${entity.login} created by: ${userData.login}`);
-
-      return user;
-    } catch (error) {
-      await session.abortTransaction();
-      throw error;
-    }
+    return user;
   }
 }

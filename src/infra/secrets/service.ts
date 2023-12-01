@@ -21,7 +21,7 @@ export class SecretsService implements ISecretsAdapter {
     'POSTGRES_PASSWORD'
   )}@${this.config.get('POSTGRES_HOST')}:${this.config.get('POSTGRES_PORT')}/${this.config.get('POSTGRES_DATABASE')}`;
 
-  MONGO_URL = this.config.get('MONGO_URL');
+  MONGO_URL = `${this.config.get('MONGO_URL')}/${this.config.get('MONGO_DATABASE')}`;
 
   ZIPKIN_URL = this.config.get('ZIPKIN_URL');
 
