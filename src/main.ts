@@ -62,7 +62,7 @@ async function bootstrap() {
   });
 
   app.use(limiter);
-  app.use(bodyParser.urlencoded());
+  app.use(bodyParser.urlencoded({ extended: true }));
 
   app.enableVersioning({ type: VersioningType.URI });
 

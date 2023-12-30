@@ -23,7 +23,6 @@ export class LoggerService implements ILoggerAdapter {
   async connect<T = LevelWithSilent>(logLevel: T): Promise<void> {
     const pinoLogger = pino(
       {
-        useLevelLabels: true,
         level: [logLevel, 'trace'].find(Boolean).toString()
       },
       multistream([
@@ -37,7 +36,7 @@ export class LoggerService implements ILoggerAdapter {
             target: 'pino-mongodb',
             options: {
               uri: process.env.MONGO_URL,
-              collection: 'log-collection'
+              collection: 'logs'
             }
           })
         }
