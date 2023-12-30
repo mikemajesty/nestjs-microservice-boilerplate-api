@@ -1,6 +1,6 @@
 import { Column, DataType, Model, Table } from 'sequelize-typescript';
 
-@Table({ timestamps: true, tableName: 'cats' })
+@Table({ timestamps: true, tableName: 'cats', underscored: true })
 export class CatsSchema extends Model {
   @Column({ primaryKey: true, type: DataType.UUID })
   id: string;

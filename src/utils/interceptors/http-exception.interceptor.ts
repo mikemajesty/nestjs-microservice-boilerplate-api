@@ -29,9 +29,10 @@ export class ExceptionInterceptor implements NestInterceptor {
           error.traceid = headers.traceid;
         }
 
-        const context = `${executionContext.getClass().name}/${executionContext.getHandler().name}`;
-
-        error.context = error.context = context;
+        if (!error?.context) {
+          const context = `${executionContext.getClass().name}/${executionContext.getHandler().name}`;
+          error.context = error.context = context;
+        }
 
         if (request?.tracing) {
           request.tracing.addAttribute(SemanticAttributes.HTTP_STATUS_CODE, error.status);

@@ -86,7 +86,7 @@ export class LoggerService implements ILoggerAdapter {
     this.logger.logger.error(
       {
         ...response,
-        context: context,
+        context: error?.context ?? context,
         type: [type, error?.name].find(Boolean),
         traceid: this.getTraceId(error),
         createdAt: DateUtils.getISODateString(),
@@ -103,7 +103,7 @@ export class LoggerService implements ILoggerAdapter {
     this.logger.logger.fatal(
       {
         message: error.message || message,
-        context: context,
+        context: error?.context ?? context,
         type: error.name,
         traceid: this.getTraceId(error),
         createdAt: DateUtils.getISODateString(),
