@@ -27,6 +27,8 @@ let SecretsService = exports.SecretsService = class SecretsService {
         this.TOKEN_EXPIRATION = this.config.get('TOKEN_EXPIRATION');
         this.JWT_SECRET_KEY = this.config.get('JWT_SECRET_KEY');
         this.RATE_LIMIT_BY_USER = this.config.get('RATE_LIMIT_BY_USER');
+        this.MONGO_EXPRESS_URL = this.config.get('MONGO_EXPRESS_URL');
+        this.PGADMIN_URL = this.config.get('PGADMIN_URL');
     }
 };
 exports.SecretsService = SecretsService = __decorate([

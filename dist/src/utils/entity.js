@@ -18,7 +18,7 @@ const BaseEntity = (schema) => {
             return schema.parse(entity);
         }
     }
-    Entity.nameof = (name) => name;
+    Entity.nameOf = (name) => name;
     return Entity;
 };
 exports.BaseEntity = BaseEntity;
