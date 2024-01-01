@@ -71,9 +71,9 @@ describe('UserCreateUsecase', () => {
       () => usecase.execute({}, RequestMock.trancingMock),
       (issues) => {
         expect(issues).toEqual([
-          { message: 'Required', path: UserEntity.nameof('login') },
-          { message: 'Required', path: UserEntity.nameof('password') },
-          { message: 'Required', path: UserEntity.nameof('roles') }
+          { message: 'Required', path: UserEntity.nameOf('login') },
+          { message: 'Required', path: UserEntity.nameOf('password') },
+          { message: 'Required', path: UserEntity.nameOf('roles') }
         ]);
       }
     );

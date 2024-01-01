@@ -66,6 +66,8 @@ services:
       - nestjs-microservice-postgres:/data/postgres
       - ./scripts/postgres/create-database.sql:/docker-entrypoint-initdb.d/create-database.sql
     restart: always
+    networks:
+      - postgres-network
   redis:
     container_name: nestjs-microservice-redis
     image: 'redis:alpine'
@@ -105,6 +107,31 @@ services:
       - "4318:4318"
     depends_on:
       - zipkin-all-in-one
+  mongo-express:
+    container_name: nestjs-microservice-mongo-express
+    image: mongo-express:0.49.0
+    depends_on:
+      - nestjs-microservice-primary
+      - nestjs-microservice-secondary
+      - nestjs-microservice-tertiary
+    restart: always
+    ports:
+      - 8081:8081
+    env_file:
+      - .env
+    networks:
+      mongo-network:
+  pgadmin:
+    container_name: nestjs-microservice-pgadmin
+    image: dpage/pgadmin4
+    env_file:
+      - .env
+    ports:
+      - "16543:80"
+    depends_on:
+      - postgres
+    networks:
+      - postgres-network
 
 volumes:
   nestjs-microservice-postgres:
@@ -118,3 +145,5 @@ networks:
     ipam:
       config:
         - subnet: 10.5.0.0/16
+  postgres-network:
+    driver: bridge

@@ -47,7 +47,7 @@ describe('CatsDeleteUsecase', () => {
     await expectZodError(
       () => usecase.execute({}, RequestMock.trancingMock),
       (issues) => {
-        expect(issues).toEqual([{ message: 'Required', path: CatsEntity.nameof('id') }]);
+        expect(issues).toEqual([{ message: 'Required', path: CatsEntity.nameOf('id') }]);
       }
     );
   });

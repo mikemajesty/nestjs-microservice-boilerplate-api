@@ -26,7 +26,7 @@ export const BaseEntity = <T>(schema: ZodSchema) => {
 
     deletedAt?: Date;
 
-    static nameof = (name: keyof T) => name;
+    static nameOf = (name: keyof T) => name;
 
     setDeleted() {
       this.deletedAt = new Date();

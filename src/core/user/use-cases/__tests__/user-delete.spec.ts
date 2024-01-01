@@ -46,7 +46,7 @@ describe('UserDeleteUsecase', () => {
     await expectZodError(
       () => usecase.execute({ id: 'uuid' }, RequestMock.trancingMock),
       (issues) => {
-        expect(issues).toEqual([{ message: 'Invalid uuid', path: UserEntity.nameof('id') }]);
+        expect(issues).toEqual([{ message: 'Invalid uuid', path: UserEntity.nameOf('id') }]);
       }
     );
   });

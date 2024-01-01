@@ -32,4 +32,8 @@ export class SecretsService implements ISecretsAdapter {
   JWT_SECRET_KEY = this.config.get('JWT_SECRET_KEY');
 
   RATE_LIMIT_BY_USER = this.config.get<number>('RATE_LIMIT_BY_USER');
+
+  MONGO_EXPRESS_URL = this.config.get('MONGO_EXPRESS_URL');
+
+  PGADMIN_URL = this.config.get('PGADMIN_URL');
 }

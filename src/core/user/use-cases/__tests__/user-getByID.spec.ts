@@ -45,7 +45,7 @@ describe('UserGetByIdUsecase', () => {
     await expectZodError(
       () => usecase.execute({}),
       (issues) => {
-        expect(issues).toEqual([{ message: 'Required', path: UserEntity.nameof('id') }]);
+        expect(issues).toEqual([{ message: 'Required', path: UserEntity.nameOf('id') }]);
       }
     );
   });

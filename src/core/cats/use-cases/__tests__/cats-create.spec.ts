@@ -48,9 +48,9 @@ describe('CatsCreateUsecase', () => {
       () => usecase.execute({}, RequestMock.trancingMock),
       (issues) => {
         expect(issues).toEqual([
-          { message: 'Required', path: CatsEntity.nameof('name') },
-          { message: 'Required', path: CatsEntity.nameof('breed') },
-          { message: 'Required', path: CatsEntity.nameof('age') }
+          { message: 'Required', path: CatsEntity.nameOf('name') },
+          { message: 'Required', path: CatsEntity.nameOf('breed') },
+          { message: 'Required', path: CatsEntity.nameOf('age') }
         ]);
       }
     );

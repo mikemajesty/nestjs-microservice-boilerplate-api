@@ -11,6 +11,10 @@ export abstract class ISecretsAdapter {
 
   POSTGRES_URL: string;
 
+  MONGO_EXPRESS_URL: string;
+
+  PGADMIN_URL: string;
+
   REDIS_URL: string;
 
   ZIPKIN_URL: string;

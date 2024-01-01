@@ -47,7 +47,7 @@ describe('UserUpdateUsecase', () => {
     await expectZodError(
       () => usecase.execute({}, RequestMock.trancingMock),
       (issues) => {
-        expect(issues).toEqual([{ message: 'Required', path: UserEntity.nameof('id') }]);
+        expect(issues).toEqual([{ message: 'Required', path: UserEntity.nameOf('id') }]);
       }
     );
   });
