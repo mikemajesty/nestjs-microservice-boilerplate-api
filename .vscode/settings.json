@@ -1,8 +1,8 @@
 {
   "editor.tabSize": 2,
   "editor.codeActionsOnSave": {
-    "source.fixAll": true,
-    "source.organizeImports": false,
+    "source.fixAll": "explicit",
+    "source.organizeImports": "never"
   },
   "[typescript]": {
     "editor.codeActionsOnSave": {
@@ -22,4 +22,10 @@
   "editor.detectIndentation": false,
   "javascript.format.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces": false,
   "typescript.format.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces": false,
+  "[javascript][typescript]": {
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "explicit",
+      "source.organizeImports": "never"
+    }
+  },
 }

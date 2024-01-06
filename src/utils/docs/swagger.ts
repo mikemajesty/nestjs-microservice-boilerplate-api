@@ -1,7 +1,7 @@
 import { ApiQueryOptions, ApiResponseOptions } from '@nestjs/swagger';
 
 import { ErrorModel } from '@/utils/exception';
-import htttpStatus from '@/utils/static/htttp-status.json';
+import httpStatus from '@/utils/static/http-status.json';
 
 type SwaggerError = {
   status: number;
@@ -29,8 +29,9 @@ export const Swagger = {
         example: {
           error: {
             code: status,
-            traceid: '<traceid>',
-            message: [message, htttpStatus[String(status)]].find(Boolean),
+            traceid: '<traceId>',
+            context: 'context',
+            message: [message, httpStatus[String(status)]].find(Boolean),
             timestamp: '<timestamp>',
             path: route
           }
@@ -59,12 +60,12 @@ export const Swagger = {
     return {
       content: json
         ? {
-            'application/json': {
-              schema: {
-                example: json
-              }
+          'application/json': {
+            schema: {
+              example: json
             }
           }
+        }
         : undefined,
       description,
       status

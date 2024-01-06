@@ -4,6 +4,7 @@ export type ErrorModel = {
   error: {
     code: string | number;
     traceid: string;
+    context: string;
     message: string;
     timestamp: string;
     path: string;

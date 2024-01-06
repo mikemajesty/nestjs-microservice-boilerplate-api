@@ -2,7 +2,7 @@ import { UsersRequest } from '@/utils/docs/data/user/request';
 import { UsersResponse } from '@/utils/docs/data/user/response';
 import { Swagger } from '@/utils/docs/swagger';
 
-export const SwagggerResponse = {
+export const SwaggerResponse = {
   create: {
     200: Swagger.defaultResponseJSON({
       status: 200,
@@ -70,7 +70,7 @@ export const SwagggerResponse = {
   }
 };
 
-export const SwagggerRequest = {
+export const SwaggerRequest = {
   createBody: Swagger.defaultRequestJSON(UsersRequest.create),
   updateBody: Swagger.defaultRequestJSON(UsersRequest.update),
   listQuery: {

@@ -6,7 +6,7 @@ import { ILoggerAdapter } from '@/infra/logger/adapter';
 import { BaseException, ErrorModel } from '@/utils/exception';
 
 import { DateUtils } from '../date';
-import errorStatus from '../static/htttp-status.json';
+import errorStatus from '../static/http-status.json';
 
 @Catch()
 export class AppExceptionFilter implements ExceptionFilter {
@@ -29,6 +29,7 @@ export class AppExceptionFilter implements ExceptionFilter {
       error: {
         code: status,
         traceid: exception.traceid,
+        context: exception.context,
         message: [errorStatus[String(status)], message].find(Boolean),
         timestamp: DateUtils.getDateStringWithFormat(),
         path: request.url

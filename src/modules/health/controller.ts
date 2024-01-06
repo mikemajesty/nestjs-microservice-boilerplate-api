@@ -1,6 +1,7 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { name, version } from 'package.json';
+
+import { name, version } from '../../../package.json';
 
 @Controller()
 @ApiTags('health')

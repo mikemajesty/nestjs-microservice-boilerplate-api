@@ -50,6 +50,10 @@ export class ExceptionInterceptor implements NestInterceptor {
       return 400;
     }
 
+    if (error?.code === 'ECONNABORTED' || error?.code === 'ECONNRESET') {
+      return 408;
+    }
+
     return [
       error.status,
       error?.response?.status,

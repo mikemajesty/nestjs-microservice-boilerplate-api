@@ -11,11 +11,11 @@ import opentelemetry, {
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 import axiosBetterStacktrace from 'axios-better-stacktrace';
-import { name, version } from 'package.json';
 import { Observable, tap } from 'rxjs';
 
 import { ILoggerAdapter } from '@/infra/logger';
 
+import { name, version } from '../../../package.json';
 import { interceptAxiosResponseError, requestRetry } from '../axios';
 import { getPathWithoutUUID, TracingType } from '../request';
 

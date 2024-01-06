@@ -3,5 +3,5 @@
 
 sh scripts/npm-audit.sh
 npm run test
-npx swc --out-dir dist src
+npx npm run build
 npm run make-badges

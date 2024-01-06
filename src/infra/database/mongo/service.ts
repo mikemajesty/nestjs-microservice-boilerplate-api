@@ -1,6 +1,6 @@
 import { MongooseModuleOptions } from '@nestjs/mongoose';
-import { name } from 'package.json';
 
+import { name } from '../../../../package.json';
 import { IDataBaseAdapter } from '../adapter';
 import { ConnectionType } from '../types';
 

@@ -19,7 +19,7 @@ import {
   IUserListAdapter,
   IUserUpdateAdapter
 } from './adapter';
-import { SwagggerRequest, SwagggerResponse } from './swagger';
+import { SwaggerRequest, SwaggerResponse } from './swagger';
 
 @Controller('users')
 @ApiTags('users')
@@ -35,30 +35,30 @@ export class UserController {
   ) {}
 
   @Post()
-  @ApiResponse(SwagggerResponse.create[200])
-  @ApiResponse(SwagggerResponse.create[409])
-  @ApiBody(SwagggerRequest.createBody)
+  @ApiResponse(SwaggerResponse.create[200])
+  @ApiResponse(SwaggerResponse.create[409])
+  @ApiBody(SwaggerRequest.createBody)
   @Version('1')
   async create(@Req() { body, user, tracing }: ApiRequest): Promise<UserCreateOutput> {
     return this.userCreateUsecase.execute(body as UserCreateInput, { user, tracing });
   }
 
   @Put()
-  @ApiResponse(SwagggerResponse.update[200])
-  @ApiResponse(SwagggerResponse.update[404])
-  @ApiResponse(SwagggerResponse.update[409])
-  @ApiBody(SwagggerRequest.updateBody)
+  @ApiResponse(SwaggerResponse.update[200])
+  @ApiResponse(SwaggerResponse.update[404])
+  @ApiResponse(SwaggerResponse.update[409])
+  @ApiBody(SwaggerRequest.updateBody)
   @Version('1')
   async update(@Req() { body, user, tracing }: ApiRequest): Promise<UserUpdateOutput> {
     return this.userUpdateUsecase.execute(body as UserUpdateInput, { user, tracing });
   }
 
   @Get()
-  @ApiQuery(SwagggerRequest.listQuery.pagination.limit)
-  @ApiQuery(SwagggerRequest.listQuery.pagination.page)
-  @ApiQuery(SwagggerRequest.listQuery.sort)
-  @ApiQuery(SwagggerRequest.listQuery.search)
-  @ApiResponse(SwagggerResponse.list[200])
+  @ApiQuery(SwaggerRequest.listQuery.pagination.limit)
+  @ApiQuery(SwaggerRequest.listQuery.pagination.page)
+  @ApiQuery(SwaggerRequest.listQuery.sort)
+  @ApiQuery(SwaggerRequest.listQuery.search)
+  @ApiResponse(SwaggerResponse.list[200])
   @Version('1')
   async list(@Req() { query }: ApiRequest): Promise<UserListOutput> {
     const input: UserListInput = {
@@ -73,8 +73,8 @@ export class UserController {
 
   @Get('/:id')
   @ApiParam({ name: 'id', required: true })
-  @ApiResponse(SwagggerResponse.getByID[200])
-  @ApiResponse(SwagggerResponse.getByID[404])
+  @ApiResponse(SwaggerResponse.getByID[200])
+  @ApiResponse(SwaggerResponse.getByID[404])
   @Version('1')
   async getById(@Req() { params }: ApiRequest): Promise<UserGetByIDOutput> {
     return await this.userGetByIDUsecase.execute(params as UserGetByIDInput);
@@ -82,8 +82,8 @@ export class UserController {
 
   @Delete('/:id')
   @ApiParam({ name: 'id', required: true })
-  @ApiResponse(SwagggerResponse.delete[200])
-  @ApiResponse(SwagggerResponse.delete[404])
+  @ApiResponse(SwaggerResponse.delete[200])
+  @ApiResponse(SwaggerResponse.delete[404])
   @Version('1')
   async delete(@Req() { params, user, tracing }: ApiRequest): Promise<UserDeleteOutput> {
     return await this.userDeleteUsecase.execute(params as UserDeleteInput, { user, tracing });

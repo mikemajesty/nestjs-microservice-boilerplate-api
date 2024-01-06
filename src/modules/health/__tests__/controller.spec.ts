@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { name, version } from 'package.json';
 
+import { name, version } from '../../../../package.json';
 import { HealthController } from '../controller';
 
 describe('HealthController', () => {
