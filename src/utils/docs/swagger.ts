@@ -60,12 +60,12 @@ export const Swagger = {
     return {
       content: json
         ? {
-          'application/json': {
-            schema: {
-              example: json
+            'application/json': {
+              schema: {
+                example: json
+              }
             }
           }
-        }
         : undefined,
       description,
       status

@@ -8,7 +8,7 @@ type GetDateWithFormatFormatInput = {
 export class DateUtils {
   static getDateStringWithFormat(input: Partial<GetDateWithFormatFormatInput> = {}): string {
     if (!input?.date) {
-      Object.assign(input, { date: new Date() });
+      Object.assign(input, { date: DateUtils.getJSDate() });
     }
 
     if (!input?.format) {
@@ -19,14 +19,14 @@ export class DateUtils {
   }
 
   static getISODateString(): string {
-    return DateTime.fromJSDate(new Date(), { zone: 'utc' }).setZone(process.env.TZ).toJSON();
+    return DateTime.fromJSDate(DateUtils.getJSDate(), { zone: 'utc' }).setZone(process.env.TZ).toJSON();
   }
 
   static getJSDate(): Date {
-    return DateTime.fromJSDate(new Date(), { zone: 'utc' }).setZone(process.env.TZ).toJSDate();
+    return DateTime.fromJSDate(DateTime.now().toJSDate(), { zone: 'utc' }).setZone(process.env.TZ).toJSDate();
   }
 
   static getDate(): DateTime {
-    return DateTime.fromJSDate(new Date(), { zone: 'utc' }).setZone(process.env.TZ);
+    return DateTime.fromJSDate(DateUtils.getJSDate(), { zone: 'utc' }).setZone(process.env.TZ);
   }
 }

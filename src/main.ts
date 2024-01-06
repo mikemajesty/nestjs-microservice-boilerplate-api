@@ -37,7 +37,7 @@ async function bootstrap() {
 
   app.useGlobalInterceptors(
     new ExceptionInterceptor(loggerService),
-    new HttpLoggerInterceptor(),
+    new HttpLoggerInterceptor(loggerService),
     new TracingInterceptor(loggerService),
     new MetricsInterceptor()
   );
@@ -105,7 +105,7 @@ async function bootstrap() {
   loggerService.log(`🔵 Postgres listening at ${bold(POSTGRES_URL)}`);
   loggerService.log(`🔶 PgAdmin listening at ${bold(PGADMIN_URL)}\n`);
   loggerService.log(`🔵 Mongo listening at ${bold(MONGO_URL)}`);
-  loggerService.log(`🔶 Mongo express listening at ${bold(MONGO_EXPRESS_URL)}`);
+  loggerService.log(`🔶 Mongo express listening at ${bold(MONGO_EXPRESS_URL)}\n`);
   loggerService.log(`⚪ Zipkin[${bold('Tracing')}] listening at ${bold(ZIPKIN_URL)}`);
   loggerService.log(`⚪ Promethues[${bold('Metrics')}] listening at ${bold(PROMETHUES_URL)}`);
 

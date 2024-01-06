@@ -59,7 +59,12 @@ export const requestRetry = ({ axios, logger, status: statusRetry = [503, 422, 4
       return retryCount * 2000;
     },
     retryCondition: (error) => {
-      const status = error?.response?.status || 500;
+      if (error?.code === 'ECONNABORTED' || error?.code === 'ECONNRESET') {
+        if (error?.response) {
+          error.response.status = 408;
+        }
+      }
+      const status = [error?.response?.status, 500].find(Boolean);
       return statusRetry.includes(status);
     }
   });

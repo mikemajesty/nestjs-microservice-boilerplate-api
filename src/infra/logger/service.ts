@@ -163,8 +163,7 @@ export class LoggerService implements ILoggerAdapter {
         },
         res: pino.stdSerializers.res
       },
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      customProps: (req: any): any => {
+      customProps: (req: IncomingMessage & { context: string; protocol: string }): object => {
         const context = req.context;
 
         const traceid = [req?.headers?.traceid, req.id].find(Boolean);
@@ -198,6 +197,10 @@ export class LoggerService implements ILoggerAdapter {
         return 'info';
       }
     };
+  }
+
+  setGlobalParameters(input: object): void {
+    this.logger.logger.setBindings(input);
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

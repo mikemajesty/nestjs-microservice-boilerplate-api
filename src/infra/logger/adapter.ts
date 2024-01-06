@@ -19,4 +19,5 @@ export abstract class ILoggerAdapter<T extends HttpLogger = HttpLogger> {
   abstract warn({ message, context, obj }: MessageType): void;
   abstract error(error: ErrorType, message?: string, context?: string): void;
   abstract fatal(error: ErrorType, message?: string, context?: string): void;
+  abstract setGlobalParameters(input: object): void;
 }
