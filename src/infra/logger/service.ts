@@ -49,6 +49,10 @@ export class LoggerService implements ILoggerAdapter {
     this.app = app;
   }
 
+  setGlobalParameters(input: object): void {
+    this.logger.logger.setBindings(input);
+  }
+
   log(message: string): void {
     this.logger.logger.trace(green(message));
   }
@@ -197,10 +201,6 @@ export class LoggerService implements ILoggerAdapter {
         return 'info';
       }
     };
-  }
-
-  setGlobalParameters(input: object): void {
-    this.logger.logger.setBindings(input);
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
