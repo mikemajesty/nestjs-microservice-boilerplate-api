@@ -1,5 +1,9 @@
 import { MemoryCacheSetType } from './memory/types';
-import { RedisCacheKeyArgument, RedisCacheKeyValue, RedisCacheValeuArgument } from './redis/types';
+import {
+  RedisCacheKeyArgument,
+  RedisCacheKeyValue,
+  RedisCacheValeuArgument as RedisCacheValueArgument
+} from './redis/types';
 
 export abstract class ICacheAdapter<T = object> {
   client: T;
@@ -10,9 +14,9 @@ export abstract class ICacheAdapter<T = object> {
 
   abstract set<
     TKey extends RedisCacheKeyArgument = RedisCacheKeyArgument,
-    TValeu extends RedisCacheValeuArgument = RedisCacheValeuArgument,
+    TValue extends RedisCacheValueArgument = RedisCacheValueArgument,
     TConf extends object = object
-  >(key: TKey, value: TValeu, config?: TConf): Promise<void> | void;
+  >(key: TKey, value: TValue, config?: TConf): Promise<void> | void;
 
   abstract del<TKey extends RedisCacheKeyArgument = RedisCacheKeyArgument>(key: TKey): Promise<void> | boolean;
 
@@ -22,7 +26,7 @@ export abstract class ICacheAdapter<T = object> {
 
   abstract pExpire<PCache extends RedisCacheKeyArgument = RedisCacheKeyArgument>(
     key: PCache,
-    miliseconds: number
+    milliseconds: number
   ): Promise<void> | boolean;
 
   abstract hGet<
@@ -33,7 +37,7 @@ export abstract class ICacheAdapter<T = object> {
   abstract hSet<
     TKey extends RedisCacheKeyArgument = RedisCacheKeyArgument,
     TArgs extends RedisCacheKeyArgument = RedisCacheKeyArgument,
-    TValue extends RedisCacheValeuArgument = RedisCacheValeuArgument
+    TValue extends RedisCacheValueArgument = RedisCacheValueArgument
   >(key?: TKey, field?: TArgs, value?: TValue): Promise<number> | void;
 
   abstract hGetAll<TKey extends RedisCacheKeyArgument = RedisCacheKeyArgument>(

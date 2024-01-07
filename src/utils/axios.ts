@@ -60,11 +60,10 @@ export const requestRetry = ({ axios, logger, status: statusRetry = [503, 422, 4
     },
     retryCondition: (error) => {
       if (error?.code === 'ECONNABORTED' || error?.code === 'ECONNRESET') {
-        if (error?.response) {
-          error.response.status = 408;
-        }
+        error.status = 408;
       }
-      const status = [error?.response?.status, 500].find(Boolean);
+
+      const status = [error?.response?.status, error?.status, 500].find(Boolean);
       return statusRetry.includes(status);
     }
   });

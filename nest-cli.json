@@ -10,7 +10,6 @@
         "copyFiles": true,
         "sync": true
       }
-    },
-    "typeCheck": true
+    }
   }
 }

@@ -4,7 +4,7 @@ import NodeCache from 'node-cache';
 import { ILoggerAdapter } from '@/infra/logger';
 
 import { ICacheAdapter } from '../adapter';
-import { MemoryCacheKeyArgument, MemoryCacheSetType, MemoryCacheTTL, MemoryCacheValeuArgument } from './types';
+import { MemoryCacheKeyArgument, MemoryCacheSetType, MemoryCacheTTL, MemoryCacheValueArgument } from './types';
 
 @Injectable()
 export class MemoryCacheService implements Partial<ICacheAdapter<NodeCache>> {
@@ -30,9 +30,9 @@ export class MemoryCacheService implements Partial<ICacheAdapter<NodeCache>> {
     return this.client.has(key);
   }
 
-  set<TKey = MemoryCacheKeyArgument, TValeu = MemoryCacheValeuArgument, TConf = MemoryCacheTTL>(
+  set<TKey = MemoryCacheKeyArgument, TValue = MemoryCacheValueArgument, TConf = MemoryCacheTTL>(
     key: TKey,
-    value: TValeu,
+    value: TValue,
     config?: TConf
   ): void {
     this.client.set(key as MemoryCacheKeyArgument, value, config as MemoryCacheTTL);

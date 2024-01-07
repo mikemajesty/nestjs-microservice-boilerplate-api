@@ -64,8 +64,12 @@ async function bootstrap() {
     MONGO_EXPRESS_URL
   } = app.get(ISecretsAdapter);
 
+  /**
+   *@description 15 minutes
+   */
+  const MINUTES = 15 * 60 * 1000;
   const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
+    windowMs: MINUTES,
     limit: RATE_LIMIT_BY_USER,
     standardHeaders: 'draft-7',
     legacyHeaders: false
@@ -78,11 +82,11 @@ async function bootstrap() {
   app.enableVersioning({ type: VersioningType.URI });
 
   process.on('uncaughtException', (error) => {
-    loggerService.fatal(new ApiInternalServerException(error.message));
+    loggerService.error(new ApiInternalServerException(error.message));
   });
 
   process.on('unhandledRejection', (error) => {
-    loggerService.fatal(new ApiInternalServerException(error['message'] ?? (error as string)));
+    loggerService.error(new ApiInternalServerException(error['message'] ?? (error as string)));
   });
 
   const config = new DocumentBuilder()

@@ -1,5 +1,5 @@
 export type MemoryCacheKeyArgument = string | number;
-export type MemoryCacheValeuArgument = number | string | Buffer;
+export type MemoryCacheValueArgument = number | string | Buffer;
 export type MemoryCacheTTL = number | string;
 
 export type MemoryCacheSetType = {

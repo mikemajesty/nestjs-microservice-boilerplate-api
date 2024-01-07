@@ -1,7 +1,6 @@
 import { ApiBadRequestException } from './exception';
 
 export class CollectionUtil {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   static groupBy = <T>(collection: unknown[] = [], key: string): { [key: string]: T[] } => {
     if (!key.length) {
       throw new ApiBadRequestException();
@@ -74,14 +73,6 @@ export class CollectionUtil {
 
   static hasDuplicated = (collection: unknown[] = []) => {
     return new Set(collection).size !== collection.length;
-  };
-
-  static hasDuplicatedBy = (collection: unknown[] = [], key: string) => {
-    if (!key.length) {
-      throw new ApiBadRequestException('key is required');
-    }
-
-    return new Set(collection.map((c) => c[key])).size !== collection.length;
   };
 }
 
