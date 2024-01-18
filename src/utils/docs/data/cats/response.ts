@@ -4,7 +4,7 @@ import { CatsDeleteOutput } from '@/core/cats/use-cases/cats-delete';
 import { CatsGetByIDOutput } from '@/core/cats/use-cases/cats-getByID';
 import { CatsListOutput } from '@/core/cats/use-cases/cats-list';
 import { CatsUpdateOutput } from '@/core/cats/use-cases/cats-update';
-import { generateUUID } from '@/utils/tests/tests';
+import { getMockUUID } from '@/utils/tests/tests';
 
 const entity = new CatsEntity({
   name: 'Miau',
@@ -20,7 +20,7 @@ const fullEntity = new CatsEntity({
 });
 
 export const CatsResponse = {
-  create: { created: true, id: generateUUID() } as CatsCreateOutput,
+  create: { created: true, id: getMockUUID() } as CatsCreateOutput,
   delete: { ...fullEntity, deletedAt: new Date() } as CatsDeleteOutput,
   update: fullEntity as CatsUpdateOutput,
   getByID: fullEntity as CatsGetByIDOutput,

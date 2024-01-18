@@ -2,14 +2,14 @@ import { Test } from '@nestjs/testing';
 
 import { IUserGetByIDAdapter } from '@/modules/user/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
-import { expectZodError, generateUUID } from '@/utils/tests/tests';
+import { expectZodError, getMockUUID } from '@/utils/tests/tests';
 
 import { UserEntity, UserRole } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
 import { UserGetByIdUsecase } from '../user-getByID';
 
 const userMock = new UserEntity({
-  id: generateUUID(),
+  id: getMockUUID(),
   login: 'login',
   password: '**********',
   roles: [UserRole.USER]
@@ -52,11 +52,11 @@ describe('UserGetByIdUsecase', () => {
 
   test('when user not found, should expect an errror', async () => {
     repository.findById = jest.fn().mockResolvedValue(null);
-    await expect(usecase.execute({ id: generateUUID() })).rejects.toThrowError(ApiNotFoundException);
+    await expect(usecase.execute({ id: getMockUUID() })).rejects.toThrowError(ApiNotFoundException);
   });
 
   test('when user getById successfully, should expect a user', async () => {
     repository.findById = jest.fn().mockResolvedValue(userMock);
-    await expect(usecase.execute({ id: generateUUID() })).resolves.toEqual(userMock);
+    await expect(usecase.execute({ id: getMockUUID() })).resolves.toEqual(userMock);
   });
 });

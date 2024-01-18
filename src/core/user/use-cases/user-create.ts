@@ -19,7 +19,7 @@ export type UserCreateInput = z.infer<typeof UserCreateSchema>;
 export type UserCreateOutput = CreatedModel;
 
 export class UserCreateUsecase {
-  constructor(private readonly userRepository: IUserRepository, private readonly loggerServide: ILoggerAdapter) {}
+  constructor(private readonly userRepository: IUserRepository, private readonly loggerService: ILoggerAdapter) {}
 
   @ValidateSchema(UserCreateSchema)
   async execute(input: UserCreateInput, { tracing, user: userData }: ApiTrancingInput): Promise<UserCreateOutput> {
@@ -40,7 +40,7 @@ export class UserCreateUsecase {
 
       await session.commitTransaction();
 
-      this.loggerServide.info({ message: 'user created successfully', obj: { user } });
+      this.loggerService.info({ message: 'user created successfully', obj: { user } });
 
       tracing.logEvent('user-created', `user: ${entity.login} created by: ${userData.login}`);
 

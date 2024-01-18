@@ -3,14 +3,14 @@ import { Test } from '@nestjs/testing';
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { ICatsGetByIDAdapter } from '@/modules/cats/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
-import { expectZodError, generateUUID } from '@/utils/tests/tests';
+import { expectZodError, getMockUUID } from '@/utils/tests/tests';
 
 import { CatsEntity } from '../../entity/cats';
 import { ICatsRepository } from '../../repository/cats';
 import { CatsGetByIdUsecase } from '../cats-getByID';
 
 const catMock = new CatsEntity({
-  id: generateUUID(),
+  id: getMockUUID(),
   age: 10,
   breed: 'dummy',
   name: 'dummy'
@@ -53,11 +53,11 @@ describe('CatsGetByIdUsecase', () => {
 
   test('when cats not found, should expect an error', async () => {
     repository.findById = jest.fn().mockResolvedValue(null);
-    await expect(usecase.execute({ id: generateUUID() })).rejects.toThrowError(ApiNotFoundException);
+    await expect(usecase.execute({ id: getMockUUID() })).rejects.toThrowError(ApiNotFoundException);
   });
 
   test('when cats found, should expect a cats that has been found', async () => {
     repository.findById = jest.fn().mockResolvedValue(catMock);
-    await expect(usecase.execute({ id: generateUUID() })).resolves.toEqual(catMock);
+    await expect(usecase.execute({ id: getMockUUID() })).resolves.toEqual(catMock);
   });
 });

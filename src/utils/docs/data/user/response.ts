@@ -4,7 +4,7 @@ import { UserDeleteOutput } from '@/core/user/use-cases/user-delete';
 import { UserGetByIDOutput } from '@/core/user/use-cases/user-getByID';
 import { UserListOutput } from '@/core/user/use-cases/user-list';
 import { UserUpdateOutput } from '@/core/user/use-cases/user-update';
-import { generateUUID } from '@/utils/tests/tests';
+import { getMockUUID } from '@/utils/tests/tests';
 
 const entity = new UserEntity({
   login: 'login',
@@ -20,7 +20,7 @@ const fullEntity = new UserEntity({
 });
 
 export const UsersResponse = {
-  create: { created: true, id: generateUUID() } as UserCreateOutput,
+  create: { created: true, id: getMockUUID() } as UserCreateOutput,
   delete: { ...fullEntity, deletedAt: new Date() } as UserDeleteOutput,
   update: fullEntity as UserUpdateOutput,
   getByID: fullEntity as UserGetByIDOutput,

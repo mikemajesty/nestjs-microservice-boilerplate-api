@@ -1,14 +1,14 @@
 import { Test } from '@nestjs/testing';
 
 import { IUserListAdapter } from '@/modules/user/adapter';
-import { expectZodError, generateUUID } from '@/utils/tests/tests';
+import { expectZodError, getMockUUID } from '@/utils/tests/tests';
 
 import { UserEntity, UserRole } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
 import { UserListUsecase } from '../user-list';
 
 const userMock = new UserEntity({
-  id: generateUUID(),
+  id: getMockUUID(),
   login: 'login',
   password: '**********',
   roles: [UserRole.USER]

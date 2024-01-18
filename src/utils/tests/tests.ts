@@ -12,4 +12,4 @@ export const expectZodError = async (callback: Function, expected: Function) => 
   }
 };
 
-export const generateUUID = () => '9269248e-54cc-46f9-80c0-7029c989c0e3';
+export const getMockUUID = () => '9269248e-54cc-46f9-80c0-7029c989c0e3';

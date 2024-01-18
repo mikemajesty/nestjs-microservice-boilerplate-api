@@ -25,6 +25,7 @@ export class UserGetByIdUsecase {
     }
 
     const entity = new UserEntity(user);
+
     entity.anonymizePassword();
 
     return entity;

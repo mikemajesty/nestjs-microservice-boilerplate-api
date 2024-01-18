@@ -17,7 +17,7 @@ export type CatsUpdateInput = z.infer<typeof CatsUpdateSchema>;
 export type CatsUpdateOutput = CatsEntity;
 
 export class CatsUpdateUsecase {
-  constructor(private readonly catsRepository: ICatsRepository, private readonly loggerServide: ILoggerAdapter) {}
+  constructor(private readonly catsRepository: ICatsRepository, private readonly loggerService: ILoggerAdapter) {}
 
   @ValidateSchema(CatsUpdateSchema)
   async execute(input: CatsUpdateInput, { tracing, user }: ApiTrancingInput): Promise<CatsUpdateOutput> {
@@ -31,7 +31,7 @@ export class CatsUpdateUsecase {
 
     await this.catsRepository.updateOne({ id: entity.id }, entity);
 
-    this.loggerServide.info({ message: 'cats updated.', obj: { cats: input } });
+    this.loggerService.info({ message: 'cats updated.', obj: { cats: input } });
 
     const updated = await this.catsRepository.findById<DatabaseOptionsType>(entity.id);
 

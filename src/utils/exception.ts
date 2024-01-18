@@ -34,36 +34,36 @@ export class BaseException extends HttpException {
 
 export class ApiInternalServerException extends BaseException {
   constructor(message?: string, parameters?: ParametersType) {
-    super(message ?? 'InternalServerException', 500, parameters);
+    super(message ?? ApiInternalServerException.name, 500, parameters);
   }
 }
 
 export class ApiNotFoundException extends BaseException {
   constructor(message?: string, parameters?: ParametersType) {
-    super(message ?? 'NotFoundException', 404, parameters);
+    super(message ?? ApiNotFoundException.name, 404, parameters);
   }
 }
 
 export class ApiConflictException extends BaseException {
   constructor(message?: string, parameters?: ParametersType) {
-    super(message ?? 'ConflictException', 409, parameters);
+    super(message ?? ApiConflictException.name, 409, parameters);
   }
 }
 
 export class ApiUnauthorizedException extends BaseException {
   constructor(message?: string, parameters?: ParametersType) {
-    super(message ?? 'UnauthorizedException', 401, parameters);
+    super(message ?? ApiUnauthorizedException.name, 401, parameters);
   }
 }
 
 export class ApiBadRequestException extends BaseException {
   constructor(message?: string, parameters?: ParametersType) {
-    super(message ?? 'BadRequestException', 400, parameters);
+    super(message ?? ApiBadRequestException.name, 400, parameters);
   }
 }
 
 export class ApiForbiddenException extends BaseException {
   constructor(message?: string, parameters?: ParametersType) {
-    super(message ?? 'BadRequestException', 403, parameters);
+    super(message ?? ApiForbiddenException.name, 403, parameters);
   }
 }

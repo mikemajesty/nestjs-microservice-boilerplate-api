@@ -16,7 +16,7 @@ export type UserUpdateInput = Partial<z.infer<typeof UserUpdateSchema>>;
 export type UserUpdateOutput = UserEntity;
 
 export class UserUpdateUsecase {
-  constructor(private readonly userRepository: IUserRepository, private readonly loggerServide: ILoggerAdapter) {}
+  constructor(private readonly userRepository: IUserRepository, private readonly loggerService: ILoggerAdapter) {}
 
   @ValidateSchema(UserUpdateSchema)
   async execute(input: UserUpdateInput, { tracing, user: userData }: ApiTrancingInput): Promise<UserUpdateOutput> {
@@ -39,7 +39,7 @@ export class UserUpdateUsecase {
 
     await this.userRepository.updateOne({ id: entity.id }, entity);
 
-    this.loggerServide.info({ message: 'user updated.', obj: { user: input } });
+    this.loggerService.info({ message: 'user updated.', obj: { user: input } });
 
     const updated = await this.userRepository.findById(entity.id);
 

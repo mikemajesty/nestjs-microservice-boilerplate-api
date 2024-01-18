@@ -23,7 +23,7 @@ export class IsLoggedMiddleware implements NestMiddleware {
     }
 
     if (!tokenHeader) {
-      response.status(401);
+      response.status(HttpStatus.UNAUTHORIZED);
       request['id'] = request.headers.traceid;
       this.loggerService.logger(request, response);
       throw new ApiUnauthorizedException('no token provided');

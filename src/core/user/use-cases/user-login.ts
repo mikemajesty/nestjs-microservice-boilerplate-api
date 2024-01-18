@@ -34,7 +34,6 @@ export class LoginUsecase {
 
     return this.tokenService.sign({
       login: login.login,
-      password: login.password,
       roles: login.roles
     });
   }
