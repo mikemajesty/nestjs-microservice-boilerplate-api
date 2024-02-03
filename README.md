@@ -48,7 +48,7 @@ Creating a CRUD in Postgres and Mongo in seconds.
   $ yarn scaffold
   ```
 - Choose database for CRUD.
-- `(x) POTGRES:CRUD`
+- `(x) POSTGRES:CRUD`
 - `( ) MONGO:CRUD `
 - type module name (use the singular name)
 - After generating the CRUD, follow the instructions on the generated link.
