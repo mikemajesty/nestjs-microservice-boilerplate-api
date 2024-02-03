@@ -4,9 +4,7 @@ import { AxiosConverter } from 'nestjs-convert-to-curl';
 
 import { ILoggerAdapter } from '@/infra/logger';
 
-import { BaseException } from './exception';
-
-export const interceptAxiosResponseError = (error, logger: ILoggerAdapter) => {
+export const interceptAxiosResponseError = (error) => {
   error.stack = error.stack.replace(
     /AxiosError.*node:internal\/process\/task_queues:[0-9]+:[0-9]+\).*axiosBetterStacktrace.ts:[0-9]+:[0-9]+\)/g,
     ''
@@ -23,13 +21,10 @@ export const interceptAxiosResponseError = (error, logger: ILoggerAdapter) => {
     'Internal Server Error'
   ].find(Boolean);
 
-  const curl = AxiosConverter.getCurl(error);
-  logger.error(
-    new BaseException(typeof error['code'] === 'string' ? error['code'] : message, status, {
-      curl,
-      responseData: error?.response?.data ?? undefined
-    })
-  );
+  error.message = message;
+
+  error.status = status;
+  error.curl = AxiosConverter.getCurl(error);
 };
 
 type RequestRetry = {

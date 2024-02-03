@@ -1,13 +1,13 @@
 import { Test } from '@nestjs/testing';
 
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
-import { ICatsGetByIDAdapter } from '@/modules/cats/adapter';
+import { ICatsGetByIdAdapter as ICatsGetByIdAdapter } from '@/modules/cats/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
 import { expectZodError, getMockUUID } from '@/utils/tests/tests';
 
 import { CatsEntity } from '../../entity/cats';
 import { ICatsRepository } from '../../repository/cats';
-import { CatsGetByIdUsecase } from '../cats-getByID';
+import { CatsGetByIdUsecase } from '../cats-get-by-id';
 
 const catMock = new CatsEntity({
   id: getMockUUID(),
@@ -17,7 +17,7 @@ const catMock = new CatsEntity({
 });
 
 describe('CatsGetByIdUsecase', () => {
-  let usecase: ICatsGetByIDAdapter;
+  let usecase: ICatsGetByIdAdapter;
   let repository: ICatsRepository;
 
   beforeEach(async () => {
@@ -29,7 +29,7 @@ describe('CatsGetByIdUsecase', () => {
           useValue: {}
         },
         {
-          provide: ICatsGetByIDAdapter,
+          provide: ICatsGetByIdAdapter,
           useFactory: (catsRepository: ICatsRepository) => {
             return new CatsGetByIdUsecase(catsRepository);
           },
@@ -38,7 +38,7 @@ describe('CatsGetByIdUsecase', () => {
       ]
     }).compile();
 
-    usecase = app.get(ICatsGetByIDAdapter);
+    usecase = app.get(ICatsGetByIdAdapter);
     repository = app.get(ICatsRepository);
   });
 
@@ -53,7 +53,7 @@ describe('CatsGetByIdUsecase', () => {
 
   test('when cats not found, should expect an error', async () => {
     repository.findById = jest.fn().mockResolvedValue(null);
-    await expect(usecase.execute({ id: getMockUUID() })).rejects.toThrowError(ApiNotFoundException);
+    await expect(usecase.execute({ id: getMockUUID() })).rejects.toThrow(ApiNotFoundException);
   });
 
   test('when cats found, should expect a cats that has been found', async () => {

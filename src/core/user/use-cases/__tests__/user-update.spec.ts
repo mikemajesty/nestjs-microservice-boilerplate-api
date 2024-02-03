@@ -61,12 +61,12 @@ describe('UserUpdateUsecase', () => {
 
   test('when user not found, should expect an error', async () => {
     repository.findById = jest.fn().mockResolvedValue(null);
-    await expect(usecase.execute(userMock, RequestMock.trancingMock)).rejects.toThrowError(ApiNotFoundException);
+    await expect(usecase.execute(userMock, RequestMock.trancingMock)).rejects.toThrow(ApiNotFoundException);
   });
 
   test('when user already exists, should expect an error', async () => {
     repository.findById = jest.fn().mockResolvedValue(userMock);
     repository.existsOnUpdate = jest.fn().mockResolvedValue(userMock);
-    await expect(usecase.execute(userMock, RequestMock.trancingMock)).rejects.toThrowError(ApiConflictException);
+    await expect(usecase.execute(userMock, RequestMock.trancingMock)).rejects.toThrow(ApiConflictException);
   });
 });

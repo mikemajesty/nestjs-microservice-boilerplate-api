@@ -5,7 +5,7 @@ export abstract class ISecretsAdapter {
 
   HOST: string;
 
-  LOGER_LEVEL: string;
+  LOG_LEVEL: string;
 
   MONGO_URL: string;
 

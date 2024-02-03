@@ -12,14 +12,14 @@ export const CatsGetByIdSchema = CatsEntitySchema.pick({
   id: true
 });
 
-export type CatsGetByIDInput = z.infer<typeof CatsGetByIdSchema>;
-export type CatsGetByIDOutput = CatsEntity;
+export type CatsGetByIdInput = z.infer<typeof CatsGetByIdSchema>;
+export type CatsGetByIdOutput = CatsEntity;
 
 export class CatsGetByIdUsecase {
   constructor(private readonly catsRepository: ICatsRepository) {}
 
   @ValidateSchema(CatsGetByIdSchema)
-  async execute({ id }: CatsGetByIDInput): Promise<CatsGetByIDOutput> {
+  async execute({ id }: CatsGetByIdInput): Promise<CatsGetByIdOutput> {
     const cats = await this.catsRepository.findById<DatabaseOptionsType>(id);
 
     if (!cats) {

@@ -3,7 +3,7 @@ import { ApiBearerAuth, ApiBody, ApiParam, ApiQuery, ApiResponse, ApiTags } from
 
 import { CatsCreateInput, CatsCreateOutput } from '@/core/cats/use-cases/cats-create';
 import { CatsDeleteInput, CatsDeleteOutput } from '@/core/cats/use-cases/cats-delete';
-import { CatsGetByIDInput, CatsGetByIDOutput } from '@/core/cats/use-cases/cats-getByID';
+import { CatsGetByIdInput, CatsGetByIdOutput } from '@/core/cats/use-cases/cats-get-by-id';
 import { CatsListInput, CatsListOutput } from '@/core/cats/use-cases/cats-list';
 import { CatsUpdateInput, CatsUpdateOutput } from '@/core/cats/use-cases/cats-update';
 import { UserRole } from '@/core/user/entity/user';
@@ -15,11 +15,11 @@ import { SortHttpSchema } from '@/utils/sort';
 import {
   ICatsCreateAdapter,
   ICatsDeleteAdapter,
-  ICatsGetByIDAdapter,
+  ICatsGetByIdAdapter,
   ICatsListAdapter,
   ICatsUpdateAdapter
 } from './adapter';
-import { SwagggerRequest, SwagggerResponse } from './swagger';
+import { SwaggerRequest, SwaggerResponse } from './swagger';
 
 @Controller('cats')
 @ApiTags('cats')
@@ -29,23 +29,23 @@ export class CatsController {
   constructor(
     private readonly catsCreate: ICatsCreateAdapter,
     private readonly catsUpdate: ICatsUpdateAdapter,
-    private readonly catsGetByID: ICatsGetByIDAdapter,
+    private readonly catsGetById: ICatsGetByIdAdapter,
     private readonly catsList: ICatsListAdapter,
     private readonly catsDelete: ICatsDeleteAdapter
   ) {}
 
   @Post()
-  @ApiResponse(SwagggerResponse.create[200])
-  @ApiBody(SwagggerRequest.createBody)
+  @ApiResponse(SwaggerResponse.create[200])
+  @ApiBody(SwaggerRequest.createBody)
   @Version('1')
   async create(@Req() { body, user, tracing }: ApiRequest): Promise<CatsCreateOutput> {
     return await this.catsCreate.execute(body as CatsCreateInput, { user, tracing });
   }
 
   @Put()
-  @ApiResponse(SwagggerResponse.update[200])
-  @ApiResponse(SwagggerResponse.update[404])
-  @ApiBody(SwagggerRequest.updateBody)
+  @ApiResponse(SwaggerResponse.update[200])
+  @ApiResponse(SwaggerResponse.update[404])
+  @ApiBody(SwaggerRequest.updateBody)
   @Version('1')
   async update(@Req() { body, user, tracing }: ApiRequest): Promise<CatsUpdateOutput> {
     return await this.catsUpdate.execute(body as CatsUpdateInput, { user, tracing });
@@ -53,19 +53,19 @@ export class CatsController {
 
   @Get('/:id')
   @ApiParam({ name: 'id', required: true })
-  @ApiResponse(SwagggerResponse.getByID[200])
-  @ApiResponse(SwagggerResponse.getByID[404])
+  @ApiResponse(SwaggerResponse.getByID[200])
+  @ApiResponse(SwaggerResponse.getByID[404])
   @Version('1')
-  async getById(@Req() { params }: ApiRequest): Promise<CatsGetByIDOutput> {
-    return await this.catsGetByID.execute(params as CatsGetByIDInput);
+  async getById(@Req() { params }: ApiRequest): Promise<CatsGetByIdOutput> {
+    return await this.catsGetById.execute(params as CatsGetByIdInput);
   }
 
   @Get()
-  @ApiQuery(SwagggerRequest.listQuery.pagination.limit)
-  @ApiQuery(SwagggerRequest.listQuery.pagination.page)
-  @ApiQuery(SwagggerRequest.listQuery.sort)
-  @ApiQuery(SwagggerRequest.listQuery.search)
-  @ApiResponse(SwagggerResponse.list[200])
+  @ApiQuery(SwaggerRequest.listQuery.pagination.limit)
+  @ApiQuery(SwaggerRequest.listQuery.pagination.page)
+  @ApiQuery(SwaggerRequest.listQuery.sort)
+  @ApiQuery(SwaggerRequest.listQuery.search)
+  @ApiResponse(SwaggerResponse.list[200])
   @Version('1')
   async list(@Req() { query }: ApiRequest): Promise<CatsListOutput> {
     const input: CatsListInput = {
@@ -80,8 +80,8 @@ export class CatsController {
 
   @Delete('/:id')
   @ApiParam({ name: 'id', required: true })
-  @ApiResponse(SwagggerResponse.delete[200])
-  @ApiResponse(SwagggerResponse.delete[404])
+  @ApiResponse(SwaggerResponse.delete[200])
+  @ApiResponse(SwaggerResponse.delete[404])
   @Version('1')
   async delete(@Req() { params, user, tracing }: ApiRequest): Promise<CatsDeleteOutput> {
     return await this.catsDelete.execute(params as CatsDeleteInput, { user, tracing });

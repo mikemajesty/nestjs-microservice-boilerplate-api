@@ -57,9 +57,9 @@ describe('LoginUsecase', () => {
 
   test('when user not found, should expect an error', async () => {
     repository.findOne = jest.fn().mockResolvedValue(null);
-    await expect(
-      usecase.execute({ login: 'login', password: 'password' }, RequestMock.trancingMock)
-    ).rejects.toThrowError(ApiNotFoundException);
+    await expect(usecase.execute({ login: 'login', password: 'password' }, RequestMock.trancingMock)).rejects.toThrow(
+      ApiNotFoundException
+    );
   });
 
   test('when user found, should expect a token', async () => {

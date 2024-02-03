@@ -58,7 +58,7 @@ export class TracingInterceptor implements NestInterceptor {
           http.interceptors.response.use(
             (response) => response,
             (error) => {
-              interceptAxiosResponseError(error, this.logger);
+              interceptAxiosResponseError(error);
               return Promise.reject(error);
             }
           );

@@ -4,7 +4,7 @@ import { ApiBearerAuth, ApiBody, ApiParam, ApiQuery, ApiResponse, ApiTags } from
 import { UserRole } from '@/core/user/entity/user';
 import { UserCreateInput, UserCreateOutput } from '@/core/user/use-cases/user-create';
 import { UserDeleteInput, UserDeleteOutput } from '@/core/user/use-cases/user-delete';
-import { UserGetByIDInput, UserGetByIDOutput } from '@/core/user/use-cases/user-getByID';
+import { UserGetByIdInput, UserGetByIdOutput } from '@/core/user/use-cases/user-get-by-id';
 import { UserListInput, UserListOutput } from '@/core/user/use-cases/user-list';
 import { UserUpdateInput, UserUpdateOutput } from '@/core/user/use-cases/user-update';
 import { Roles } from '@/utils/decorators/role.decorator';
@@ -76,8 +76,8 @@ export class UserController {
   @ApiResponse(SwaggerResponse.getByID[200])
   @ApiResponse(SwaggerResponse.getByID[404])
   @Version('1')
-  async getById(@Req() { params }: ApiRequest): Promise<UserGetByIDOutput> {
-    return await this.userGetByIDUsecase.execute(params as UserGetByIDInput);
+  async getById(@Req() { params }: ApiRequest): Promise<UserGetByIdOutput> {
+    return await this.userGetByIDUsecase.execute(params as UserGetByIdInput);
   }
 
   @Delete('/:id')

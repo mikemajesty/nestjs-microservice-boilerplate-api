@@ -5,7 +5,7 @@ import { LogoutInput, LogoutOutput } from '@/core/user/use-cases/user-logout';
 import { ApiRequest } from '@/utils/request';
 
 import { ILogoutAdapter } from './adapter';
-import { SwagggerRequest, SwagggerResponse } from './swagger';
+import { SwaggerResponse, SwagggerRequest } from './swagger';
 
 @Controller()
 @ApiTags('logout')
@@ -14,7 +14,7 @@ export class LogoutController {
   constructor(private readonly logoutService: ILogoutAdapter) {}
 
   @Post('/logout')
-  @ApiResponse(SwagggerResponse.logout[200])
+  @ApiResponse(SwaggerResponse.logout[200])
   @ApiBody(SwagggerRequest.body)
   @HttpCode(401)
   @Version('1')

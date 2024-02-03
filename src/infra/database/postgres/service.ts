@@ -17,12 +17,12 @@ export class SequelizeService implements IDataBaseAdapter {
     } as TOpt;
   }
 
-  async connect<T extends Sequelize = Sequelize>(): Promise<T> {
+  async connect(): Promise<Sequelize> {
     try {
       const conn = await this.instance.sync();
 
       this.logger.log('Sequelize connected!');
-      return conn as T;
+      return conn as Sequelize;
     } catch (error) {
       this.logger.fatal(error);
     }

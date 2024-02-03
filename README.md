@@ -95,6 +95,7 @@ Creating a CRUD in Postgres and Mongo in seconds.
   $ yarn migration:create
   ```
 - run
+
   ```
   $ yarn migration:run
 
@@ -201,10 +202,10 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │   │   │       │   ├── cats-delete.spec.ts
 │   │   │       │   ├── cats-list.spec.ts
 │   │   │       │   ├── cats-update.spec.ts
-│   │   │       │   └── user-getByID.spec.ts
+│   │   │       │   └── user-get-by-id.spec.ts
 │   │   │       ├── cats-create.ts
 │   │   │       ├── cats-delete.ts
-│   │   │       ├── cats-getByID.ts
+│   │   │       ├── cats-get-by-id.ts
 │   │   │       ├── cats-list.ts
 │   │   │       └── cats-update.ts
 │   │   └── user

@@ -5,7 +5,7 @@ import { CatsEntity } from '@/core/cats/entity/cats';
 import { ICatsRepository } from '@/core/cats/repository/cats';
 import { CatsCreateUsecase } from '@/core/cats/use-cases/cats-create';
 import { CatsDeleteUsecase } from '@/core/cats/use-cases/cats-delete';
-import { CatsGetByIdUsecase } from '@/core/cats/use-cases/cats-getByID';
+import { CatsGetByIdUsecase } from '@/core/cats/use-cases/cats-get-by-id';
 import { CatsListUsecase } from '@/core/cats/use-cases/cats-list';
 import { CatsUpdateUsecase } from '@/core/cats/use-cases/cats-update';
 import { RedisCacheModule } from '@/infra/cache/redis';
@@ -19,7 +19,7 @@ import { IsLoggedMiddleware } from '@/utils/middlewares/is-logged.middleware';
 import {
   ICatsCreateAdapter,
   ICatsDeleteAdapter,
-  ICatsGetByIDAdapter,
+  ICatsGetByIdAdapter,
   ICatsListAdapter,
   ICatsUpdateAdapter
 } from './adapter';
@@ -49,7 +49,7 @@ import { CatsRepository } from './repository';
       inject: [ILoggerAdapter, ICatsRepository]
     },
     {
-      provide: ICatsGetByIDAdapter,
+      provide: ICatsGetByIdAdapter,
       useFactory: (repository: ICatsRepository) => new CatsGetByIdUsecase(repository),
       inject: [ICatsRepository]
     },

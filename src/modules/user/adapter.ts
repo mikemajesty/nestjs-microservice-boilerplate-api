@@ -1,6 +1,6 @@
 import { UserCreateInput, UserCreateOutput } from '@/core/user/use-cases/user-create';
 import { UserDeleteInput, UserDeleteOutput } from '@/core/user/use-cases/user-delete';
-import { UserGetByIDInput, UserGetByIDOutput } from '@/core/user/use-cases/user-getByID';
+import { UserGetByIdInput, UserGetByIdOutput } from '@/core/user/use-cases/user-get-by-id';
 import { UserListInput, UserListOutput } from '@/core/user/use-cases/user-list';
 import { UserUpdateInput, UserUpdateOutput } from '@/core/user/use-cases/user-update';
 import { ApiTrancingInput } from '@/utils/request';
@@ -22,5 +22,5 @@ export abstract class IUserDeleteAdapter {
 }
 
 export abstract class IUserGetByIDAdapter {
-  abstract execute(input: UserGetByIDInput): Promise<UserGetByIDOutput>;
+  abstract execute(input: UserGetByIdInput): Promise<UserGetByIdOutput>;
 }

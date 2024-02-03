@@ -219,9 +219,9 @@ export class MongoRepository<T extends Document> implements IRepository<T> {
 
   async seed(entityList: T[]): Promise<void> {
     try {
-      const someHasNoID = entityList.some((e) => !e.id);
+      const someHasNoId = entityList.some((e) => !e.id);
 
-      if (someHasNoID) {
+      if (someHasNoId) {
         throw new ApiInternalServerException('seed id is required');
       }
 

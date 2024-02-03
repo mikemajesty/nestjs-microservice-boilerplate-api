@@ -29,7 +29,7 @@ export class HttpService implements IHttpAdapter {
     this.axios.interceptors.response.use(
       (response) => response,
       (error) => {
-        interceptAxiosResponseError(error, this.loggerService);
+        interceptAxiosResponseError(error);
         return Promise.reject(error);
       }
     );

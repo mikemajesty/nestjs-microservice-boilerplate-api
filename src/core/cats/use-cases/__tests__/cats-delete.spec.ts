@@ -54,7 +54,7 @@ describe('CatsDeleteUsecase', () => {
 
   test('when cats not found, should expect an error', async () => {
     repository.findById = jest.fn().mockResolvedValue(null);
-    await expect(usecase.execute({ id: getMockUUID() }, RequestMock.trancingMock)).rejects.toThrowError(
+    await expect(usecase.execute({ id: getMockUUID() }, RequestMock.trancingMock)).rejects.toThrow(
       ApiNotFoundException
     );
   });

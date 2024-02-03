@@ -13,7 +13,7 @@ export class SecretsService implements ISecretsAdapter {
 
   HOST = this.config.get('HOST');
 
-  LOGER_LEVEL = this.config.get('LOGER_LEVEL');
+  LOG_LEVEL = this.config.get('LOG_LEVEL');
 
   REDIS_URL = this.config.get('REDIS_URL');
 

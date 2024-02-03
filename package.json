@@ -99,6 +99,7 @@
     "husky": "^8.0.3",
     "istanbul-badges-readme": "^1.8.5",
     "jest": "^29.1.1",
+    "lint-staged": "^15.2.1",
     "prettier": "^2.3.2",
     "sequelize-cli": "^5.3.0",
     "source-map-support": "^0.5.20",

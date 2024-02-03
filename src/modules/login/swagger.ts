@@ -1,7 +1,7 @@
 import { LoginInput } from '@/core/user/use-cases/user-login';
 import { Swagger } from '@/utils/docs/swagger';
 
-export const SwagggerResponse = {
+export const SwaggerResponse = {
   login: {
     200: Swagger.defaultResponseJSON({
       status: 200,
@@ -17,7 +17,7 @@ export const SwagggerResponse = {
   }
 };
 
-export const SwagggerRequest = {
+export const SwaggerRequest = {
   body: Swagger.defaultRequestJSON({
     login: 'admin',
     password: 'admin'

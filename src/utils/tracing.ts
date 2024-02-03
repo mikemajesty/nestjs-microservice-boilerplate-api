@@ -70,7 +70,7 @@ const sdk = new NodeSDK({
     new PgInstrumentation({
       requireParentSpan: true,
       responseHook: (span: Span) => {
-        span.updateName(`postgress => ${span['name'].split(' ')[0]}`);
+        span.updateName(`postgres => ${span['name'].split(' ')[0]}`);
       }
     })
   ]

@@ -5,7 +5,7 @@ import mongoose, { Connection, PaginateModel, Schema } from 'mongoose';
 import { IUserRepository } from '@/core/user/repository/user';
 import { UserCreateUsecase } from '@/core/user/use-cases/user-create';
 import { UserDeleteUsecase } from '@/core/user/use-cases/user-delete';
-import { UserGetByIdUsecase } from '@/core/user/use-cases/user-getByID';
+import { UserGetByIdUsecase } from '@/core/user/use-cases/user-get-by-id';
 import { UserListUsecase } from '@/core/user/use-cases/user-list';
 import { UserUpdateUsecase } from '@/core/user/use-cases/user-update';
 import { RedisCacheModule } from '@/infra/cache/redis';

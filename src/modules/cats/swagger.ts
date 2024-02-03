@@ -2,7 +2,7 @@ import { CatsRequest } from '@/utils/docs/data/cats/request';
 import { CatsResponse } from '@/utils/docs/data/cats/response';
 import { Swagger } from '@/utils/docs/swagger';
 
-export const SwagggerResponse = {
+export const SwaggerResponse = {
   create: {
     200: Swagger.defaultResponseJSON({
       status: 200,
@@ -58,7 +58,7 @@ export const SwagggerResponse = {
   }
 };
 
-export const SwagggerRequest = {
+export const SwaggerRequest = {
   createBody: Swagger.defaultRequestJSON(CatsRequest.create),
   updateBody: Swagger.defaultRequestJSON(CatsRequest.update),
   listQuery: {
@@ -74,7 +74,7 @@ export const SwagggerRequest = {
     search: Swagger.defaultApiQueryOptions({
       name: 'search',
       required: false,
-      description: `<b>name:miau,breed:siamese`
+      description: `<b>name:Meow,breed:siamese`
     })
   }
 };

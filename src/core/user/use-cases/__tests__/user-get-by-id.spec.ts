@@ -6,7 +6,7 @@ import { expectZodError, getMockUUID } from '@/utils/tests/tests';
 
 import { UserEntity, UserRole } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
-import { UserGetByIdUsecase } from '../user-getByID';
+import { UserGetByIdUsecase } from '../user-get-by-id';
 
 const userMock = new UserEntity({
   id: getMockUUID(),
@@ -52,7 +52,7 @@ describe('UserGetByIdUsecase', () => {
 
   test('when user not found, should expect an errror', async () => {
     repository.findById = jest.fn().mockResolvedValue(null);
-    await expect(usecase.execute({ id: getMockUUID() })).rejects.toThrowError(ApiNotFoundException);
+    await expect(usecase.execute({ id: getMockUUID() })).rejects.toThrow(ApiNotFoundException);
   });
 
   test('when user getById successfully, should expect a user', async () => {

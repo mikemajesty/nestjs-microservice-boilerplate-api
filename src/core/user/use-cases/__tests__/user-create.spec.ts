@@ -58,12 +58,12 @@ describe('UserCreateUsecase', () => {
     repository.create = jest.fn().mockResolvedValue(userMock);
     repository.startSession = jest.fn().mockRejectedValue(new Error('startSessionError'));
 
-    await expect(usecase.execute(userMock, RequestMock.trancingMock)).rejects.toThrowError('startSessionError');
+    await expect(usecase.execute(userMock, RequestMock.trancingMock)).rejects.toThrow('startSessionError');
   });
 
   test('when user already exists, should expect an error', async () => {
     repository.findOne = jest.fn().mockResolvedValue(userMock);
-    await expect(usecase.execute(userMock, RequestMock.trancingMock)).rejects.toThrowError(ApiConflictException);
+    await expect(usecase.execute(userMock, RequestMock.trancingMock)).rejects.toThrow(ApiConflictException);
   });
 
   test('when no input is specified, should expect an error', async () => {
