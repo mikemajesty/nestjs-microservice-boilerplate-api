@@ -130,8 +130,7 @@ Creating a CRUD in Postgres and Mongo in seconds.
   - tracing
   - logs
   - metrics
-- Git hooks
-  - Husky
+- Lint-staged + Husky
 - Commitlint
 - Secrets Service
 - HTTP Service
@@ -148,13 +147,13 @@ Creating a CRUD in Postgres and Mongo in seconds.
 - Usecase Pattern
 - Interface Adapter Pattern
 - Generic Repository Pattern
-  - Mongo Repository (mongooose)
+  - Mongo Repository (mongoose)
   - Postgres Repository (sequelize)
-- Swaggger Documentation
+- Swagger Documentation
 - Cache Service
   - Redis
   - NodeCache
-- Databse
+- Database
   - mongo
     - Seed
     - Replica set
