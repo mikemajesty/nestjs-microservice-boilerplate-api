@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
+import { ValidateSchema } from '@/common/decorators';
 import { ICacheAdapter } from '@/infra/cache';
 import { ISecretsAdapter } from '@/infra/secrets';
-import { ValidateSchema } from '@/utils/decorators/validate-schema.decorator';
 import { ApiTrancingInput } from '@/utils/request';
 
 export const LogoutSchema = z.object({ token: z.string().trim().min(10) });

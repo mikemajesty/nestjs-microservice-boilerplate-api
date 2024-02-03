@@ -4,7 +4,7 @@ import { PaginationSchema } from '@/utils/pagination';
 import { SearchSchema } from '@/utils/search';
 import { SortSchema } from '@/utils/sort';
 
-export const ListSchema = z.intersection(PaginationSchema, SortSchema.merge(SearchSchema));
+const ListSchema = z.intersection(PaginationSchema, SortSchema.merge(SearchSchema));
 
 export function ConvertSequelizeFilterToRepository() {
   return (target: unknown, propertyKey: string, descriptor: PropertyDescriptor) => {

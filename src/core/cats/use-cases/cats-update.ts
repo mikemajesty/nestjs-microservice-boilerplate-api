@@ -1,9 +1,9 @@
 import { z } from 'zod';
 
+import { ValidateSchema } from '@/common/decorators';
 import { ICatsRepository } from '@/core/cats/repository/cats';
 import { ILoggerAdapter } from '@/infra/logger';
 import { DatabaseOptionsType } from '@/utils/database/sequelize';
-import { ValidateSchema } from '@/utils/decorators/validate-schema.decorator';
 import { ApiNotFoundException } from '@/utils/exception';
 import { ApiTrancingInput } from '@/utils/request';
 

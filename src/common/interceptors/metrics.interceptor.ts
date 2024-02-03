@@ -3,8 +3,9 @@ import opentelemetry, { Counter, Histogram, Meter } from '@opentelemetry/api';
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
 import { Observable, tap } from 'rxjs';
 
+import { DateUtils } from '@/utils/date';
+
 import { name, version } from '../../../package.json';
-import { DateUtils } from '../date';
 
 @Injectable()
 export class MetricsInterceptor implements NestInterceptor {

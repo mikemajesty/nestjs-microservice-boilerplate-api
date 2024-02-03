@@ -2,15 +2,17 @@ import { Injectable } from '@nestjs/common';
 import { Transaction } from 'sequelize';
 import { ModelCtor } from 'sequelize-typescript';
 
+import {
+  ConvertPaginateInputToSequelizeFilter,
+  SearchTypeEnum,
+  ValidateDatabaseSortAllowed
+} from '@/common/decorators';
 import { CatsEntity } from '@/core/cats/entity/cats';
 import { ICatsRepository } from '@/core/cats/repository/cats';
 import { CatsListInput, CatsListOutput } from '@/core/cats/use-cases/cats-list';
 import { CatsSchema } from '@/infra/database/postgres/schemas/cats';
 import { SequelizeRepository } from '@/infra/repository/postgres/repository';
 import { DatabaseOptionsSchema, DatabaseOptionsType } from '@/utils/database/sequelize';
-import { ConvertPaginateInputToSequelizeFilter } from '@/utils/decorators/database/postgres/convert-paginate-input-to-sequelize-filter.decorator';
-import { ValidateDatabaseSortAllowed } from '@/utils/decorators/database/validate-database-sort-allowed.decorator';
-import { SearchTypeEnum } from '@/utils/decorators/types';
 
 type Model = ModelCtor<CatsSchema> & CatsEntity;
 

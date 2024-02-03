@@ -2,15 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { PaginateModel } from 'mongoose';
 
+import { SearchTypeEnum, ValidateDatabaseSortAllowed, ValidateMongooseFilter } from '@/common/decorators';
 import { UserEntity } from '@/core/user/entity/user';
 import { IUserRepository } from '@/core/user/repository/user';
 import { UserListInput, UserListOutput } from '@/core/user/use-cases/user-list';
 import { User, UserDocument } from '@/infra/database/mongo/schemas/user';
 import { MongoRepository } from '@/infra/repository';
 import { MongoRepositoryModelSessionType, MongoRepositorySession } from '@/utils/database/mongoose';
-import { ValidateMongooseFilter } from '@/utils/decorators/database/mongo/validate-mongoose-filter.decorator';
-import { ValidateDatabaseSortAllowed } from '@/utils/decorators/database/validate-database-sort-allowed.decorator';
-import { SearchTypeEnum } from '@/utils/decorators/types';
 
 @Injectable()
 export class UserRepository extends MongoRepository<UserDocument> implements IUserRepository {

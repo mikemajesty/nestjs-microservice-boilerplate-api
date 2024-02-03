@@ -376,7 +376,7 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │       │   └── tests.ts
 │       └── tracing.ts
 ├── test
-│   └── initializaion.ts
+│   └── initialization.ts
 ├── tsconfig.build.json
 └── tsconfig.json
 ```

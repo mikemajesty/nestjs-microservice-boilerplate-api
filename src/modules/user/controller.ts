@@ -1,13 +1,13 @@
 import { Controller, Delete, Get, Post, Put, Req, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
+import { Roles } from '@/common/decorators';
 import { UserRole } from '@/core/user/entity/user';
 import { UserCreateInput, UserCreateOutput } from '@/core/user/use-cases/user-create';
 import { UserDeleteInput, UserDeleteOutput } from '@/core/user/use-cases/user-delete';
 import { UserGetByIdInput, UserGetByIdOutput } from '@/core/user/use-cases/user-get-by-id';
 import { UserListInput, UserListOutput } from '@/core/user/use-cases/user-list';
 import { UserUpdateInput, UserUpdateOutput } from '@/core/user/use-cases/user-update';
-import { Roles } from '@/utils/decorators/role.decorator';
 import { ApiRequest } from '@/utils/request';
 import { SearchHttpSchema } from '@/utils/search';
 import { SortHttpSchema } from '@/utils/sort';

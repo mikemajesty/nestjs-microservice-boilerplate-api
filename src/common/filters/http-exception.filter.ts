@@ -3,10 +3,9 @@ import { AxiosError } from 'axios';
 import { ZodError } from 'zod';
 
 import { ILoggerAdapter } from '@/infra/logger/adapter';
+import { DateUtils } from '@/utils/date';
 import { BaseException, ErrorModel } from '@/utils/exception';
-
-import { DateUtils } from '../date';
-import errorStatus from '../static/http-status.json';
+import errorStatus from '@/utils/static/http-status.json';
 
 @Catch()
 export class AppExceptionFilter implements ExceptionFilter {

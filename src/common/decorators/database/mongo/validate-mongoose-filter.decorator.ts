@@ -1,6 +1,6 @@
+import { skipParentheses } from '@/utils/database/mongoose';
 import { ApiBadRequestException } from '@/utils/exception';
 
-import { skipParentheses } from '../../../database/mongoose';
 import { AllowedFilter, SearchTypeEnum } from '../../types';
 
 export function ValidateMongooseFilter<T>(allowedFilterList: AllowedFilter<T>[] = []) {

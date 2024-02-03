@@ -1,11 +1,11 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 
+import { IsLoggedMiddleware } from '@/common/middlewares';
 import { LogoutUsecase } from '@/core/user/use-cases/user-logout';
 import { ICacheAdapter } from '@/infra/cache';
 import { RedisCacheModule } from '@/infra/cache/redis';
 import { LoggerModule } from '@/infra/logger';
 import { ISecretsAdapter, SecretsModule } from '@/infra/secrets';
-import { IsLoggedMiddleware } from '@/utils/middlewares/is-logged.middleware';
 
 import { TokenModule } from './../../libs/auth/module';
 import { ILogoutAdapter } from './adapter';

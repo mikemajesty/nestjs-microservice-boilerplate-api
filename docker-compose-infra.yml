@@ -13,7 +13,7 @@ services:
       ]
     volumes:
       - mongo-primary-data:/data/db
-      - ./scripts/mongo/rs-init.sh:/scripts/mongo/rs-init.sh
+      - ./docker/mongo/rs-init.sh:/scripts/mongo/rs-init.sh
     ports:
       - 27081:27017
     networks:
@@ -64,7 +64,7 @@ services:
       - '5432:5432'
     volumes:
       - nestjs-microservice-postgres:/data/postgres
-      - ./scripts/postgres/create-database.sql:/docker-entrypoint-initdb.d/create-database.sql
+      - ./docker/postgres/create-database.sql:/docker-entrypoint-initdb.d/create-database.sql
     restart: always
     networks:
       - postgres-network
@@ -94,13 +94,13 @@ services:
     ports:
       - '9090:9090'
     volumes:
-      - ./scripts/prometheus/config.yml:/etc/prometheus/prometheus.yml
+      - ./docker/prometheus/config.yml:/etc/prometheus/prometheus.yml
   collector:
     container_name: nestjs-microservice-collector
     image: otel/opentelemetry-collector-contrib:latest
     command: [ "--config=/conf/collector-config.yaml" ]
     volumes:
-      - ./scripts/prometheus/collector-config.yaml:/conf/collector-config.yaml
+      - ./docker/collector/collector-config.yaml:/conf/collector-config.yaml
     ports:
       - "9464:9464"
       - "4317:4317"

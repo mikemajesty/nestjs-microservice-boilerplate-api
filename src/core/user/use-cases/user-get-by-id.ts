@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { ValidateSchema } from '@/utils/decorators/validate-schema.decorator';
+import { ValidateSchema } from '@/common/decorators';
 import { ApiNotFoundException } from '@/utils/exception';
 
 import { UserEntity, UserEntitySchema } from '../entity/user';

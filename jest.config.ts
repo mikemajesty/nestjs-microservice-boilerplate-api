@@ -20,7 +20,7 @@ export default {
       }
     ]
   },
-  setupFilesAfterEnv: ['../../test/initializaion.ts'],
+  setupFilesAfterEnv: ['../../test/initialization.ts'],
   testEnvironment: 'node',
   collectCoverageFrom: ['**/*.ts'],
   coverageDirectory: '../../coverage',

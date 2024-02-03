@@ -14,7 +14,7 @@ export type ErrorModel = {
 type ParametersType = { [key: string]: unknown };
 
 export class BaseException extends HttpException {
-  readonly traceid: string;
+  traceid: string;
   readonly context: string;
   readonly statusCode: number;
   readonly code?: string;

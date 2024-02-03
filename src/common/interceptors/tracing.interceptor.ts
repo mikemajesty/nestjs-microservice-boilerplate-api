@@ -14,10 +14,10 @@ import axiosBetterStacktrace from 'axios-better-stacktrace';
 import { Observable, tap } from 'rxjs';
 
 import { ILoggerAdapter } from '@/infra/logger';
+import { interceptAxiosResponseError, requestRetry } from '@/utils/axios';
+import { getPathWithoutUUID, TracingType } from '@/utils/request';
 
 import { name, version } from '../../../package.json';
-import { interceptAxiosResponseError, requestRetry } from '../axios';
-import { getPathWithoutUUID, TracingType } from '../request';
 
 @Injectable()
 export class TracingInterceptor implements NestInterceptor {

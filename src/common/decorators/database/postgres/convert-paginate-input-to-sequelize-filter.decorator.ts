@@ -1,11 +1,12 @@
 import { Op } from 'sequelize';
 import { z } from 'zod';
 
-import { AllowedFilter, SearchTypeEnum } from '@/utils/decorators/types';
 import { ApiBadRequestException } from '@/utils/exception';
 import { PaginationSchema } from '@/utils/pagination';
 import { SearchSchema } from '@/utils/search';
 import { SortSchema } from '@/utils/sort';
+
+import { AllowedFilter, SearchTypeEnum } from '../../types';
 
 const SequelizeSort = {
   '1': 'ASC',

@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
+import { ValidateSchema } from '@/common/decorators';
 import { ILoggerAdapter } from '@/infra/logger';
-import { ValidateSchema } from '@/utils/decorators/validate-schema.decorator';
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception';
 import { ApiTrancingInput } from '@/utils/request';
 

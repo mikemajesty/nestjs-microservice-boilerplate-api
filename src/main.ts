@@ -8,18 +8,21 @@ import { bold } from 'colorette';
 import { rateLimit } from 'express-rate-limit';
 import helmet from 'helmet';
 
+import { AppExceptionFilter } from '@/common/filters';
+import {
+  ExceptionInterceptor,
+  HttpLoggerInterceptor,
+  MetricsInterceptor,
+  TracingInterceptor
+} from '@/common/interceptors';
+import { IUserRepository } from '@/core/user/repository/user';
+import { UserAdminSeed } from '@/infra/database/mongo/seed/create-user-admin';
+import { ILoggerAdapter } from '@/infra/logger/adapter';
+import { ISecretsAdapter } from '@/infra/secrets';
+import { ApiInternalServerException } from '@/utils/exception';
+
 import { description, name, version } from '../package.json';
 import { AppModule } from './app.module';
-import { IUserRepository } from './core/user/repository/user';
-import { UserAdminSeed } from './infra/database/mongo/seed/create-user-admin';
-import { ILoggerAdapter } from './infra/logger/adapter';
-import { ISecretsAdapter } from './infra/secrets';
-import { ApiInternalServerException } from './utils/exception';
-import { AppExceptionFilter } from './utils/filters/http-exception.filter';
-import { ExceptionInterceptor } from './utils/interceptors/http-exception.interceptor';
-import { HttpLoggerInterceptor } from './utils/interceptors/http-logger.interceptor';
-import { MetricsInterceptor } from './utils/interceptors/metrics.interceptor';
-import { TracingInterceptor } from './utils/interceptors/tracing.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {

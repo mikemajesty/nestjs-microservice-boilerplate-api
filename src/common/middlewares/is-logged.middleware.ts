@@ -6,7 +6,7 @@ import { ICacheAdapter } from '@/infra/cache';
 import { ILoggerAdapter } from '@/infra/logger';
 import { ITokenAdapter } from '@/libs/auth';
 
-import { ApiUnauthorizedException } from '../exception';
+import { ApiUnauthorizedException } from '../../utils/exception';
 
 @Injectable()
 export class IsLoggedMiddleware implements NestMiddleware {

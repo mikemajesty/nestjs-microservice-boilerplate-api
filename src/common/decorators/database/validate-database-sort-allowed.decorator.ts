@@ -1,12 +1,11 @@
 import { z } from 'zod';
 
+import { ApiBadRequestException } from '@/utils/exception';
 import { PaginationSchema } from '@/utils/pagination';
 import { SearchSchema } from '@/utils/search';
 import { SortSchema } from '@/utils/sort';
 
-import { ApiBadRequestException } from './../../exception';
-
-export const ListSchema = z.intersection(PaginationSchema, SortSchema.merge(SearchSchema));
+const ListSchema = z.intersection(PaginationSchema, SortSchema.merge(SearchSchema));
 
 type AllowedSort<T> = keyof T;
 

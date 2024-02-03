@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { ValidateSchema } from '@/utils/decorators/validate-schema.decorator';
+import { ValidateSchema } from '@/common/decorators';
 import { PaginationInput, PaginationOutput, PaginationSchema } from '@/utils/pagination';
 import { SearchSchema } from '@/utils/search';
 import { SortSchema } from '@/utils/sort';
