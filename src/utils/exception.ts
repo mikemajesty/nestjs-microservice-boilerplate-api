@@ -67,3 +67,9 @@ export class ApiForbiddenException extends BaseException {
     super(message ?? ApiForbiddenException.name, 403, parameters);
   }
 }
+
+export class ApiTimeoutException extends BaseException {
+  constructor(message?: string, parameters?: ParametersType) {
+    super(message ?? ApiTimeoutException.name, 408, parameters);
+  }
+}

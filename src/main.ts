@@ -1,7 +1,7 @@
 import './utils/tracing';
 
 import { RequestMethod, VersioningType } from '@nestjs/common';
-import { NestFactory } from '@nestjs/core';
+import { NestFactory, Reflector } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import bodyParser from 'body-parser';
 import { bold } from 'colorette';
@@ -23,6 +23,7 @@ import { ApiInternalServerException } from '@/utils/exception';
 
 import { description, name, version } from '../package.json';
 import { AppModule } from './app.module';
+import { RequestTimeoutInterceptor } from './common/interceptors/request-timeout.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -39,6 +40,7 @@ async function bootstrap() {
   app.useGlobalFilters(new AppExceptionFilter(loggerService));
 
   app.useGlobalInterceptors(
+    new RequestTimeoutInterceptor(new Reflector(), loggerService),
     new ExceptionInterceptor(loggerService),
     new HttpLoggerInterceptor(loggerService),
     new TracingInterceptor(loggerService),
