@@ -24,6 +24,7 @@ import { ApiInternalServerException } from '@/utils/exception';
 import { description, name, version } from '../package.json';
 import { AppModule } from './app.module';
 import { RequestTimeoutInterceptor } from './common/interceptors/request-timeout.interceptor';
+import { GET_MOCK_DATE } from './utils/tests/mocks/date';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {

@@ -1,6 +1,8 @@
 import { v4 as uuidv4 } from 'uuid';
 import { ZodSchema, ZodType } from 'zod';
 
+import { DateUtils } from './date';
+
 export const withID = (entity: { _id?: string; id?: string }) => {
   entity.id = [entity?.id, entity?._id, uuidv4()].find(Boolean);
   return entity;
@@ -29,7 +31,7 @@ export const BaseEntity = <T>(schema: ZodSchema) => {
     static nameOf = (name: keyof T) => name;
 
     setDeleted() {
-      this.deletedAt = new Date();
+      this.deletedAt = DateUtils.getJSDate();
     }
 
     validate<T>(entity: T): ZodType {
