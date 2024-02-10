@@ -70,7 +70,7 @@ async function bootstrap() {
   } = app.get(ISecretsAdapter);
 
   /**
-   *@description 15 minutes
+   *@description @RATE_LIMIT_BY_USER  for each 15 minutes
    */
   const MINUTES = 15 * 60 * 1000;
   const limiter = rateLimit({
