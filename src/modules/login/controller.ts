@@ -10,7 +10,7 @@ import { SwaggerRequest, SwaggerResponse } from './swagger';
 @Controller()
 @ApiTags('login')
 export class LoginController {
-  constructor(private readonly loginService: ILoginAdapter) {}
+  constructor(private readonly userLogin: ILoginAdapter) {}
 
   @Post('/login')
   @ApiResponse(SwaggerResponse.login[200])
@@ -18,6 +18,6 @@ export class LoginController {
   @ApiBody(SwaggerRequest.body)
   @Version('1')
   async login(@Req() { body, user, tracing }: ApiRequest): LoginOutput {
-    return this.loginService.execute(body as LoginInput, { user, tracing });
+    return this.userLogin.execute(body as LoginInput, { user, tracing });
   }
 }

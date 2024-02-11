@@ -5,20 +5,20 @@ import { LogoutInput, LogoutOutput } from '@/core/user/use-cases/user-logout';
 import { ApiRequest } from '@/utils/request';
 
 import { ILogoutAdapter } from './adapter';
-import { SwaggerResponse, SwagggerRequest } from './swagger';
+import { SwaggerRequest, SwaggerResponse } from './swagger';
 
 @Controller()
 @ApiTags('logout')
 @ApiBearerAuth()
 export class LogoutController {
-  constructor(private readonly logoutService: ILogoutAdapter) {}
+  constructor(private readonly userLogout: ILogoutAdapter) {}
 
   @Post('/logout')
   @ApiResponse(SwaggerResponse.logout[200])
-  @ApiBody(SwagggerRequest.body)
+  @ApiBody(SwaggerRequest.body)
   @HttpCode(401)
   @Version('1')
   async logout(@Req() { body, user, tracing }: ApiRequest): LogoutOutput {
-    return this.logoutService.execute(body as LogoutInput, { user, tracing });
+    return this.userLogout.execute(body as LogoutInput, { user, tracing });
   }
 }

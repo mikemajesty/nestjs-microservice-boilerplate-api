@@ -8,13 +8,13 @@ export const validateFindByCommandsFilter = <T>(filterList: DatabaseOperationCom
 
   for (const key in groupList) {
     const commands = groupList[`${key}`].map((g) => g.command);
-    const isLikeNotAllowedOperation = commands.filter(
+    const isLikeAndNotAllowedOperation = commands.filter(
       (g) => g === DatabaseOperationEnum.CONTAINS || g === DatabaseOperationEnum.NOT_CONTAINS
     );
 
     const NOT_ALLOWED_COMBINATION = 2;
 
-    if (isLikeNotAllowedOperation.length === NOT_ALLOWED_COMBINATION) {
+    if (isLikeAndNotAllowedOperation.length === NOT_ALLOWED_COMBINATION) {
       throw new ApiBadRequestException(
         `it is not possible to filter: '${key}' with the commands '${commands.join(', ')}'`
       );

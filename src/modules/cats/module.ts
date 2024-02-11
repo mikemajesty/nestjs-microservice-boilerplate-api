@@ -33,8 +33,8 @@ import { CatsRepository } from './repository';
     {
       provide: ICatsRepository,
       useFactory: (database: IDataBaseAdapter) => {
-        const repossitory = database.getDatabase<Sequelize>().model(CatsSchema);
-        return new CatsRepository(repossitory as ModelCtor<CatsSchema> & CatsEntity);
+        const repository = database.getDatabase<Sequelize>().model(CatsSchema);
+        return new CatsRepository(repository as ModelCtor<CatsSchema> & CatsEntity);
       },
       inject: [IDataBaseAdapter]
     },

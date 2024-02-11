@@ -24,7 +24,7 @@ export class UserRepository extends MongoRepository<UserDocument> implements IUs
   }
 
   async existsOnUpdate(
-    equalFilter: Pick<UserEntity, 'login' | 'password'>,
+    equalFilter: Pick<UserEntity, 'login'>,
     notEqualFilter: Pick<UserEntity, 'id'>
   ): Promise<boolean> {
     const user = await this.entity.findOne({ ...equalFilter, $nor: [{ _id: notEqualFilter.id }] });

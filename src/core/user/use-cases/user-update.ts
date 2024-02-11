@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import { ValidateSchema } from '@/common/decorators';
 import { ILoggerAdapter } from '@/infra/logger';
+import { ICryptoAdapter } from '@/libs/crypto';
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception';
 import { ApiTrancingInput } from '@/utils/request';
 
@@ -16,7 +17,11 @@ export type UserUpdateInput = Partial<z.infer<typeof UserUpdateSchema>>;
 export type UserUpdateOutput = UserEntity;
 
 export class UserUpdateUsecase {
-  constructor(private readonly userRepository: IUserRepository, private readonly loggerService: ILoggerAdapter) {}
+  constructor(
+    private readonly userRepository: IUserRepository,
+    private readonly loggerService: ILoggerAdapter,
+    private readonly crypto: ICryptoAdapter
+  ) {}
 
   @ValidateSchema(UserUpdateSchema)
   async execute(input: UserUpdateInput, { tracing, user: userData }: ApiTrancingInput): Promise<UserUpdateOutput> {
@@ -28,15 +33,14 @@ export class UserUpdateUsecase {
 
     const entity = new UserEntity({ ...user, ...input });
 
-    const userExists = await this.userRepository.existsOnUpdate(
-      { login: entity.login, password: entity.password },
-      { id: entity.id }
-    );
+    const userExists = await this.userRepository.existsOnUpdate({ login: entity.login }, { id: entity.id });
 
     if (userExists) {
       throw new ApiConflictException('user exists');
     }
 
+    const password = this.crypto.createHash(input.password);
+    entity.password = password;
     await this.userRepository.updateOne({ id: entity.id }, entity);
 
     this.loggerService.info({ message: 'user updated.', obj: { user: input } });

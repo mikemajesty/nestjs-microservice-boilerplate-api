@@ -10,7 +10,7 @@ export const SwaggerResponse = {
   }
 };
 
-export const SwagggerRequest = {
+export const SwaggerRequest = {
   body: Swagger.defaultRequestJSON({
     token: '<token>'
   })

@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { ValidateSchema } from '@/common/decorators';
 import { ILoggerAdapter } from '@/infra/logger';
 import { CreatedModel } from '@/infra/repository';
+import { ICryptoAdapter } from '@/libs/crypto';
 import { ApiConflictException } from '@/utils/exception';
 import { ApiTrancingInput } from '@/utils/request';
 
@@ -19,7 +20,11 @@ export type UserCreateInput = z.infer<typeof UserCreateSchema>;
 export type UserCreateOutput = CreatedModel;
 
 export class UserCreateUsecase {
-  constructor(private readonly userRepository: IUserRepository, private readonly loggerService: ILoggerAdapter) {}
+  constructor(
+    private readonly userRepository: IUserRepository,
+    private readonly loggerService: ILoggerAdapter,
+    private readonly crypto: ICryptoAdapter
+  ) {}
 
   @ValidateSchema(UserCreateSchema)
   async execute(input: UserCreateInput, { tracing, user: userData }: ApiTrancingInput): Promise<UserCreateOutput> {
@@ -36,6 +41,8 @@ export class UserCreateUsecase {
     const session = await this.userRepository.startSession();
 
     try {
+      const password = this.crypto.createHash(input.password);
+      entity.password = password;
       const user = await this.userRepository.create(entity, { session });
 
       await session.commitTransaction();

@@ -15,6 +15,7 @@ import { User, UserDocument, UserSchema } from '@/infra/database/mongo/schemas/u
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { SecretsModule } from '@/infra/secrets';
 import { TokenModule } from '@/libs/auth';
+import { CryptoLibModule, ICryptoAdapter } from '@/libs/crypto';
 import { MongoRepositoryModelSessionType } from '@/utils/database/mongoose';
 
 import {
@@ -28,7 +29,7 @@ import { UserController } from './controller';
 import { UserRepository } from './repository';
 
 @Module({
-  imports: [TokenModule, SecretsModule, LoggerModule, RedisCacheModule],
+  imports: [TokenModule, SecretsModule, LoggerModule, RedisCacheModule, CryptoLibModule],
   controllers: [UserController],
   providers: [
     {
@@ -56,17 +57,17 @@ import { UserRepository } from './repository';
     },
     {
       provide: IUserCreateAdapter,
-      useFactory: (userRepository: IUserRepository, loggerService: ILoggerAdapter) => {
-        return new UserCreateUsecase(userRepository, loggerService);
+      useFactory: (userRepository: IUserRepository, loggerService: ILoggerAdapter, crypto: ICryptoAdapter) => {
+        return new UserCreateUsecase(userRepository, loggerService, crypto);
       },
-      inject: [IUserRepository, ILoggerAdapter]
+      inject: [IUserRepository, ILoggerAdapter, ICryptoAdapter]
     },
     {
       provide: IUserUpdateAdapter,
-      useFactory: (userRepository: IUserRepository, loggerService: ILoggerAdapter) => {
-        return new UserUpdateUsecase(userRepository, loggerService);
+      useFactory: (userRepository: IUserRepository, loggerService: ILoggerAdapter, crypto: ICryptoAdapter) => {
+        return new UserUpdateUsecase(userRepository, loggerService, crypto);
       },
-      inject: [IUserRepository, ILoggerAdapter]
+      inject: [IUserRepository, ILoggerAdapter, ICryptoAdapter]
     },
     {
       provide: IUserListAdapter,

@@ -169,26 +169,61 @@ Creating a CRUD in Postgres and Mongo in seconds.
 
 ```
 .
+├── CHANGELOG.md
+├── Dockerfile
+├── README.md
+├── TRACING.md
 ├── commitlint.config.js
 ├── database.json
+├── docker
+│   ├── collector
+│   │   └── collector-config.yaml
+│   ├── mongo
+│   │   ├── rs-init.sh
+│   │   └── start-replicaset.sh
+│   ├── postgres
+│   │   └── create-database.sql
+│   └── prometheus
+│       └── config.yml
 ├── docker-compose-infra.yml
 ├── docker-compose.yml
 ├── jest.config.ts
 ├── nest-cli.json
+├── package-lock.json
 ├── package.json
-├── release.config.js
 ├── scripts
-│   ├── mongo
-│   │   ├── rs-init.sh
-│   │   └── start-replicaset.sh
-│   ├── npm-audit.sh
-│   ├── postgres
-│   │   └── create-database.sql
-│   └── prometheus
-│       ├── collector-config.yaml
-│       └── config.yml
+│   └── npm-audit.sh
 ├── src
 │   ├── app.module.ts
+│   ├── common
+│   │   ├── decorators
+│   │   │   ├── database
+│   │   │   │   ├── mongo
+│   │   │   │   │   ├── convert-mongoose-filter.decorator.ts
+│   │   │   │   │   └── validate-mongoose-filter.decorator.ts
+│   │   │   │   ├── postgres
+│   │   │   │   │   ├── convert-paginate-input-to-sequelize-filter.decorator.ts
+│   │   │   │   │   └── convert-sequelize-filter.decorator.ts
+│   │   │   │   └── validate-database-sort-allowed.decorator.ts
+│   │   │   ├── index.ts
+│   │   │   ├── request-timeout.decorator.ts
+│   │   │   ├── role.decorator.ts
+│   │   │   ├── types.ts
+│   │   │   └── validate-schema.decorator.ts
+│   │   ├── filters
+│   │   │   ├── http-exception.filter.ts
+│   │   │   └── index.ts
+│   │   ├── interceptors
+│   │   │   ├── auth-guard.interceptor.ts
+│   │   │   ├── http-exception.interceptor.ts
+│   │   │   ├── http-logger.interceptor.ts
+│   │   │   ├── index.ts
+│   │   │   ├── metrics.interceptor.ts
+│   │   │   ├── request-timeout.interceptor.ts
+│   │   │   └── tracing.interceptor.ts
+│   │   └── middlewares
+│   │       ├── index.ts
+│   │       └── is-logged.middleware.ts
 │   ├── core
 │   │   ├── cats
 │   │   │   ├── entity
@@ -216,14 +251,14 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │   │           ├── __tests__
 │   │           │   ├── user-create.spec.ts
 │   │           │   ├── user-delete.spec.ts
-│   │           │   ├── user-getByID.spec.ts
+│   │           │   ├── user-get-by-id.spec.ts
 │   │           │   ├── user-list.spec.ts
 │   │           │   ├── user-login.spec.ts
 │   │           │   ├── user-logout.spec.ts
 │   │           │   └── user-update.spec.ts
 │   │           ├── user-create.ts
 │   │           ├── user-delete.ts
-│   │           ├── user-getByID.ts
+│   │           ├── user-get-by-id.ts
 │   │           ├── user-list.ts
 │   │           ├── user-login.ts
 │   │           ├── user-logout.ts
@@ -284,19 +319,24 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │   │   │   │   └── repository.ts
 │   │   │   ├── postgres
 │   │   │   │   └── repository.ts
-│   │   │   └── types.ts
+│   │   │   ├── types.ts
+│   │   │   └── util.ts
 │   │   └── secrets
 │   │       ├── adapter.ts
 │   │       ├── index.ts
 │   │       ├── module.ts
 │   │       └── service.ts
 │   ├── libs
-│   │   └── auth
+│   │   ├── auth
+│   │   │   ├── adapter.ts
+│   │   │   ├── index.ts
+│   │   │   ├── module.ts
+│   │   │   └── service.ts
+│   │   └── crypto
 │   │       ├── adapter.ts
 │   │       ├── index.ts
 │   │       ├── module.ts
-│   │       ├── service.ts
-│   │       └── types.ts
+│   │       └── service.ts
 │   ├── main.ts
 │   ├── modules
 │   │   ├── cats
@@ -328,21 +368,11 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │   │       └── swagger.ts
 │   └── utils
 │       ├── axios.ts
+│       ├── collection.ts
 │       ├── database
 │       │   ├── mongoose.ts
 │       │   └── sequelize.ts
-│       ├── decorators
-│       │   ├── database
-│       │   │   ├── mongo
-│       │   │   │   ├── convert-mongoose-filter.decorator.ts
-│       │   │   │   └── validate-mongoose-filter.decorator.ts
-│       │   │   ├── postgres
-│       │   │   │   ├── convert-paginate-input-to-sequelize-filter.decorator.ts
-│       │   │   │   └── convert-sequelize-filter.decorator.ts
-│       │   │   └── validate-database-sort-allowed.decorator.ts
-│       │   ├── role.decorator.ts
-│       │   ├── types.ts
-│       │   └── validate-schema.decorator.ts
+│       ├── date.ts
 │       ├── docs
 │       │   ├── data
 │       │   │   ├── cats
@@ -354,24 +384,15 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │       │   └── swagger.ts
 │       ├── entity.ts
 │       ├── exception.ts
-│       ├── filters
-│       │   └── http-exception.filter.ts
-│       ├── interceptors
-│       │   ├── auth-guard.interceptor.ts
-│       │   ├── http-exception.interceptor.ts
-│       │   ├── http-logger.interceptor.ts
-│       │   ├── metrics.interceptor.ts
-│       │   └── tracing.interceptor.ts
-│       ├── middlewares
-│       │   └── is-logged.middleware.ts
 │       ├── pagination.ts
 │       ├── request.ts
 │       ├── search.ts
 │       ├── sort.ts
 │       ├── static
-│       │   └── htttp-status.json
+│       │   └── http-status.json
 │       ├── tests
 │       │   ├── mocks
+│       │   │   ├── date.ts
 │       │   │   └── request.ts
 │       │   └── tests.ts
 │       └── tracing.ts

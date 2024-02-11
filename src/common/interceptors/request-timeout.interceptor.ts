@@ -19,8 +19,10 @@ export class RequestTimeoutInterceptor implements NestInterceptor {
     const request = context.switchToHttp().getRequest();
     const response = context.switchToHttp().getResponse();
 
+    const ONE_MINUTE = 1 * 60 * 1000;
+
     return next.handle().pipe(
-      timeout(requestTimeout),
+      timeout(requestTimeout ?? ONE_MINUTE),
       catchError((err) => {
         this.logger.logger(request, response);
         if (err instanceof TimeoutError) {
