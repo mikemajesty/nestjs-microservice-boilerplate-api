@@ -1,6 +1,7 @@
 import { Test } from '@nestjs/testing';
 
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
+import { CryptoLibModule, ICryptoAdapter } from '@/libs/crypto';
 import { IUserCreateAdapter } from '@/modules/user/adapter';
 import { ApiConflictException } from '@/utils/exception';
 import { RequestMock } from '@/utils/tests/mocks/request';
@@ -23,7 +24,7 @@ describe('UserCreateUsecase', () => {
 
   beforeEach(async () => {
     const app = await Test.createTestingModule({
-      imports: [LoggerModule],
+      imports: [LoggerModule, CryptoLibModule],
       providers: [
         {
           provide: IUserRepository,
@@ -31,10 +32,10 @@ describe('UserCreateUsecase', () => {
         },
         {
           provide: IUserCreateAdapter,
-          useFactory: (userRepository: IUserRepository, logger: ILoggerAdapter) => {
-            return new UserCreateUsecase(userRepository, logger);
+          useFactory: (userRepository: IUserRepository, logger: ILoggerAdapter, crypto: ICryptoAdapter) => {
+            return new UserCreateUsecase(userRepository, logger, crypto);
           },
-          inject: [IUserRepository, ILoggerAdapter]
+          inject: [IUserRepository, ILoggerAdapter, ICryptoAdapter]
         }
       ]
     }).compile();

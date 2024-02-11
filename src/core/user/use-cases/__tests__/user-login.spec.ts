@@ -1,6 +1,7 @@
 import { Test } from '@nestjs/testing';
 
 import { ITokenAdapter, TokenModule } from '@/libs/auth';
+import { CryptoLibModule, ICryptoAdapter } from '@/libs/crypto';
 import { ILoginAdapter } from '@/modules/login/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
 import { RequestMock } from '@/utils/tests/mocks/request';
@@ -23,7 +24,7 @@ describe('LoginUsecase', () => {
 
   beforeEach(async () => {
     const app = await Test.createTestingModule({
-      imports: [TokenModule],
+      imports: [TokenModule, CryptoLibModule],
       providers: [
         {
           provide: IUserRepository,
@@ -31,10 +32,10 @@ describe('LoginUsecase', () => {
         },
         {
           provide: ILoginAdapter,
-          useFactory: (userRepository: IUserRepository, token: ITokenAdapter) => {
-            return new LoginUsecase(userRepository, token);
+          useFactory: (userRepository: IUserRepository, token: ITokenAdapter, crypto: ICryptoAdapter) => {
+            return new LoginUsecase(userRepository, token, crypto);
           },
-          inject: [IUserRepository, ITokenAdapter]
+          inject: [IUserRepository, ITokenAdapter, ICryptoAdapter]
         }
       ]
     }).compile();
