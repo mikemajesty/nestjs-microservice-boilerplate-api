@@ -19,7 +19,7 @@ export class IsLoggedMiddleware implements NestMiddleware {
     const tokenHeader = request.headers.authorization;
 
     if (!request.headers?.traceid) {
-      request.headers.traceid = uuidv4();
+      request.headers.traceid = request['id'] ?? uuidv4();
     }
 
     if (!tokenHeader) {

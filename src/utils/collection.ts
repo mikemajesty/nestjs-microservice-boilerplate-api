@@ -6,9 +6,10 @@ export class CollectionUtil {
       throw new ApiBadRequestException();
     }
 
-    return collection.reduce(function (rv, x) {
-      (rv[x[key]] = rv[x[key]] || []).push(x);
-      return rv;
+    return collection.reduce((prev, next) => {
+      prev[next[key]] = prev[next[key]] ?? [];
+      prev[next[key]].push(next);
+      return prev;
     }, {}) as { [key: string]: [] };
   };
 

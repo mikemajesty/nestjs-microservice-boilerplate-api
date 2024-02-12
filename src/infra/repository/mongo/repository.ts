@@ -31,7 +31,7 @@ export class MongoRepository<T extends Document> implements IRepository<T> {
 
   async createOrUpdate(
     document: UpdateWithAggregationPipeline | UpdateQuery<T>,
-    options?: QueryOptions
+    options?: unknown
   ): Promise<CreatedOrUpdateModel> {
     if (!document['id']) {
       throw new ApiBadRequestException('id is required');
@@ -90,7 +90,7 @@ export class MongoRepository<T extends Document> implements IRepository<T> {
   async updateOne(
     filter: FilterQuery<T>,
     updated: UpdateWithAggregationPipeline | UpdateQuery<T>,
-    options?: QueryOptions
+    options?: unknown
   ): Promise<UpdatedModel> {
     return await this.model.updateOne(filter, updated, options);
   }
@@ -116,7 +116,7 @@ export class MongoRepository<T extends Document> implements IRepository<T> {
   async updateMany(
     filter: FilterQuery<T>,
     updated: UpdateWithAggregationPipeline | UpdateQuery<T>,
-    options?: QueryOptions
+    options?: unknown
   ): Promise<UpdatedModel> {
     return await this.model.updateMany(filter, updated, options);
   }

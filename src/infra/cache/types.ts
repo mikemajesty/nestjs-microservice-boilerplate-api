@@ -1,7 +1,7 @@
 export type CacheKeyArgument = string | Buffer;
-export type CacheValeuArgument = string | Buffer;
+export type CacheValueArgument = string | Buffer;
 
 export type CacheKeyValue = {
   key: CacheKeyArgument;
-  value: CacheValeuArgument | CacheValeuArgument[];
+  value: CacheValueArgument | CacheValueArgument[];
 };

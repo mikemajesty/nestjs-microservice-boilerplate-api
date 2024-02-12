@@ -8,10 +8,6 @@ import { ApiUnauthorizedException } from '@/utils/exception';
 
 import { ITokenAdapter } from './adapter';
 
-type DecodeOutput = {
-  password: string;
-};
-
 const Schema = UserEntitySchema.pick({
   login: true,
   password: true,
@@ -48,9 +44,5 @@ export class TokenService implements ITokenAdapter {
         res(decoded);
       });
     });
-  }
-
-  decode(token: string, complete?: boolean): DecodeOutput {
-    return jwt.decode(token, { complete }) as unknown as DecodeOutput;
   }
 }

@@ -23,8 +23,8 @@ export const PaginationSchema = z
     }
 
     return {
-      page: page > 0 ? +page : 1,
-      limit: limit > 0 ? maxLimit(+limit) : 10
+      page: page > 0 ? page : 1,
+      limit: limit > 0 ? maxLimit(limit) : 10
     };
   })
   .refine((pagination) => Number.isInteger(pagination.page), {

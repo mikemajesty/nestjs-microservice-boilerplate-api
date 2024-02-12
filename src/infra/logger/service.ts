@@ -57,7 +57,7 @@ export class LoggerService implements ILoggerAdapter {
     this.logger.logger.trace(green(message));
   }
 
-  trace({ message, context, obj = {} }: MessageType): void {
+  debug({ message, context, obj = {} }: MessageType): void {
     Object.assign(obj, { context, createdAt: DateUtils.getISODateString() });
     this.logger.logger.trace([obj, gray(message)].find(Boolean), gray(message));
   }
@@ -145,7 +145,7 @@ export class LoggerService implements ILoggerAdapter {
       logger: pinoLogger,
       quietReqLogger: true,
       customSuccessMessage: (req: IncomingMessage, res: ServerResponse) => {
-        return `request ${res.statusCode >= 400 ? 'erro' : 'success'} with status code: ${res.statusCode}`;
+        return `request ${res.statusCode >= 400 ? 'error' : 'success'} with status code: ${res.statusCode}`;
       },
       customErrorMessage: (req: IncomingMessage, res: ServerResponse, error: Error) => {
         return `request ${error.name} with status code: ${res.statusCode} `;

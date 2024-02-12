@@ -37,7 +37,7 @@ export class TracingInterceptor implements NestInterceptor {
 
     const span = this.tracer.startSpan(getPathWithoutUUID(request.path));
 
-    const createJaegerInstance = (): TracingType => {
+    const createTracingInstance = (): TracingType => {
       return {
         span: span,
         tracer: this.tracer,
@@ -83,7 +83,7 @@ export class TracingInterceptor implements NestInterceptor {
       };
     };
 
-    request.tracing = createJaegerInstance();
+    request.tracing = createTracingInstance();
 
     request.tracing.addAttribute(SemanticAttributes.HTTP_METHOD, request.method);
     request.tracing.addAttribute(SemanticAttributes.HTTP_URL, request.path);

@@ -5,7 +5,7 @@ import { ILoggerAdapter } from '@/infra/logger';
 import { ApiInternalServerException } from '@/utils/exception';
 
 import { ICacheAdapter } from '../adapter';
-import { CacheKeyArgument, CacheKeyValue, CacheValeuArgument } from '../types';
+import { CacheKeyArgument, CacheKeyValue, CacheValueArgument } from '../types';
 
 @Injectable()
 export class RedisService implements Partial<ICacheAdapter<RedisClientType>> {
@@ -17,7 +17,7 @@ export class RedisService implements Partial<ICacheAdapter<RedisClientType>> {
 
   async isConnected(): Promise<void> {
     const ping = await this.client.ping();
-    if (ping !== 'PONG') this.throwException('redis disconnected.');
+    if (ping !== 'PONG') new ApiInternalServerException('redis disconnected.');
   }
 
   async connect(): Promise<RedisClientType> {
@@ -26,11 +26,11 @@ export class RedisService implements Partial<ICacheAdapter<RedisClientType>> {
       this.logger.log('Redis connected!\n');
       return this.client;
     } catch (error) {
-      throw new ApiInternalServerException(error.message);
+      throw new ApiInternalServerException(error.message, { context: `${RedisService.name}/connect` });
     }
   }
 
-  async set(key: CacheKeyArgument, value: CacheValeuArgument, config?: unknown): Promise<void> {
+  async set(key: CacheKeyArgument, value: CacheValueArgument, config?: unknown): Promise<void> {
     await this.client.set(key, value, config);
   }
 
@@ -54,23 +54,19 @@ export class RedisService implements Partial<ICacheAdapter<RedisClientType>> {
     await multi.exec();
   }
 
-  async pExpire(key: CacheKeyArgument, miliseconds: number): Promise<void> {
-    await this.client.pExpire(key, miliseconds);
+  async pExpire(key: CacheKeyArgument, milliseconds: number): Promise<void> {
+    await this.client.pExpire(key, milliseconds);
   }
 
   async hGet(key: CacheKeyArgument, field: CacheKeyArgument): Promise<unknown | unknown[]> {
     return await this.client.hGet(key, field);
   }
 
-  async hSet(key: CacheKeyArgument, field: CacheKeyArgument, value: CacheValeuArgument): Promise<number> {
+  async hSet(key: CacheKeyArgument, field: CacheKeyArgument, value: CacheValueArgument): Promise<number> {
     return await this.client.hSet(key, field, value);
   }
 
   async hGetAll(key: CacheKeyArgument): Promise<unknown | unknown[]> {
     return await this.client.hGetAll(key);
-  }
-
-  private throwException(error: string) {
-    throw new ApiInternalServerException(error);
   }
 }
