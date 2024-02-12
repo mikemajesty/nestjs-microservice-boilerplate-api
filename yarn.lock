@@ -1377,10 +1377,10 @@
   resolved "https://registry.yarnpkg.com/@microsoft/tsdoc/-/tsdoc-0.14.2.tgz#c3ec604a0b54b9a9b87e9735dfc59e1a5da6a5fb"
   integrity sha512-9b8mPpKrfeGRuhFH5iO1iwCLeIIsV6+H1sRfxbkoGXIyQE2BTsPd9zqSqQJ+pv5sJ/hT5M1zvOFL02MnEezFug==
 
-"@mikemajesty/microservice-crud@4.4.11":
-  version "4.4.11"
-  resolved "https://registry.yarnpkg.com/@mikemajesty/microservice-crud/-/microservice-crud-4.4.11.tgz#eda2e209f8e2b657c44e2e4f384c3d4a6d732c68"
-  integrity sha512-hbzkRcWQ0nk+BQObcxpYT4QGBk+876hxzdQ9jFF8jcP/Gg0e/KD6sUlYbEMH3mppCI3NRJIunLztlE6lnfqKgw==
+"@mikemajesty/microservice-crud@4.5.0":
+  version "4.5.0"
+  resolved "https://registry.yarnpkg.com/@mikemajesty/microservice-crud/-/microservice-crud-4.5.0.tgz#18ee33dce2a522ec57556e682eb408a5441c78a5"
+  integrity sha512-AM8WhEpwkp43FhMFyC2Sljr//zDGu/znqZi6g7+guIXrlJho0gGW7oCz52dAjDhFvUGm3rye5roMGyAsInQ/jg==
   dependencies:
     arg "^5.0.1"
     chmod "^0.2.1"
