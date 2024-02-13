@@ -5,3 +5,7 @@ sh scripts/npm-audit.sh
 npm run test
 npx npm run build
 npm run make-badges
+npm run minor:version
+git add package.json
+git package-lock.json
+git commit -m "feat(release): update version" -n

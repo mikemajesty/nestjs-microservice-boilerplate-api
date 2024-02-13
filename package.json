@@ -1,6 +1,6 @@
 {
   "name": "nestjs-boilerplate-microservice-api",
-  "version": "1.14.0",
+  "version": "1.15.0",
   "description": "Nestjs boilerplate api",
   "author": "mike.rodrigues.lima@gmail.com",
   "private": true,
@@ -20,7 +20,8 @@
     "scaffold": "./node_modules/@mikemajesty/microservice-crud/bin/microservice-crud",
     "migration:create": "npx sequelize-cli migration:generate --name migration-skeleton",
     "migration:run": "npx sequelize-cli db:migrate",
-    "make-badges": "istanbul-badges-readme"
+    "make-badges": "istanbul-badges-readme",
+    "minor:version": "./node_modules/generate-changelog/bin/generate -p && npm version minor --no-git-tag-version"
   },
   "dependencies": {
     "@nestjs/common": "^10.2.10",
@@ -96,6 +97,7 @@
     "eslint-plugin-security": "^1.7.1",
     "eslint-plugin-simple-import-sort": "^10.0.0",
     "eslint-plugin-you-dont-need-lodash-underscore": "^6.13.0",
+    "generate-changelog": "^1.8.0",
     "husky": "^8.0.3",
     "istanbul-badges-readme": "^1.8.5",
     "jest": "^29.1.1",
