@@ -1,3 +1,80 @@
+#### 1.15.1 (2024-02-13)
+
+##### Chores
+
+* **deps:**
+  *  add yarn lock json (5907d8a0)
+  *  add lock json (2da1b5c5)
+* **config:**
+  *  update cli (7e6d82d6)
+  *  add bodyparser extends (72c96473)
+  *  rename containers (939f728a)
+* **logger:**  change setGlobalParameters position (83dc1ae8)
+* **http:**  remove http on health check (d1e9d707)
+* **release:**
+  *  1.14.0 [skip ci] (83651a2c)
+  *  1.14.0 [skip ci] (9ee5c8f6)
+  *  1.14.0 [skip ci] (18ef4c88)
+  *  1.14.0 [skip ci] (95a25903)
+  *  1.14.0 [skip ci] (8853e78e)
+  *  1.14.0 [skip ci] (6d902489)
+  *  1.14.0 [skip ci] (9327a397)
+  *  1.14.0 [skip ci] (3e2329d3)
+  *  1.14.0 [skip ci] (5fb55e7b)
+  *  1.14.0 [skip ci] (427496c3)
+* **interceptors:**  fix interceptors context attribution (b8a1bcb5)
+* **dependencies:**
+  *  update cli version (923ac519)
+  *  update cli version (a3423902)
+  *  update typescript version (25ef194e)
+  *  update dependencies (c440b545)
+
+##### Documentation Changes
+
+* **config:**
+  *  improve docs (840013f6)
+  *  improve docs (10dd2f5a)
+
+##### New Features
+
+* **deps:**
+  *  add changelog (c2591809)
+  *  update cli version (ff3bc15b)
+* **user:**  add crypto (beba9525)
+* **test:**
+  *  add date mock (cd54157c)
+  *  add date mock (2dd76361)
+* **decorators:**
+  *  add request timetout decorator (efa5172f)
+  *  add request timetout decorator (19931bb7)
+  *  add request timetout decorator (51d1197f)
+  *  add request timetout decorator (d8983ffc)
+* **config:**  add mongo-express and pgAdmin (4052acc5)
+* **repository:**  add find and update to negeric repository (59a46bf3)
+
+##### Bug Fixes
+
+* **http:**  fix http retry (a914f962)
+* **logger:**  fix logger traceid propagator (22d55748)
+* **remove:**
+  *  remove dist (7c435242)
+  *  remove dist (51d8b856)
+
+##### Refactors
+
+* **modules:**  improve code (4f1323fe)
+* **config:**
+  *  change file names (02afe154)
+  *  refactor all project (c269741b)
+  *  refactor boilerplate function name (74bf3815)
+* **remove:**  remove semmantic release (8d462cd6)
+* **dependencies:**  udpate dependencies (35e15a18)
+* **repository:**  refactor sequelize findOneAndUpdate method (91592280)
+
+##### Tests
+
+* **user:**  fix tests (da029dfc)
+
 #### 1.14.1 (2024-02-12)
 
 ##### Chores

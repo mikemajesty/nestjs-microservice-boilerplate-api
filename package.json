@@ -21,7 +21,7 @@
     "migration:create": "npx sequelize-cli migration:generate --name migration-skeleton",
     "migration:run": "npx sequelize-cli db:migrate",
     "make-badges": "istanbul-badges-readme",
-    "minor:version": "./node_modules/generate-changelog/bin/generate -p && npm version minor --no-git-tag-version"
+    "minor:version": "./node_modules/generate-changelog/bin/generate -p && npm version patch --no-git-tag-version"
   },
   "dependencies": {
     "@nestjs/common": "^10.2.10",
