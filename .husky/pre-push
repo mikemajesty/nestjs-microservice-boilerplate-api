@@ -9,6 +9,6 @@ npm run minor:version
 git add package.json
 git add package-lock.json
 git add CHANGELOG.md
-NODE_VERSION=$(node -p -e "require('../package.json').version")
+NODE_VERSION=$(node -p -e "require('./package.json').version")
 echo $NODE_VERSION
 git commit -m "feat(release): update version to $NODE_VERSION" -n
