@@ -5,10 +5,4 @@ sh scripts/npm-audit.sh
 npm run test
 npx npm run build
 npm run make-badges
-npm run minor:version
-git add package.json
-git add package-lock.json
-git add CHANGELOG.md
-NODE_VERSION=$(node -p -e "require('./package.json').version")
-echo $NODE_VERSION
-git commit -m "feat(release): generate version: $NODE_VERSION" -n
+sh scripts/generate-version.sh
