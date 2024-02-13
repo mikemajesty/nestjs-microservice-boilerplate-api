@@ -5,4 +5,3 @@ sh scripts/npm-audit.sh
 npm run test
 npx npm run build
 npm run make-badges
-sh scripts/generate-version.sh
