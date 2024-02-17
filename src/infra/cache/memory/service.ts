@@ -14,7 +14,7 @@ export class MemoryCacheService implements Partial<ICacheAdapter<NodeCache>> {
 
   connect(config?: NodeCache.Options): NodeCache {
     this.client = new NodeCache(config || { stdTTL: 3600, checkperiod: 3600 });
-    this.logger.log('CacheMemory connected!');
+    this.logger.log('🎯 cacheMemory connected!');
     return this.client;
   }
 

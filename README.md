@@ -291,7 +291,6 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │   │   │   │   │   └── create-user-admin.ts
 │   │   │   │   └── service.ts
 │   │   │   ├── postgres
-│   │   │   │   ├── config.ts
 │   │   │   │   ├── index.ts
 │   │   │   │   ├── migrations
 │   │   │   │   │   └── 20230416174316-create-cats-table.js

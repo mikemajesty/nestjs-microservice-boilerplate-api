@@ -24,6 +24,7 @@ import { ApiInternalServerException } from '@/utils/exception';
 import { description, name, version } from '../package.json';
 import { AppModule } from './app.module';
 import { RequestTimeoutInterceptor } from './common/interceptors/request-timeout.interceptor';
+import { ErrorType } from './infra/logger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -87,11 +88,11 @@ async function bootstrap() {
   app.enableVersioning({ type: VersioningType.URI });
 
   process.on('uncaughtException', (error) => {
-    loggerService.error(new ApiInternalServerException(error.message));
+    loggerService.error(error as ErrorType);
   });
 
   process.on('unhandledRejection', (error) => {
-    loggerService.error(new ApiInternalServerException(error['message'] ?? (error as string)));
+    loggerService.error(error as ErrorType);
   });
 
   const config = new DocumentBuilder()

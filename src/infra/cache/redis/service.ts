@@ -23,7 +23,7 @@ export class RedisService implements Partial<ICacheAdapter<RedisClientType>> {
   async connect(): Promise<RedisClientType> {
     try {
       await this.client.connect();
-      this.logger.log('Redis connected!\n');
+      this.logger.log('🎯 redis connected!\n');
       return this.client;
     } catch (error) {
       throw new ApiInternalServerException(error.message, { context: `${RedisService.name}/connect` });
