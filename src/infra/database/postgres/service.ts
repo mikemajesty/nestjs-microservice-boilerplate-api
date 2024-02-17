@@ -1,13 +1,17 @@
+import { blue, bold, gray } from 'colorette';
 import { Sequelize } from 'sequelize-typescript';
 
 import { ILoggerAdapter } from '@/infra/logger';
+import { ISecretsAdapter } from '@/infra/secrets';
 
 import { name } from '../../../../package.json';
 import { IDataBaseAdapter } from '../adapter';
 import { ConnectionType } from '../types';
+import { CatsSchema } from './schemas/cats';
 
 export class SequelizeService implements IDataBaseAdapter {
-  constructor(private readonly instance: Sequelize, private readonly logger: ILoggerAdapter) {}
+  private sequelize: Sequelize;
+  constructor(private readonly secret: ISecretsAdapter, private readonly logger: ILoggerAdapter) {}
 
   getConnection<TOpt = unknown & { url: string }>({ URI }: ConnectionType): TOpt {
     return {
@@ -19,16 +23,26 @@ export class SequelizeService implements IDataBaseAdapter {
 
   async connect(): Promise<Sequelize> {
     try {
-      const conn = await this.instance.sync();
+      const instance = new Sequelize(this.secret.POSTGRES_URL, {
+        dialect: 'postgres',
+        benchmark: true,
+        // eslint-disable-next-line no-console
+        logging: (msm, timing) => console.log(blue(`[sequelize]`), gray(msm), `${blue(bold(`${timing}ms`))}`)
+      });
+
+      await instance.sync();
+
+      instance.addModels([CatsSchema]);
 
       this.logger.log('Sequelize connected!');
-      return conn as Sequelize;
+      this.sequelize = instance;
+      return this.sequelize;
     } catch (error) {
       this.logger.fatal(error);
     }
   }
 
   getDatabase<TInstance = Sequelize>(): TInstance {
-    return this.instance as TInstance;
+    return this.sequelize as TInstance;
   }
 }

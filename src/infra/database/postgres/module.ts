@@ -1,23 +1,23 @@
 import { Module } from '@nestjs/common';
 
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
+import { ISecretsAdapter, SecretsModule } from '@/infra/secrets';
 
 import { IDataBaseAdapter } from '../adapter';
-import { sequelizeConfig } from './config';
 import { SequelizeService } from './service';
 
 @Module({
-  imports: [LoggerModule],
+  imports: [SecretsModule, LoggerModule],
   providers: [
     {
       provide: IDataBaseAdapter,
-      useFactory: async (logger: ILoggerAdapter) => {
-        const postgres = new SequelizeService(sequelizeConfig, logger);
+      useFactory: async (secret: ISecretsAdapter, logger: ILoggerAdapter) => {
+        const postgres = new SequelizeService(secret, logger);
         await postgres.connect();
 
         return postgres;
       },
-      inject: [ILoggerAdapter]
+      inject: [ISecretsAdapter, ILoggerAdapter]
     }
   ],
   exports: [IDataBaseAdapter]

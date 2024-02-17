@@ -12,14 +12,4 @@ export class MongoService implements Partial<IDataBaseAdapter> {
       uri: URI
     } as TOpt;
   }
-
-  async isConnected(): Promise<boolean> {
-    return new Promise((res) => {
-      mongoose.connection
-        .on('connected', () => {
-          res(true);
-        })
-        .on('disconnected', () => Promise.resolve(false));
-    });
-  }
 }
