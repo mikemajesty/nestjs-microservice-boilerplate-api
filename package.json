@@ -5,6 +5,10 @@
   "author": "mike.rodrigues.lima@gmail.com",
   "private": true,
   "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.8.0"
+  },
   "scripts": {
     "prepare": "husky install",
     "build": "nest build",
@@ -18,8 +22,9 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "infra": "./docker/mongo/start-replicaset.sh",
     "scaffold": "./node_modules/@mikemajesty/microservice-crud/bin/microservice-crud",
-    "migration:create": "npx sequelize-cli migration:generate --name migration-skeleton",
-    "migration:run": "npx sequelize-cli db:migrate",
+    "typeorm": "ts-node \"./node_modules/typeorm/cli.js\"",
+    "migration-postgres:create": "yarn typeorm migration:create \"./src/infra/database/postgres/migrations/rename\"",
+    "migration-postgres:run": "npm run typeorm migration:run -- -d ./src/infra/database/postgres/config --transaction none",
     "make-badges": "istanbul-badges-readme"
   },
   "dependencies": {
@@ -29,6 +34,7 @@
     "@nestjs/mongoose": "^10.0.2",
     "@nestjs/platform-express": "^10.2.10",
     "@nestjs/swagger": "^7.1.16",
+    "@nestjs/typeorm": "^10.0.2",
     "@opentelemetry/api": "^1.7.0",
     "@opentelemetry/exporter-metrics-otlp-http": "^0.45.0",
     "@opentelemetry/exporter-trace-otlp-proto": "^0.45.0",
@@ -64,10 +70,10 @@
     "redis": "^4.6.4",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.0",
-    "sequelize": "^6.35.0",
-    "sequelize-typescript": "^2.1.5",
     "swagger-ui-express": "^5.0.0",
     "ts-jest": "^29.1.1",
+    "typeorm": "^0.3.20",
+    "typeorm-naming-strategies": "^4.1.0",
     "uuid": "^9.0.0",
     "zod": "^3.20.2"
   },
@@ -86,7 +92,6 @@
     "@types/jsonwebtoken": "^9.0.1",
     "@types/luxon": "^3.2.0",
     "@types/node": "^20.3.0",
-    "@types/sequelize": "^4.28.14",
     "@types/supertest": "^2.0.11",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.0.0",
@@ -101,7 +106,6 @@
     "jest": "^29.1.1",
     "lint-staged": "^15.2.1",
     "prettier": "^2.3.2",
-    "sequelize-cli": "^5.3.0",
     "source-map-support": "^0.5.20",
     "supertest": "^6.1.3",
     "ts-loader": "^9.2.3",

@@ -19,7 +19,6 @@ import { IUserRepository } from '@/core/user/repository/user';
 import { UserAdminSeed } from '@/infra/database/mongo/seed/create-user-admin';
 import { ILoggerAdapter } from '@/infra/logger/adapter';
 import { ISecretsAdapter } from '@/infra/secrets';
-import { ApiInternalServerException } from '@/utils/exception';
 
 import { description, name, version } from '../package.json';
 import { AppModule } from './app.module';

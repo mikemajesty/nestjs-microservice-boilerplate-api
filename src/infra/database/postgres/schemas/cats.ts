@@ -1,19 +1,25 @@
-import { Column, DataType, Model, Table } from 'sequelize-typescript';
+import { BaseEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, UpdateDateColumn } from 'typeorm';
 
-@Table({ timestamps: true, tableName: 'cats', underscored: true })
-export class CatsSchema extends Model {
-  @Column({ primaryKey: true, type: DataType.UUID })
+@Entity({ name: 'cats' })
+export class CatsSchema extends BaseEntity {
+  @Column({ type: 'uuid', primary: true })
   id: string;
 
-  @Column(DataType.STRING)
+  @Column('text')
   name: string;
 
-  @Column(DataType.INTEGER)
+  @Column('int')
   age: number;
 
-  @Column(DataType.STRING)
+  @Column('text')
   breed: string;
 
-  @Column({ allowNull: true, type: DataType.DATE })
-  deletedAt?: Date;
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
+
+  @DeleteDateColumn({ nullable: true })
+  deletedAt: Date;
 }
