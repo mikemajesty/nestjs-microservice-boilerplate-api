@@ -16,7 +16,7 @@ import {
   TracingInterceptor
 } from '@/common/interceptors';
 import { IUserRepository } from '@/core/user/repository/user';
-import { UserAdminSeed } from '@/infra/database/mongo/seed/create-user-admin';
+import { UserAdminSeed } from '@/infra/database/mongo/seeders/create-user-admin';
 import { ILoggerAdapter } from '@/infra/logger/adapter';
 import { ISecretsAdapter } from '@/infra/secrets';
 

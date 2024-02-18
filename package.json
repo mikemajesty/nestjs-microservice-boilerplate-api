@@ -18,8 +18,12 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "infra": "./docker/mongo/start-replicaset.sh",
     "scaffold": "./node_modules/@mikemajesty/microservice-crud/bin/microservice-crud",
-    "migration:create": "npx sequelize-cli migration:generate --name migration-skeleton",
+    "migration:create": "npx sequelize-cli migration:generate --name rename",
     "migration:run": "npx sequelize-cli db:migrate",
+    "migration:undo": "npx sequelize-cli db:undo",
+    "seed:create": "npx sequelize-cli seed:generate --name rename",
+    "seed:run": "npx sequelize-cli db:seed:all",
+    "seed:undo": "npx sequelize-cli db:seed:undo",
     "make-badges": "istanbul-badges-readme"
   },
   "dependencies": {
