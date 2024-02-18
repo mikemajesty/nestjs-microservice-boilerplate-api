@@ -8,9 +8,9 @@ module.exports = {
       "name" text NOT NULL,
       breed text NOT NULL,
       age int4 NOT NULL,
-      "createdAt" timestamp NOT NULL DEFAULT now(),
-      "updatedAt" timestamp NOT NULL DEFAULT now(),
-      "deletedAt" timestamp NULL,
+      "created_at" timestamp NOT NULL DEFAULT now(),
+      "updated_at" timestamp NOT NULL DEFAULT now(),
+      "deleted_at" timestamp NULL,
       CONSTRAINT "PK_CATS_KEY" PRIMARY KEY (id)
   );`);
 

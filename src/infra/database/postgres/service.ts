@@ -32,9 +32,9 @@ export class SequelizeService implements IDataBaseAdapter {
         logging: (msm, timing) => console.log(blue(`[sequelize]`), gray(msm), `${blue(bold(`${timing}ms`))}`)
       });
 
-      await instance.sync();
-
       instance.addModels([CatsSchema]);
+
+      await instance.sync();
 
       this.logger.log(`🎯 ${dialect} connected successfully!\n`);
       this.sequelize = instance;
