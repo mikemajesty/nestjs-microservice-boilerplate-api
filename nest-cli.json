@@ -4,10 +4,16 @@
   "sourceRoot": "src",
   "compilerOptions": {
     "deleteOutDir": true,
+    "typeCheck": true,
     "builder": {
       "type": "swc",
       "options": {
-        "copyFiles": true
+        "copyFiles": true,
+        "quiet": true,
+        "sync": true,
+        "outDir": "dist",
+        "watch": true,
+        "swcrcPath": ".swcrc"
       }
     }
   }

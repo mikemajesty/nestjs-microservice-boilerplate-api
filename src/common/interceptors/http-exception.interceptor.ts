@@ -5,12 +5,8 @@ import { Observable } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { ZodError } from 'zod';
 
-import { ILoggerAdapter } from '@/infra/logger';
-
 @Injectable()
 export class ExceptionInterceptor implements NestInterceptor {
-  constructor(private readonly logger: ILoggerAdapter) {}
-
   intercept(executionContext: ExecutionContext, next: CallHandler): Observable<unknown> {
     return next.handle().pipe(
       catchError((error) => {
@@ -19,9 +15,6 @@ export class ExceptionInterceptor implements NestInterceptor {
         const headers = executionContext.getArgs()[0]?.headers;
 
         const request = executionContext.switchToHttp().getRequest();
-        const res = executionContext.switchToHttp().getResponse();
-
-        this.logger.logger(request, res);
 
         this.sanitizeExternalError(error);
 
