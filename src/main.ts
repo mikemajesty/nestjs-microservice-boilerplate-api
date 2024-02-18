@@ -41,7 +41,7 @@ async function bootstrap() {
 
   app.useGlobalInterceptors(
     new RequestTimeoutInterceptor(new Reflector(), loggerService),
-    new ExceptionInterceptor(loggerService),
+    new ExceptionInterceptor(),
     new HttpLoggerInterceptor(loggerService),
     new TracingInterceptor(loggerService),
     new MetricsInterceptor()

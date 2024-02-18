@@ -2,7 +2,6 @@ import { z } from 'zod';
 
 import { ValidateSchema } from '@/common/decorators';
 import { CatsEntitySchema } from '@/core/cats/entity/cats';
-import { DatabaseOptionsType } from '@/utils/database/sequelize';
 import { ApiNotFoundException } from '@/utils/exception';
 
 import { CatsEntity } from '../entity/cats';
@@ -20,7 +19,7 @@ export class CatsGetByIdUsecase {
 
   @ValidateSchema(CatsGetByIdSchema)
   async execute({ id }: CatsGetByIdInput): Promise<CatsGetByIdOutput> {
-    const cats = await this.catsRepository.findById<DatabaseOptionsType>(id);
+    const cats = await this.catsRepository.findById(id);
 
     if (!cats) {
       throw new ApiNotFoundException();

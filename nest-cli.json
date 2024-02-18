@@ -7,7 +7,8 @@
     "builder": {
       "type": "swc",
       "options": {
-        "copyFiles": true
+        "copyFiles": true,
+        "sync": true
       }
     }
   }

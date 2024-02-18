@@ -11,7 +11,6 @@ import { LogoutModule } from '@/modules/logout/module';
 import { UserModule } from '@/modules/user/module';
 
 import { CryptoLibModule } from './libs/crypto';
-
 @Module({
   providers: [
     {
