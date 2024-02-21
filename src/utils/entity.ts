@@ -18,8 +18,14 @@ export interface IEntity {
   deletedAt?: Date;
 }
 
-export const BaseEntity = <T>(schema: ZodSchema) => {
+export const BaseEntity = <T>() => {
   abstract class Entity implements IEntity {
+    schema: ZodSchema;
+
+    constructor(schema: ZodSchema) {
+      this.schema = schema;
+    }
+
     readonly id: string;
 
     readonly createdAt: Date;
@@ -37,7 +43,7 @@ export const BaseEntity = <T>(schema: ZodSchema) => {
     validate<T>(entity: T): ZodType {
       Object.assign(entity, withID(entity));
       Object.assign(this, { id: entity['id'] });
-      return schema.parse(entity);
+      return this.schema.parse(entity);
     }
   }
 

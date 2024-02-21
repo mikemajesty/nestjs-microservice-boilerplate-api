@@ -26,7 +26,7 @@ export const UserEntitySchema = z.object({
 
 type User = z.infer<typeof UserEntitySchema>;
 
-export class UserEntity extends BaseEntity<UserEntity>(UserEntitySchema) {
+export class UserEntity extends BaseEntity<UserEntity>() {
   login: string;
 
   password: string;
@@ -34,7 +34,7 @@ export class UserEntity extends BaseEntity<UserEntity>(UserEntitySchema) {
   roles: UserRole[];
 
   constructor(entity: User) {
-    super();
+    super(UserEntitySchema);
     Object.assign(this, this.validate(entity));
   }
 
