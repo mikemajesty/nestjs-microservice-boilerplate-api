@@ -2,8 +2,6 @@
 
 In this microservice I used the best architecture concepts: onion architecture, DDD and clean architecture.
 
-#### This microservice has only been tested on Linux and WSL2. If you have connection problems with Mongodb(replicaset) use this branch: [branch](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/tree/feat/no-replica-set).
-
 | Statements                                                                               | Branches                                                                             | Functions                                                                              | Lines                                                                          |
 | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
 | ![Statements](https://img.shields.io/badge/statements-100%25-brightgreen.svg?style=flat) | ![Branches](https://img.shields.io/badge/branches-100%25-brightgreen.svg?style=flat) | ![Functions](https://img.shields.io/badge/functions-100%25-brightgreen.svg?style=flat) | ![Lines](https://img.shields.io/badge/lines-100%25-brightgreen.svg?style=flat) |
@@ -49,7 +47,10 @@ Creating a CRUD in Postgres and Mongo in seconds.
   ```
 - Choose database for CRUD.
 - `(x) POSTGRES:CRUD`
-- `( ) MONGO:CRUD `
+- `( ) MONGO:CRUD`
+- `( ) LIB`
+- `( ) INFRA`
+- `( ) MODULE`
 - type module name (use the singular name)
 - After generating the CRUD, follow the instructions on the generated link.
 - ✨Magic ✨
