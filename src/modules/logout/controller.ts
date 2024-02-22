@@ -14,7 +14,7 @@ export class LogoutController {
   constructor(private readonly userLogout: ILogoutAdapter) {}
 
   @Post('/logout')
-  @ApiResponse(SwaggerResponse.logout[200])
+  @ApiResponse(SwaggerResponse.logout[401])
   @ApiBody(SwaggerRequest.body)
   @HttpCode(401)
   @Version('1')

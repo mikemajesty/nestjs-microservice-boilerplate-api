@@ -5,7 +5,7 @@ dotenv.config();
 
 const databaseEnv = {
   local: {
-    development: {
+    dev: {
       username: process.env['POSTGRES_USER'],
       password: process.env['POSTGRES_PASSWORD'],
       database: process.env['POSTGRES_DATABASE'],
@@ -18,7 +18,20 @@ const databaseEnv = {
     }
   },
   DEV: {
-    development: {
+    dev: {
+      username: process.env['POSTGRES_USER'],
+      password: process.env['POSTGRES_PASSWORD'],
+      database: process.env['POSTGRES_DATABASE'],
+      host: process.env['POSTGRES_HOST'],
+      port: process.env['POSTGRES_PORT'],
+      dialect: 'postgres',
+      dialectOptions: {
+        bigNumberStrings: true
+      }
+    }
+  },
+  HML: {
+    hml: {
       username: process.env['POSTGRES_USER'],
       password: process.env['POSTGRES_PASSWORD'],
       database: process.env['POSTGRES_DATABASE'],
@@ -31,7 +44,7 @@ const databaseEnv = {
     }
   },
   PRD: {
-    production: {
+    prd: {
       username: process.env['POSTGRES_USER'],
       password: process.env['POSTGRES_PASSWORD'],
       database: process.env['POSTGRES_DATABASE'],

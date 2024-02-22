@@ -2,9 +2,8 @@ import { Swagger } from '@/utils/docs/swagger';
 
 export const SwaggerResponse = {
   logout: {
-    200: Swagger.defaultResponseJSON({
+    401: Swagger.defaultResponseJSON({
       status: 401,
-      json: undefined,
       description: 'user logout'
     })
   }

@@ -18,7 +18,7 @@ type SwaggerText = {
 
 type SwaggerJSON = {
   status: number;
-  json: unknown;
+  json?: unknown;
   description?: string;
 };
 
