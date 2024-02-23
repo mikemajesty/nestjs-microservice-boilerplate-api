@@ -24,12 +24,12 @@
     "make-badges": "istanbul-badges-readme"
   },
   "dependencies": {
-    "@nestjs/common": "^10.2.10",
-    "@nestjs/config": "^3.1.1",
-    "@nestjs/core": "^10.2.10",
-    "@nestjs/mongoose": "^10.0.2",
-    "@nestjs/platform-express": "^10.2.10",
-    "@nestjs/swagger": "^7.1.16",
+    "@nestjs/common": "^10.3.3",
+    "@nestjs/config": "^3.2.0",
+    "@nestjs/core": "^10.3.3",
+    "@nestjs/mongoose": "^10.0.4",
+    "@nestjs/platform-express": "^10.3.3",
+    "@nestjs/swagger": "^7.3.0",
     "@opentelemetry/api": "^1.7.0",
     "@opentelemetry/exporter-metrics-otlp-http": "^0.48.0",
     "@opentelemetry/exporter-trace-otlp-proto": "^0.48.0",
