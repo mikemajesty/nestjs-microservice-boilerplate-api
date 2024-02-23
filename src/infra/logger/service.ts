@@ -5,7 +5,7 @@ import { blue, gray, green, isColorSupported } from 'colorette';
 import { PinoRequestConverter } from 'convert-pino-request-to-curl';
 import { LevelWithSilent, Logger, multistream, pino } from 'pino';
 import { HttpLogger, Options, pinoHttp } from 'pino-http';
-import pinoPretty from 'pino-pretty';
+import pinoPretty, { PrettyOptions } from 'pino-pretty';
 import { v4 as uuidv4 } from 'uuid';
 
 import { DateUtils } from '@/utils/date';
@@ -118,12 +118,11 @@ export class LoggerService implements ILoggerAdapter {
     process.exit(1);
   }
 
-  private getPinoConfig() {
+  private getPinoConfig(): PrettyOptions {
     return {
       colorize: isColorSupported,
       levelFirst: true,
       ignore: 'pid,hostname',
-      quietReqLogger: true,
       messageFormat: (log: unknown, messageKey: string) => {
         const message = log[String(messageKey)];
         if (this.app) {
