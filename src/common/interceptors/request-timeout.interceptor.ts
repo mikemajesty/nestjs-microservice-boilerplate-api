@@ -8,7 +8,10 @@ import { ApiTimeoutException } from '@/utils/exception';
 
 @Injectable()
 export class RequestTimeoutInterceptor implements NestInterceptor {
-  constructor(private readonly reflector: Reflector, private readonly logger: ILoggerAdapter) {}
+  constructor(
+    private readonly reflector: Reflector,
+    private readonly logger: ILoggerAdapter
+  ) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const requestTimeout = this.reflector.getAllAndOverride<number>('request-timeout', [

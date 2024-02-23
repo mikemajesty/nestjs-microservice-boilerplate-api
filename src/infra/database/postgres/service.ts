@@ -11,7 +11,10 @@ import { CatsSchema } from './schemas/cats';
 
 export class SequelizeService implements IDataBaseAdapter {
   private sequelize: Sequelize;
-  constructor(private readonly secret: ISecretsAdapter, private readonly logger: ILoggerAdapter) {}
+  constructor(
+    private readonly secret: ISecretsAdapter,
+    private readonly logger: ILoggerAdapter
+  ) {}
 
   getConnection<TOpt = unknown & { url: string }>({ URI }: ConnectionType): TOpt {
     return {

@@ -11,7 +11,10 @@ export type LogoutInput = z.infer<typeof LogoutSchema>;
 export type LogoutOutput = Promise<void>;
 
 export class LogoutUsecase {
-  constructor(private readonly redis: ICacheAdapter, private readonly secretes: ISecretsAdapter) {}
+  constructor(
+    private readonly redis: ICacheAdapter,
+    private readonly secretes: ISecretsAdapter
+  ) {}
 
   @ValidateSchema(LogoutSchema)
   async execute(input: LogoutInput, { tracing, user }: ApiTrancingInput): LogoutOutput {

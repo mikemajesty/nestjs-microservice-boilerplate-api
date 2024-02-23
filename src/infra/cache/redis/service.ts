@@ -11,7 +11,10 @@ import { CacheKeyArgument, CacheKeyValue, CacheValueArgument } from '../types';
 export class RedisService implements Partial<ICacheAdapter<RedisClientType>> {
   client: RedisClientType;
 
-  constructor(private readonly config: RedisClientOptions, private readonly logger: ILoggerAdapter) {
+  constructor(
+    private readonly config: RedisClientOptions,
+    private readonly logger: ILoggerAdapter
+  ) {
     this.client = createClient(this.config) as RedisClientType;
   }
 

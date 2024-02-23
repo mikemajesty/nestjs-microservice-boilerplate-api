@@ -17,7 +17,10 @@ export type CatsUpdateInput = z.infer<typeof CatsUpdateSchema>;
 export type CatsUpdateOutput = CatsEntity;
 
 export class CatsUpdateUsecase {
-  constructor(private readonly catsRepository: ICatsRepository, private readonly loggerService: ILoggerAdapter) {}
+  constructor(
+    private readonly catsRepository: ICatsRepository,
+    private readonly loggerService: ILoggerAdapter
+  ) {}
 
   @ValidateSchema(CatsUpdateSchema)
   async execute(input: CatsUpdateInput, { tracing, user }: ApiTrancingInput): Promise<CatsUpdateOutput> {
