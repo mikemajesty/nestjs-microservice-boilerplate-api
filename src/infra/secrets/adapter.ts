@@ -21,7 +21,7 @@ export abstract class ISecretsAdapter {
 
   PROMETHUES_URL: string;
 
-  TOKEN_EXPIRATION: number;
+  TOKEN_EXPIRATION: number | string;
 
   RATE_LIMIT_BY_USER: number;
 

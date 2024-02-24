@@ -31,7 +31,7 @@ export const Swagger = {
             code: status,
             traceid: '<traceId>',
             context: 'context',
-            message: [message, httpStatus[String(status)]].find(Boolean),
+            message: [httpStatus[String(status)], message].find(Boolean),
             timestamp: '<timestamp>',
             path: route
           }
@@ -58,15 +58,13 @@ export const Swagger = {
 
   defaultResponseJSON({ status, json, description }: SwaggerJSON): ApiResponseOptions {
     return {
-      content: json
-        ? {
-            'application/json': {
-              schema: {
-                example: json
-              }
-            }
+      content: {
+        'application/json': {
+          schema: {
+            example: json
           }
-        : undefined,
+        }
+      },
       description,
       status
     };
