@@ -38,7 +38,7 @@ export class AppExceptionFilter implements ExceptionFilter {
 
   private getMessage(exception: BaseException): string {
     if (exception instanceof ZodError) {
-      return exception.issues.map((i) => `${i.path}: ${i.message}`).join(',');
+      return exception.issues.map((i) => `${i.path}: ${i.message.toLowerCase()}\n`).join(',');
     }
 
     if (exception instanceof AxiosError) {
