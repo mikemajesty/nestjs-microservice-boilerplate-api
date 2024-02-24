@@ -1,8 +1,7 @@
 import { Test } from '@nestjs/testing';
 
 import { IUserListAdapter } from '@/modules/user/adapter';
-import { GET_MOCK_DATE } from '@/utils/tests/mocks/date';
-import { expectZodError, getMockUUID } from '@/utils/tests/tests';
+import { expectZodError, getMockDate, getMockUUID } from '@/utils/tests/tests';
 
 import { UserEntity, UserRole } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
@@ -18,8 +17,8 @@ const userMock = new UserEntity({
 const usersMock = [
   new UserEntity({
     ...userMock,
-    createdAt: GET_MOCK_DATE,
-    updatedAt: GET_MOCK_DATE,
+    createdAt: getMockDate(),
+    updatedAt: getMockDate(),
     deletedAt: null
   })
 ];

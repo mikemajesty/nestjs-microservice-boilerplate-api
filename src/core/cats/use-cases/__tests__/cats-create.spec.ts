@@ -3,8 +3,7 @@ import { Test } from '@nestjs/testing';
 import { LoggerModule } from '@/infra/logger';
 import { ICatsCreateAdapter } from '@/modules/cats/adapter';
 import { ApiInternalServerException } from '@/utils/exception';
-import { RequestMock } from '@/utils/tests/mocks/request';
-import { expectZodError, getMockUUID } from '@/utils/tests/tests';
+import { expectZodError, getMockUUID, getTracingMock } from '@/utils/tests/tests';
 
 import { CatsEntity } from '../../entity/cats';
 import { ICatsRepository } from '../../repository/cats';
@@ -45,7 +44,7 @@ describe('CatsCreateUsecase', () => {
 
   test('when no input is specified, should expect an error', async () => {
     await expectZodError(
-      () => usecase.execute({}, RequestMock.trancingMock),
+      () => usecase.execute({}, getTracingMock()),
       (issues) => {
         expect(issues).toEqual([
           { message: 'Required', path: CatsEntity.nameOf('name') },
@@ -62,7 +61,7 @@ describe('CatsCreateUsecase', () => {
       commit: jest.fn(),
       rollback: jest.fn()
     });
-    await expect(usecase.execute(catCreateMock, RequestMock.trancingMock)).resolves.toEqual(catCreateMock);
+    await expect(usecase.execute(catCreateMock, getTracingMock())).resolves.toEqual(catCreateMock);
   });
 
   test('when transaction throw an error, should expect an error', async () => {
@@ -71,6 +70,6 @@ describe('CatsCreateUsecase', () => {
       rollback: jest.fn()
     });
     repository.create = jest.fn().mockRejectedValue(new ApiInternalServerException());
-    await expect(usecase.execute(catCreateMock, RequestMock.trancingMock)).rejects.toThrow(ApiInternalServerException);
+    await expect(usecase.execute(catCreateMock, getTracingMock())).rejects.toThrow(ApiInternalServerException);
   });
 });

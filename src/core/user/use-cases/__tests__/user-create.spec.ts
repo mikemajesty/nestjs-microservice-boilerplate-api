@@ -4,8 +4,7 @@ import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { CryptoLibModule, ICryptoAdapter } from '@/libs/crypto';
 import { IUserCreateAdapter } from '@/modules/user/adapter';
 import { ApiConflictException } from '@/utils/exception';
-import { RequestMock } from '@/utils/tests/mocks/request';
-import { expectZodError, getMockUUID } from '@/utils/tests/tests';
+import { expectZodError, getMockUUID, getTracingMock } from '@/utils/tests/tests';
 
 import { UserEntity, UserRole } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
@@ -51,7 +50,7 @@ describe('UserCreateUsecase', () => {
       commitTransaction: jest.fn()
     });
 
-    await expect(usecase.execute(userMock, RequestMock.trancingMock)).resolves.toEqual(userMock);
+    await expect(usecase.execute(userMock, getTracingMock())).resolves.toEqual(userMock);
   });
 
   test('when transaction throw an error, should expect an error', async () => {
@@ -59,17 +58,17 @@ describe('UserCreateUsecase', () => {
     repository.create = jest.fn().mockResolvedValue(userMock);
     repository.startSession = jest.fn().mockRejectedValue(new Error('startSessionError'));
 
-    await expect(usecase.execute(userMock, RequestMock.trancingMock)).rejects.toThrow('startSessionError');
+    await expect(usecase.execute(userMock, getTracingMock())).rejects.toThrow('startSessionError');
   });
 
   test('when user already exists, should expect an error', async () => {
     repository.findOne = jest.fn().mockResolvedValue(userMock);
-    await expect(usecase.execute(userMock, RequestMock.trancingMock)).rejects.toThrow(ApiConflictException);
+    await expect(usecase.execute(userMock, getTracingMock())).rejects.toThrow(ApiConflictException);
   });
 
   test('when no input is specified, should expect an error', async () => {
     await expectZodError(
-      () => usecase.execute({}, RequestMock.trancingMock),
+      () => usecase.execute({}, getTracingMock()),
       (issues) => {
         expect(issues).toEqual([
           { message: 'Required', path: UserEntity.nameOf('login') },

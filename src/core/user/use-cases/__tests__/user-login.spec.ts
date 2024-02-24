@@ -4,8 +4,7 @@ import { ITokenAdapter, TokenModule } from '@/libs/auth';
 import { CryptoLibModule, ICryptoAdapter } from '@/libs/crypto';
 import { ILoginAdapter } from '@/modules/login/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
-import { RequestMock } from '@/utils/tests/mocks/request';
-import { expectZodError, getMockUUID } from '@/utils/tests/tests';
+import { expectZodError, getMockUUID, getTracingMock } from '@/utils/tests/tests';
 
 import { UserEntity, UserRole } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
@@ -46,7 +45,7 @@ describe('LoginUsecase', () => {
 
   test('when no input is specified, should expect an error', async () => {
     await expectZodError(
-      () => usecase.execute({}, RequestMock.trancingMock),
+      () => usecase.execute({}, getTracingMock()),
       (issues) => {
         expect(issues).toEqual([
           { message: 'Required', path: UserEntity.nameOf('login') },
@@ -58,14 +57,14 @@ describe('LoginUsecase', () => {
 
   test('when user not found, should expect an error', async () => {
     repository.findOne = jest.fn().mockResolvedValue(null);
-    await expect(usecase.execute({ login: 'login', password: 'password' }, RequestMock.trancingMock)).rejects.toThrow(
+    await expect(usecase.execute({ login: 'login', password: 'password' }, getTracingMock())).rejects.toThrow(
       ApiNotFoundException
     );
   });
 
   test('when user found, should expect a token', async () => {
     repository.findOne = jest.fn().mockResolvedValue(userMock);
-    await expect(usecase.execute({ login: 'login', password: 'password' }, RequestMock.trancingMock)).resolves.toEqual({
+    await expect(usecase.execute({ login: 'login', password: 'password' }, getTracingMock())).resolves.toEqual({
       token: expect.any(String)
     });
   });
