@@ -21,6 +21,12 @@ export abstract class IRepository<T> {
     options?: TOptions | null
   ): Promise<T[]>;
 
+  abstract findOr<TOptions = unknown>(
+    propertyList: Array<keyof Partial<T>>,
+    value: string,
+    options?: TOptions
+  ): Promise<T[]>;
+
   abstract findByCommands<TOptions = unknown>(
     filterList: DatabaseOperationCommand<T>[],
     options?: TOptions | null

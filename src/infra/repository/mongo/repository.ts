@@ -124,7 +124,18 @@ export class MongoRepository<T extends Document> implements IRepository<T> {
   async findIn(input: { [key in keyof T]: string[] }, options?: QueryOptions): Promise<T[]> {
     const key = Object.keys(input)[0];
     const filter = { [key]: { $in: input[key === 'id' ? '_id' : key] }, deletedAt: null };
-    return await this.model.find(filter, null, options);
+    const data = await this.model.find(filter, null, options);
+
+    return data.map((d) => d.toObject({ virtuals: true }));
+  }
+
+  async findOr(propertyList: (keyof T)[], value: string, options?: QueryOptions): Promise<T[]> {
+    const filter = propertyList.map((property) => {
+      return { [property]: value };
+    });
+    const data = await this.model.find({ $or: filter as FilterQuery<T>[], deletedAt: null }, null, options);
+
+    return data.map((d) => d.toObject({ virtuals: true }));
   }
 
   async findByCommands(filterList: DatabaseOperationCommand<T>[], options?: QueryOptions): Promise<T[]> {

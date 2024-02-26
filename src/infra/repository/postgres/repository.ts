@@ -131,6 +131,27 @@ export class SequelizeRepository<T extends ModelCtor & IEntity> implements IRepo
     return model.map((m) => m.toJSON());
   }
 
+  async findOr<TOptions = DatabaseOptionsType>(
+    propertyList: Array<keyof Partial<T>>,
+    value: string,
+    options?: TOptions
+  ): Promise<T[]> {
+    const { schema } = DatabaseOptionsSchema.parse(options);
+
+    const filter = propertyList.map((property) => {
+      return { [property]: value };
+    });
+
+    const model = await this.Model.schema(schema).findAll({
+      where: {
+        [sequelize.Op.or]: filter,
+        deletedAt: null
+      }
+    });
+
+    return model.map((m) => m.toJSON());
+  }
+
   @ConvertSequelizeFilterToRepository()
   async remove<TQuery = WhereOptions<T>, TOpt = DatabaseOptionsType>(
     filter: TQuery,
