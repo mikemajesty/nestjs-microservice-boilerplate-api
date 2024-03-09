@@ -15,8 +15,6 @@ import {
   MetricsInterceptor,
   TracingInterceptor
 } from '@/common/interceptors';
-import { IUserRepository } from '@/core/user/repository/user';
-import { UserAdminSeed } from '@/infra/database/mongo/seeders/create-user-admin';
 import { ILoggerAdapter } from '@/infra/logger/adapter';
 import { ISecretsAdapter } from '@/infra/secrets';
 
@@ -128,9 +126,5 @@ async function bootstrap() {
   loggerService.log(`🔶 Mongo express listening at ${bold(MONGO_EXPRESS_URL)}\n`);
   loggerService.log(`⚪ Zipkin[${bold('Tracing')}] listening at ${bold(ZIPKIN_URL)}`);
   loggerService.log(`⚪ Promethues[${bold('Metrics')}] listening at ${bold(PROMETHUES_URL)}`);
-
-  const userRepository = app.get(IUserRepository);
-
-  await userRepository.seed([UserAdminSeed]);
 }
 bootstrap();

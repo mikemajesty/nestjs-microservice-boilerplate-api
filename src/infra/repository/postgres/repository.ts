@@ -248,17 +248,6 @@ export class SequelizeRepository<T extends ModelCtor & IEntity> implements IRepo
     };
   }
 
-  async seed<TOpt = DatabaseOptionsType>(entityList: T[], options: TOpt): Promise<void> {
-    const { schema } = DatabaseOptionsSchema.parse(options);
-
-    for (const model of entityList) {
-      const data = await this.findById(model.id, { schema });
-      if (!data) {
-        await this.create(model, { schema: schema });
-      }
-    }
-  }
-
   async create<TOptions = SaveOptionsType>(document: T, saveOptions: TOptions): Promise<CreatedModel> {
     const { schema, transaction } = DatabaseOptionsSchema.parse(saveOptions);
 

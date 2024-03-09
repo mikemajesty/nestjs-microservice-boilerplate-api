@@ -156,7 +156,7 @@ Creating a CRUD in Postgres and Mongo in seconds.
   - NodeCache
 - Database
   - mongo
-    - Seed
+    - Migrations
     - Replica set
     - Transaction session
   - postgres

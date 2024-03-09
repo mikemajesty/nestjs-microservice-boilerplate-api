@@ -31,7 +31,7 @@ export class LoggerService implements ILoggerAdapter {
           stream: pinoPretty(this.getPinoConfig())
         },
         {
-          level: 'info',
+          level: 'error',
           stream: pino.transport({
             target: 'pino-mongodb',
             options: {

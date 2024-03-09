@@ -23,6 +23,8 @@ export class SecretsService implements ISecretsAdapter {
 
   MONGO_URL = this.config.get('MONGO_URL');
 
+  MONGO_DATABASE = this.config.get('MONGO_DATABASE');
+
   ZIPKIN_URL = this.config.get('ZIPKIN_URL');
 
   PROMETHUES_URL = this.config.get('PROMETHUES_URL');

@@ -9,6 +9,8 @@ export abstract class ISecretsAdapter {
 
   MONGO_URL: string;
 
+  MONGO_DATABASE: string;
+
   POSTGRES_URL: string;
 
   MONGO_EXPRESS_URL: string;

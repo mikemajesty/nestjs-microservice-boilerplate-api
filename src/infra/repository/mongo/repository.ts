@@ -9,7 +9,7 @@ import {
 } from 'mongoose';
 
 import { ConvertMongoFilterToBaseRepository } from '@/common/decorators';
-import { ApiBadRequestException, ApiInternalServerException } from '@/utils/exception';
+import { ApiBadRequestException } from '@/utils/exception';
 
 import { IRepository } from '../adapter';
 import { CreatedModel, CreatedOrUpdateModel, DatabaseOperationCommand, RemovedModel, UpdatedModel } from '../types';
@@ -226,25 +226,6 @@ export class MongoRepository<T extends Document> implements IRepository<T> {
     const data = await this.model.find(filter, undefined, options).select(exclude.join(' '));
 
     return data.map((d) => d.toObject({ virtuals: true }));
-  }
-
-  async seed(entityList: T[]): Promise<void> {
-    try {
-      const someHasNoId = entityList.some((e) => !e.id);
-
-      if (someHasNoId) {
-        throw new ApiInternalServerException('seed id is required');
-      }
-
-      for (const model of entityList) {
-        const data = await this.findById(model.id);
-        if (!data) {
-          await this.create(model);
-        }
-      }
-    } catch (error) {
-      console.error('MongoRepository:Error', error);
-    }
   }
 
   private applyFilterWhenFilterParameterIsNotFirstOption(filter: FilterQuery<T>) {

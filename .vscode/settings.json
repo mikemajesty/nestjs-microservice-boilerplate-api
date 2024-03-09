@@ -6,15 +6,15 @@
   },
   "[typescript]": {
     "editor.codeActionsOnSave": {
-      "source.fixAll": true,
-      "source.organizeImports": false
+      "source.fixAll": "explicit",
+      "source.organizeImports": "never"
     },
     "editor.formatOnSave": true,
   },
   "[javascript]": {
     "editor.codeActionsOnSave": {
-      "source.fixAll": true,
-      "source.organizeImports": false
+      "source.fixAll": "explicit",
+      "source.organizeImports": "never"
     },
     "editor.formatOnSave": true,
   },

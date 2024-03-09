@@ -12,9 +12,9 @@
   "scripts": {
     "prepare": "husky install",
     "build": "nest build",
-    "start": "node dist/src/main",
-    "start:dev": "nest start --watch -b swc",
-    "start:debug": "nest start --debug --watch -b swc",
+    "start": "yarn migration-mongo:up && node dist/src/main",
+    "start:dev": "yarn migration-mongo:up && nest start --watch -b swc",
+    "start:debug": "yarn migration-mongo:up && nest start --debug --watch -b swc",
     "prettier": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "lint": "eslint \"{src,test}/**/*.{ts,js}\" --fix",
     "test": "jest --config=\"./jest.config.ts\" --detectOpenHandles",
@@ -22,9 +22,12 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "infra": "./docker/mongo/start-replicaset.sh",
     "scaffold": "./node_modules/@mikemajesty/microservice-crud/bin/microservice-crud",
-    "migration:create": "npx sequelize-cli migration:generate --name rename",
-    "migration:run": "npx sequelize-cli db:migrate",
-    "migration:undo": "npx sequelize-cli db:undo",
+    "migration-postgres:create": "npx sequelize-cli migration:generate --name rename",
+    "migration-postgres:run": "npx sequelize-cli db:migrate",
+    "migration-postgres:undo": "npx sequelize-cli db:undo",
+    "migration-mongo:create": "ts-node -r tsconfig-paths/register ./src/infra/database/mongo/config.ts new -n rename",
+    "migration-mongo:up": "ts-node -r tsconfig-paths/register ./src/infra/database/mongo/config.ts up",
+    "migration-mongo:undo": "ts-node -r tsconfig-paths/register ./src/infra/database/mongo/config.ts down",
     "make-badges": "istanbul-badges-readme"
   },
   "dependencies": {
@@ -56,6 +59,7 @@
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
     "luxon": "^3.4.4",
+    "mongo-migrate-ts": "^1.4.0",
     "mongoose": "^8.2.0",
     "mongoose-paginate-v2": "^1.8.0",
     "nestjs-convert-to-curl": "^0.0.23",
@@ -73,9 +77,9 @@
     "sequelize-typescript": "^2.1.6",
     "swagger-ui-express": "^5.0.0",
     "ts-jest": "^29.1.2",
+    "typescript": "5.1.6",
     "uuid": "^9.0.1",
-    "zod": "^3.22.3",
-    "typescript": "5.1.6"
+    "zod": "^3.22.3"
   },
   "devDependencies": {
     "@commitlint/cli": "^18.6.1",

@@ -77,6 +77,4 @@ export abstract class IRepository<T> {
     filter?: TQuery | null,
     options?: TOptions
   ): Promise<T[]>;
-
-  abstract seed<TOpt = unknown>(entityList: T[], options?: TOpt): Promise<void>;
 }
