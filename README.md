@@ -175,7 +175,6 @@ Creating a CRUD in Postgres and Mongo in seconds.
 ├── README.md
 ├── TRACING.md
 ├── commitlint.config.js
-├── database.json
 ├── docker
 │   ├── collector
 │   │   └── collector-config.yaml
@@ -284,14 +283,17 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │   │   │   ├── enum.ts
 │   │   │   ├── index.ts
 │   │   │   ├── mongo
+│   │   │   │   ├── config.ts
 │   │   │   │   ├── index.ts
+│   │   │   │   ├── migrations
+│   │   │   │   │   ├── 1709943706267_create-user-collection.ts
+│   │   │   │   │   └── 1709944044583_create-user-default.ts
 │   │   │   │   ├── module.ts
 │   │   │   │   ├── schemas
 │   │   │   │   │   └── user.ts
-│   │   │   │   ├── seed
-│   │   │   │   │   └── create-user-admin.ts
 │   │   │   │   └── service.ts
 │   │   │   ├── postgres
+│   │   │   │   ├── config.js
 │   │   │   │   ├── index.ts
 │   │   │   │   ├── migrations
 │   │   │   │   │   └── 20230416174316-create-cats-table.js
@@ -391,15 +393,13 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │       ├── static
 │       │   └── http-status.json
 │       ├── tests
-│       │   ├── mocks
-│       │   │   ├── date.ts
-│       │   │   └── request.ts
 │       │   └── tests.ts
 │       └── tracing.ts
 ├── test
-│   └── initialization.ts
+│   └── initialization.js
 ├── tsconfig.build.json
-└── tsconfig.json
+├── tsconfig.json
+└── yarn.lock
 ```
 
 ---
