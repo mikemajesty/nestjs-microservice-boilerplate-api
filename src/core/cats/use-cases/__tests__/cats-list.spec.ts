@@ -9,7 +9,7 @@ import { CatsEntity } from '../../entity/cats';
 import { ICatsRepository } from '../../repository/cats';
 
 const catsMock = [
-  new CatsEntity({
+  {
     id: getMockUUID(),
     age: 10,
     breed: 'dummy',
@@ -17,7 +17,7 @@ const catsMock = [
     createdAt: getMockDate(),
     updatedAt: getMockDate(),
     deletedAt: null
-  })
+  } as CatsEntity
 ];
 
 describe('CatsListUsecase', () => {

@@ -7,20 +7,20 @@ import { UserEntity, UserRole } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
 import { UserListUsecase } from '../user-list';
 
-const userMock = new UserEntity({
+const userMock = {
   id: getMockUUID(),
   login: 'login',
   password: '**********',
   roles: [UserRole.USER]
-});
+} as UserEntity;
 
 const usersMock = [
-  new UserEntity({
+  {
     ...userMock,
     createdAt: getMockDate(),
     updatedAt: getMockDate(),
     deletedAt: null
-  })
+  } as UserEntity
 ];
 describe('UserListUsecase', () => {
   let usecase: IUserListAdapter;

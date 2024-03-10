@@ -6,18 +6,18 @@ import { CatsListOutput } from '@/core/cats/use-cases/cats-list';
 import { CatsUpdateOutput } from '@/core/cats/use-cases/cats-update';
 import { getMockDate, getMockUUID } from '@/utils/tests/tests';
 
-const entity = new CatsEntity({
+const entity = {
   name: 'Miau',
   breed: 'breed',
   age: 1
-});
+} as CatsEntity;
 
-const fullEntity = new CatsEntity({
+const fullEntity = {
   ...entity,
   createdAt: getMockDate(),
   updatedAt: getMockDate(),
   deletedAt: null
-});
+} as CatsEntity;
 
 export const CatsResponse = {
   create: { created: true, id: getMockUUID() } as CatsCreateOutput,

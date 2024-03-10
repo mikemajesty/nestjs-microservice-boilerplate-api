@@ -6,18 +6,18 @@ import { UserListOutput } from '@/core/user/use-cases/user-list';
 import { UserUpdateOutput } from '@/core/user/use-cases/user-update';
 import { getMockDate, getMockUUID } from '@/utils/tests/tests';
 
-const entity = new UserEntity({
+const entity = {
   login: 'login',
   password: '**********',
   roles: [UserRole.USER]
-});
+} as UserEntity;
 
-const fullEntity = new UserEntity({
+const fullEntity = {
   ...entity,
   createdAt: getMockDate(),
   updatedAt: getMockDate(),
   deletedAt: null
-});
+} as UserEntity;
 
 export const UsersResponse = {
   create: { created: true, id: getMockUUID() } as UserCreateOutput,

@@ -8,12 +8,12 @@ import { UserEntity, UserRole } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
 import { UserGetByIdUsecase } from '../user-get-by-id';
 
-const userMock = new UserEntity({
+const userMock = {
   id: getMockUUID(),
   login: 'login',
   password: '**********',
   roles: [UserRole.USER]
-});
+} as UserEntity;
 
 describe('UserGetByIdUsecase', () => {
   let usecase: IUserGetByIDAdapter;

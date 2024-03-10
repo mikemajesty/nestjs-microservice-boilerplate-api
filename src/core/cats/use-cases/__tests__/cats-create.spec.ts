@@ -9,12 +9,12 @@ import { CatsEntity } from '../../entity/cats';
 import { ICatsRepository } from '../../repository/cats';
 import { CatsCreateUsecase } from '../cats-create';
 
-const catCreateMock = new CatsEntity({
+const catCreateMock = {
   id: getMockUUID(),
   age: 10,
   breed: 'dummy',
   name: 'dummy'
-});
+} as CatsEntity;
 
 describe('CatsCreateUsecase', () => {
   let usecase: ICatsCreateAdapter;

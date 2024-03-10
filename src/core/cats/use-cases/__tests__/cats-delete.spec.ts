@@ -9,12 +9,12 @@ import { expectZodError, getMockUUID, getTracingMock } from '@/utils/tests/tests
 import { CatsEntity } from '../../entity/cats';
 import { ICatsRepository } from '../../repository/cats';
 
-const catMock = new CatsEntity({
+const catMock = {
   id: getMockUUID(),
   age: 10,
   breed: 'dummy',
   name: 'dummy'
-});
+} as CatsEntity;
 
 describe('CatsDeleteUsecase', () => {
   let usecase: ICatsDeleteAdapter;

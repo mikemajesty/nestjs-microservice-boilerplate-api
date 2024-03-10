@@ -10,12 +10,12 @@ import { UserEntity, UserRole } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
 import { LoginUsecase } from '../user-login';
 
-const userMock = new UserEntity({
+const userMock = {
   id: getMockUUID(),
   login: 'login',
   password: '**********',
   roles: [UserRole.USER]
-});
+} as UserEntity;
 
 describe('LoginUsecase', () => {
   let usecase: ILoginAdapter;

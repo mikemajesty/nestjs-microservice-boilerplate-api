@@ -8,12 +8,12 @@ import { UserEntity, UserRole } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
 import { UserDeleteUsecase } from '../user-delete';
 
-const userMock = new UserEntity({
+const userMock = {
   id: getMockUUID(),
   login: 'login',
   password: '**********',
   roles: [UserRole.USER]
-});
+} as UserEntity;
 
 describe('UserDeleteUsecase', () => {
   let usecase: IUserDeleteAdapter;
