@@ -12,9 +12,9 @@
   "scripts": {
     "prepare": "husky install",
     "build": "nest build",
-    "start": "yarn migration-mongo:up && node dist/src/main",
-    "start:dev": "yarn migration-mongo:up && nest start --watch -b swc",
-    "start:debug": "yarn migration-mongo:up && nest start --debug --watch -b swc",
+    "start": "yarn migration:run && node dist/src/main",
+    "start:dev": "yarn migration:run && nest start --watch -b swc",
+    "start:debug": "yarn migration:run && nest start --debug --watch -b swc",
     "prettier": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "lint": "eslint \"{src,test}/**/*.{ts,js}\" --fix",
     "test": "jest --config=\"./jest.config.ts\" --detectOpenHandles",
@@ -26,8 +26,9 @@
     "migration-postgres:run": "npx sequelize-cli db:migrate",
     "migration-postgres:undo": "npx sequelize-cli db:undo",
     "migration-mongo:create": "ts-node -r tsconfig-paths/register ./src/infra/database/mongo/config.ts new -n rename",
-    "migration-mongo:up": "ts-node -r tsconfig-paths/register ./src/infra/database/mongo/config.ts up",
+    "migration-mongo:run": "ts-node -r tsconfig-paths/register ./src/infra/database/mongo/config.ts up",
     "migration-mongo:undo": "ts-node -r tsconfig-paths/register ./src/infra/database/mongo/config.ts down",
+    "migration:run": "concurrently \"npm run migration-postgres:run\" \"npm run migration-mongo:run\"",
     "make-badges": "istanbul-badges-readme"
   },
   "dependencies": {
@@ -100,6 +101,7 @@
     "@types/supertest": "^6.0.2",
     "@typescript-eslint/eslint-plugin": "^7.0.2",
     "@typescript-eslint/parser": "^7.0.2",
+    "concurrently": "^8.2.2",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.1.3",
