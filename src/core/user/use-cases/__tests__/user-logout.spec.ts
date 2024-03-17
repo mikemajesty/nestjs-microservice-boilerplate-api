@@ -4,7 +4,7 @@ import { ICacheAdapter } from '@/infra/cache';
 import { ISecretsAdapter, SecretsModule } from '@/infra/secrets';
 import { TokenModule } from '@/libs/auth';
 import { ILogoutAdapter } from '@/modules/logout/adapter';
-import { expectZodError, getTracingMock } from '@/utils/tests/tests';
+import { expectZodError, getMockTracing } from '@/utils/tests/tests';
 
 import { LogoutUsecase } from '../user-logout';
 
@@ -38,7 +38,7 @@ describe('LogoutUsecase', () => {
 
   test('when no input is specified, should expect an error', async () => {
     await expectZodError(
-      () => usecase.execute({}, getTracingMock()),
+      () => usecase.execute({}, getMockTracing()),
       (issues) => {
         expect(issues).toEqual([{ message: 'Required', path: 'token' }]);
       }
@@ -47,6 +47,6 @@ describe('LogoutUsecase', () => {
 
   test('when user logout, should expect set token to blacklist', async () => {
     cache.set = jest.fn();
-    await expect(usecase.execute({ token: '12345678910' }, getTracingMock())).resolves.toBeUndefined();
+    await expect(usecase.execute({ token: '12345678910' }, getMockTracing())).resolves.toBeUndefined();
   });
 });

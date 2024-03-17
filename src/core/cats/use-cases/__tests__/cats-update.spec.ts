@@ -3,7 +3,7 @@ import { Test } from '@nestjs/testing';
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { ICatsUpdateAdapter } from '@/modules/cats/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
-import { expectZodError, getMockUUID, getTracingMock } from '@/utils/tests/tests';
+import { expectZodError, getMockTracing, getMockUUID } from '@/utils/tests/tests';
 
 import { CatsEntity } from '../../entity/cats';
 import { ICatsRepository } from '../../repository/cats';
@@ -44,7 +44,7 @@ describe('CatsUpdateUsecase', () => {
 
   test('when no input is specified, should expect an error', async () => {
     await expectZodError(
-      () => usecase.execute({}, getTracingMock()),
+      () => usecase.execute({}, getMockTracing()),
       (issues) => {
         expect(issues).toEqual([{ message: 'Required', path: CatsEntity.nameOf('id') }]);
       }
@@ -53,12 +53,12 @@ describe('CatsUpdateUsecase', () => {
 
   test('when cats not found, should expect an error', async () => {
     repository.findById = jest.fn().mockResolvedValue(null);
-    await expect(usecase.execute({ id: getMockUUID() }, getTracingMock())).rejects.toThrow(ApiNotFoundException);
+    await expect(usecase.execute({ id: getMockUUID() }, getMockTracing())).rejects.toThrow(ApiNotFoundException);
   });
 
   test('when cats updated successfully, should expect a cats that has been updated', async () => {
     repository.findById = jest.fn().mockResolvedValue(catMock);
     repository.updateOne = jest.fn().mockResolvedValue(null);
-    await expect(usecase.execute({ id: getMockUUID() }, getTracingMock())).resolves.toEqual(catMock);
+    await expect(usecase.execute({ id: getMockUUID() }, getMockTracing())).resolves.toEqual(catMock);
   });
 });

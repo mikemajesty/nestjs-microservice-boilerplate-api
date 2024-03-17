@@ -10,9 +10,9 @@ import { LoggerService } from './service';
   providers: [
     {
       provide: ILoggerAdapter,
-      useFactory: ({ LOG_LEVEL }: ISecretsAdapter) => {
+      useFactory: async ({ LOG_LEVEL }: ISecretsAdapter) => {
         const logger = new LoggerService();
-        logger.connect(LOG_LEVEL);
+        await logger.connect(LOG_LEVEL);
         return logger;
       },
       inject: [ISecretsAdapter]

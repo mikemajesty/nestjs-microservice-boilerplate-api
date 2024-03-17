@@ -80,6 +80,7 @@
     "ts-jest": "^29.1.2",
     "typescript": "5.1.6",
     "uuid": "^9.0.1",
+    "write-excel-file": "^1.4.30",
     "zod": "^3.22.3"
   },
   "devDependencies": {

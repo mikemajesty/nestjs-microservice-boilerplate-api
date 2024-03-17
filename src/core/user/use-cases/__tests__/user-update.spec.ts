@@ -4,7 +4,7 @@ import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { CryptoLibModule, ICryptoAdapter } from '@/libs/crypto';
 import { IUserUpdateAdapter } from '@/modules/user/adapter';
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception';
-import { expectZodError, getMockUUID, getTracingMock } from '@/utils/tests/tests';
+import { expectZodError, getMockTracing, getMockUUID } from '@/utils/tests/tests';
 
 import { UserEntity, UserRole } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
@@ -45,7 +45,7 @@ describe('UserUpdateUsecase', () => {
 
   test('when no input is specified, should expect an error', async () => {
     await expectZodError(
-      () => usecase.execute({}, getTracingMock()),
+      () => usecase.execute({}, getMockTracing()),
       (issues) => {
         expect(issues).toEqual([{ message: 'Required', path: UserEntity.nameOf('id') }]);
       }
@@ -56,17 +56,17 @@ describe('UserUpdateUsecase', () => {
     repository.findById = jest.fn().mockResolvedValue(userMock);
     repository.existsOnUpdate = jest.fn().mockResolvedValue(null);
     repository.updateOne = jest.fn().mockResolvedValue(null);
-    await expect(usecase.execute(userMock, getTracingMock())).resolves.toEqual(userMock);
+    await expect(usecase.execute(userMock, getMockTracing())).resolves.toEqual(userMock);
   });
 
   test('when user not found, should expect an error', async () => {
     repository.findById = jest.fn().mockResolvedValue(null);
-    await expect(usecase.execute(userMock, getTracingMock())).rejects.toThrow(ApiNotFoundException);
+    await expect(usecase.execute(userMock, getMockTracing())).rejects.toThrow(ApiNotFoundException);
   });
 
   test('when user already exists, should expect an error', async () => {
     repository.findById = jest.fn().mockResolvedValue(userMock);
     repository.existsOnUpdate = jest.fn().mockResolvedValue(userMock);
-    await expect(usecase.execute(userMock, getTracingMock())).rejects.toThrow(ApiConflictException);
+    await expect(usecase.execute(userMock, getMockTracing())).rejects.toThrow(ApiConflictException);
   });
 });
