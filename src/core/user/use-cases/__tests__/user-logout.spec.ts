@@ -4,7 +4,7 @@ import { ICacheAdapter } from '@/infra/cache';
 import { ISecretsAdapter, SecretsModule } from '@/infra/secrets';
 import { TokenModule } from '@/libs/auth';
 import { ILogoutAdapter } from '@/modules/logout/adapter';
-import { expectZodError, getMockTracing } from '@/utils/tests/tests';
+import { expectZodError, getMockTracing } from '@/utils/tests';
 
 import { LogoutUsecase } from '../user-logout';
 

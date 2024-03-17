@@ -4,7 +4,7 @@ import { CatsDeleteOutput } from '@/core/cats/use-cases/cats-delete';
 import { CatsGetByIdOutput } from '@/core/cats/use-cases/cats-get-by-id';
 import { CatsListOutput } from '@/core/cats/use-cases/cats-list';
 import { CatsUpdateOutput } from '@/core/cats/use-cases/cats-update';
-import { getMockDate, getMockUUID } from '@/utils/tests/tests';
+import { getMockDate, getMockUUID } from '@/utils/tests';
 
 const entity = {
   name: 'Miau',

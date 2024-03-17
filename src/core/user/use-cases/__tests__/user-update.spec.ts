@@ -4,7 +4,7 @@ import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { CryptoLibModule, ICryptoAdapter } from '@/libs/crypto';
 import { IUserUpdateAdapter } from '@/modules/user/adapter';
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception';
-import { expectZodError, getMockTracing, getMockUUID } from '@/utils/tests/tests';
+import { expectZodError, getMockTracing, getMockUUID } from '@/utils/tests';
 
 import { UserEntity, UserRole } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';

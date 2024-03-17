@@ -2,7 +2,7 @@ import { Test } from '@nestjs/testing';
 
 import { IUserDeleteAdapter } from '@/modules/user/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
-import { expectZodError, getMockTracing, getMockUUID } from '@/utils/tests/tests';
+import { expectZodError, getMockTracing, getMockUUID } from '@/utils/tests';
 
 import { UserEntity, UserRole } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';

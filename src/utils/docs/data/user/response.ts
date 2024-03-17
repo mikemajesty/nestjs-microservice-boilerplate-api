@@ -4,7 +4,7 @@ import { UserDeleteOutput } from '@/core/user/use-cases/user-delete';
 import { UserGetByIdOutput } from '@/core/user/use-cases/user-get-by-id';
 import { UserListOutput } from '@/core/user/use-cases/user-list';
 import { UserUpdateOutput } from '@/core/user/use-cases/user-update';
-import { getMockDate, getMockUUID } from '@/utils/tests/tests';
+import { getMockDate, getMockUUID } from '@/utils/tests';
 
 const entity = {
   login: 'login',

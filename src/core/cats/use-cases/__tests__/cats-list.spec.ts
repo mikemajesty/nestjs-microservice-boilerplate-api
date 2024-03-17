@@ -3,7 +3,7 @@ import { Test } from '@nestjs/testing';
 import { CatsListUsecase } from '@/core/cats/use-cases/cats-list';
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { ICatsListAdapter } from '@/modules/cats/adapter';
-import { expectZodError, getMockDate, getMockUUID } from '@/utils/tests/tests';
+import { expectZodError, getMockDate, getMockUUID } from '@/utils/tests';
 
 import { CatsEntity } from '../../entity/cats';
 import { ICatsRepository } from '../../repository/cats';
