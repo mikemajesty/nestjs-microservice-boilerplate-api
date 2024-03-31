@@ -1,26 +1,42 @@
 'use strict';
 
-const { QueryInterface, Sequelize } = require('sequelize');
+import { CatsEntity } from '@/core/cats/entity/cats';
+import { TextUtils } from '@/utils/text';
+import { QueryInterface, Sequelize, DataTypes } from 'sequelize';
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  up: (queryInterface, Sequelize) => {
-    return queryInterface.sequelize.transaction(transaction => {
-      return queryInterface.sequelize.query(`CREATE TABLE IF NOT EXISTS cats (
-        id uuid NOT NULL,
-        "name" text NOT NULL,
-        breed text NOT NULL,
-        age int4 NOT NULL,
-        "created_at" timestamp NOT NULL DEFAULT now(),
-        "updated_at" timestamp NOT NULL DEFAULT now(),
-        "deleted_at" timestamp NULL,
-        CONSTRAINT "PK_CATS_KEY" PRIMARY KEY (id)
-    );`, { transaction });
-    });
+  up: async (queryInterface: QueryInterface, sequelize: Sequelize) => {
+    const transaction = await queryInterface.sequelize.transaction();
+    try {
+      await queryInterface.createTable('cats', {
+        [CatsEntity.nameOf('id')]: DataTypes.UUID,
+        [CatsEntity.nameOf('name')]: DataTypes.TEXT,
+        [CatsEntity.nameOf('breed')]: DataTypes.TEXT,
+        [CatsEntity.nameOf('age')]: DataTypes.INTEGER,
+        [TextUtils.snakeCase(CatsEntity.nameOf('createdAt'))]: DataTypes.DATE,
+        [TextUtils.snakeCase(CatsEntity.nameOf('updatedAt'))]: DataTypes.DATE,
+        [TextUtils.snakeCase(CatsEntity.nameOf('deletedAt'))]: {
+          type: DataTypes.DATE,
+          defaultValue: null,
+          allowNull: true
+        },
+      }, { transaction, })
+      await queryInterface.addConstraint('cats', { fields: ['id'], name: 'PK_CATS_KEY', type: 'primary key', transaction })
+      await transaction.commit();
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
   },
-  down: (queryInterface, Sequelize) => {
-    return queryInterface.sequelize.transaction(transaction => {
-      return queryInterface.sequelize.query(`DROP TABLE IF EXISTS cats`, { transaction });
-    })
+  down: async (queryInterface: QueryInterface, sequelize: Sequelize) => {
+    const transaction = await queryInterface.sequelize.transaction();
+    try {
+      await queryInterface.dropTable('cats', { transaction })
+      await transaction.commit();
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
   }
 }

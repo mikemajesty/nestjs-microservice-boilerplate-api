@@ -3,7 +3,7 @@ import { MigrationInterface } from 'mongo-migrate-ts';
 import { UserRole } from '@/core/user/entity/user';
 
 export class CreateUserDefault1709944044583 implements MigrationInterface {
-  public async up(db: Db, client: MongoClient): Promise<any> {
+  public async up(db: Db, client: MongoClient): Promise<void> {
     const session = client.startSession();
     try {
       await session.withTransaction(async () => {
@@ -20,7 +20,7 @@ export class CreateUserDefault1709944044583 implements MigrationInterface {
     }
   }
 
-  public async down(db: Db, client: MongoClient): Promise<any> {
+  public async down(db: Db, client: MongoClient): Promise<void> {
     const session = client.startSession();
     try {
       await session.withTransaction(async () => {
