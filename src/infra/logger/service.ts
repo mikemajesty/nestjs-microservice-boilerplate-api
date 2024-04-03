@@ -59,7 +59,7 @@ export class LoggerService implements ILoggerAdapter {
 
   debug({ message, context, obj = {} }: MessageType): void {
     Object.assign(obj, { context, createdAt: DateUtils.getISODateString() });
-    this.logger.logger.trace([obj, gray(message)].find(Boolean), gray(message));
+    this.logger.logger.debug([obj, gray(message)].find(Boolean), gray(message));
   }
 
   info({ message, context, obj = {} }: MessageType): void {

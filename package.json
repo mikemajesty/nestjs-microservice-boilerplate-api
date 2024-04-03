@@ -22,7 +22,7 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "infra": "./docker/mongo/start-replicaset.sh",
     "scaffold": "./node_modules/@mikemajesty/microservice-crud/bin/microservice-crud",
-    "migration-postgres:create": "npx ./node_modules/sequelize-cli/lib/sequelize migration:generate --name rename",
+    "migration-postgres:create": "npx ts-node -r tsconfig-paths/register ./node_modules/sequelize-cli/lib/sequelize migration:generate --name rename",
     "migration-postgres:run": "npx ts-node -r tsconfig-paths/register ./node_modules/sequelize-cli/lib/sequelize db:migrate",
     "migration-postgres:undo": "npx ts-node -r tsconfig-paths/register ./node_modules/sequelize-cli/lib/sequelize db:undo",
     "migration-mongo:create": "ts-node -r tsconfig-paths/register ./src/infra/database/mongo/config.ts new -n rename",

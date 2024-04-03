@@ -1,6 +1,6 @@
 {
   "*.{js,ts,jsx}": [
     "eslint \"{src,test}/**/*.{ts,js}\" --fix",
-    "yarn test --findRelatedTests"
+    "yarn test --findRelatedTests --passWithNoTests"
   ]
 }
