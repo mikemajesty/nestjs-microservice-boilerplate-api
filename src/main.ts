@@ -5,6 +5,7 @@ import { NestFactory, Reflector } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import bodyParser from 'body-parser';
 import { bold } from 'colorette';
+import { NextFunction, Request, Response } from 'express';
 import { rateLimit } from 'express-rate-limit';
 import helmet from 'helmet';
 
@@ -65,6 +66,13 @@ async function bootstrap() {
     })
   );
 
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    if (req.originalUrl && req.originalUrl.split('/').pop() === 'favicon.ico') {
+      return res.sendStatus(204);
+    }
+    next();
+  });
+
   const {
     ENV,
     MONGO_URL,
@@ -75,7 +83,8 @@ async function bootstrap() {
     PROMETHUES_URL,
     RATE_LIMIT_BY_USER,
     PGADMIN_URL,
-    MONGO_EXPRESS_URL
+    MONGO_EXPRESS_URL,
+    IS_PRODUCTION
   } = app.get(ISecretsAdapter);
 
   /**
@@ -96,35 +105,37 @@ async function bootstrap() {
   app.enableVersioning({ type: VersioningType.URI });
 
   process.on('uncaughtException', (error) => {
-    loggerService.error(error as ErrorType);
+    loggerService.fatal(error as ErrorType);
   });
 
   process.on('unhandledRejection', (error) => {
-    loggerService.error(error as ErrorType);
+    loggerService.fatal(error as ErrorType);
   });
 
-  const config = new DocumentBuilder()
-    .setTitle(name)
-    .setDescription(description)
-    .addBearerAuth()
-    .setVersion(version)
-    .addServer(HOST)
-    .addTag('Swagger Documentation')
-    .build();
+  if (!IS_PRODUCTION) {
+    const config = new DocumentBuilder()
+      .setTitle(name)
+      .setDescription(description)
+      .addBearerAuth()
+      .setVersion(version)
+      .addServer(HOST)
+      .addTag('Swagger Documentation')
+      .build();
 
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('docs', app, document);
-
-  await app.listen(PORT, () => {
-    loggerService.log(`🟢 ${name} listening at ${bold(PORT)} on ${bold(ENV?.toUpperCase())} 🟢\n`);
-    loggerService.log(`🟢 Swagger listening at ${bold(`${HOST}/docs`)} 🟢\n`);
-  });
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('docs', app, document);
+  }
 
   loggerService.log(`🔵 Postgres listening at ${bold(POSTGRES_URL)}`);
   loggerService.log(`🔶 PgAdmin listening at ${bold(PGADMIN_URL)}\n`);
   loggerService.log(`🔵 Mongo listening at ${bold(MONGO_URL)}`);
   loggerService.log(`🔶 Mongo express listening at ${bold(MONGO_EXPRESS_URL)}\n`);
   loggerService.log(`⚪ Zipkin[${bold('Tracing')}] listening at ${bold(ZIPKIN_URL)}`);
-  loggerService.log(`⚪ Promethues[${bold('Metrics')}] listening at ${bold(PROMETHUES_URL)}`);
+  loggerService.log(`⚪ Promethues[${bold('Metrics')}] listening at ${bold(PROMETHUES_URL)}\n`);
+
+  await app.listen(PORT, () => {
+    loggerService.log(`🟢 ${name} listening at ${bold(PORT)} on ${bold(ENV?.toUpperCase())} 🟢`);
+    if (!IS_PRODUCTION) loggerService.log(`🟢 Swagger listening at ${bold(`${HOST}/docs`)} 🟢`);
+  });
 }
 bootstrap();

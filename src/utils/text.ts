@@ -7,7 +7,7 @@ export class TextUtils {
       .join('_');
   };
 
-  static capitalizeFirstLetter(text: string) {
+  static capitalizeFirstLetter = (text: string) => {
     return text.charAt(0).toUpperCase() + text.slice(1);
-  }
+  };
 }

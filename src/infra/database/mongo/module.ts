@@ -5,6 +5,7 @@ import { Connection } from 'mongoose';
 
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { ISecretsAdapter, SecretsModule } from '@/infra/secrets';
+import { ApiInternalServerException } from '@/utils/exception';
 
 import { name } from '../../../../package.json';
 import { ConnectionName } from '../enum';
@@ -22,15 +23,13 @@ import { MongoService } from './service';
               logger.log('🎯 mongo connected successfully!');
             }
             connection.on('disconnected', () => {
-              logger.log(red('mongo disconnected!\n'));
-              process.exit(1);
+              logger.fatal(new ApiInternalServerException('mongo disconnected!'));
             });
             connection.on('reconnected', () => {
               logger.log(red('mongo reconnected!\n'));
             });
             connection.on('error', (error) => {
-              error.context = 'MongoConnection';
-              logger.error(error);
+              logger.fatal(new ApiInternalServerException(error.message || error, { context: 'MongoConnection' }));
             });
 
             return connection;
