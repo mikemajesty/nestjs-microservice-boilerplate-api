@@ -9,7 +9,7 @@ export class SecretsService implements ISecretsAdapter {
 
   IS_LOCAL = this.config.get<string>('NODE_ENV').toLowerCase() === 'local';
 
-  IS_PRODUCTION = this.config.get<string>('NODE_ENV').toLowerCase() === 'prd';
+  IS_PRODUCTION = this.config.get<string>('NODE_ENV').toLowerCase() === 'prod';
 
   ENV = this.config.get('NODE_ENV');
 
