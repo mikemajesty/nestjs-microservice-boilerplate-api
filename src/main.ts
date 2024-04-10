@@ -5,6 +5,8 @@ import { NestFactory, Reflector } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import bodyParser from 'body-parser';
 import { bold } from 'colorette';
+import compression from 'compression';
+import csurf from 'csurf';
 import { NextFunction, Request, Response } from 'express';
 import { rateLimit } from 'express-rate-limit';
 import helmet from 'helmet';
@@ -72,6 +74,9 @@ async function bootstrap() {
     }
     next();
   });
+
+  app.use(compression());
+  app.use(csurf());
 
   const {
     ENV,

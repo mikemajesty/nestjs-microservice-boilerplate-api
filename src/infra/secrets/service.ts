@@ -7,11 +7,11 @@ import { ISecretsAdapter } from './adapter';
 export class SecretsService implements ISecretsAdapter {
   constructor(private readonly config: ConfigService) {}
 
-  IS_LOCAL = this.config.get<string>('ENV').toLowerCase() === 'local';
+  IS_LOCAL = this.config.get<string>('NODE_ENV').toLowerCase() === 'local';
 
-  IS_PRODUCTION = this.config.get<string>('ENV').toLowerCase() === 'prd';
+  IS_PRODUCTION = this.config.get<string>('NODE_ENV').toLowerCase() === 'prd';
 
-  ENV = this.config.get('ENV');
+  ENV = this.config.get('NODE_ENV');
 
   PORT = this.config.get<number>('PORT');
 
