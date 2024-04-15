@@ -53,7 +53,7 @@ const databaseEnv = {
 }[process.env['NODE_ENV']];
 
 // eslint-disable-next-line no-console
-console.log(green(`ENV: ${process.env['NODE_ENV']} migration running.\n`));
+console.log(green(`ENV: ${process.env['NODE_ENV']} postgres migration running.\n`));
 
 module.exports = {
   ...databaseEnv
