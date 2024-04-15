@@ -15,7 +15,7 @@ import { MongoService } from './service';
   imports: [
     MongooseModule.forRootAsync({
       connectionName: ConnectionName.USER,
-      useFactory: ({ MONGO_URL }: ISecretsAdapter, logger: ILoggerAdapter) => {
+      useFactory: ({ MONGO: { MONGO_URL } }: ISecretsAdapter, logger: ILoggerAdapter) => {
         const connection = new MongoService().getConnection({ URI: MONGO_URL });
         return {
           connectionFactory: (connection: Connection) => {

@@ -80,15 +80,13 @@ async function bootstrap() {
 
   const {
     ENV,
-    MONGO_URL,
-    POSTGRES_URL,
+    MONGO: { MONGO_URL, MONGO_EXPRESS_URL },
+    POSTGRES: { POSTGRES_URL, POSTGRES_PGADMIN_URL },
     PORT,
     HOST,
     ZIPKIN_URL,
     PROMETHUES_URL,
     RATE_LIMIT_BY_USER,
-    PGADMIN_URL,
-    MONGO_EXPRESS_URL,
     IS_PRODUCTION
   } = app.get(ISecretsAdapter);
 
@@ -132,7 +130,7 @@ async function bootstrap() {
   }
 
   loggerService.log(`🔵 Postgres listening at ${bold(POSTGRES_URL)}`);
-  loggerService.log(`🔶 PgAdmin listening at ${bold(PGADMIN_URL)}\n`);
+  loggerService.log(`🔶 PgAdmin listening at ${bold(POSTGRES_PGADMIN_URL)}\n`);
   loggerService.log(`🔵 Mongo listening at ${bold(MONGO_URL)}`);
   loggerService.log(`🔶 Mongo express listening at ${bold(MONGO_EXPRESS_URL)}\n`);
   loggerService.log(`⚪ Zipkin[${bold('Tracing')}] listening at ${bold(ZIPKIN_URL)}`);

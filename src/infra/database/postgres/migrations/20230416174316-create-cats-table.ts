@@ -21,7 +21,7 @@ module.exports = {
           defaultValue: null,
           allowNull: true
         },
-      }, { transaction, })
+      }, { transaction })
       await queryInterface.addConstraint('cats', { fields: ['id'], name: 'PK_CATS_KEY', type: 'primary key', transaction })
       await transaction.commit();
     } catch (error) {

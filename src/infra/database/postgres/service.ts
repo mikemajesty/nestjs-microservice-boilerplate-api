@@ -27,10 +27,11 @@ export class SequelizeService implements IDataBaseAdapter {
   async connect(): Promise<Sequelize> {
     try {
       const dialect = 'postgres';
-      const instance = new Sequelize(this.secret.POSTGRES_URL, {
+      const instance = new Sequelize(this.secret.POSTGRES.POSTGRES_URL, {
         dialect: dialect,
         benchmark: true,
         timezone: process.env.TZ,
+        define: { underscored: true },
         // eslint-disable-next-line no-console
         logging: (msm, timing) => console.log(blue(`[sequelize]`), gray(msm), `${blue(bold(`${timing}ms`))}`)
       });

@@ -7,15 +7,16 @@ export abstract class ISecretsAdapter {
 
   LOG_LEVEL: string;
 
-  MONGO_URL: string;
+  MONGO: {
+    MONGO_URL: string;
+    MONGO_DATABASE: string;
+    MONGO_EXPRESS_URL: string;
+  };
 
-  MONGO_DATABASE: string;
-
-  POSTGRES_URL: string;
-
-  MONGO_EXPRESS_URL: string;
-
-  PGADMIN_URL: string;
+  POSTGRES: {
+    POSTGRES_URL: string;
+    POSTGRES_PGADMIN_URL: string;
+  };
 
   REDIS_URL: string;
 

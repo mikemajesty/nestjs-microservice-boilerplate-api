@@ -9,7 +9,7 @@ export class SecretsService implements ISecretsAdapter {
 
   IS_LOCAL = this.config.get<string>('NODE_ENV').toLowerCase() === 'local';
 
-  IS_PRODUCTION = this.config.get<string>('NODE_ENV').toLowerCase() === 'prd';
+  IS_PRODUCTION = this.config.get<string>('NODE_ENV').toLowerCase() === 'prod';
 
   ENV = this.config.get('NODE_ENV');
 
@@ -21,13 +21,18 @@ export class SecretsService implements ISecretsAdapter {
 
   REDIS_URL = this.config.get('REDIS_URL');
 
-  POSTGRES_URL = `postgresql://${this.config.get('POSTGRES_USER')}:${this.config.get(
-    'POSTGRES_PASSWORD'
-  )}@${this.config.get('POSTGRES_HOST')}:${this.config.get('POSTGRES_PORT')}/${this.config.get('POSTGRES_DATABASE')}`;
+  MONGO = {
+    MONGO_URL: this.config.get('MONGO_URL'),
+    MONGO_DATABASE: this.config.get('MONGO_DATABASE'),
+    MONGO_EXPRESS_URL: this.config.get('MONGO_EXPRESS_URL')
+  };
 
-  MONGO_URL = this.config.get('MONGO_URL');
-
-  MONGO_DATABASE = this.config.get('MONGO_DATABASE');
+  POSTGRES = {
+    POSTGRES_URL: `postgresql://${this.config.get('POSTGRES_USER')}:${this.config.get(
+      'POSTGRES_PASSWORD'
+    )}@${this.config.get('POSTGRES_HOST')}:${this.config.get('POSTGRES_PORT')}/${this.config.get('POSTGRES_DATABASE')}`,
+    POSTGRES_PGADMIN_URL: this.config.get('PGADMIN_URL')
+  };
 
   ZIPKIN_URL = this.config.get('ZIPKIN_URL');
 
@@ -38,8 +43,4 @@ export class SecretsService implements ISecretsAdapter {
   JWT_SECRET_KEY = this.config.get('JWT_SECRET_KEY');
 
   RATE_LIMIT_BY_USER = this.config.get<number>('RATE_LIMIT_BY_USER');
-
-  MONGO_EXPRESS_URL = this.config.get('MONGO_EXPRESS_URL');
-
-  PGADMIN_URL = this.config.get('PGADMIN_URL');
 }

@@ -7,7 +7,7 @@ import { UserEntity, UserRole } from '@/core/user/entity/user';
 export type UserDocument = Document & UserEntity;
 
 @Schema({
-  collection: 'user-collection',
+  collection: 'users',
   autoIndex: true,
   timestamps: true
 })
