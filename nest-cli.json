@@ -3,6 +3,12 @@
   "collection": "@nestjs/schematics",
   "sourceRoot": "src",
   "compilerOptions": {
+    "assets": [
+      {
+        "include": "libs/i18n/languages/**/*",
+        "watchAssets": true
+      }
+    ],
     "deleteOutDir": true,
     "typeCheck": true,
     "builder": {

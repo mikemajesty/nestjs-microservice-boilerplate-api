@@ -6,7 +6,6 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import bodyParser from 'body-parser';
 import { bold } from 'colorette';
 import compression from 'compression';
-import csurf from 'csurf';
 import { NextFunction, Request, Response } from 'express';
 import { rateLimit } from 'express-rate-limit';
 import helmet from 'helmet';
@@ -76,7 +75,6 @@ async function bootstrap() {
   });
 
   app.use(compression());
-  app.use(csurf());
 
   const {
     ENV,
@@ -129,16 +127,16 @@ async function bootstrap() {
     SwaggerModule.setup('docs', app, document);
   }
 
+  await app.listen(PORT, () => {
+    loggerService.log(`🟢 ${name} listening at ${bold(PORT)} on ${bold(ENV?.toUpperCase())} 🟢`);
+    if (!IS_PRODUCTION) loggerService.log(`🟢 Swagger listening at ${bold(`${HOST}/docs`)} 🟢`);
+  });
+
   loggerService.log(`🔵 Postgres listening at ${bold(POSTGRES_URL)}`);
   loggerService.log(`🔶 PgAdmin listening at ${bold(POSTGRES_PGADMIN_URL)}\n`);
   loggerService.log(`🔵 Mongo listening at ${bold(MONGO_URL)}`);
   loggerService.log(`🔶 Mongo express listening at ${bold(MONGO_EXPRESS_URL)}\n`);
   loggerService.log(`⚪ Zipkin[${bold('Tracing')}] listening at ${bold(ZIPKIN_URL)}`);
   loggerService.log(`⚪ Promethues[${bold('Metrics')}] listening at ${bold(PROMETHUES_URL)}\n`);
-
-  await app.listen(PORT, () => {
-    loggerService.log(`🟢 ${name} listening at ${bold(PORT)} on ${bold(ENV?.toUpperCase())} 🟢`);
-    if (!IS_PRODUCTION) loggerService.log(`🟢 Swagger listening at ${bold(`${HOST}/docs`)} 🟢`);
-  });
 }
 bootstrap();

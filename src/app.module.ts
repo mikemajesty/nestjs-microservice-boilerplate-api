@@ -11,6 +11,7 @@ import { LogoutModule } from '@/modules/logout/module';
 import { UserModule } from '@/modules/user/module';
 
 import { CryptoLibModule } from './libs/crypto';
+import { I18nLibModule } from './libs/i18n';
 
 @Module({
   providers: [
@@ -19,6 +20,16 @@ import { CryptoLibModule } from './libs/crypto';
       useClass: RolesGuardInterceptor
     }
   ],
-  imports: [InfraModule, HealthModule, UserModule, LoginModule, LogoutModule, TokenModule, CatsModule, CryptoLibModule]
+  imports: [
+    InfraModule,
+    HealthModule,
+    UserModule,
+    LoginModule,
+    LogoutModule,
+    TokenModule,
+    CatsModule,
+    CryptoLibModule,
+    I18nLibModule
+  ]
 })
 export class AppModule {}
