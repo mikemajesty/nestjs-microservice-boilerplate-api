@@ -20,7 +20,7 @@ export class AppExceptionFilter implements ExceptionFilter {
 
     exception.traceid = [exception.traceid, request['id']].find(Boolean);
 
-    const message = this.getMessage(exception);
+    const message = this.getMessage(exception, status);
 
     this.loggerService.error(exception, message, exception.context);
 
@@ -29,25 +29,29 @@ export class AppExceptionFilter implements ExceptionFilter {
         code: status,
         traceid: exception.traceid,
         context: exception.context,
-        message: [errorStatus[String(status)], message].find(Boolean),
+        message,
         timestamp: DateUtils.getDateStringWithFormat(),
         path: request.url
       }
     } as ErrorModel);
   }
 
-  private getMessage(exception: BaseException): string {
+  private getMessage(exception: BaseException, status: string | number): string[] {
+    const defaultError = errorStatus[String(status)];
+    if (defaultError) {
+      return [defaultError];
+    }
     if (exception instanceof ZodError) {
-      return exception.issues.map((i) => `${i.path}: ${i.message.toLowerCase()}\n`).join(',');
+      return exception.issues.map((i) => `${i.path}: ${i.message.toLowerCase()}`);
     }
 
     if (exception instanceof AxiosError) {
       if ((exception as AxiosError).response?.data) {
-        return (exception as AxiosError).message;
+        return [(exception as AxiosError).message];
       }
     }
 
-    return exception.message;
+    return [exception.message];
   }
 
   private getStatus(exception: BaseException) {

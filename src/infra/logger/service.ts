@@ -84,37 +84,32 @@ export class LoggerService implements ILoggerAdapter {
       Error: BaseException.name
     }[error?.name];
 
-    const messageFind = [message, response?.message, error.message].find(Boolean);
+    const messages = [message, response?.message, error.message].find(Boolean);
 
-    this.logger.logger.error(
-      {
-        ...response,
-        context: error?.context ?? context,
-        type: [type, error?.name].find(Boolean),
-        traceid: this.getTraceId(error),
-        createdAt: DateUtils.getISODateString(),
-        application: this.app,
-        stack: error.stack,
-        ...error?.parameters,
-        message: messageFind
-      },
-      messageFind
-    );
+    this.logger.logger.error({
+      ...response,
+      context: error?.context ?? context,
+      type: [type, error?.name].find(Boolean),
+      traceid: this.getTraceId(error),
+      createdAt: DateUtils.getISODateString(),
+      application: this.app,
+      stack: error.stack,
+      ...error?.parameters,
+      message: typeof messages === 'string' ? [messages] : messages
+    });
   }
 
   fatal(error: ErrorType, message?: string, context?: string): void {
-    this.logger.logger.fatal(
-      {
-        message: error.message || message,
-        context: error?.context ?? context,
-        type: error.name,
-        traceid: this.getTraceId(error),
-        createdAt: DateUtils.getISODateString(),
-        application: this.app,
-        stack: error.stack
-      },
-      error.message || message
-    );
+    const messages = [error.message, message].find(Boolean);
+    this.logger.logger.fatal({
+      message: typeof messages === 'string' ? [messages] : messages,
+      context: error?.context ?? context,
+      type: error.name,
+      traceid: this.getTraceId(error),
+      createdAt: DateUtils.getISODateString(),
+      application: this.app,
+      stack: error.stack
+    });
     process.exit(1);
   }
 
