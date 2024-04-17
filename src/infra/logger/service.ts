@@ -9,7 +9,7 @@ import pinoPretty, { PrettyOptions } from 'pino-pretty';
 import { v4 as uuidv4 } from 'uuid';
 
 import { DateUtils } from '@/utils/date';
-import { BaseException } from '@/utils/exception';
+import { ApiBadRequestException, BaseException } from '@/utils/exception';
 
 import { ILoggerAdapter } from './adapter';
 import { ErrorType, MessageType } from './types';
@@ -86,30 +86,43 @@ export class LoggerService implements ILoggerAdapter {
 
     const messages = [message, response?.message, error.message].find(Boolean);
 
-    this.logger.logger.error({
-      ...response,
-      context: error?.context ?? context,
-      type: [type, error?.name].find(Boolean),
-      traceid: this.getTraceId(error),
-      createdAt: DateUtils.getISODateString(),
-      application: this.app,
-      stack: error.stack,
-      ...error?.parameters,
-      message: typeof messages === 'string' ? [messages] : messages
-    });
+    const typeError = [type, error?.name === 'ZodError' ? ApiBadRequestException.name : error?.name].find(Boolean);
+    this.logger.logger.error(
+      {
+        ...response,
+        context: error?.context ?? context,
+        type: type,
+        traceid: this.getTraceId(error),
+        createdAt: DateUtils.getISODateString(),
+        application: this.app,
+        stack: error.stack.replace(/\n/g, ''),
+        ...error?.parameters,
+        message: typeof messages === 'string' ? [messages] : messages
+      },
+      typeError
+    );
   }
 
   fatal(error: ErrorType, message?: string, context?: string): void {
     const messages = [error.message, message].find(Boolean);
-    this.logger.logger.fatal({
-      message: typeof messages === 'string' ? [messages] : messages,
-      context: error?.context ?? context,
-      type: error.name,
-      traceid: this.getTraceId(error),
-      createdAt: DateUtils.getISODateString(),
-      application: this.app,
-      stack: error.stack
-    });
+
+    const type = {
+      Error: BaseException.name
+    }[error?.name];
+    const typeError = [type, error?.name === 'ZodError' ? ApiBadRequestException.name : error?.name].find(Boolean);
+
+    this.logger.logger.fatal(
+      {
+        message: typeof messages === 'string' ? [messages] : messages,
+        context: error?.context ?? context,
+        type: error.name,
+        traceid: this.getTraceId(error),
+        createdAt: DateUtils.getISODateString(),
+        application: this.app,
+        stack: error.stack.replace(/\n/g, '')
+      },
+      typeError
+    );
     process.exit(1);
   }
 
