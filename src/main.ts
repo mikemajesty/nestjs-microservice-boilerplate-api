@@ -105,11 +105,11 @@ async function bootstrap() {
   app.enableVersioning({ type: VersioningType.URI });
 
   process.on('uncaughtException', (error) => {
-    loggerService.fatal(error as ErrorType);
+    loggerService.error(error as ErrorType);
   });
 
   process.on('unhandledRejection', (error) => {
-    loggerService.fatal(error as ErrorType);
+    loggerService.error(error as ErrorType);
   });
 
   if (!IS_PRODUCTION) {
