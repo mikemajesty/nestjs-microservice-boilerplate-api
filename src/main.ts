@@ -34,7 +34,6 @@ async function bootstrap() {
   const loggerService = app.get(ILoggerAdapter);
 
   loggerService.setApplication(name);
-
   app.useLogger(loggerService);
 
   app.useGlobalFilters(new AppExceptionFilter(loggerService));
