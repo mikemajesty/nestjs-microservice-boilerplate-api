@@ -95,7 +95,7 @@ export class LoggerService implements ILoggerAdapter {
         traceid: this.getTraceId(error),
         createdAt: DateUtils.getISODateString(),
         application: this.app,
-        stack: error.stack.replace(/\n/g, ''),
+        stack: error.stack?.replace(/\n/g, ''),
         ...error?.parameters,
         message: typeof messages === 'string' ? [messages] : messages
       },
@@ -119,7 +119,7 @@ export class LoggerService implements ILoggerAdapter {
         traceid: this.getTraceId(error),
         createdAt: DateUtils.getISODateString(),
         application: this.app,
-        stack: error.stack.replace(/\n/g, '')
+        stack: error.stack?.replace(/\n/g, '')
       },
       typeError
     );

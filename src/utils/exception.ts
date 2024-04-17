@@ -23,11 +23,7 @@ export class BaseException extends HttpException {
   readonly parameters: ParametersType;
 
   constructor(message: MessageType, status: HttpStatus, parameters?: ParametersType) {
-    if (typeof message === 'string') {
-      super([message], status);
-    } else {
-      super(message, status);
-    }
+    super(message, status);
 
     Error.captureStackTrace(this);
     Error.call(this);
