@@ -31,7 +31,7 @@ export const Swagger = {
             code: status,
             traceid: '<traceId>',
             context: 'context',
-            message: [httpStatus[String(status)], message].find(Boolean),
+            message: [[httpStatus[String(status)], message].find(Boolean)],
             timestamp: '<timestamp>',
             path: route
           }
