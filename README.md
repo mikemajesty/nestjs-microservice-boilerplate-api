@@ -126,6 +126,7 @@ Creating a CRUD in Postgres and Mongo in seconds.
 
 ### Microservice architecture.
 
+- I18n
 - Docker
 - Observability
   - tracing
