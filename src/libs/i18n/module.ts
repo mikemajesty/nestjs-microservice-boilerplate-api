@@ -10,7 +10,7 @@ import { I18nService } from './service';
     I18nModule.forRoot({
       fallbackLanguage: 'en',
       loaderOptions: {
-        path: path.join(__dirname, '/languages/'),
+        path: path.join(__dirname, '/languages'),
         watch: true
       },
       resolvers: [{ use: QueryResolver, options: ['lang'] }, AcceptLanguageResolver]
