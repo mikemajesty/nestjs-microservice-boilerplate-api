@@ -42,7 +42,7 @@
     "@opentelemetry/exporter-metrics-otlp-http": "^0.48.0",
     "@opentelemetry/exporter-trace-otlp-proto": "^0.48.0",
     "@opentelemetry/instrumentation-http": "^0.48.0",
-    "@opentelemetry/instrumentation-mongodb": "^0.39.0",
+    "@opentelemetry/instrumentation-mongodb": "^0.43.0",
     "@opentelemetry/instrumentation-pg": "^0.38.0",
     "@opentelemetry/instrumentation-redis-4": "^0.36.0",
     "@opentelemetry/resources": "^1.21.0",
