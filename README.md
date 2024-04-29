@@ -101,7 +101,7 @@ Creating a CRUD in Postgres and Mongo in seconds.
   $ yarn migration-postgres:run
   ```
 
-Mongo
+### Mongo migrations
 - create
   ```
   $ yarn migration-mongo:create
