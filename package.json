@@ -15,7 +15,7 @@
     "start": "yarn migration:run && node dist/src/main",
     "start:dev": "NODE_ENV=local yarn migration:run && nest start --watch -b swc",
     "start:debug": "NODE_ENV=local yarn migration:run && nest start --debug --watch -b swc",
-    "prettier": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "prettier": "prettier --write \"src/**/*.json\" \"test/**/*.ts\"",
     "lint": "eslint \"{src,test}/**/*.{ts,js}\" --fix",
     "test": "jest --config=\"./jest.config.ts\" --detectOpenHandles",
     "test:cov": "jest --coverage --detectOpenHandles && yarn make-badges",
