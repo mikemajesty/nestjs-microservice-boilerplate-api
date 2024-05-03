@@ -46,7 +46,7 @@ export class MongoRepository<T extends Document> implements IRepository<T> {
       return { id: savedResult.id, created: true, updated: false };
     }
 
-    await this.model.updateOne({ _id: exists.id }, document, options);
+    await this.model.updateOne({ _id: exists.id }, { $set: document }, options);
 
     return { id: exists.id, created: false, updated: true };
   }
@@ -92,7 +92,7 @@ export class MongoRepository<T extends Document> implements IRepository<T> {
     updated: UpdateWithAggregationPipeline | UpdateQuery<T>,
     options?: unknown
   ): Promise<UpdatedModel> {
-    return await this.model.updateOne(filter, updated, options);
+    return await this.model.updateOne(filter, { $set: updated }, options);
   }
 
   @ConvertMongoFilterToBaseRepository()
@@ -103,7 +103,7 @@ export class MongoRepository<T extends Document> implements IRepository<T> {
   ): Promise<T> {
     Object.assign(options, { new: true });
 
-    const model = await this.model.findOneAndUpdate(filter, updated, options);
+    const model = await this.model.findOneAndUpdate(filter, { $set: updated }, options);
 
     if (!model) {
       return null;
@@ -118,7 +118,7 @@ export class MongoRepository<T extends Document> implements IRepository<T> {
     updated: UpdateWithAggregationPipeline | UpdateQuery<T>,
     options?: unknown
   ): Promise<UpdatedModel> {
-    return await this.model.updateMany(filter, updated, options);
+    return await this.model.updateMany(filter, { $set: updated }, options);
   }
 
   async findIn(input: { [key in keyof T]: string[] }, options?: QueryOptions): Promise<T[]> {

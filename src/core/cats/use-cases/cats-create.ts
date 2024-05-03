@@ -4,6 +4,7 @@ import { ValidateSchema } from '@/common/decorators';
 import { CreatedModel } from '@/infra/repository';
 import { DatabaseOptionsType } from '@/utils/database/sequelize';
 import { ApiTrancingInput } from '@/utils/request';
+import { IUsecase } from '@/utils/usecase';
 
 import { ICatsRepository } from '../repository/cats';
 import { CatsEntity, CatsEntitySchema } from './../entity/cats';
@@ -17,7 +18,7 @@ export const CatsCreateSchema = CatsEntitySchema.pick({
 export type CatsCreateInput = z.infer<typeof CatsCreateSchema>;
 export type CatsCreateOutput = CreatedModel;
 
-export class CatsCreateUsecase {
+export class CatsCreateUsecase implements IUsecase {
   constructor(private readonly catsRepository: ICatsRepository) {}
 
   @ValidateSchema(CatsCreateSchema)

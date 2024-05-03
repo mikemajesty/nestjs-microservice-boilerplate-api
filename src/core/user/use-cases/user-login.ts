@@ -5,6 +5,7 @@ import { ITokenAdapter } from '@/libs/auth';
 import { ICryptoAdapter } from '@/libs/crypto';
 import { ApiNotFoundException } from '@/utils/exception';
 import { ApiTrancingInput } from '@/utils/request';
+import { IUsecase } from '@/utils/usecase';
 
 import { UserEntitySchema } from '../entity/user';
 import { IUserRepository } from '../repository/user';
@@ -17,7 +18,7 @@ export const LoginSchema = UserEntitySchema.pick({
 export type LoginInput = z.infer<typeof LoginSchema>;
 export type LoginOutput = Promise<{ token: string }>;
 
-export class LoginUsecase {
+export class LoginUsecase implements IUsecase {
   constructor(
     private readonly loginRepository: IUserRepository,
     private readonly tokenService: ITokenAdapter,

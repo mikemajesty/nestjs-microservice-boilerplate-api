@@ -5,6 +5,7 @@ import { ILoggerAdapter } from '@/infra/logger';
 import { ICryptoAdapter } from '@/libs/crypto';
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception';
 import { ApiTrancingInput } from '@/utils/request';
+import { IUsecase } from '@/utils/usecase';
 
 import { UserEntity, UserEntitySchema } from '../entity/user';
 import { IUserRepository } from '../repository/user';
@@ -16,7 +17,7 @@ export const UserUpdateSchema = UserEntitySchema.pick({
 export type UserUpdateInput = Partial<z.infer<typeof UserUpdateSchema>>;
 export type UserUpdateOutput = UserEntity;
 
-export class UserUpdateUsecase {
+export class UserUpdateUsecase implements IUsecase {
   constructor(
     private readonly userRepository: IUserRepository,
     private readonly loggerService: ILoggerAdapter,

@@ -4,6 +4,7 @@ import { ValidateSchema } from '@/common/decorators';
 import { CatsEntitySchema } from '@/core/cats/entity/cats';
 import { DatabaseOptionsType } from '@/utils/database/sequelize';
 import { ApiNotFoundException } from '@/utils/exception';
+import { IUsecase } from '@/utils/usecase';
 
 import { CatsEntity } from '../entity/cats';
 import { ICatsRepository } from '../repository/cats';
@@ -15,7 +16,7 @@ export const CatsGetByIdSchema = CatsEntitySchema.pick({
 export type CatsGetByIdInput = z.infer<typeof CatsGetByIdSchema>;
 export type CatsGetByIdOutput = CatsEntity;
 
-export class CatsGetByIdUsecase {
+export class CatsGetByIdUsecase implements IUsecase {
   constructor(private readonly catsRepository: ICatsRepository) {}
 
   @ValidateSchema(CatsGetByIdSchema)

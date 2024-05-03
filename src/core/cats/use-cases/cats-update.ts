@@ -6,6 +6,7 @@ import { ILoggerAdapter } from '@/infra/logger';
 import { DatabaseOptionsType } from '@/utils/database/sequelize';
 import { ApiNotFoundException } from '@/utils/exception';
 import { ApiTrancingInput } from '@/utils/request';
+import { IUsecase } from '@/utils/usecase';
 
 import { CatsEntity, CatsEntitySchema } from './../entity/cats';
 
@@ -16,7 +17,7 @@ export const CatsUpdateSchema = CatsEntitySchema.pick({
 export type CatsUpdateInput = z.infer<typeof CatsUpdateSchema>;
 export type CatsUpdateOutput = CatsEntity;
 
-export class CatsUpdateUsecase {
+export class CatsUpdateUsecase implements IUsecase {
   constructor(
     private readonly catsRepository: ICatsRepository,
     private readonly loggerService: ILoggerAdapter

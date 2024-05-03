@@ -5,6 +5,7 @@ import { ICatsRepository } from '@/core/cats/repository/cats';
 import { DatabaseOptionsType } from '@/utils/database/sequelize';
 import { ApiNotFoundException } from '@/utils/exception';
 import { ApiTrancingInput } from '@/utils/request';
+import { IUsecase } from '@/utils/usecase';
 
 import { CatsEntity, CatsEntitySchema } from '../entity/cats';
 
@@ -15,7 +16,7 @@ export const CatsDeleteSchema = CatsEntitySchema.pick({
 export type CatsDeleteInput = z.infer<typeof CatsDeleteSchema>;
 export type CatsDeleteOutput = CatsEntity;
 
-export class CatsDeleteUsecase {
+export class CatsDeleteUsecase implements IUsecase {
   constructor(private readonly catsRepository: ICatsRepository) {}
 
   @ValidateSchema(CatsDeleteSchema)

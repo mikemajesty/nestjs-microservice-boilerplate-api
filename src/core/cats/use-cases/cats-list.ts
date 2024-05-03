@@ -5,6 +5,7 @@ import { CatsEntity } from '@/core/cats/entity/cats';
 import { PaginationInput, PaginationOutput, PaginationSchema } from '@/utils/pagination';
 import { SearchSchema } from '@/utils/search';
 import { SortSchema } from '@/utils/sort';
+import { IUsecase } from '@/utils/usecase';
 
 import { ICatsRepository } from '../repository/cats';
 
@@ -13,7 +14,7 @@ export const CatsListSchema = z.intersection(PaginationSchema, SortSchema.merge(
 export type CatsListInput = PaginationInput<CatsEntity>;
 export type CatsListOutput = PaginationOutput<CatsEntity>;
 
-export class CatsListUsecase {
+export class CatsListUsecase implements IUsecase {
   constructor(private readonly catsRepository: ICatsRepository) {}
 
   @ValidateSchema(CatsListSchema)
