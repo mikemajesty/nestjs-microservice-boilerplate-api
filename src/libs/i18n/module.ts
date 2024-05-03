@@ -11,7 +11,7 @@ import { I18nService } from './service';
       fallbackLanguage: 'en',
       loaderOptions: {
         path: path.join(__dirname, '/languages'),
-        watch: true
+        watch: false
       },
       resolvers: [{ use: QueryResolver, options: ['lang'] }, AcceptLanguageResolver]
     })
