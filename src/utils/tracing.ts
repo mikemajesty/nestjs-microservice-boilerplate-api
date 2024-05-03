@@ -10,7 +10,6 @@ import { RedisInstrumentation } from '@opentelemetry/instrumentation-redis-4';
 import { Resource } from '@opentelemetry/resources';
 import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
 import { NodeSDK } from '@opentelemetry/sdk-node';
-import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
 import { v4 as uuidv4 } from 'uuid';
 
 import { name, version } from '../../package.json';
@@ -21,8 +20,8 @@ diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.ERROR);
 const tracerExporter = new OTLPTraceExporter();
 
 const resource = new Resource({
-  [SemanticResourceAttributes.SERVICE_NAME]: name,
-  [SemanticResourceAttributes.SERVICE_VERSION]: version
+  'service.name': name,
+  'service.version': version
 });
 
 const metricExporter = new OTLPMetricExporter();
