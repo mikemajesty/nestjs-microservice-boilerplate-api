@@ -3,13 +3,11 @@
   "exclude": [
     "node_modules",
     "test",
-    "dist",
     "**/*spec.ts"
   ],
   "include": [
-    "**/*.ts",
+    "./src/**/*.ts",
     "**/*.json",
-    "**/*.js",
-    "./src/libs/i18n/languages"
+    "**/*.js"
   ]
 }
