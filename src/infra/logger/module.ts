@@ -4,6 +4,7 @@ import { ISecretsAdapter, SecretsModule } from '@/infra/secrets';
 
 import { ILoggerAdapter } from './adapter';
 import { LoggerService } from './service';
+import { LogLevelEnum } from './types';
 
 @Module({
   imports: [SecretsModule],
@@ -12,7 +13,7 @@ import { LoggerService } from './service';
       provide: ILoggerAdapter,
       useFactory: async ({ LOG_LEVEL }: ISecretsAdapter) => {
         const logger = new LoggerService();
-        await logger.connect(LOG_LEVEL);
+        await logger.connect(LogLevelEnum[`${LOG_LEVEL}`]);
         return logger;
       },
       inject: [ISecretsAdapter]

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { ISecretsAdapter } from './adapter';
+import { EnvEnum } from './types';
 
 @Injectable()
 export class SecretsService implements ISecretsAdapter {
@@ -11,9 +12,9 @@ export class SecretsService implements ISecretsAdapter {
 
   IS_PRODUCTION = this.config.get<string>('NODE_ENV').toLowerCase() === 'prod';
 
-  ENV = this.config.get('NODE_ENV');
+  ENV = this.config.get<EnvEnum>('NODE_ENV');
 
-  PORT = this.config.get<number>('PORT');
+  PORT = Number(this.config.get<number>('PORT'));
 
   HOST = this.config.get('HOST');
 
@@ -42,5 +43,5 @@ export class SecretsService implements ISecretsAdapter {
 
   JWT_SECRET_KEY = this.config.get('JWT_SECRET_KEY');
 
-  RATE_LIMIT_BY_USER = this.config.get<number>('RATE_LIMIT_BY_USER');
+  RATE_LIMIT_BY_USER = Number(this.config.get<number>('RATE_LIMIT_BY_USER'));
 }
