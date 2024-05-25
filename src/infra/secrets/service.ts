@@ -20,6 +20,10 @@ export class SecretsService implements ISecretsAdapter {
 
   LOG_LEVEL = this.config.get('LOG_LEVEL');
 
+  DATE_FORMAT = this.config.get('DATE_FORMAT');
+
+  TZ = this.config.get('TZ');
+
   REDIS_URL = this.config.get('REDIS_URL');
 
   MONGO = {

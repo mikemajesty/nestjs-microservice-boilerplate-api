@@ -27,6 +27,8 @@ import { EnvEnum } from './types';
           IS_PRODUCTION: z.boolean(),
           JWT_SECRET_KEY: z.string(),
           LOG_LEVEL: z.nativeEnum(LogLevelEnum),
+          DATE_FORMAT: z.string(),
+          TZ: z.string(),
           MONGO: z.object({
             MONGO_URL: z.string(),
             MONGO_DATABASE: z.string(),

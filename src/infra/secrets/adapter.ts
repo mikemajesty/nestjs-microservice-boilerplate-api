@@ -7,6 +7,10 @@ export abstract class ISecretsAdapter {
 
   LOG_LEVEL: string;
 
+  DATE_FORMAT: string;
+
+  TZ: string;
+
   MONGO: {
     MONGO_URL?: string;
     MONGO_DATABASE?: string;
