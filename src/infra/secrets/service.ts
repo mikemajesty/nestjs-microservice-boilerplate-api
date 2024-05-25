@@ -8,9 +8,9 @@ import { EnvEnum } from './types';
 export class SecretsService implements ISecretsAdapter {
   constructor(private readonly config: ConfigService) {}
 
-  IS_LOCAL = this.config.get<string>('NODE_ENV').toLowerCase() === 'local';
+  IS_LOCAL = this.config.get<string>('NODE_ENV') === 'local';
 
-  IS_PRODUCTION = this.config.get<string>('NODE_ENV').toLowerCase() === 'prod';
+  IS_PRODUCTION = this.config.get<string>('NODE_ENV') === 'prod';
 
   ENV = this.config.get<EnvEnum>('NODE_ENV');
 

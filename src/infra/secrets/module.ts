@@ -48,12 +48,11 @@ import { EnvEnum } from './types';
         try {
           SecretsSchema.parse(secret);
         } catch (error) {
-          const message = error.issues.map((i) => `${i.path}: ${i.message}`);
-          error.context = 'SecretService';
+          const message = error.issues.map((i) => `SecretsService.${i.path}: ${i.message}`);
           throw { ...error, message };
         }
 
-        return secret;
+        return SecretsSchema.parse(secret);
       },
       inject: [ConfigService]
     }
