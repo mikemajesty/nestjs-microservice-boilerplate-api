@@ -2,6 +2,7 @@ import { Test } from '@nestjs/testing';
 
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { CryptoLibModule, ICryptoAdapter } from '@/libs/crypto';
+import { IEventAdapter } from '@/libs/event';
 import { IUserCreateAdapter } from '@/modules/user/adapter';
 import { ApiConflictException } from '@/utils/exception';
 import { expectZodError, getMockTracing, getMockUUID } from '@/utils/tests';
@@ -12,7 +13,7 @@ import { UserCreateUsecase } from '../user-create';
 
 const userMock = {
   id: getMockUUID(),
-  login: 'login',
+  email: 'admin@admin.com',
   password: '**********',
   roles: [UserRole.USER]
 } as UserEntity;
@@ -30,11 +31,22 @@ describe('UserCreateUsecase', () => {
           useValue: {}
         },
         {
+          provide: IEventAdapter,
+          useValue: {
+            emit: jest.fn()
+          }
+        },
+        {
           provide: IUserCreateAdapter,
-          useFactory: (userRepository: IUserRepository, logger: ILoggerAdapter, crypto: ICryptoAdapter) => {
-            return new UserCreateUsecase(userRepository, logger, crypto);
+          useFactory: (
+            userRepository: IUserRepository,
+            logger: ILoggerAdapter,
+            crypto: ICryptoAdapter,
+            event: IEventAdapter
+          ) => {
+            return new UserCreateUsecase(userRepository, logger, crypto, event);
           },
-          inject: [IUserRepository, ILoggerAdapter, ICryptoAdapter]
+          inject: [IUserRepository, ILoggerAdapter, ICryptoAdapter, IEventAdapter]
         }
       ]
     }).compile();
@@ -71,7 +83,7 @@ describe('UserCreateUsecase', () => {
       () => usecase.execute({}, getMockTracing()),
       (issues) => {
         expect(issues).toEqual([
-          { message: 'Required', path: UserEntity.nameOf('login') },
+          { message: 'Required', path: UserEntity.nameOf('email') },
           { message: 'Required', path: UserEntity.nameOf('password') },
           { message: 'Required', path: UserEntity.nameOf('roles') }
         ]);

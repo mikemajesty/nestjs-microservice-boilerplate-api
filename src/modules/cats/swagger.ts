@@ -18,7 +18,7 @@ export const SwaggerResponse = {
     }),
     404: Swagger.defaultResponseError({
       status: 404,
-      route: 'api/cats',
+      route: 'api/v1/cats',
       message: 'catNotFound',
       description: 'cat not found.'
     })
@@ -31,7 +31,7 @@ export const SwaggerResponse = {
     }),
     404: Swagger.defaultResponseError({
       status: 404,
-      route: 'api/cats/:id',
+      route: 'api/v1/cats/:id',
       message: 'catNotFound',
       description: 'cat not found.'
     })
@@ -44,7 +44,7 @@ export const SwaggerResponse = {
     }),
     404: Swagger.defaultResponseError({
       status: 404,
-      route: 'api/cats/:id',
+      route: 'api/v1/cats/:id',
       message: 'catNotFound',
       description: 'cat not found.'
     })

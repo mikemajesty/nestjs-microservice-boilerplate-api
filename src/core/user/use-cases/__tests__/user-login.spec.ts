@@ -1,7 +1,7 @@
 import { Test } from '@nestjs/testing';
 
-import { ITokenAdapter, TokenModule } from '@/libs/auth';
 import { CryptoLibModule, ICryptoAdapter } from '@/libs/crypto';
+import { ITokenAdapter, TokenLibModule } from '@/libs/token';
 import { ILoginAdapter } from '@/modules/login/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
 import { expectZodError, getMockTracing, getMockUUID } from '@/utils/tests';
@@ -12,7 +12,7 @@ import { LoginUsecase } from '../user-login';
 
 const userMock = {
   id: getMockUUID(),
-  login: 'login',
+  email: 'admin@admin.com',
   password: '**********',
   roles: [UserRole.USER]
 } as UserEntity;
@@ -23,7 +23,7 @@ describe('LoginUsecase', () => {
 
   beforeEach(async () => {
     const app = await Test.createTestingModule({
-      imports: [TokenModule, CryptoLibModule],
+      imports: [TokenLibModule, CryptoLibModule],
       providers: [
         {
           provide: IUserRepository,
@@ -48,7 +48,7 @@ describe('LoginUsecase', () => {
       () => usecase.execute({}, getMockTracing()),
       (issues) => {
         expect(issues).toEqual([
-          { message: 'Required', path: UserEntity.nameOf('login') },
+          { message: 'Required', path: UserEntity.nameOf('email') },
           { message: 'Required', path: UserEntity.nameOf('password') }
         ]);
       }
@@ -57,14 +57,16 @@ describe('LoginUsecase', () => {
 
   test('when user not found, should expect an error', async () => {
     repository.findOne = jest.fn().mockResolvedValue(null);
-    await expect(usecase.execute({ login: 'login', password: 'password' }, getMockTracing())).rejects.toThrow(
+    await expect(usecase.execute({ email: 'admin@admin.com', password: 'password' }, getMockTracing())).rejects.toThrow(
       ApiNotFoundException
     );
   });
 
   test('when user found, should expect a token', async () => {
     repository.findOne = jest.fn().mockResolvedValue(userMock);
-    await expect(usecase.execute({ login: 'login', password: 'password' }, getMockTracing())).resolves.toEqual({
+    await expect(
+      usecase.execute({ email: 'admin@admin.com', password: 'password' }, getMockTracing())
+    ).resolves.toEqual({
       token: expect.any(String)
     });
   });

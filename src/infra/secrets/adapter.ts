@@ -22,6 +22,14 @@ export abstract class ISecretsAdapter {
     POSTGRES_PGADMIN_URL?: string;
   };
 
+  EMAIL: {
+    HOST?: string;
+    PORT?: number;
+    USER?: string;
+    PASS?: string;
+    FROM?: string;
+  };
+
   REDIS_URL: string;
 
   ZIPKIN_URL: string;

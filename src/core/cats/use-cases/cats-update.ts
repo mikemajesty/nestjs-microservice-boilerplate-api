@@ -39,7 +39,7 @@ export class CatsUpdateUsecase implements IUsecase {
 
     const updated = await this.catsRepository.findById<DatabaseOptionsType>(entity.id);
 
-    tracing.logEvent('cats-updated', `cats updated by: ${user.login}`);
+    tracing.logEvent('cats-updated', `cats updated by: ${user.email}`);
 
     return new CatsEntity(updated);
   }

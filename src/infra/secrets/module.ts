@@ -43,14 +43,21 @@ import { EnvEnum } from './types';
           RATE_LIMIT_BY_USER: z.number(),
           REDIS_URL: z.string().url(),
           TOKEN_EXPIRATION: z.string(),
-          ZIPKIN_URL: z.string().url()
+          ZIPKIN_URL: z.string().url(),
+          EMAIL: z.object({
+            HOST: z.string(),
+            PORT: z.number(),
+            USER: z.string(),
+            PASS: z.string(),
+            FROM: z.string().email()
+          })
         });
         const secret = new SecretsService(config);
 
         try {
           SecretsSchema.parse(secret);
         } catch (error) {
-          const message = error.issues.map((i) => `SecretsService.${i.path}: ${i.message}`);
+          const message = error.issues.map((i) => `SecretsService.${i.path.join('.')}: ${i.message}`);
           throw { ...error, message };
         }
 

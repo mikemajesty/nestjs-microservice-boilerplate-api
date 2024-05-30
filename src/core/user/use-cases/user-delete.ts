@@ -34,7 +34,7 @@ export class UserDeleteUsecase implements IUsecase {
 
     user.anonymizePassword();
 
-    tracing.logEvent('user-deleted', `user: ${entity.login} deleted by: ${userData.login}`);
+    tracing.logEvent('user-deleted', `user: ${entity.email} deleted by: ${userData.email}`);
 
     return user;
   }

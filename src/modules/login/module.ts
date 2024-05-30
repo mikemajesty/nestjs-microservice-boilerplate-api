@@ -2,15 +2,15 @@ import { Module } from '@nestjs/common';
 
 import { IUserRepository } from '@/core/user/repository/user';
 import { LoginUsecase } from '@/core/user/use-cases/user-login';
-import { ITokenAdapter, TokenModule } from '@/libs/auth';
 import { CryptoLibModule, ICryptoAdapter } from '@/libs/crypto';
+import { ITokenAdapter, TokenLibModule } from '@/libs/token';
 
 import { UserModule } from '../user/module';
 import { ILoginAdapter } from './adapter';
 import { LoginController } from './controller';
 
 @Module({
-  imports: [TokenModule, UserModule, CryptoLibModule],
+  imports: [TokenLibModule, UserModule, CryptoLibModule],
   controllers: [LoginController],
   providers: [
     {

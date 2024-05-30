@@ -9,7 +9,7 @@ import { ApiUnauthorizedException } from '@/utils/exception';
 import { ITokenAdapter } from './adapter';
 
 const Schema = UserEntitySchema.pick({
-  login: true,
+  email: true,
   password: true,
   roles: true
 });

@@ -12,7 +12,7 @@ import { UserUpdateUsecase } from '../user-update';
 
 const userMock = {
   id: getMockUUID(),
-  login: 'login',
+  email: 'admin@admin.com',
   password: '**********',
   roles: [UserRole.USER]
 } as UserEntity;

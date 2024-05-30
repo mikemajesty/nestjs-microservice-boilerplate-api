@@ -11,7 +11,7 @@ export const SwaggerResponse = {
     }),
     409: Swagger.defaultResponseError({
       status: 409,
-      route: 'api/users',
+      route: 'api/v1/users',
       message: 'userExists',
       description: 'user exists.'
     })
@@ -24,13 +24,13 @@ export const SwaggerResponse = {
     }),
     404: Swagger.defaultResponseError({
       status: 404,
-      route: 'api/users',
+      route: 'api/v1/users',
       message: 'userNotFound',
       description: 'user not found.'
     }),
     409: Swagger.defaultResponseError({
       status: 409,
-      route: 'api/users',
+      route: 'api/v1/users',
       message: 'userExists',
       description: 'user exists.'
     })
@@ -43,7 +43,7 @@ export const SwaggerResponse = {
     }),
     404: Swagger.defaultResponseError({
       status: 404,
-      route: 'api/users/:id',
+      route: 'api/v1/users/:id',
       message: 'userNotFound',
       description: 'user not found.'
     })
@@ -56,7 +56,7 @@ export const SwaggerResponse = {
     }),
     404: Swagger.defaultResponseError({
       status: 404,
-      route: 'api/users/:id',
+      route: 'api/v1/users/:id',
       message: 'userNotFound',
       description: 'user not found.'
     })
@@ -81,12 +81,12 @@ export const SwaggerRequest = {
     sort: Swagger.defaultApiQueryOptions({
       name: 'sort',
       required: false,
-      description: `<b>createdAt:desc,login:asc`
+      description: `<b>createdAt:desc,email:asc`
     }),
     search: Swagger.defaultApiQueryOptions({
       name: 'search',
       required: false,
-      description: `<b>login:value<login>`
+      description: `<b>email:value`
     })
   }
 };

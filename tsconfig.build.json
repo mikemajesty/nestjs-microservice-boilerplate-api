@@ -4,10 +4,5 @@
     "node_modules",
     "test",
     "**/*spec.ts"
-  ],
-  "include": [
-    "./src/**/*.ts",
-    "**/*.json",
-    "**/*.js"
   ]
 }

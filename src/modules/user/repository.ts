@@ -24,7 +24,7 @@ export class UserRepository extends MongoRepository<UserDocument> implements IUs
   }
 
   async existsOnUpdate(
-    equalFilter: Pick<UserEntity, 'login'>,
+    equalFilter: Pick<UserEntity, 'email'>,
     notEqualFilter: Pick<UserEntity, 'id'>
   ): Promise<boolean> {
     const user = await this.entity.findOne({ ...equalFilter, $nor: [{ _id: notEqualFilter.id }] });
@@ -32,8 +32,8 @@ export class UserRepository extends MongoRepository<UserDocument> implements IUs
     return !!user;
   }
 
-  @ValidateMongooseFilter<UserEntity>([{ name: 'login', type: SearchTypeEnum.like }])
-  @ValidateDatabaseSortAllowed<UserEntity>('login', 'createdAt')
+  @ValidateMongooseFilter<UserEntity>([{ name: 'email', type: SearchTypeEnum.like }])
+  @ValidateDatabaseSortAllowed<UserEntity>('email', 'createdAt')
   async paginate({ limit, page, sort, search }: UserListInput): Promise<UserListOutput> {
     const users = await this.entity.paginate(search, { page, limit, sort });
 

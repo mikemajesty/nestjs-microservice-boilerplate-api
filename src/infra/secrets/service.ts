@@ -32,6 +32,14 @@ export class SecretsService implements ISecretsAdapter {
     MONGO_EXPRESS_URL: this.config.get('MONGO_EXPRESS_URL')
   };
 
+  EMAIL = {
+    HOST: this.config.get('EMAIL_HOST'),
+    PORT: Number(this.config.get('EMAIL_PORT')),
+    USER: this.config.get('EMAIL_USER'),
+    PASS: this.config.get('EMAIL_PASS'),
+    FROM: this.config.get('EMAIL_FROM')
+  };
+
   POSTGRES = {
     POSTGRES_URL: `postgresql://${this.config.get('POSTGRES_USER')}:${this.config.get(
       'POSTGRES_PASSWORD'

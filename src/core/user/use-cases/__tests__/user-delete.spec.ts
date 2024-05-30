@@ -10,7 +10,7 @@ import { UserDeleteUsecase } from '../user-delete';
 
 const userMock = {
   id: getMockUUID(),
-  login: 'login',
+  email: 'admin@admin.com',
   password: '**********',
   roles: [UserRole.USER]
 } as UserEntity;

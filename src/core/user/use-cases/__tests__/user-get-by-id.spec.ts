@@ -10,7 +10,7 @@ import { UserGetByIdUsecase } from '../user-get-by-id';
 
 const userMock = {
   id: getMockUUID(),
-  login: 'login',
+  email: 'admin@admin.com',
   password: '**********',
   roles: [UserRole.USER]
 } as UserEntity;

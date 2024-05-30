@@ -6,11 +6,11 @@ export const SwaggerResponse = {
     200: Swagger.defaultResponseJSON({
       status: 200,
       json: { token: '<token>' },
-      description: 'user logged'
+      description: 'user logged.'
     }),
     404: Swagger.defaultResponseError({
       status: 404,
-      route: 'api/login',
+      route: 'api/v1/login',
       message: 'userNotFound',
       description: 'username or password not found.'
     })
@@ -19,7 +19,7 @@ export const SwaggerResponse = {
 
 export const SwaggerRequest = {
   body: Swagger.defaultRequestJSON({
-    login: 'admin',
+    email: 'admin@admin.com',
     password: 'admin'
   } as LoginInput)
 };

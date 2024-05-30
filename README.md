@@ -102,6 +102,7 @@ Creating a CRUD in Postgres and Mongo in seconds.
   ```
 
 ### Mongo migrations
+
 - create
   ```
   $ yarn migration-mongo:create
@@ -151,6 +152,7 @@ Creating a CRUD in Postgres and Mongo in seconds.
 - Authentication
   - Login
   - Logout
+  - Forgot Password
 - Authorization
   - Role-based access
 - Error Handler

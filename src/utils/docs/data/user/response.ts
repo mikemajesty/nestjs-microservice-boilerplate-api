@@ -7,7 +7,7 @@ import { UserUpdateOutput } from '@/core/user/use-cases/user-update';
 import { getMockDate, getMockUUID } from '@/utils/tests';
 
 const entity = {
-  login: 'login',
+  email: 'admin@admin.com',
   password: '**********',
   roles: [UserRole.USER]
 } as UserEntity;

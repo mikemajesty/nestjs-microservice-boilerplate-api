@@ -14,7 +14,7 @@ import { IDataBaseAdapter } from '@/infra/database';
 import { PostgresDatabaseModule } from '@/infra/database/postgres/module';
 import { CatsSchema } from '@/infra/database/postgres/schemas/cats';
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
-import { TokenModule } from '@/libs/auth';
+import { TokenLibModule } from '@/libs/token';
 
 import {
   ICatsCreateAdapter,
@@ -27,7 +27,7 @@ import { CatsController } from './controller';
 import { CatsRepository } from './repository';
 
 @Module({
-  imports: [TokenModule, LoggerModule, RedisCacheModule, PostgresDatabaseModule],
+  imports: [TokenLibModule, LoggerModule, RedisCacheModule, PostgresDatabaseModule],
   controllers: [CatsController],
   providers: [
     {

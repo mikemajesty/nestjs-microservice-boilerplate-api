@@ -8,7 +8,7 @@ export enum UserRole {
 }
 
 const ID = z.string().uuid();
-const Login = z.string().trim().min(1).max(200);
+const Email = z.string().email();
 const Password = z.string().trim().min(1).max(200);
 const CreatedAt = z.date().nullish();
 const Roles = z.array(z.nativeEnum(UserRole));
@@ -17,7 +17,7 @@ const DeletedAt = z.date().default(null).nullish();
 
 export const UserEntitySchema = z.object({
   id: ID,
-  login: Login,
+  email: Email,
   password: Password,
   roles: Roles,
   createdAt: CreatedAt,
@@ -28,7 +28,7 @@ export const UserEntitySchema = z.object({
 type User = z.infer<typeof UserEntitySchema>;
 
 export class UserEntity extends BaseEntity<UserEntity>(UserEntitySchema) {
-  login: string;
+  email: string;
 
   password: string;
 

@@ -29,6 +29,6 @@ export const getMockTracing = (): ApiTrancingInput => {
         return event;
       }
     } as Partial<TracingType> as TracingType,
-    user: { login: 'test' } as UserEntity
+    user: { email: 'test' } as UserEntity
   };
 };

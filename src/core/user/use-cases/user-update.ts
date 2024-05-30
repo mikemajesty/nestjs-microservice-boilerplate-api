@@ -34,7 +34,7 @@ export class UserUpdateUsecase implements IUsecase {
 
     const entity = new UserEntity({ ...user, ...input });
 
-    const userExists = await this.userRepository.existsOnUpdate({ login: entity.login }, { id: entity.id });
+    const userExists = await this.userRepository.existsOnUpdate({ email: entity.email }, { id: entity.id });
 
     if (userExists) {
       throw new ApiConflictException('user exists');
@@ -52,7 +52,7 @@ export class UserUpdateUsecase implements IUsecase {
 
     entityUpdated.anonymizePassword();
 
-    tracing.logEvent('user-updated', `user: ${user.login} updated by: ${userData.login}`);
+    tracing.logEvent('user-updated', `user: ${user.email} updated by: ${userData.email}`);
 
     return entityUpdated;
   }

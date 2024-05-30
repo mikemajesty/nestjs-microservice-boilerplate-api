@@ -31,7 +31,7 @@ export class CatsCreateUsecase implements IUsecase {
 
       await transaction.commit();
 
-      tracing.logEvent('cats-created', `cats created by: ${user.login}`);
+      tracing.logEvent('cats-created', `cats created by: ${user.email}`);
 
       return cats;
     } catch (error) {

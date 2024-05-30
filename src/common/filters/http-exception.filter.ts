@@ -20,9 +20,8 @@ export class AppExceptionFilter implements ExceptionFilter {
 
     exception.traceid = [exception.traceid, request['id']].find(Boolean);
 
+    this.loggerService.error(exception, exception.message);
     const message = this.getMessage(exception, status);
-
-    this.loggerService.error(exception, message, exception.context);
 
     response.status(status).json({
       error: {

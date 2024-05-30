@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
 import { ValidateSchema } from '@/common/decorators';
-import { ITokenAdapter } from '@/libs/auth';
 import { ICryptoAdapter } from '@/libs/crypto';
+import { ITokenAdapter } from '@/libs/token';
 import { ApiNotFoundException } from '@/utils/exception';
 import { ApiTrancingInput } from '@/utils/request';
 import { IUsecase } from '@/utils/usecase';
@@ -11,7 +11,7 @@ import { UserEntitySchema } from '../entity/user';
 import { IUserRepository } from '../repository/user';
 
 export const LoginSchema = UserEntitySchema.pick({
-  login: true,
+  email: true,
   password: true
 });
 
@@ -29,7 +29,7 @@ export class LoginUsecase implements IUsecase {
   async execute(input: LoginInput, { tracing }: ApiTrancingInput): LoginOutput {
     const password = this.crypto.createHash(input.password);
     const login = await this.loginRepository.findOne({
-      login: input.login,
+      email: input.email,
       password
     });
 
@@ -37,10 +37,10 @@ export class LoginUsecase implements IUsecase {
       throw new ApiNotFoundException();
     }
 
-    tracing.logEvent('user-login', `${login.login}`);
+    tracing.logEvent('user-login', `${login.email}`);
 
     return this.tokenService.sign({
-      login: login.login,
+      email: login.email,
       roles: login.roles
     });
   }

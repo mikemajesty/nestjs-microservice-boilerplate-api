@@ -16,4 +16,4 @@ import { TokenService } from './service';
   ],
   exports: [ITokenAdapter]
 })
-export class TokenModule {}
+export class TokenLibModule {}

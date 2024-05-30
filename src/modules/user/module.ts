@@ -14,8 +14,9 @@ import { ConnectionName } from '@/infra/database/enum';
 import { User, UserDocument, UserSchema } from '@/infra/database/mongo/schemas/user';
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { SecretsModule } from '@/infra/secrets';
-import { TokenModule } from '@/libs/auth';
 import { CryptoLibModule, ICryptoAdapter } from '@/libs/crypto';
+import { EventLibModule, IEventAdapter } from '@/libs/event';
+import { TokenLibModule } from '@/libs/token';
 import { MongoRepositoryModelSessionType } from '@/utils/database/mongoose';
 
 import {
@@ -29,7 +30,7 @@ import { UserController } from './controller';
 import { UserRepository } from './repository';
 
 @Module({
-  imports: [TokenModule, SecretsModule, LoggerModule, RedisCacheModule, CryptoLibModule],
+  imports: [TokenLibModule, SecretsModule, LoggerModule, RedisCacheModule, CryptoLibModule, EventLibModule],
   controllers: [UserController],
   providers: [
     {
@@ -57,10 +58,15 @@ import { UserRepository } from './repository';
     },
     {
       provide: IUserCreateAdapter,
-      useFactory: (userRepository: IUserRepository, loggerService: ILoggerAdapter, crypto: ICryptoAdapter) => {
-        return new UserCreateUsecase(userRepository, loggerService, crypto);
+      useFactory: (
+        userRepository: IUserRepository,
+        loggerService: ILoggerAdapter,
+        crypto: ICryptoAdapter,
+        event: IEventAdapter
+      ) => {
+        return new UserCreateUsecase(userRepository, loggerService, crypto, event);
       },
-      inject: [IUserRepository, ILoggerAdapter, ICryptoAdapter]
+      inject: [IUserRepository, ILoggerAdapter, ICryptoAdapter, IEventAdapter]
     },
     {
       provide: IUserUpdateAdapter,

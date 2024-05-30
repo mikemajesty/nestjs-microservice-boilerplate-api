@@ -16,7 +16,7 @@ export class User {
   _id: string;
 
   @Prop({ min: 0, max: 200, required: true, type: String })
-  login: string;
+  email: string;
 
   @Prop({ min: 0, max: 200, required: true, type: String })
   password: string;
@@ -30,7 +30,7 @@ export class User {
 
 const UserSchema = SchemaFactory.createForClass(User);
 
-UserSchema.index({ login: 1 }, { unique: true, partialFilterExpression: { deletedAt: { $eq: null } } });
+UserSchema.index({ email: 1 }, { unique: true, partialFilterExpression: { deletedAt: { $eq: null } } });
 
 UserSchema.plugin(paginate);
 

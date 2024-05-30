@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { ICacheAdapter } from '@/infra/cache';
 import { ILoggerAdapter } from '@/infra/logger';
-import { ITokenAdapter } from '@/libs/auth';
+import { ITokenAdapter } from '@/libs/token';
 
 import { ApiUnauthorizedException } from '../../utils/exception';
 

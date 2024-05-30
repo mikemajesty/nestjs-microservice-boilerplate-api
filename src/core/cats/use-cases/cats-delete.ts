@@ -32,7 +32,7 @@ export class CatsDeleteUsecase implements IUsecase {
     cats.setDeleted();
 
     await this.catsRepository.updateOne({ id: cats.id }, cats);
-    tracing.logEvent('cats-deleted', `cats deleted by: ${user.login}`);
+    tracing.logEvent('cats-deleted', `cats deleted by: ${user.email}`);
 
     return cats;
   }

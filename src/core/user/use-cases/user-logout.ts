@@ -20,6 +20,6 @@ export class LogoutUsecase implements IUsecase {
   @ValidateSchema(LogoutSchema)
   async execute(input: LogoutInput, { tracing, user }: ApiTrancingInput): LogoutOutput {
     await this.redis.set(input.token, input.token, { PX: this.secretes.TOKEN_EXPIRATION });
-    tracing.logEvent('user-logout', `${user.login}`);
+    tracing.logEvent('user-logout', `${user.email}`);
   }
 }

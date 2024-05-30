@@ -7,12 +7,12 @@ import { RedisCacheModule } from '@/infra/cache/redis';
 import { LoggerModule } from '@/infra/logger';
 import { ISecretsAdapter, SecretsModule } from '@/infra/secrets';
 
-import { TokenModule } from './../../libs/auth/module';
+import { TokenLibModule } from '../../libs/token/module';
 import { ILogoutAdapter } from './adapter';
 import { LogoutController } from './controller';
 
 @Module({
-  imports: [RedisCacheModule, SecretsModule, RedisCacheModule, TokenModule, LoggerModule],
+  imports: [RedisCacheModule, SecretsModule, RedisCacheModule, TokenLibModule, LoggerModule],
   controllers: [LogoutController],
   providers: [
     {
