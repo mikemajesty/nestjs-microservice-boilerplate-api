@@ -182,12 +182,10 @@ Creating a CRUD in Postgres and Mongo in seconds.
 -- App Skeleton
 
 ```
-.
 ├── CHANGELOG.md
-├── Dockerfile
-├── README.md
-├── TRACING.md
 ├── commitlint.config.js
+├── dist
+│   └── tsconfig.build.tsbuildinfo
 ├── docker
 │   ├── collector
 │   │   └── collector-config.yaml
@@ -200,12 +198,15 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │       └── config.yml
 ├── docker-compose-infra.yml
 ├── docker-compose.yml
+├── Dockerfile
 ├── jest.config.ts
 ├── nest-cli.json
-├── package-lock.json
 ├── package.json
+├── README.md
 ├── scripts
-│   └── npm-audit.sh
+│   ├── npm-audit.sh
+│   └── postgres
+│       └── create-database.sql
 ├── src
 │   ├── app.module.ts
 │   ├── common
@@ -244,17 +245,28 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │   │   │   ├── repository
 │   │   │   │   └── cats.ts
 │   │   │   └── use-cases
-│   │   │       ├── __tests__
-│   │   │       │   ├── cats-create.spec.ts
-│   │   │       │   ├── cats-delete.spec.ts
-│   │   │       │   ├── cats-list.spec.ts
-│   │   │       │   ├── cats-update.spec.ts
-│   │   │       │   └── user-get-by-id.spec.ts
 │   │   │       ├── cats-create.ts
 │   │   │       ├── cats-delete.ts
 │   │   │       ├── cats-get-by-id.ts
 │   │   │       ├── cats-list.ts
-│   │   │       └── cats-update.ts
+│   │   │       ├── cats-update.ts
+│   │   │       └── __tests__
+│   │   │           ├── cats-create.spec.ts
+│   │   │           ├── cats-delete.spec.ts
+│   │   │           ├── cats-list.spec.ts
+│   │   │           ├── cats-update.spec.ts
+│   │   │           └── user-get-by-id.spec.ts
+│   │   ├── reset-password
+│   │   │   ├── entity
+│   │   │   │   └── reset-password.ts
+│   │   │   ├── repository
+│   │   │   │   └── reset-password.ts
+│   │   │   └── use-cases
+│   │   │       ├── confirm.ts
+│   │   │       ├── send-email.ts
+│   │   │       └── __tests__
+│   │   │           ├── confirm.spec.ts
+│   │   │           └── send-email.spec.ts
 │   │   └── user
 │   │       ├── entity
 │   │       │   └── user.ts
@@ -303,18 +315,28 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │   │   │   │   │   └── 1709944044583_create-user-default.ts
 │   │   │   │   ├── module.ts
 │   │   │   │   ├── schemas
+│   │   │   │   │   ├── reset-password.ts
 │   │   │   │   │   └── user.ts
 │   │   │   │   └── service.ts
 │   │   │   ├── postgres
 │   │   │   │   ├── config.js
 │   │   │   │   ├── index.ts
 │   │   │   │   ├── migrations
-│   │   │   │   │   └── 20230416174316-create-cats-table.js
+│   │   │   │   │   └── 20230416174316-create-cats-table.ts
 │   │   │   │   ├── module.ts
 │   │   │   │   ├── schemas
 │   │   │   │   │   └── cats.ts
 │   │   │   │   └── service.ts
 │   │   │   └── types.ts
+│   │   ├── email
+│   │   │   ├── adapter.ts
+│   │   │   ├── index.ts
+│   │   │   ├── module.ts
+│   │   │   ├── service.ts
+│   │   │   └── templates
+│   │   │       ├── reque-reset-password.handlebars
+│   │   │       ├── reset-password.handlebars
+│   │   │       └── welcome.handlebars
 │   │   ├── http
 │   │   │   ├── adapter.ts
 │   │   │   ├── index.ts
@@ -340,14 +362,33 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │   │       ├── adapter.ts
 │   │       ├── index.ts
 │   │       ├── module.ts
-│   │       └── service.ts
+│   │       ├── service.ts
+│   │       └── types.ts
 │   ├── libs
-│   │   ├── auth
+│   │   ├── crypto
 │   │   │   ├── adapter.ts
 │   │   │   ├── index.ts
 │   │   │   ├── module.ts
 │   │   │   └── service.ts
-│   │   └── crypto
+│   │   ├── event
+│   │   │   ├── adapter.ts
+│   │   │   ├── index.ts
+│   │   │   ├── module.ts
+│   │   │   ├── service.ts
+│   │   │   └── types.ts
+│   │   ├── i18n
+│   │   │   ├── adapter.ts
+│   │   │   ├── index.ts
+│   │   │   ├── languages
+│   │   │   │   ├── en
+│   │   │   │   │   └── info.json
+│   │   │   │   └── pt
+│   │   │   │       └── info.json
+│   │   │   ├── module.ts
+│   │   │   ├── service.ts
+│   │   │   └── types.ts
+│   │   ├── module.ts
+│   │   └── token
 │   │       ├── adapter.ts
 │   │       ├── index.ts
 │   │       ├── module.ts
@@ -361,10 +402,10 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │   │   │   ├── repository.ts
 │   │   │   └── swagger.ts
 │   │   ├── health
-│   │   │   ├── __tests__
-│   │   │   │   └── controller.spec.ts
 │   │   │   ├── controller.ts
-│   │   │   └── module.ts
+│   │   │   ├── module.ts
+│   │   │   └── __tests__
+│   │   │       └── controller.spec.ts
 │   │   ├── login
 │   │   │   ├── adapter.ts
 │   │   │   ├── controller.ts
@@ -374,6 +415,12 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │   │   │   ├── adapter.ts
 │   │   │   ├── controller.ts
 │   │   │   ├── module.ts
+│   │   │   └── swagger.ts
+│   │   ├── reset-password
+│   │   │   ├── adapter.ts
+│   │   │   ├── controller.ts
+│   │   │   ├── module.ts
+│   │   │   ├── repository.ts
 │   │   │   └── swagger.ts
 │   │   └── user
 │   │       ├── adapter.ts
@@ -398,6 +445,7 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │       │   │       └── response.ts
 │       │   └── swagger.ts
 │       ├── entity.ts
+│       ├── excel.ts
 │       ├── exception.ts
 │       ├── pagination.ts
 │       ├── request.ts
@@ -405,14 +453,16 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │       ├── sort.ts
 │       ├── static
 │       │   └── http-status.json
-│       ├── tests
-│       │   └── tests.ts
-│       └── tracing.ts
+│       ├── tests.ts
+│       ├── text.ts
+│       ├── tracing.ts
+│       ├── usecase.ts
+│       └── zod.ts
 ├── test
-│   └── initialization.js
+│   └── initialization.ts
+├── TRACING.md
 ├── tsconfig.build.json
-├── tsconfig.json
-└── yarn.lock
+└── tsconfig.json
 ```
 
 ---
