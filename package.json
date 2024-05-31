@@ -7,7 +7,7 @@
   "license": "MIT",
   "engines": {
     "node": ">= 17.0.0",
-    "npm": ">= 8.7.0"
+    "npm": ">= 8.0.0"
   },
   "scripts": {
     "prepare": "husky install",
@@ -90,7 +90,7 @@
   "devDependencies": {
     "@commitlint/cli": "^18.6.1",
     "@commitlint/config-conventional": "^18.6.2",
-    "@mikemajesty/microservice-crud": "^4.5.7",
+    "@mikemajesty/microservice-crud": "^4.5.8",
     "@nestjs/cli": "^10.3.2",
     "@nestjs/schematics": "^10.1.1",
     "@nestjs/testing": "^10.3.3",

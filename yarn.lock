@@ -1269,10 +1269,10 @@
   "resolved" "https://registry.npmjs.org/@microsoft/tsdoc/-/tsdoc-0.14.2.tgz"
   "version" "0.14.2"
 
-"@mikemajesty/microservice-crud@^4.5.7":
-  "integrity" "sha512-iBMwQKrWdUeV2vxJkiF0NaxCeHKyiDhd4dZSItktFC5GszJah+RyUI1ii6VHEW3ZFaFLdqWBUGAd7HXNQIEVlA=="
-  "resolved" "https://registry.npmjs.org/@mikemajesty/microservice-crud/-/microservice-crud-4.5.7.tgz"
-  "version" "4.5.7"
+"@mikemajesty/microservice-crud@^4.5.8":
+  "integrity" "sha512-tp2kL1uKiH8SbkJGOVesfVboXIkf/aO5Ovt9oO2bHoIJVu6QMkGSvI1k7EKcM7TgrmZY42einLAdih1gnul5Mw=="
+  "resolved" "https://registry.npmjs.org/@mikemajesty/microservice-crud/-/microservice-crud-4.5.8.tgz"
+  "version" "4.5.8"
   dependencies:
     "arg" "^5.0.1"
     "chmod" "^0.2.1"
