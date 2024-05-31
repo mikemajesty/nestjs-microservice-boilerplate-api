@@ -1,6 +1,5 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import opentelemetry, { Counter, Histogram, Meter } from '@opentelemetry/api';
-import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
 import { Observable, tap } from 'rxjs';
 
 import { DateUtils } from '@/utils/date';
@@ -26,8 +25,8 @@ export class MetricsInterceptor implements NestInterceptor {
     const startTime = DateUtils.getJSDate().getTime();
 
     this.counter.add(1, {
-      [SemanticAttributes.HTTP_URL]: request.url,
-      [SemanticAttributes.HTTP_METHOD]: request.method
+      'http.url': request.url,
+      'http.method': request.method
     });
 
     return next.handle().pipe(
@@ -37,9 +36,9 @@ export class MetricsInterceptor implements NestInterceptor {
         const executionTime = endTime - startTime;
 
         this.histogram.record(executionTime, {
-          [SemanticAttributes.HTTP_URL]: request.url,
-          [SemanticAttributes.HTTP_METHOD]: request.method,
-          [SemanticAttributes.HTTP_STATUS_CODE]: res.statusCode
+          'http.url': request.url,
+          'http.method': request.method,
+          'http.status_code': res.statusCode
         });
       })
     );

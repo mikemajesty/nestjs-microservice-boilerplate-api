@@ -6,8 +6,8 @@
   "private": true,
   "license": "MIT",
   "engines": {
-    "node": ">= 18.0.0",
-    "npm": ">= 9.7.0"
+    "node": ">= 17.0.0",
+    "npm": ">= 8.7.0"
   },
   "scripts": {
     "prepare": "husky install",
@@ -49,7 +49,6 @@
     "@opentelemetry/resources": "^1.21.0",
     "@opentelemetry/sdk-node": "^0.48.0",
     "@opentelemetry/sdk-trace-web": "^1.21.0",
-    "@opentelemetry/semantic-conventions": "^1.21.0",
     "axios": "^1.6.7",
     "axios-better-stacktrace": "^2.1.6",
     "axios-retry": "^4.0.0",

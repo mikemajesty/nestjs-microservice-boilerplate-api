@@ -8,7 +8,6 @@ import opentelemetry, {
   TimeInput,
   Tracer
 } from '@opentelemetry/api';
-import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 import axiosBetterStacktrace from 'axios-better-stacktrace';
 import { Observable, tap } from 'rxjs';
@@ -42,7 +41,6 @@ export class TracingInterceptor implements NestInterceptor {
         span: span,
         tracer: this.tracer,
         tracerId: requestId,
-        attributes: SemanticAttributes,
         axios: (options: Omit<AxiosRequestConfig, 'headers'>): AxiosInstance => {
           request.headers.traceid = requestId;
 
@@ -85,8 +83,8 @@ export class TracingInterceptor implements NestInterceptor {
 
     request.tracing = createTracingInstance();
 
-    request.tracing.addAttribute(SemanticAttributes.HTTP_METHOD, request.method);
-    request.tracing.addAttribute(SemanticAttributes.HTTP_URL, request.path);
+    request.tracing.addAttribute('http.method', request.method);
+    request.tracing.addAttribute('http.url', request.path);
     request.tracing.addAttribute('context', controller);
 
     if (requestId) {
@@ -96,7 +94,7 @@ export class TracingInterceptor implements NestInterceptor {
     return next.handle().pipe(
       tap(() => {
         request.tracing.setStatus({ code: SpanStatusCode.OK });
-        request.tracing.addAttribute(SemanticAttributes.HTTP_STATUS_CODE, res.statusCode);
+        request.tracing.addAttribute('http.status_code', res.statusCode);
         request.tracing.finish();
       })
     );
