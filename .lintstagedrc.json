@@ -1,6 +1,6 @@
 {
   "*.{js,ts,jsx}": [
-    "yarn lint",
+    "yarn lint --fix",
     "yarn prettier",
     "yarn test --findRelatedTests --passWithNoTests"
   ]

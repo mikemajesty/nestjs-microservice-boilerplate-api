@@ -22,7 +22,7 @@ const usersMock = [
     deletedAt: null
   } as UserEntity
 ];
-describe('UserListUsecase', () => {
+describe(UserListUsecase.name, () => {
   let usecase: IUserListAdapter;
   let repository: IUserRepository;
 

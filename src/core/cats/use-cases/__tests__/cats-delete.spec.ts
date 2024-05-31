@@ -16,7 +16,7 @@ const catMock = {
   name: 'dummy'
 } as CatsEntity;
 
-describe('CatsDeleteUsecase', () => {
+describe(CatsDeleteUsecase.name, () => {
   let usecase: ICatsDeleteAdapter;
   let repository: ICatsRepository;
 

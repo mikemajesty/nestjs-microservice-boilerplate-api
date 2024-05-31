@@ -8,7 +8,7 @@ import { expectZodError, getMockTracing } from '@/utils/tests';
 
 import { LogoutUsecase } from '../user-logout';
 
-describe('LogoutUsecase', () => {
+describe(LogoutUsecase.name, () => {
   let usecase: ILogoutAdapter;
   let cache: ICacheAdapter;
 

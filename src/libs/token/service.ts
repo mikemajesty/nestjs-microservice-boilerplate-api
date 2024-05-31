@@ -36,12 +36,12 @@ export class TokenService implements ITokenAdapter {
     return { token };
   }
 
-  async verify(token: string): Promise<jwt.JwtPayload | string> {
+  async verify<T>(token: string): Promise<T> {
     return new Promise((res, rej) => {
       jwt.verify(token, this.secret.JWT_SECRET_KEY, (error, decoded) => {
         if (error) rej(new ApiUnauthorizedException(error.message));
 
-        res(decoded);
+        res(decoded as T);
       });
     });
   }

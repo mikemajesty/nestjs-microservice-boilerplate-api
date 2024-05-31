@@ -13,8 +13,8 @@ import { IResetPasswordRepository } from '../repository/reset-password';
 
 export const ConfirmResetPasswordSchema = z.object({
   token: z.string(),
-  password: z.string(),
-  confirmPassword: z.string()
+  password: z.string().min(5).max(200),
+  confirmPassword: z.string().min(5).max(200)
 });
 
 export type ConfirmResetPasswordInput = z.infer<typeof ConfirmResetPasswordSchema>;
@@ -37,7 +37,7 @@ export class ConfirmResetPasswordUsecase implements IUsecase {
       throw new ApiBadRequestException('passwords are different');
     }
 
-    const token = (await this.token.verify(input.token)) as { id: string };
+    const token = await this.token.verify<{ id: string }>(input.token);
 
     const user = await this.userRepository.findOne({ id: token.id });
 

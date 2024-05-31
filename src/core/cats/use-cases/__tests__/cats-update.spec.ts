@@ -16,7 +16,7 @@ const catMock = {
   name: 'dummy'
 } as CatsEntity;
 
-describe('CatsUpdateUsecase', () => {
+describe(CatsUpdateUsecase.name, () => {
   let usecase: ICatsUpdateAdapter;
   let repository: ICatsRepository;
 

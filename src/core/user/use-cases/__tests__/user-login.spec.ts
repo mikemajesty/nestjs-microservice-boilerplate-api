@@ -17,7 +17,7 @@ const userMock = {
   roles: [UserRole.USER]
 } as UserEntity;
 
-describe('LoginUsecase', () => {
+describe(LoginUsecase.name, () => {
   let usecase: ILoginAdapter;
   let repository: IUserRepository;
 

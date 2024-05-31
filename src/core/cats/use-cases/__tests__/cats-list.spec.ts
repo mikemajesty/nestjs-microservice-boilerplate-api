@@ -20,7 +20,7 @@ const catsMock = [
   } as CatsEntity
 ];
 
-describe('CatsListUsecase', () => {
+describe(CatsListUsecase.name, () => {
   let usecase: ICatsListAdapter;
   let repository: ICatsRepository;
 

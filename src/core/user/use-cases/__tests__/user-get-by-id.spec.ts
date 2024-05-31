@@ -15,7 +15,7 @@ const userMock = {
   roles: [UserRole.USER]
 } as UserEntity;
 
-describe('UserGetByIdUsecase', () => {
+describe(UserGetByIdUsecase.name, () => {
   let usecase: IUserGetByIDAdapter;
   let repository: IUserRepository;
 
