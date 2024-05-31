@@ -2,6 +2,8 @@ import { ConfirmResetPasswordInput } from '@/core/reset-password/use-cases/confi
 import { SendEmailResetPasswordInput } from '@/core/reset-password/use-cases/send-email';
 import { Swagger } from '@/utils/docs/swagger';
 
+const BASE_URL = 'api/v1/reset-password';
+
 export const SwaggerResponse = {
   sendEmail: {
     200: Swagger.defaultResponseJSON({
@@ -10,7 +12,7 @@ export const SwaggerResponse = {
     }),
     404: Swagger.defaultResponseError({
       status: 404,
-      route: 'api/v1/reset-password/send-email',
+      route: `${BASE_URL}/send-email`,
       message: 'user not found',
       description: 'username or passwrd is incorrect.'
     })
@@ -22,19 +24,19 @@ export const SwaggerResponse = {
     }),
     404: Swagger.defaultResponseError({
       status: 404,
-      route: 'api/v1/reset-password/:token',
+      route: `${BASE_URL}/:token`,
       message: 'user not found',
       description: 'user not found.'
     }),
     401: Swagger.defaultResponseError({
       status: 401,
-      route: 'api/v1/reset-password/:token',
+      route: `${BASE_URL}/:token`,
       message: 'token was expired',
       description: 'token was expired.'
     }),
     400: Swagger.defaultResponseWithMultiplesError({
       status: 400,
-      route: 'api/v1/reset-password/:token',
+      route: `${BASE_URL}/:token`,
       messages: {
         'different passwords': {
           value: ['passwords are different'],
@@ -45,7 +47,7 @@ export const SwaggerResponse = {
           description: 'Input validators'
         }
       },
-      description: 'token was expired.'
+      description: 'validator errors.'
     })
   }
 };

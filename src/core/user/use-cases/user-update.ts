@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
-import { ValidateSchema } from '@/common/decorators';
 import { ILoggerAdapter } from '@/infra/logger';
 import { ICryptoAdapter } from '@/libs/crypto';
+import { ValidateSchema } from '@/utils/decorators';
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception';
 import { ApiTrancingInput } from '@/utils/request';
 import { IUsecase } from '@/utils/usecase';

@@ -1,4 +1,4 @@
-import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus } from '@nestjs/common';
+import { ArgumentsHost, Catch, ExceptionFilter as AppExceptionFilter, HttpException, HttpStatus } from '@nestjs/common';
 import { AxiosError } from 'axios';
 import { ZodError } from 'zod';
 
@@ -8,7 +8,7 @@ import { BaseException, ErrorModel } from '@/utils/exception';
 import errorStatus from '@/utils/static/http-status.json';
 
 @Catch()
-export class AppExceptionFilter implements ExceptionFilter {
+export class ExceptionFilter implements AppExceptionFilter {
   constructor(private readonly loggerService: ILoggerAdapter) {}
 
   catch(exception: BaseException, host: ArgumentsHost): void {
@@ -40,6 +40,7 @@ export class AppExceptionFilter implements ExceptionFilter {
     if (defaultError) {
       return [defaultError];
     }
+
     if (exception instanceof ZodError) {
       return exception.issues.map((i) => `${i.path}: ${i.message.toLowerCase()}`);
     }

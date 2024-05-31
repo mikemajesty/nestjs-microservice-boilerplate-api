@@ -1762,7 +1762,7 @@
     "@opentelemetry/sdk-trace-base" "1.24.1"
     "@opentelemetry/semantic-conventions" "1.24.1"
 
-"@opentelemetry/semantic-conventions@^1.0.0", "@opentelemetry/semantic-conventions@^1.21.0", "@opentelemetry/semantic-conventions@^1.22.0", "@opentelemetry/semantic-conventions@1.24.1":
+"@opentelemetry/semantic-conventions@^1.0.0", "@opentelemetry/semantic-conventions@^1.22.0", "@opentelemetry/semantic-conventions@1.24.1":
   "integrity" "sha512-VkliWlS4/+GHLLW7J/rVBA00uXus1SWvwFvcUDxDwmFxYfg/2VI6ekwdXS28cjI8Qz2ky2BzG8OUHo+WeYIWqw=="
   "resolved" "https://registry.npmjs.org/@opentelemetry/semantic-conventions/-/semantic-conventions-1.24.1.tgz"
   "version" "1.24.1"

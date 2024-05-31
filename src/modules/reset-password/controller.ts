@@ -1,10 +1,10 @@
 import { Controller, HttpCode, Post, Put, Req, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import { Roles } from '@/common/decorators';
 import { ConfirmResetPasswordInput, ConfirmResetPasswordOutput } from '@/core/reset-password/use-cases/confirm';
 import { SendEmailResetPasswordInput, SendEmailResetPasswordOutput } from '@/core/reset-password/use-cases/send-email';
 import { UserRole } from '@/core/user/entity/user';
+import { Roles } from '@/utils/decorators';
 import { ApiRequest } from '@/utils/request';
 
 import { IConfirmResetPasswordAdapter, ISendEmailResetPasswordAdapter } from './adapter';

@@ -1,11 +1,11 @@
 import { z } from 'zod';
 
-import { ValidateSchema } from '@/common/decorators';
 import { IUserRepository } from '@/core/user/repository/user';
 import { ICryptoAdapter } from '@/libs/crypto';
 import { IEventAdapter } from '@/libs/event';
 import { EventNameEnum } from '@/libs/event/types';
 import { ITokenAdapter } from '@/libs/token';
+import { ValidateSchema } from '@/utils/decorators';
 import { ApiBadRequestException, ApiNotFoundException, ApiUnauthorizedException } from '@/utils/exception';
 import { IUsecase } from '@/utils/usecase';
 

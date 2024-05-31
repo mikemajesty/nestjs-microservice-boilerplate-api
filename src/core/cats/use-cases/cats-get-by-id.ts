@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
-import { ValidateSchema } from '@/common/decorators';
 import { CatsEntitySchema } from '@/core/cats/entity/cats';
 import { DatabaseOptionsType } from '@/utils/database/sequelize';
+import { ValidateSchema } from '@/utils/decorators';
 import { ApiNotFoundException } from '@/utils/exception';
 import { IUsecase } from '@/utils/usecase';
 

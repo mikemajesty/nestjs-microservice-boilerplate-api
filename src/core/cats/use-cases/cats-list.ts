@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import { ValidateSchema } from '@/common/decorators';
 import { CatsEntity } from '@/core/cats/entity/cats';
+import { ValidateSchema } from '@/utils/decorators';
 import { PaginationInput, PaginationOutput, PaginationSchema } from '@/utils/pagination';
 import { SearchSchema } from '@/utils/search';
 import { SortSchema } from '@/utils/sort';

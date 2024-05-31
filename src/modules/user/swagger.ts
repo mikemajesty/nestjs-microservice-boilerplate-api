@@ -2,6 +2,8 @@ import { UsersRequest } from '@/utils/docs/data/user/request';
 import { UsersResponse } from '@/utils/docs/data/user/response';
 import { Swagger } from '@/utils/docs/swagger';
 
+const BASE_URL = `api/v1/users`;
+
 export const SwaggerResponse = {
   create: {
     200: Swagger.defaultResponseJSON({
@@ -11,7 +13,7 @@ export const SwaggerResponse = {
     }),
     409: Swagger.defaultResponseError({
       status: 409,
-      route: 'api/v1/users',
+      route: BASE_URL,
       message: 'userExists',
       description: 'user exists.'
     })
@@ -24,13 +26,13 @@ export const SwaggerResponse = {
     }),
     404: Swagger.defaultResponseError({
       status: 404,
-      route: 'api/v1/users',
+      route: BASE_URL,
       message: 'userNotFound',
       description: 'user not found.'
     }),
     409: Swagger.defaultResponseError({
       status: 409,
-      route: 'api/v1/users',
+      route: BASE_URL,
       message: 'userExists',
       description: 'user exists.'
     })
@@ -43,7 +45,7 @@ export const SwaggerResponse = {
     }),
     404: Swagger.defaultResponseError({
       status: 404,
-      route: 'api/v1/users/:id',
+      route: `${BASE_URL}/:id`,
       message: 'userNotFound',
       description: 'user not found.'
     })
@@ -56,7 +58,7 @@ export const SwaggerResponse = {
     }),
     404: Swagger.defaultResponseError({
       status: 404,
-      route: 'api/v1/users/:id',
+      route: `${BASE_URL}/:id`,
       message: 'userNotFound',
       description: 'user not found.'
     })
@@ -86,7 +88,7 @@ export const SwaggerRequest = {
     search: Swagger.defaultApiQueryOptions({
       name: 'search',
       required: false,
-      description: `<b>email:value`
+      description: `<b>propertyName1:value,propertyName2:value`
     })
   }
 };

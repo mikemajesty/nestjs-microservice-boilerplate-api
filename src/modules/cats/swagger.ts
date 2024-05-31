@@ -1,25 +1,28 @@
 import { CatsRequest } from '@/utils/docs/data/cats/request';
 import { CatsResponse } from '@/utils/docs/data/cats/response';
 import { Swagger } from '@/utils/docs/swagger';
+import { ApiNotFoundException } from '@/utils/exception';
+
+const BASE_URL = `api/v1/cats`;
 
 export const SwaggerResponse = {
   create: {
     200: Swagger.defaultResponseJSON({
       status: 200,
       json: CatsResponse.create,
-      description: 'cat created.'
+      description: 'create user.'
     })
   },
   update: {
     200: Swagger.defaultResponseJSON({
       status: 200,
       json: CatsResponse.update,
-      description: 'cat updated.'
+      description: 'update user.'
     }),
     404: Swagger.defaultResponseError({
       status: 404,
-      route: 'api/v1/cats',
-      message: 'catNotFound',
+      route: BASE_URL,
+      message: ApiNotFoundException.name,
       description: 'cat not found.'
     })
   },
@@ -27,12 +30,12 @@ export const SwaggerResponse = {
     200: Swagger.defaultResponseJSON({
       status: 200,
       json: CatsResponse.getByID,
-      description: 'cat found.'
+      description: 'cat founded.'
     }),
     404: Swagger.defaultResponseError({
       status: 404,
-      route: 'api/v1/cats/:id',
-      message: 'catNotFound',
+      route: `${BASE_URL}/:id`,
+      message: ApiNotFoundException.name,
       description: 'cat not found.'
     })
   },
@@ -40,12 +43,12 @@ export const SwaggerResponse = {
     200: Swagger.defaultResponseJSON({
       status: 200,
       json: CatsResponse.delete,
-      description: 'cat found.'
+      description: 'cat deleted.'
     }),
     404: Swagger.defaultResponseError({
       status: 404,
-      route: 'api/v1/cats/:id',
-      message: 'catNotFound',
+      route: `${BASE_URL}/:id`,
+      message: ApiNotFoundException.name,
       description: 'cat not found.'
     })
   },
@@ -74,7 +77,7 @@ export const SwaggerRequest = {
     search: Swagger.defaultApiQueryOptions({
       name: 'search',
       required: false,
-      description: `<b>name:Meow,breed:siamese`
+      description: `<b>propertyName1:value,propertyName2:value`
     })
   }
 };

@@ -23,7 +23,7 @@ export class ExceptionInterceptor implements NestInterceptor {
 
         if (!error?.context) {
           const context = `${executionContext.getClass().name}/${executionContext.getHandler().name}`;
-          error.context = error.context = context;
+          error.context = context;
         }
 
         if (request?.tracing) {

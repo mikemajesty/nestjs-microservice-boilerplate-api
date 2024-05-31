@@ -1,13 +1,13 @@
 import { Controller, Delete, Get, Post, Put, Req, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import { Roles } from '@/common/decorators';
 import { CatsCreateInput, CatsCreateOutput } from '@/core/cats/use-cases/cats-create';
 import { CatsDeleteInput, CatsDeleteOutput } from '@/core/cats/use-cases/cats-delete';
 import { CatsGetByIdInput, CatsGetByIdOutput } from '@/core/cats/use-cases/cats-get-by-id';
 import { CatsListInput, CatsListOutput } from '@/core/cats/use-cases/cats-list';
 import { CatsUpdateInput, CatsUpdateOutput } from '@/core/cats/use-cases/cats-update';
 import { UserRole } from '@/core/user/entity/user';
+import { Roles } from '@/utils/decorators';
 import { ApiRequest } from '@/utils/request';
 import { SearchHttpSchema } from '@/utils/search';
 import { SortHttpSchema } from '@/utils/sort';

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 
 import { ISecretsAdapter, SecretsModule } from '@/infra/secrets';
 
@@ -7,7 +7,7 @@ import { LoggerService } from './service';
 import { LogLevelEnum } from './types';
 
 @Module({
-  imports: [SecretsModule],
+  imports: [forwardRef(() => SecretsModule)],
   providers: [
     {
       provide: ILoggerAdapter,

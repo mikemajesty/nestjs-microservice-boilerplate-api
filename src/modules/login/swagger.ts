@@ -1,6 +1,8 @@
 import { LoginInput } from '@/core/user/use-cases/user-login';
 import { Swagger } from '@/utils/docs/swagger';
 
+const BASE_URL = `api/v1/login`;
+
 export const SwaggerResponse = {
   login: {
     200: Swagger.defaultResponseJSON({
@@ -10,7 +12,7 @@ export const SwaggerResponse = {
     }),
     404: Swagger.defaultResponseError({
       status: 404,
-      route: 'api/v1/login',
+      route: BASE_URL,
       message: 'userNotFound',
       description: 'username or password not found.'
     })

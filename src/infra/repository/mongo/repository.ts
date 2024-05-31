@@ -8,7 +8,7 @@ import {
   UpdateWithAggregationPipeline
 } from 'mongoose';
 
-import { ConvertMongoFilterToBaseRepository } from '@/common/decorators';
+import { ConvertMongoFilterToBaseRepository } from '@/utils/decorators';
 import { ApiBadRequestException } from '@/utils/exception';
 
 import { IRepository } from '../adapter';

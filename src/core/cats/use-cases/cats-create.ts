@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
-import { ValidateSchema } from '@/common/decorators';
 import { CreatedModel } from '@/infra/repository';
 import { DatabaseOptionsType } from '@/utils/database/sequelize';
+import { ValidateSchema } from '@/utils/decorators';
 import { ApiTrancingInput } from '@/utils/request';
 import { IUsecase } from '@/utils/usecase';
 

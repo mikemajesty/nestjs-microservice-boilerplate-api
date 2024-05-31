@@ -10,20 +10,20 @@ import { NextFunction, Request, Response } from 'express';
 import { rateLimit } from 'express-rate-limit';
 import helmet from 'helmet';
 
-import { AppExceptionFilter } from '@/common/filters';
+import { ILoggerAdapter } from '@/infra/logger/adapter';
+import { ISecretsAdapter } from '@/infra/secrets';
+import { ExceptionFilter } from '@/observables/filters';
 import {
   ExceptionInterceptor,
   HttpLoggerInterceptor,
   MetricsInterceptor,
   TracingInterceptor
-} from '@/common/interceptors';
-import { ILoggerAdapter } from '@/infra/logger/adapter';
-import { ISecretsAdapter } from '@/infra/secrets';
+} from '@/observables/interceptors';
 
 import { description, name, version } from '../package.json';
 import { AppModule } from './app.module';
-import { RequestTimeoutInterceptor } from './common/interceptors/request-timeout.interceptor';
 import { ErrorType } from './infra/logger';
+import { RequestTimeoutInterceptor } from './observables/interceptors/request-timeout.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -36,7 +36,7 @@ async function bootstrap() {
   loggerService.setApplication(name);
   app.useLogger(loggerService);
 
-  app.useGlobalFilters(new AppExceptionFilter(loggerService));
+  app.useGlobalFilters(new ExceptionFilter(loggerService));
 
   app.useGlobalInterceptors(
     new RequestTimeoutInterceptor(new Reflector(), loggerService),

@@ -1,9 +1,7 @@
-import { Op, Optional, WhereOptions } from 'sequelize';
-import sequelize from 'sequelize';
+import sequelize, { Op, Optional, WhereOptions } from 'sequelize';
 import { MakeNullishOptional } from 'sequelize/types/utils';
 import { Model, ModelCtor } from 'sequelize-typescript';
 
-import { ConvertSequelizeFilterToRepository } from '@/common/decorators';
 import {
   CreatedModel,
   CreatedOrUpdateModel,
@@ -13,6 +11,7 @@ import {
   UpdatedModel
 } from '@/infra/repository';
 import { DatabaseOptionsSchema, DatabaseOptionsType, SaveOptionsType } from '@/utils/database/sequelize';
+import { ConvertSequelizeFilterToRepository } from '@/utils/decorators';
 import { IEntity } from '@/utils/entity';
 import { ApiBadRequestException } from '@/utils/exception';
 

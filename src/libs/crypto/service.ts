@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import crypto from 'crypto';
 import { z } from 'zod';
 
-import { ValidateSchema } from '@/common/decorators';
+import { ValidateSchema } from '@/utils/decorators';
 
 import { ICryptoAdapter } from './adapter';
 

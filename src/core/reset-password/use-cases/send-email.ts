@@ -1,12 +1,12 @@
 import { z } from 'zod';
 
-import { ValidateSchema } from '@/common/decorators';
 import { UserEntitySchema } from '@/core/user/entity/user';
 import { IUserRepository } from '@/core/user/repository/user';
 import { ISecretsAdapter } from '@/infra/secrets';
 import { IEventAdapter } from '@/libs/event';
 import { EventNameEnum } from '@/libs/event/types';
 import { ITokenAdapter } from '@/libs/token';
+import { ValidateSchema } from '@/utils/decorators';
 import { ApiNotFoundException } from '@/utils/exception';
 import { IUsecase } from '@/utils/usecase';
 

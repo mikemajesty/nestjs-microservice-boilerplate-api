@@ -2,7 +2,6 @@ import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { getConnectionToken } from '@nestjs/mongoose';
 import mongoose, { Connection, PaginateModel, Schema } from 'mongoose';
 
-import { IsLoggedMiddleware } from '@/common/middlewares';
 import { IResetPasswordRepository } from '@/core/reset-password/repository/reset-password';
 import { ConfirmResetPasswordUsecase } from '@/core/reset-password/use-cases/confirm';
 import { SendEmailResetPasswordUsecase } from '@/core/reset-password/use-cases/send-email';
@@ -19,6 +18,7 @@ import { ISecretsAdapter, SecretsModule } from '@/infra/secrets';
 import { CryptoLibModule, ICryptoAdapter } from '@/libs/crypto';
 import { EventLibModule, IEventAdapter } from '@/libs/event';
 import { ITokenAdapter, TokenLibModule } from '@/libs/token';
+import { IsLoggedMiddleware } from '@/observables/middlewares';
 import { MongoRepositoryModelSessionType } from '@/utils/database/mongoose';
 
 import { UserModule } from '../user/module';

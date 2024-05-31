@@ -1,11 +1,11 @@
 import { z } from 'zod';
 
-import { ValidateSchema } from '@/common/decorators';
 import { ILoggerAdapter } from '@/infra/logger';
 import { CreatedModel } from '@/infra/repository';
 import { ICryptoAdapter } from '@/libs/crypto';
 import { IEventAdapter } from '@/libs/event';
 import { EventNameEnum } from '@/libs/event/types';
+import { ValidateSchema } from '@/utils/decorators';
 import { ApiConflictException } from '@/utils/exception';
 import { ApiTrancingInput } from '@/utils/request';
 import { IUsecase } from '@/utils/usecase';

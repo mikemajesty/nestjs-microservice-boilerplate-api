@@ -1,7 +1,6 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ModelCtor, Sequelize } from 'sequelize-typescript';
 
-import { IsLoggedMiddleware } from '@/common/middlewares';
 import { CatsEntity } from '@/core/cats/entity/cats';
 import { ICatsRepository } from '@/core/cats/repository/cats';
 import { CatsCreateUsecase } from '@/core/cats/use-cases/cats-create';
@@ -15,6 +14,7 @@ import { PostgresDatabaseModule } from '@/infra/database/postgres/module';
 import { CatsSchema } from '@/infra/database/postgres/schemas/cats';
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { TokenLibModule } from '@/libs/token';
+import { IsLoggedMiddleware } from '@/observables/middlewares';
 
 import {
   ICatsCreateAdapter,
