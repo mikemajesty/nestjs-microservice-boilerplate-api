@@ -3,13 +3,15 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 
 import { IEventAdapter } from './adapter';
 
-export type EventOutput = boolean;
+export type EmitEventInput<T> = T;
+
+export type EmitEventOutput = boolean;
 
 @Injectable()
 export class EventService implements IEventAdapter {
   constructor(private eventEmitter: EventEmitter2) {}
 
-  emit(event: string, payload: unknown): EventOutput {
+  emit<T>(event: string, payload: T): EmitEventOutput {
     const eventEmmiter = this.eventEmitter.emit(event, payload);
 
     return eventEmmiter;

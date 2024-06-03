@@ -12,14 +12,14 @@ import { ILoggerAdapter } from '../logger';
 import { ISecretsAdapter } from '../secrets';
 import { IEmailAdapter } from './adapter';
 
-export type EmailGetInput = {
+export type SendEmailInput = {
   subject: string;
   email: string;
   template: string;
   payload: object;
 };
 
-export type EmailGetOutput = SMTPTransport.SentMessageInfo;
+export type SendEmailOutput = SMTPTransport.SentMessageInfo;
 
 @Injectable()
 export class EmailService implements IEmailAdapter {
@@ -29,7 +29,7 @@ export class EmailService implements IEmailAdapter {
     private readonly transporter: Transporter<SMTPTransport.SentMessageInfo>
   ) {}
 
-  async send(input: EmailGetInput): Promise<EmailGetOutput> {
+  async send(input: SendEmailInput): Promise<SendEmailOutput> {
     /* eslint-disable-next-line security/detect-non-literal-fs-filename */
     const source = fs.readFileSync(path.join(__dirname, `/templates/${input.template}.handlebars`), 'utf8');
     const compiledTemplate = handlebars.compile(source);
@@ -54,7 +54,7 @@ export class EmailService implements IEmailAdapter {
   }
 
   @OnEvent(EventNameEnum.SEND_EMAIL)
-  async handleOrderCreatedEvent(payload: EmailGetInput) {
+  async handleSendEmailEvent(payload: SendEmailInput) {
     await this.send(payload);
     this.logger.info({ message: 'email sended successfully.' });
   }

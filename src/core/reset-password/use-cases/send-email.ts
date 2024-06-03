@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import { UserEntitySchema } from '@/core/user/entity/user';
 import { IUserRepository } from '@/core/user/repository/user';
+import { SendEmailInput } from '@/infra/email';
 import { ISecretsAdapter } from '@/infra/secrets';
 import { IEventAdapter } from '@/libs/event';
 import { EventNameEnum } from '@/libs/event/types';
@@ -40,7 +41,7 @@ export class SendEmailResetPasswordUsecase implements IUsecase {
     const resetpasswordtoken = await this.resetPasswordtokenRepository.findOne({ userId: user.id });
 
     if (resetpasswordtoken) {
-      this.event.emit(EventNameEnum.SEND_EMAIL, {
+      this.event.emit<SendEmailInput>(EventNameEnum.SEND_EMAIL, {
         email: user.email,
         subject: 'Reset password',
         template: 'reque-reset-password',
@@ -53,7 +54,7 @@ export class SendEmailResetPasswordUsecase implements IUsecase {
     const entity = new ResetPasswordEntity({ token: hash.token, userId: user.id });
 
     await this.resetPasswordtokenRepository.create(entity);
-    this.event.emit(EventNameEnum.SEND_EMAIL, {
+    this.event.emit<SendEmailInput>(EventNameEnum.SEND_EMAIL, {
       email: user.email,
       subject: 'Reset password',
       template: 'reque-reset-password',

@@ -1,5 +1,5 @@
-import { EmailGetInput, EmailGetOutput } from './service';
+import { SendEmailInput, SendEmailOutput } from './service';
 
 export abstract class IEmailAdapter {
-  abstract send(input: EmailGetInput): Promise<EmailGetOutput>;
+  abstract send(input: SendEmailInput): Promise<SendEmailOutput>;
 }

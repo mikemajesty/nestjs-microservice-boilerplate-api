@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { SendEmailInput } from '@/infra/email';
 import { ILoggerAdapter } from '@/infra/logger';
 import { CreatedModel } from '@/infra/repository';
 import { ICryptoAdapter } from '@/libs/crypto';
@@ -53,12 +54,13 @@ export class UserCreateUsecase implements IUsecase {
 
       this.loggerService.info({ message: 'user created successfully', obj: { user } });
 
-      this.event.emit(EventNameEnum.SEND_EMAIL, {
+      this.event.emit<SendEmailInput>(EventNameEnum.SEND_EMAIL, {
         email: input.email,
         subject: 'Welcome',
         template: 'welcome',
         payload: { name: input.email }
       });
+
       tracing.logEvent('user-created', `user: ${entity.email} created by: ${userData.email}`);
 
       return user;

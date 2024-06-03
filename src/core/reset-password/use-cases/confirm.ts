@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { IUserRepository } from '@/core/user/repository/user';
+import { SendEmailInput } from '@/infra/email';
 import { ICryptoAdapter } from '@/libs/crypto';
 import { IEventAdapter } from '@/libs/event';
 import { EventNameEnum } from '@/libs/event/types';
@@ -56,7 +57,7 @@ export class ConfirmResetPasswordUsecase implements IUsecase {
     user.password = this.crypto.createHash(input.password);
     await this.userRepository.updateOne({ id: user.id }, user);
 
-    this.event.emit(EventNameEnum.SEND_EMAIL, {
+    this.event.emit<SendEmailInput>(EventNameEnum.SEND_EMAIL, {
       email: user.email,
       subject: 'Password has been changed successfully',
       template: 'reset-password',
