@@ -1,4 +1,4 @@
-import { forwardRef, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { red } from 'colorette';
 import { Connection } from 'mongoose';
@@ -13,36 +13,34 @@ import { MongoService } from './service';
 
 @Module({
   imports: [
-    forwardRef(() =>
-      MongooseModule.forRootAsync({
-        connectionName: ConnectionName.USER,
-        useFactory: ({ MONGO: { MONGO_URL } }: ISecretsAdapter, logger: ILoggerAdapter) => {
-          const connection = new MongoService().getConnection({ URI: MONGO_URL });
-          return {
-            connectionFactory: (connection: Connection) => {
-              if (connection.readyState === 1) {
-                logger.log('🎯 mongo connected successfully!');
-              }
-              connection.on('disconnected', () => {
-                logger.fatal(new ApiInternalServerException('mongo disconnected!'));
-              });
-              connection.on('reconnected', () => {
-                logger.log(red('mongo reconnected!\n'));
-              });
-              connection.on('error', (error) => {
-                logger.fatal(new ApiInternalServerException(error.message || error, { context: 'MongoConnection' }));
-              });
+    MongooseModule.forRootAsync({
+      connectionName: ConnectionName.USER,
+      useFactory: ({ MONGO: { MONGO_URL } }: ISecretsAdapter, logger: ILoggerAdapter) => {
+        const connection = new MongoService().getConnection({ URI: MONGO_URL });
+        return {
+          connectionFactory: (connection: Connection) => {
+            if (connection.readyState === 1) {
+              logger.log('🎯 mongo connected successfully!');
+            }
+            connection.on('disconnected', () => {
+              logger.fatal(new ApiInternalServerException('mongo disconnected!'));
+            });
+            connection.on('reconnected', () => {
+              logger.log(red('mongo reconnected!\n'));
+            });
+            connection.on('error', (error) => {
+              logger.fatal(new ApiInternalServerException(error.message || error, { context: 'MongoConnection' }));
+            });
 
-              return connection;
-            },
-            uri: connection.uri,
-            appName: name
-          };
-        },
-        inject: [ISecretsAdapter, ILoggerAdapter],
-        imports: [SecretsModule, LoggerModule]
-      })
-    )
+            return connection;
+          },
+          uri: connection.uri,
+          appName: name
+        };
+      },
+      inject: [ISecretsAdapter, ILoggerAdapter],
+      imports: [SecretsModule, LoggerModule]
+    })
   ]
 })
 export class MongoDatabaseModule {}
