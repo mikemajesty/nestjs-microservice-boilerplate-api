@@ -50,6 +50,27 @@ export const SwaggerResponse = {
       description: 'user not found.'
     })
   },
+  changePassword: {
+    200: Swagger.defaultResponseJSON({
+      status: 200,
+      description: 'user found.'
+    }),
+    404: Swagger.defaultResponseError({
+      status: 404,
+      route: `${BASE_URL}/change-password/:id`,
+      message: 'userNotFound',
+      description: 'user not found.'
+    }),
+    400: Swagger.defaultResponseWithMultiplesError({
+      status: 404,
+      route: `${BASE_URL}/change-password/:id`,
+      messages: {
+        'password is incorrect': { description: 'password is incorrect', value: ['passwordIsIncorrect'] },
+        'password is different': { description: 'password is incorrect', value: ['passwordIsDifferent'] }
+      },
+      description: 'user not found.'
+    })
+  },
   delete: {
     200: Swagger.defaultResponseJSON({
       status: 200,
@@ -75,6 +96,7 @@ export const SwaggerResponse = {
 export const SwaggerRequest = {
   createBody: Swagger.defaultRequestJSON(UsersRequest.create),
   updateBody: Swagger.defaultRequestJSON(UsersRequest.update),
+  changePassword: Swagger.defaultRequestJSON(UsersRequest.changePassword),
   listQuery: {
     pagination: {
       limit: Swagger.defaultApiQueryOptions({ example: 10, name: 'limit', required: false }),

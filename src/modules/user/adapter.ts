@@ -1,3 +1,4 @@
+import { UserChangePasswordInput, UserChangePasswordOutput } from '@/core/user/use-cases/user-change-password';
 import { UserCreateInput, UserCreateOutput } from '@/core/user/use-cases/user-create';
 import { UserDeleteInput, UserDeleteOutput } from '@/core/user/use-cases/user-delete';
 import { UserGetByIdInput, UserGetByIdOutput } from '@/core/user/use-cases/user-get-by-id';
@@ -24,4 +25,8 @@ export abstract class IUserDeleteAdapter implements IUsecase {
 
 export abstract class IUserGetByIDAdapter implements IUsecase {
   abstract execute(input: UserGetByIdInput): Promise<UserGetByIdOutput>;
+}
+
+export abstract class IUserChangePasswordAdapter implements IUsecase {
+  abstract execute(input: UserChangePasswordInput): Promise<UserChangePasswordOutput>;
 }

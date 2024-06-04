@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { BaseEntity } from '@/utils/entity';
+import { ApiBadRequestException } from '@/utils/exception';
 
 export enum UserRole {
   USER = 'USER',
@@ -41,5 +42,15 @@ export class UserEntity extends BaseEntity<UserEntity>(UserEntitySchema) {
 
   anonymizePassword() {
     this.password = '**********';
+  }
+
+  verifyPassword(password: string): void {
+    if (this.password !== password) {
+      throw new ApiBadRequestException('passwordIsIncorrect');
+    }
+  }
+
+  changePassword(password: string): void {
+    this.password = password;
   }
 }

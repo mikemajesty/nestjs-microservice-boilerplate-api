@@ -2,6 +2,7 @@ import { Controller, Delete, Get, Post, Put, Req, Version } from '@nestjs/common
 import { ApiBearerAuth, ApiBody, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { UserRole } from '@/core/user/entity/user';
+import { UserChangePasswordInput, UserChangePasswordOutput } from '@/core/user/use-cases/user-change-password';
 import { UserCreateInput, UserCreateOutput } from '@/core/user/use-cases/user-create';
 import { UserDeleteInput, UserDeleteOutput } from '@/core/user/use-cases/user-delete';
 import { UserGetByIdInput, UserGetByIdOutput } from '@/core/user/use-cases/user-get-by-id';
@@ -13,6 +14,7 @@ import { SearchHttpSchema } from '@/utils/search';
 import { SortHttpSchema } from '@/utils/sort';
 
 import {
+  IUserChangePasswordAdapter,
   IUserCreateAdapter,
   IUserDeleteAdapter,
   IUserGetByIDAdapter,
@@ -31,7 +33,8 @@ export class UserController {
     private readonly userUpdate: IUserUpdateAdapter,
     private readonly userDelete: IUserDeleteAdapter,
     private readonly userList: IUserListAdapter,
-    private readonly userGetById: IUserGetByIDAdapter
+    private readonly userGetById: IUserGetByIDAdapter,
+    private readonly changePass: IUserChangePasswordAdapter
   ) {}
 
   @Post()
@@ -78,6 +81,17 @@ export class UserController {
   @Version('1')
   async getById(@Req() { params }: ApiRequest): Promise<UserGetByIdOutput> {
     return await this.userGetById.execute(params as UserGetByIdInput);
+  }
+
+  @Put('change-password/:id')
+  @ApiParam({ name: 'id', required: true })
+  @ApiBody(SwaggerRequest.changePassword)
+  @ApiResponse(SwaggerResponse.changePassword[200])
+  @ApiResponse(SwaggerResponse.changePassword[404])
+  @ApiResponse(SwaggerResponse.changePassword[400])
+  @Version('1')
+  async changePassword(@Req() { params, body }: ApiRequest): Promise<UserChangePasswordOutput> {
+    return await this.changePass.execute({ id: params.id, ...body } as UserChangePasswordInput);
   }
 
   @Delete('/:id')

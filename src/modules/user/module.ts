@@ -3,6 +3,7 @@ import { getConnectionToken } from '@nestjs/mongoose';
 import mongoose, { Connection, PaginateModel, Schema } from 'mongoose';
 
 import { IUserRepository } from '@/core/user/repository/user';
+import { UserChangePasswordUsecase } from '@/core/user/use-cases/user-change-password';
 import { UserCreateUsecase } from '@/core/user/use-cases/user-create';
 import { UserDeleteUsecase } from '@/core/user/use-cases/user-delete';
 import { UserGetByIdUsecase } from '@/core/user/use-cases/user-get-by-id';
@@ -20,6 +21,7 @@ import { IsLoggedMiddleware } from '@/observables/middlewares';
 import { MongoRepositoryModelSessionType } from '@/utils/database/mongoose';
 
 import {
+  IUserChangePasswordAdapter,
   IUserCreateAdapter,
   IUserDeleteAdapter,
   IUserGetByIDAdapter,
@@ -95,6 +97,13 @@ import { UserRepository } from './repository';
         return new UserGetByIdUsecase(userRepository);
       },
       inject: [IUserRepository]
+    },
+    {
+      provide: IUserChangePasswordAdapter,
+      useFactory: (userRepository: IUserRepository, crypto: ICryptoAdapter) => {
+        return new UserChangePasswordUsecase(userRepository, crypto);
+      },
+      inject: [IUserRepository, ICryptoAdapter]
     }
   ],
   exports: [
