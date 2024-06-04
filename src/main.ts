@@ -7,7 +7,6 @@ import bodyParser from 'body-parser';
 import { bold } from 'colorette';
 import compression from 'compression';
 import { NextFunction, Request, Response } from 'express';
-import { rateLimit } from 'express-rate-limit';
 import helmet from 'helmet';
 
 import { ILoggerAdapter } from '@/infra/logger/adapter';
@@ -83,22 +82,8 @@ async function bootstrap() {
     HOST,
     ZIPKIN_URL,
     PROMETHUES_URL,
-    RATE_LIMIT_BY_USER,
     IS_PRODUCTION
   } = app.get(ISecretsAdapter);
-
-  /**
-   *@description @RATE_LIMIT_BY_USER  for each 15 minutes
-   */
-  const MINUTES = 15 * 60 * 1000;
-  const limiter = rateLimit({
-    windowMs: MINUTES,
-    limit: RATE_LIMIT_BY_USER,
-    standardHeaders: 'draft-7',
-    legacyHeaders: false
-  });
-
-  app.use(limiter);
 
   app.use(bodyParser.urlencoded({ extended: true }));
 

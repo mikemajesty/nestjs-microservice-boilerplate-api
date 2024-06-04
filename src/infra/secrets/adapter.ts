@@ -38,8 +38,6 @@ export abstract class ISecretsAdapter {
 
   TOKEN_EXPIRATION: number | string;
 
-  RATE_LIMIT_BY_USER: number;
-
   JWT_SECRET_KEY: string;
 
   IS_LOCAL: boolean;

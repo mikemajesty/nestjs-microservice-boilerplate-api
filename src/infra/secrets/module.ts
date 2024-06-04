@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import { ConfigService } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { z } from 'zod';
 
 import { ZodInferSchema } from '@/utils/zod';
@@ -40,7 +39,6 @@ import { EnvEnum } from './types';
           }),
           PORT: z.number(),
           PROMETHUES_URL: z.string().url(),
-          RATE_LIMIT_BY_USER: z.number(),
           REDIS_URL: z.string().url(),
           TOKEN_EXPIRATION: z.string(),
           ZIPKIN_URL: z.string().url(),

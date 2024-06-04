@@ -57,7 +57,6 @@
     "colorette": "^2.0.20",
     "compression": "^1.7.4",
     "convert-pino-request-to-curl": "^0.0.29",
-    "express-rate-limit": "^7.1.5",
     "handlebars": "^4.7.8",
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",

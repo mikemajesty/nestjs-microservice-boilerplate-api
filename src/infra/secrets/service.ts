@@ -54,6 +54,4 @@ export class SecretsService implements ISecretsAdapter {
   TOKEN_EXPIRATION = this.config.get<number | string>('TOKEN_EXPIRATION');
 
   JWT_SECRET_KEY = this.config.get('JWT_SECRET_KEY');
-
-  RATE_LIMIT_BY_USER = Number(this.config.get<number>('RATE_LIMIT_BY_USER'));
 }
