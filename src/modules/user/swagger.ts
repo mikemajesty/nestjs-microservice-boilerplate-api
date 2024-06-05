@@ -53,7 +53,7 @@ export const SwaggerResponse = {
   changePassword: {
     200: Swagger.defaultResponseJSON({
       status: 200,
-      description: 'user found.'
+      description: 'change password successfully.'
     }),
     404: Swagger.defaultResponseError({
       status: 404,
@@ -62,13 +62,13 @@ export const SwaggerResponse = {
       description: 'user not found.'
     }),
     400: Swagger.defaultResponseWithMultiplesError({
-      status: 404,
+      status: 400,
       route: `${BASE_URL}/change-password/:id`,
       messages: {
         'password is incorrect': { description: 'password is incorrect', value: ['passwordIsIncorrect'] },
-        'password is different': { description: 'password is incorrect', value: ['passwordIsDifferent'] }
+        'password is different': { description: 'new password is different', value: ['passwordIsDifferent'] }
       },
-      description: 'user not found.'
+      description: 'change password.'
     })
   },
   delete: {
