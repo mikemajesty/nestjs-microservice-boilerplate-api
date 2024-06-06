@@ -1,7 +1,6 @@
 import { z } from 'zod';
 
 import { ILoggerAdapter } from '@/infra/logger';
-import { ICryptoAdapter } from '@/libs/crypto';
 import { ValidateSchema } from '@/utils/decorators';
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception';
 import { ApiTrancingInput } from '@/utils/request';
@@ -12,7 +11,9 @@ import { IUserRepository } from '../repository/user';
 
 export const UserUpdateSchema = UserEntitySchema.pick({
   id: true
-}).merge(UserEntitySchema.omit({ id: true }).partial());
+})
+  .merge(UserEntitySchema.omit({ id: true, password: true }).partial())
+  .strict();
 
 export type UserUpdateInput = Partial<z.infer<typeof UserUpdateSchema>>;
 export type UserUpdateOutput = UserEntity;
@@ -20,8 +21,7 @@ export type UserUpdateOutput = UserEntity;
 export class UserUpdateUsecase implements IUsecase {
   constructor(
     private readonly userRepository: IUserRepository,
-    private readonly loggerService: ILoggerAdapter,
-    private readonly crypto: ICryptoAdapter
+    private readonly loggerService: ILoggerAdapter
   ) {}
 
   @ValidateSchema(UserUpdateSchema)
@@ -40,8 +40,6 @@ export class UserUpdateUsecase implements IUsecase {
       throw new ApiConflictException('user exists');
     }
 
-    const password = this.crypto.createHash(input.password);
-    entity.password = password;
     await this.userRepository.updateOne({ id: entity.id }, entity);
 
     this.loggerService.info({ message: 'user updated.', obj: { user: input } });

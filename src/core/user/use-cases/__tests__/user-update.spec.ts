@@ -1,7 +1,6 @@
 import { Test } from '@nestjs/testing';
 
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
-import { CryptoLibModule, ICryptoAdapter } from '@/libs/crypto';
 import { IUserUpdateAdapter } from '@/modules/user/adapter';
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception';
 import { expectZodError, getMockTracing, getMockUUID } from '@/utils/tests';
@@ -10,11 +9,15 @@ import { UserEntity, UserRole } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
 import { UserUpdateUsecase } from '../user-update';
 
-const userMock = {
+const userInputMock = {
   id: getMockUUID(),
   email: 'admin@admin.com',
-  password: '**********',
   roles: [UserRole.USER]
+} as UserEntity;
+
+const userOutputMock = {
+  ...userInputMock,
+  password: '**********'
 } as UserEntity;
 
 describe(UserUpdateUsecase.name, () => {
@@ -23,7 +26,7 @@ describe(UserUpdateUsecase.name, () => {
 
   beforeEach(async () => {
     const app = await Test.createTestingModule({
-      imports: [LoggerModule, CryptoLibModule],
+      imports: [LoggerModule],
       providers: [
         {
           provide: IUserRepository,
@@ -31,10 +34,10 @@ describe(UserUpdateUsecase.name, () => {
         },
         {
           provide: IUserUpdateAdapter,
-          useFactory: (userRepository: IUserRepository, logger: ILoggerAdapter, crypto: ICryptoAdapter) => {
-            return new UserUpdateUsecase(userRepository, logger, crypto);
+          useFactory: (userRepository: IUserRepository, logger: ILoggerAdapter) => {
+            return new UserUpdateUsecase(userRepository, logger);
           },
-          inject: [IUserRepository, ILoggerAdapter, ICryptoAdapter]
+          inject: [IUserRepository, ILoggerAdapter]
         }
       ]
     }).compile();
@@ -53,20 +56,20 @@ describe(UserUpdateUsecase.name, () => {
   });
 
   test('when user updated successfully, should expect an user that has been updated', async () => {
-    repository.findById = jest.fn().mockResolvedValue(userMock);
+    repository.findById = jest.fn().mockResolvedValue(userOutputMock);
     repository.existsOnUpdate = jest.fn().mockResolvedValue(null);
     repository.updateOne = jest.fn().mockResolvedValue(null);
-    await expect(usecase.execute(userMock, getMockTracing())).resolves.toEqual(userMock);
+    await expect(usecase.execute(userInputMock, getMockTracing())).resolves.toEqual(userOutputMock);
   });
 
   test('when user not found, should expect an error', async () => {
     repository.findById = jest.fn().mockResolvedValue(null);
-    await expect(usecase.execute(userMock, getMockTracing())).rejects.toThrow(ApiNotFoundException);
+    await expect(usecase.execute(userInputMock, getMockTracing())).rejects.toThrow(ApiNotFoundException);
   });
 
   test('when user already exists, should expect an error', async () => {
-    repository.findById = jest.fn().mockResolvedValue(userMock);
-    repository.existsOnUpdate = jest.fn().mockResolvedValue(userMock);
-    await expect(usecase.execute(userMock, getMockTracing())).rejects.toThrow(ApiConflictException);
+    repository.findById = jest.fn().mockResolvedValue(userOutputMock);
+    repository.existsOnUpdate = jest.fn().mockResolvedValue(userOutputMock);
+    await expect(usecase.execute(userInputMock, getMockTracing())).rejects.toThrow(ApiConflictException);
   });
 });
