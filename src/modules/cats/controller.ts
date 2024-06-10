@@ -42,13 +42,14 @@ export class CatsController {
     return await this.catsCreate.execute(body as CatsCreateInput, { user, tracing });
   }
 
-  @Put()
+  @Put(':id')
   @ApiResponse(SwaggerResponse.update[200])
   @ApiResponse(SwaggerResponse.update[404])
   @ApiBody(SwaggerRequest.updateBody)
+  @ApiParam({ name: 'id', required: true })
   @Version('1')
-  async update(@Req() { body, user, tracing }: ApiRequest): Promise<CatsUpdateOutput> {
-    return await this.catsUpdate.execute(body as CatsUpdateInput, { user, tracing });
+  async update(@Req() { body, user, tracing, params }: ApiRequest): Promise<CatsUpdateOutput> {
+    return await this.catsUpdate.execute({ ...body, id: params.id } as CatsUpdateInput, { user, tracing });
   }
 
   @Get('/:id')

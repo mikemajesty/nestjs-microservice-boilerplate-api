@@ -46,14 +46,15 @@ export class UserController {
     return this.userCreate.execute(body as UserCreateInput, { user, tracing });
   }
 
-  @Put()
+  @Put(':id')
   @ApiResponse(SwaggerResponse.update[200])
   @ApiResponse(SwaggerResponse.update[404])
   @ApiResponse(SwaggerResponse.update[409])
   @ApiBody(SwaggerRequest.updateBody)
+  @ApiParam({ name: 'id', required: true })
   @Version('1')
-  async update(@Req() { body, user, tracing }: ApiRequest): Promise<UserUpdateOutput> {
-    return this.userUpdate.execute(body as UserUpdateInput, { user, tracing });
+  async update(@Req() { body, user, tracing, params }: ApiRequest): Promise<UserUpdateOutput> {
+    return this.userUpdate.execute({ ...body, id: params.id } as UserUpdateInput, { user, tracing });
   }
 
   @Get()
