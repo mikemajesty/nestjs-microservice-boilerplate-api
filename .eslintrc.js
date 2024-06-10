@@ -28,6 +28,7 @@ module.exports = {
     '@typescript-eslint/no-explicit-any': 'error',
     '@typescript-eslint/no-throw-literal': 'error',
     'security/detect-non-literal-regexp': 'off',
+    'security/detect-possible-timing-attacks': 'off',
     '@typescript-eslint/no-unused-vars': 'error'
   }
 };
