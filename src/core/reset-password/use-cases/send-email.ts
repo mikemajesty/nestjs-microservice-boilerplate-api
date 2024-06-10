@@ -23,7 +23,7 @@ export type SendEmailResetPasswordOutput = void;
 
 export class SendEmailResetPasswordUsecase implements IUsecase {
   constructor(
-    private readonly resetPasswordtokenRepository: IResetPasswordRepository,
+    private readonly resetPasswordRepository: IResetPasswordRepository,
     private readonly userRepository: IUserRepository,
     private readonly token: ITokenAdapter,
     private readonly event: IEventAdapter,
@@ -38,22 +38,22 @@ export class SendEmailResetPasswordUsecase implements IUsecase {
       throw new ApiNotFoundException('user not found');
     }
 
-    const resetpasswordtoken = await this.resetPasswordtokenRepository.findOne({ userId: user.id });
+    const resetPassword = await this.resetPasswordRepository.findByIdUserId(user.id);
 
-    if (resetpasswordtoken) {
+    if (resetPassword) {
       this.event.emit<SendEmailInput>(EventNameEnum.SEND_EMAIL, {
         email: user.email,
         subject: 'Reset password',
         template: 'reque-reset-password',
-        payload: { name: user.email, link: `${this.secret.HOST}/api/v1/reset-password/${resetpasswordtoken.token}` }
+        payload: { name: user.email, link: `${this.secret.HOST}/api/v1/reset-password/${resetPassword.token}` }
       });
       return;
     }
 
     const hash = this.token.sign({ id: user.id });
-    const entity = new ResetPasswordEntity({ token: hash.token, userId: user.id });
+    const entity = new ResetPasswordEntity({ token: hash.token, user: user });
 
-    await this.resetPasswordtokenRepository.create(entity);
+    await this.resetPasswordRepository.create(entity);
     this.event.emit<SendEmailInput>(EventNameEnum.SEND_EMAIL, {
       email: user.email,
       subject: 'Reset password',

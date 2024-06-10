@@ -4,15 +4,15 @@ import { IUserGetByIDAdapter } from '@/modules/user/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
 import { expectZodError, getMockUUID } from '@/utils/tests';
 
-import { UserEntity, UserRole } from '../../entity/user';
+import { UserEntity, UserRoleEnum } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
 import { UserGetByIdUsecase } from '../user-get-by-id';
 
 const userMock = {
   id: getMockUUID(),
   email: 'admin@admin.com',
-  password: '**********',
-  roles: [UserRole.USER]
+  name: 'Admin',
+  roles: [UserRoleEnum.USER]
 } as UserEntity;
 
 describe(UserGetByIdUsecase.name, () => {

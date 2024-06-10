@@ -1,40 +1,35 @@
 import { Injectable } from '@nestjs/common';
-import { Transaction } from 'sequelize';
-import { ModelCtor } from 'sequelize-typescript';
+import { InjectModel } from '@nestjs/mongoose';
+import { PaginateModel } from 'mongoose';
 
 import { CatsEntity } from '@/core/cats/entity/cats';
 import { ICatsRepository } from '@/core/cats/repository/cats';
 import { CatsListInput, CatsListOutput } from '@/core/cats/use-cases/cats-list';
-import { CatsSchema } from '@/infra/database/postgres/schemas/cats';
-import { SequelizeRepository } from '@/infra/repository/postgres/repository';
-import { DatabaseOptionsSchema, DatabaseOptionsType } from '@/utils/database/sequelize';
-import { ConvertPaginateInputToSequelizeFilter, SearchTypeEnum, ValidateDatabaseSortAllowed } from '@/utils/decorators';
-
-type Model = ModelCtor<CatsSchema> & CatsEntity;
+import { Cat, CatDocument } from '@/infra/database/mongo/schemas/cat';
+import { MongoRepository } from '@/infra/repository';
+import { MongoRepositoryModelSessionType } from '@/utils/database/mongoose';
+import { SearchTypeEnum, ValidateDatabaseSortAllowed, ValidatePostgresFilter } from '@/utils/decorators';
 
 @Injectable()
-export class CatsRepository extends SequelizeRepository<Model> implements ICatsRepository {
-  constructor(readonly repository: Model) {
-    super(repository);
-  }
-
-  async startSession<TTransaction = Transaction>(): Promise<TTransaction> {
-    const transaction = await this.repository.sequelize.transaction();
-
-    return transaction as TTransaction;
+export class CatsRepository extends MongoRepository<CatDocument> implements ICatsRepository {
+  constructor(@InjectModel(Cat.name) readonly entity: MongoRepositoryModelSessionType<PaginateModel<CatDocument>>) {
+    super(entity);
   }
 
   @ValidateDatabaseSortAllowed<CatsEntity>('createdAt', 'breed')
-  @ConvertPaginateInputToSequelizeFilter<CatsEntity>([
+  @ValidatePostgresFilter<CatsEntity>([
     { name: 'name', type: SearchTypeEnum.like },
     { name: 'breed', type: SearchTypeEnum.like },
     { name: 'age', type: SearchTypeEnum.equal }
   ])
-  async paginate(input: CatsListInput, options: DatabaseOptionsType): Promise<CatsListOutput> {
-    const { schema } = DatabaseOptionsSchema.parse(options);
+  async paginate({ limit, page, search, sort }: CatsListInput): Promise<CatsListOutput> {
+    const cats = await this.entity.paginate(search, { page, limit, sort });
 
-    const list = await this.repository.schema(schema).findAndCountAll(input);
-
-    return { docs: list.rows.map((r) => new CatsEntity(r)), limit: input.limit, page: input.page, total: list.count };
+    return {
+      docs: cats.docs.map((u) => new CatsEntity(u.toObject({ virtuals: true }))),
+      limit,
+      page,
+      total: cats.totalDocs
+    };
   }
 }

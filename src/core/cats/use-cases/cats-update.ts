@@ -2,7 +2,6 @@ import { z } from 'zod';
 
 import { ICatsRepository } from '@/core/cats/repository/cats';
 import { ILoggerAdapter } from '@/infra/logger';
-import { DatabaseOptionsType } from '@/utils/database/sequelize';
 import { ValidateSchema } from '@/utils/decorators';
 import { ApiNotFoundException } from '@/utils/exception';
 import { ApiTrancingInput } from '@/utils/request';
@@ -25,19 +24,19 @@ export class CatsUpdateUsecase implements IUsecase {
 
   @ValidateSchema(CatsUpdateSchema)
   async execute(input: CatsUpdateInput, { tracing, user }: ApiTrancingInput): Promise<CatsUpdateOutput> {
-    const cats = await this.catsRepository.findById<DatabaseOptionsType>(input.id);
+    const cat = await this.catsRepository.findById(input.id);
 
-    if (!cats) {
+    if (!cat) {
       throw new ApiNotFoundException();
     }
 
-    const entity = new CatsEntity({ ...cats, ...input });
+    const entity = new CatsEntity({ ...cat, ...input });
 
     await this.catsRepository.updateOne({ id: entity.id }, entity);
 
     this.loggerService.info({ message: 'cats updated.', obj: { cats: input } });
 
-    const updated = await this.catsRepository.findById<DatabaseOptionsType>(entity.id);
+    const updated = await this.catsRepository.findById(entity.id);
 
     tracing.logEvent('cats-updated', `cats updated by: ${user.email}`);
 

@@ -1,4 +1,4 @@
-import { UserEntity, UserRole } from '@/core/user/entity/user';
+import { UserEntity, UserRoleEnum } from '@/core/user/entity/user';
 import { UserCreateOutput } from '@/core/user/use-cases/user-create';
 import { UserDeleteOutput } from '@/core/user/use-cases/user-delete';
 import { UserGetByIdOutput } from '@/core/user/use-cases/user-get-by-id';
@@ -8,8 +8,8 @@ import { getMockDate, getMockUUID } from '@/utils/tests';
 
 const entity = {
   email: 'admin@admin.com',
-  password: '**********',
-  roles: [UserRole.USER]
+  name: 'Admin',
+  roles: [UserRoleEnum.USER]
 } as UserEntity;
 
 const fullEntity = {

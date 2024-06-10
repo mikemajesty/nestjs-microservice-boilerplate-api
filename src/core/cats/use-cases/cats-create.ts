@@ -1,7 +1,6 @@
 import { z } from 'zod';
 
 import { CreatedModel } from '@/infra/repository';
-import { DatabaseOptionsType } from '@/utils/database/sequelize';
 import { ValidateSchema } from '@/utils/decorators';
 import { ApiTrancingInput } from '@/utils/request';
 import { IUsecase } from '@/utils/usecase';
@@ -25,17 +24,13 @@ export class CatsCreateUsecase implements IUsecase {
   async execute(input: CatsCreateInput, { tracing, user }: ApiTrancingInput): Promise<CatsCreateOutput> {
     const entity = new CatsEntity(input);
 
-    const transaction = await this.catsRepository.startSession();
     try {
-      const cats = await this.catsRepository.create<DatabaseOptionsType>(entity, { transaction });
-
-      await transaction.commit();
+      const cats = await this.catsRepository.create(entity);
 
       tracing.logEvent('cats-created', `cats created by: ${user.email}`);
 
       return cats;
     } catch (error) {
-      await transaction.rollback();
       throw error;
     }
   }

@@ -7,15 +7,17 @@ import { IUserCreateAdapter } from '@/modules/user/adapter';
 import { ApiConflictException } from '@/utils/exception';
 import { expectZodError, getMockTracing, getMockUUID } from '@/utils/tests';
 
-import { UserEntity, UserRole } from '../../entity/user';
+import { UserEntity, UserRoleEnum } from '../../entity/user';
+import { UserPasswordEntity } from '../../entity/user-password';
 import { IUserRepository } from '../../repository/user';
-import { UserCreateUsecase } from '../user-create';
+import { UserCreateInput, UserCreateUsecase } from '../user-create';
 
-const userMock = {
+const userDefaultOutput = {
   id: getMockUUID(),
   email: 'admin@admin.com',
-  password: '**********',
-  roles: [UserRole.USER]
+  name: 'Admin',
+  roles: [UserRoleEnum.USER],
+  password: new UserPasswordEntity({ password: '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918' })
 } as UserEntity;
 
 describe(UserCreateUsecase.name, () => {
@@ -41,12 +43,12 @@ describe(UserCreateUsecase.name, () => {
           useFactory: (
             userRepository: IUserRepository,
             logger: ILoggerAdapter,
-            crypto: ICryptoAdapter,
-            event: IEventAdapter
+            event: IEventAdapter,
+            crypto: ICryptoAdapter
           ) => {
-            return new UserCreateUsecase(userRepository, logger, crypto, event);
+            return new UserCreateUsecase(userRepository, logger, event, crypto);
           },
-          inject: [IUserRepository, ILoggerAdapter, ICryptoAdapter, IEventAdapter]
+          inject: [IUserRepository, ILoggerAdapter, IEventAdapter, ICryptoAdapter]
         }
       ]
     }).compile();
@@ -55,39 +57,42 @@ describe(UserCreateUsecase.name, () => {
     repository = app.get(IUserRepository);
   });
 
-  test('when the user is created successfully, should expect an user that has been created', async () => {
-    repository.findOne = jest.fn().mockResolvedValue(null);
-    repository.create = jest.fn().mockResolvedValue(userMock);
-    repository.startSession = jest.fn().mockResolvedValue({
-      commitTransaction: jest.fn()
-    });
-
-    await expect(usecase.execute(userMock, getMockTracing())).resolves.toEqual(userMock);
-  });
-
-  test('when transaction throw an error, should expect an error', async () => {
-    repository.findOne = jest.fn().mockResolvedValue(null);
-    repository.create = jest.fn().mockResolvedValue(userMock);
-    repository.startSession = jest.fn().mockRejectedValue(new Error('startSessionError'));
-
-    await expect(usecase.execute(userMock, getMockTracing())).rejects.toThrow('startSessionError');
-  });
-
-  test('when user already exists, should expect an error', async () => {
-    repository.findOne = jest.fn().mockResolvedValue(userMock);
-    await expect(usecase.execute(userMock, getMockTracing())).rejects.toThrow(ApiConflictException);
-  });
-
   test('when no input is specified, should expect an error', async () => {
     await expectZodError(
       () => usecase.execute({}, getMockTracing()),
       (issues) => {
         expect(issues).toEqual([
           { message: 'Required', path: UserEntity.nameOf('email') },
-          { message: 'Required', path: UserEntity.nameOf('password') },
-          { message: 'Required', path: UserEntity.nameOf('roles') }
+          { message: 'Required', path: UserEntity.nameOf('name') },
+          { message: 'Required', path: UserEntity.nameOf('roles') },
+          { message: 'Required', path: UserPasswordEntity.nameOf('password') }
         ]);
       }
     );
+  });
+
+  const defaultInput: UserCreateInput = {
+    email: 'admin@admin.com',
+    name: 'Admin',
+    password: '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918',
+    roles: [UserRoleEnum.USER]
+  };
+  test('when the user is created successfully, should expect an user that has been created', async () => {
+    repository.findOne = jest.fn().mockResolvedValue(null);
+    repository.create = jest.fn().mockResolvedValue(userDefaultOutput);
+
+    await expect(usecase.execute(defaultInput, getMockTracing())).resolves.toEqual(userDefaultOutput);
+  });
+
+  test('when user already exists, should expect an error', async () => {
+    repository.findOne = jest.fn().mockResolvedValue(userDefaultOutput);
+    await expect(usecase.execute(defaultInput, getMockTracing())).rejects.toThrow(ApiConflictException);
+  });
+
+  test('when user created successfully, should expect an user', async () => {
+    repository.findOne = jest.fn().mockResolvedValue(null);
+    repository.create = jest.fn().mockResolvedValue(userDefaultOutput);
+
+    await expect(usecase.execute(defaultInput, getMockTracing())).resolves.toEqual(userDefaultOutput);
   });
 });

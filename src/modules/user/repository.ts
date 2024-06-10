@@ -1,47 +1,53 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { PaginateModel } from 'mongoose';
+import { FindOptionsRelations, FindOptionsWhere, Not, Repository } from 'typeorm';
 
 import { UserEntity } from '@/core/user/entity/user';
 import { IUserRepository } from '@/core/user/repository/user';
 import { UserListInput, UserListOutput } from '@/core/user/use-cases/user-list';
-import { User, UserDocument } from '@/infra/database/mongo/schemas/user';
-import { MongoRepository } from '@/infra/repository';
-import { MongoRepositoryModelSessionType, MongoRepositorySession } from '@/utils/database/mongoose';
+import { UserSchema } from '@/infra/database/postgres/schemas/user';
+import { TypeORMRepository } from '@/infra/repository/postgres/repository';
 import { SearchTypeEnum, ValidateDatabaseSortAllowed, ValidateMongooseFilter } from '@/utils/decorators';
+import { calculateSkip } from '@/utils/pagination';
+
+type Model = UserSchema & UserEntity;
 
 @Injectable()
-export class UserRepository extends MongoRepository<UserDocument> implements IUserRepository {
-  constructor(@InjectModel(User.name) readonly entity: MongoRepositoryModelSessionType<PaginateModel<UserDocument>>) {
-    super(entity);
-  }
-
-  async startSession<TTransaction = MongoRepositorySession>(): Promise<TTransaction> {
-    const session = await this.entity.connection.startSession();
-    session.startTransaction();
-
-    return session as TTransaction;
+export class UserRepository extends TypeORMRepository<Model> implements IUserRepository {
+  constructor(readonly repository: Repository<Model>) {
+    super(repository);
   }
 
   async existsOnUpdate(
     equalFilter: Pick<UserEntity, 'email'>,
     notEqualFilter: Pick<UserEntity, 'id'>
   ): Promise<boolean> {
-    const user = await this.entity.findOne({ ...equalFilter, $nor: [{ _id: notEqualFilter.id }] });
+    const exists = await this.repository.exists({ where: { id: Not(notEqualFilter.id), email: equalFilter.email } });
 
-    return !!user;
+    return exists;
   }
 
-  @ValidateMongooseFilter<UserEntity>([{ name: 'email', type: SearchTypeEnum.like }])
-  @ValidateDatabaseSortAllowed<UserEntity>('email', 'createdAt')
-  async paginate({ limit, page, sort, search }: UserListInput): Promise<UserListOutput> {
-    const users = await this.entity.paginate(search, { page, limit, sort });
+  async findOneWithRelation(filter: Partial<UserEntity>, relations: { [key: string]: boolean }): Promise<UserEntity> {
+    return await this.repository.findOne({
+      where: filter as FindOptionsWhere<unknown>,
+      relations: relations as FindOptionsRelations<unknown>
+    });
+  }
 
-    return {
-      docs: users.docs.map((u) => new UserEntity(u.toObject({ virtuals: true }))),
-      limit,
-      page,
-      total: users.totalDocs
-    };
+  @ValidateMongooseFilter<UserEntity>([
+    { name: 'email', type: SearchTypeEnum.like },
+    { name: 'name', type: SearchTypeEnum.like }
+  ])
+  @ValidateDatabaseSortAllowed<UserEntity>('email', 'name', 'createdAt')
+  async paginate(input: UserListInput): Promise<UserListOutput> {
+    const skip = calculateSkip(input);
+
+    const [docs, total] = await this.repository.findAndCount({
+      take: input.limit,
+      skip,
+      order: input.sort,
+      where: input.search as FindOptionsWhere<unknown>
+    });
+
+    return { docs, total, page: input.page, limit: input.limit };
   }
 }

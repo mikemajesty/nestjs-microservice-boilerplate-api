@@ -201,11 +201,10 @@ Creating a CRUD in Postgres and Mongo in seconds.
 ├── jest.config.ts
 ├── nest-cli.json
 ├── package.json
+├── package-lock.json
 ├── README.md
 ├── scripts
-│   ├── npm-audit.sh
-│   └── postgres
-│       └── create-database.sql
+│   └── npm-audit.sh
 ├── src
 │   ├── app.module.ts
 │   ├── core
@@ -239,11 +238,13 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │   │   │           └── send-email.spec.ts
 │   │   └── user
 │   │       ├── entity
+│   │       │   ├── user-password.ts
 │   │       │   └── user.ts
 │   │       ├── repository
 │   │       │   └── user.ts
 │   │       └── use-cases
 │   │           ├── __tests__
+│   │           │   ├── user-change-password.spec.ts
 │   │           │   ├── user-create.spec.ts
 │   │           │   ├── user-delete.spec.ts
 │   │           │   ├── user-get-by-id.spec.ts
@@ -251,6 +252,7 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │   │           │   ├── user-login.spec.ts
 │   │           │   ├── user-logout.spec.ts
 │   │           │   └── user-update.spec.ts
+│   │           ├── user-change-password.ts
 │   │           ├── user-create.ts
 │   │           ├── user-delete.ts
 │   │           ├── user-get-by-id.ts
@@ -281,21 +283,24 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │   │   │   │   ├── config.ts
 │   │   │   │   ├── index.ts
 │   │   │   │   ├── migrations
-│   │   │   │   │   ├── 1709943706267_create-user-collection.ts
-│   │   │   │   │   └── 1709944044583_create-user-default.ts
+│   │   │   │   │   └── 1709943706267_createCatsCollection.ts
 │   │   │   │   ├── module.ts
 │   │   │   │   ├── schemas
-│   │   │   │   │   ├── reset-password.ts
-│   │   │   │   │   └── user.ts
+│   │   │   │   │   └── cat.ts
 │   │   │   │   └── service.ts
 │   │   │   ├── postgres
-│   │   │   │   ├── config.js
+│   │   │   │   ├── config.ts
 │   │   │   │   ├── index.ts
 │   │   │   │   ├── migrations
-│   │   │   │   │   └── 20230416174316-create-cats-table.ts
+│   │   │   │   │   ├── 1717769593778-createUsersPasswordTable.ts
+│   │   │   │   │   ├── 1717773444116-createUserTable.ts
+│   │   │   │   │   ├── 1717773889351-insertDefaultUser.ts
+│   │   │   │   │   └── 1717976911236-createResetPasswordTable.ts
 │   │   │   │   ├── module.ts
 │   │   │   │   ├── schemas
-│   │   │   │   │   └── cats.ts
+│   │   │   │   │   ├── resetPassword.ts
+│   │   │   │   │   ├── userPassword.ts
+│   │   │   │   │   └── user.ts
 │   │   │   │   └── service.ts
 │   │   │   └── types.ts
 │   │   ├── email
@@ -419,8 +424,7 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │       ├── axios.ts
 │       ├── collection.ts
 │       ├── database
-│       │   ├── mongoose.ts
-│       │   └── sequelize.ts
+│       │   └── mongoose.ts
 │       ├── date.ts
 │       ├── decorators
 │       │   ├── database
@@ -428,8 +432,7 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │       │   │   │   ├── convert-mongoose-filter.decorator.ts
 │       │   │   │   └── validate-mongoose-filter.decorator.ts
 │       │   │   ├── postgres
-│       │   │   │   ├── convert-paginate-input-to-sequelize-filter.decorator.ts
-│       │   │   │   └── convert-sequelize-filter.decorator.ts
+│       │   │   │   └── convert-paginate-input-to-typeorm-filter.decorator.ts
 │       │   │   └── validate-database-sort-allowed.decorator.ts
 │       │   ├── index.ts
 │       │   ├── request-timeout.decorator.ts

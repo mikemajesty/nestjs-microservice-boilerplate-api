@@ -12,13 +12,14 @@ import { ApiTrancingInput } from '@/utils/request';
 import { IUsecase } from '@/utils/usecase';
 
 import { UserEntity, UserEntitySchema } from '../entity/user';
+import { UserPasswordEntity, UserPasswordEntitySchema } from '../entity/user-password';
 import { IUserRepository } from '../repository/user';
 
 export const UserCreateSchema = UserEntitySchema.pick({
   email: true,
-  password: true,
+  name: true,
   roles: true
-});
+}).merge(UserPasswordEntitySchema.pick({ password: true }));
 
 export type UserCreateInput = z.infer<typeof UserCreateSchema>;
 export type UserCreateOutput = CreatedModel;
@@ -27,13 +28,17 @@ export class UserCreateUsecase implements IUsecase {
   constructor(
     private readonly userRepository: IUserRepository,
     private readonly loggerService: ILoggerAdapter,
-    private readonly crypto: ICryptoAdapter,
-    private readonly event: IEventAdapter
+    private readonly event: IEventAdapter,
+    private readonly crypto: ICryptoAdapter
   ) {}
 
   @ValidateSchema(UserCreateSchema)
   async execute(input: UserCreateInput, { tracing, user: userData }: ApiTrancingInput): Promise<UserCreateOutput> {
-    const entity = new UserEntity(input);
+    const entity = new UserEntity({ name: input.name, email: input.email, roles: input.roles });
+
+    const password = this.crypto.createHash(input.password);
+
+    entity.password = new UserPasswordEntity({ password });
 
     const userExists = await this.userRepository.findOne({
       email: entity.email
@@ -43,30 +48,19 @@ export class UserCreateUsecase implements IUsecase {
       throw new ApiConflictException('user exists');
     }
 
-    const session = await this.userRepository.startSession();
+    const user = await this.userRepository.create(entity);
 
-    try {
-      const password = this.crypto.createHash(input.password);
-      entity.password = password;
-      const user = await this.userRepository.create(entity, { session });
+    this.loggerService.info({ message: 'user created successfully', obj: { user } });
 
-      await session.commitTransaction();
+    this.event.emit<SendEmailInput>(EventNameEnum.SEND_EMAIL, {
+      email: input.email,
+      subject: 'Welcome',
+      template: 'welcome',
+      payload: { name: input.email }
+    });
 
-      this.loggerService.info({ message: 'user created successfully', obj: { user } });
+    tracing.logEvent('user-created', `user: ${entity.email} created by: ${userData.email}`);
 
-      this.event.emit<SendEmailInput>(EventNameEnum.SEND_EMAIL, {
-        email: input.email,
-        subject: 'Welcome',
-        template: 'welcome',
-        payload: { name: input.email }
-      });
-
-      tracing.logEvent('user-created', `user: ${entity.email} created by: ${userData.email}`);
-
-      return user;
-    } catch (error) {
-      await session.abortTransaction();
-      throw error;
-    }
+    return user;
   }
 }

@@ -1,30 +1,25 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { getConnectionToken } from '@nestjs/mongoose';
-import mongoose, { Connection, PaginateModel, Schema } from 'mongoose';
+import { getRepositoryToken, TypeOrmModule } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
+import { ResetPasswordEntity } from '@/core/reset-password/entity/reset-password';
 import { IResetPasswordRepository } from '@/core/reset-password/repository/reset-password';
 import { ConfirmResetPasswordUsecase } from '@/core/reset-password/use-cases/confirm';
 import { SendEmailResetPasswordUsecase } from '@/core/reset-password/use-cases/send-email';
 import { IUserRepository } from '@/core/user/repository/user';
 import { RedisCacheModule } from '@/infra/cache/redis';
-import { ConnectionName } from '@/infra/database/enum';
-import {
-  ResetPassword,
-  ResetPasswordDocument,
-  ResetPasswordSchema
-} from '@/infra/database/mongo/schemas/reset-password';
+import { ResetPasswordSchema } from '@/infra/database/postgres/schemas/resetPassword';
 import { LoggerModule } from '@/infra/logger';
 import { ISecretsAdapter, SecretsModule } from '@/infra/secrets';
 import { CryptoLibModule, ICryptoAdapter } from '@/libs/crypto';
 import { EventLibModule, IEventAdapter } from '@/libs/event';
 import { ITokenAdapter, TokenLibModule } from '@/libs/token';
 import { IsLoggedMiddleware } from '@/observables/middlewares';
-import { MongoRepositoryModelSessionType } from '@/utils/database/mongoose';
 
 import { UserModule } from '../user/module';
 import { IConfirmResetPasswordAdapter, ISendEmailResetPasswordAdapter } from './adapter';
 import { ResetPasswordController } from './controller';
-import { ResetPasswordRepository } from './repository';
+import { UserResetPasswordRepository } from './repository';
 
 @Module({
   imports: [
@@ -35,29 +30,17 @@ import { ResetPasswordRepository } from './repository';
     UserModule,
     TokenLibModule,
     CryptoLibModule,
-    EventLibModule
+    EventLibModule,
+    TypeOrmModule.forFeature([ResetPasswordSchema])
   ],
   controllers: [ResetPasswordController],
   providers: [
     {
       provide: IResetPasswordRepository,
-      useFactory: async (connection: Connection) => {
-        type Model = mongoose.PaginateModel<ResetPasswordDocument>;
-
-        // use if you want transaction
-        const repository: MongoRepositoryModelSessionType<PaginateModel<ResetPasswordDocument>> = connection.model<
-          ResetPasswordDocument,
-          Model
-        >(ResetPassword.name, ResetPasswordSchema as Schema);
-
-        repository.connection = connection;
-
-        // use if you not want transaction
-        // const repository: PaginateModel<ResetPasswordDocument> = connection.model<ResetPasswordDocument, Model>(ResetPassword.name, ResetPasswordSchema as Schema);
-
-        return new ResetPasswordRepository(repository);
+      useFactory: (repository: Repository<ResetPasswordSchema & ResetPasswordEntity>) => {
+        return new UserResetPasswordRepository(repository);
       },
-      inject: [getConnectionToken(ConnectionName.USER)]
+      inject: [getRepositoryToken(ResetPasswordSchema)]
     },
     {
       provide: ISendEmailResetPasswordAdapter,

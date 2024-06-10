@@ -3,7 +3,7 @@ import { ApiBearerAuth, ApiBody, ApiParam, ApiResponse, ApiTags } from '@nestjs/
 
 import { ConfirmResetPasswordInput, ConfirmResetPasswordOutput } from '@/core/reset-password/use-cases/confirm';
 import { SendEmailResetPasswordInput, SendEmailResetPasswordOutput } from '@/core/reset-password/use-cases/send-email';
-import { UserRole } from '@/core/user/entity/user';
+import { UserRoleEnum } from '@/core/user/entity/user';
 import { Roles } from '@/utils/decorators';
 import { ApiRequest } from '@/utils/request';
 
@@ -13,7 +13,7 @@ import { SwaggerRequest, SwaggerResponse } from './swagger';
 @Controller('/reset-password')
 @ApiTags('reset-password')
 @ApiBearerAuth()
-@Roles(UserRole.USER, UserRole.BACKOFFICE)
+@Roles(UserRoleEnum.USER, UserRoleEnum.BACKOFFICE)
 export class ResetPasswordController {
   constructor(
     private readonly sendEmailUsecase: ISendEmailResetPasswordAdapter,

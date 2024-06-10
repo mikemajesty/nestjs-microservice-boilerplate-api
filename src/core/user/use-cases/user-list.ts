@@ -24,8 +24,6 @@ export class UserListUsecase implements IUsecase {
     return {
       docs: users.docs.map((u) => {
         const model = new UserEntity(u);
-        model.anonymizePassword();
-
         return model;
       }),
       limit: users.limit,

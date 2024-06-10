@@ -5,13 +5,13 @@ import { ValidateSchema } from '@/utils/decorators';
 import { ApiBadRequestException, ApiNotFoundException } from '@/utils/exception';
 import { IUsecase } from '@/utils/usecase';
 
-import { UserEntity, UserEntitySchema } from '../entity/user';
+import { UserEntitySchema } from '../entity/user';
+import { UserPasswordEntity } from '../entity/user-password';
 import { IUserRepository } from '../repository/user';
 
 export const UserChangePasswordSchema = UserEntitySchema.pick({
-  id: true,
-  password: true
-}).merge(z.object({ newPassword: z.string(), confirmPassword: z.string() }));
+  id: true
+}).merge(z.object({ password: z.string(), newPassword: z.string(), confirmPassword: z.string() }));
 
 export type UserChangePasswordInput = z.infer<typeof UserChangePasswordSchema>;
 export type UserChangePasswordOutput = void;
@@ -24,24 +24,27 @@ export class UserChangePasswordUsecase implements IUsecase {
 
   @ValidateSchema(UserChangePasswordSchema)
   async execute(input: UserChangePasswordInput): Promise<UserChangePasswordOutput> {
-    const user = await this.repsotory.findById(input.id);
+    const user = await this.repsotory.findOneWithRelation({ id: input.id }, { password: true });
 
     if (!user) {
       throw new ApiNotFoundException('userNotFound');
     }
 
-    const entity = new UserEntity(user);
+    const entityPassword = new UserPasswordEntity(user.password);
 
     const password = this.crypto.createHash(input.password);
-    entity.verifyPassword(password);
+
+    entityPassword.verifyPassword(password);
 
     if (input.newPassword !== input.confirmPassword) {
       throw new ApiBadRequestException('passwordIsDifferent');
     }
 
     const newPassword = this.crypto.createHash(input.newPassword);
-    entity.changePassword(newPassword);
+    entityPassword.password = newPassword;
 
-    await this.repsotory.updateOne({ id: entity.id }, entity);
+    user.password = entityPassword;
+
+    await this.repsotory.create(user);
   }
 }

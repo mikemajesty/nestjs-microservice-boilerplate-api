@@ -1,7 +1,7 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { ModelCtor, Sequelize } from 'sequelize-typescript';
+import { getConnectionToken } from '@nestjs/mongoose';
+import mongoose, { Connection, PaginateModel, Schema } from 'mongoose';
 
-import { CatsEntity } from '@/core/cats/entity/cats';
 import { ICatsRepository } from '@/core/cats/repository/cats';
 import { CatsCreateUsecase } from '@/core/cats/use-cases/cats-create';
 import { CatsDeleteUsecase } from '@/core/cats/use-cases/cats-delete';
@@ -9,12 +9,13 @@ import { CatsGetByIdUsecase } from '@/core/cats/use-cases/cats-get-by-id';
 import { CatsListUsecase } from '@/core/cats/use-cases/cats-list';
 import { CatsUpdateUsecase } from '@/core/cats/use-cases/cats-update';
 import { RedisCacheModule } from '@/infra/cache/redis';
-import { IDataBaseAdapter } from '@/infra/database';
+import { ConnectionName } from '@/infra/database/enum';
+import { Cat, CatDocument, CatSchema } from '@/infra/database/mongo/schemas/cat';
 import { PostgresDatabaseModule } from '@/infra/database/postgres/module';
-import { CatsSchema } from '@/infra/database/postgres/schemas/cats';
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { TokenLibModule } from '@/libs/token';
 import { IsLoggedMiddleware } from '@/observables/middlewares';
+import { MongoRepositoryModelSessionType } from '@/utils/database/mongoose';
 
 import {
   ICatsCreateAdapter,
@@ -32,11 +33,26 @@ import { CatsRepository } from './repository';
   providers: [
     {
       provide: ICatsRepository,
-      useFactory: (database: IDataBaseAdapter) => {
-        const repository = database.getDatabase<Sequelize>().model(CatsSchema);
-        return new CatsRepository(repository as ModelCtor<CatsSchema> & CatsEntity);
+      useFactory: async (connection: Connection) => {
+        type Model = mongoose.PaginateModel<CatDocument>;
+
+        //  use if you want transaction
+        const repository: MongoRepositoryModelSessionType<PaginateModel<CatDocument>> = connection.model<
+          CatDocument,
+          Model
+        >(Cat.name, CatSchema as Schema);
+
+        repository.connection = connection;
+
+        // use if you not want transaction
+        // const repository: PaginateModel<UserDocument> = connection.model<UserDocument, Model>(
+        //   User.name,
+        //   UserSchema as Schema
+        // );
+
+        return new CatsRepository(repository);
       },
-      inject: [IDataBaseAdapter]
+      inject: [getConnectionToken(ConnectionName.CATS)]
     },
     {
       provide: ICatsCreateAdapter,

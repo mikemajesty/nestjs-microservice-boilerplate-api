@@ -4,15 +4,16 @@ import { IUserDeleteAdapter } from '@/modules/user/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
 import { expectZodError, getMockTracing, getMockUUID } from '@/utils/tests';
 
-import { UserEntity, UserRole } from '../../entity/user';
+import { UserEntity, UserRoleEnum } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
 import { UserDeleteUsecase } from '../user-delete';
 
-const userMock = {
+const userDefaultOutput = {
   id: getMockUUID(),
   email: 'admin@admin.com',
-  password: '**********',
-  roles: [UserRole.USER]
+  name: '*Admin',
+  roles: [UserRoleEnum.USER],
+  password: { id: getMockUUID(), password: '****' }
 } as UserEntity;
 
 describe(UserDeleteUsecase.name, () => {
@@ -51,16 +52,14 @@ describe(UserDeleteUsecase.name, () => {
   });
 
   test('when user not found, should expect an error', async () => {
-    repository.findById = jest.fn().mockResolvedValue(null);
+    repository.findOneWithRelation = jest.fn().mockResolvedValue(null);
     await expect(usecase.execute({ id: getMockUUID() }, getMockTracing())).rejects.toThrow(ApiNotFoundException);
   });
 
   test('when user deleted successfully, should expect an user that has been deleted.', async () => {
-    repository.findById = jest.fn().mockResolvedValue(userMock);
-    repository.updateOne = jest.fn();
-    await expect(usecase.execute({ id: getMockUUID() }, getMockTracing())).resolves.toEqual({
-      ...userMock,
-      deletedAt: expect.any(Date)
-    });
+    repository.findOneWithRelation = jest.fn().mockResolvedValue(userDefaultOutput);
+    repository.create = jest.fn();
+    await expect(usecase.execute({ id: getMockUUID() }, getMockTracing())).resolves.toEqual(expect.any(UserEntity));
+    expect(repository.create).toHaveBeenCalled();
   });
 });

@@ -6,7 +6,8 @@ import { IUserChangePasswordAdapter } from '@/modules/user/adapter';
 import { ApiBadRequestException, ApiNotFoundException } from '@/utils/exception';
 import { expectZodError, getMockUUID } from '@/utils/tests';
 
-import { UserEntity, UserRole } from '../../entity/user';
+import { UserEntity, UserRoleEnum } from '../../entity/user';
+import { UserPasswordEntity } from '../../entity/user-password';
 import { IUserRepository } from '../../repository/user';
 import { UserChangePasswordInput, UserChangePasswordUsecase } from '../user-change-password';
 
@@ -42,7 +43,7 @@ describe(UserChangePasswordUsecase.name, () => {
       (issues) => {
         expect(issues).toEqual([
           { message: 'Required', path: UserEntity.nameOf('id') },
-          { message: 'Required', path: UserEntity.nameOf('password') },
+          { message: 'Required', path: UserPasswordEntity.nameOf('password') },
           { message: 'Required', path: 'newPassword' },
           { message: 'Required', path: 'confirmPassword' }
         ]);
@@ -57,34 +58,35 @@ describe(UserChangePasswordUsecase.name, () => {
     newPassword: '****'
   };
   test('when user not found, should expect an error', async () => {
-    repository.findById = jest.fn().mockResolvedValue(null);
+    repository.findOneWithRelation = jest.fn().mockResolvedValue(null);
     await expect(usecase.execute(defaultInput)).rejects.toThrow(ApiNotFoundException);
   });
 
-  const defaultUserResponse = new UserEntity({
+  const defaultUserOutput = new UserEntity({
     id: getMockUUID(),
     email: 'admin@admin.com',
-    password: '69bf0bc46f51b33377c4f3d92caf876714f6bbbe99e7544487327920873f9820',
-    roles: [UserRole.USER]
+    name: 'Admin',
+    password: new UserPasswordEntity({ password: '69bf0bc46f51b33377c4f3d92caf876714f6bbbe99e7544487327920873f9820' }),
+    roles: [UserRoleEnum.USER]
   });
   test('when user password is incorrect, should expect an error', async () => {
-    repository.findById = jest.fn().mockResolvedValue(defaultUserResponse);
+    repository.findOneWithRelation = jest.fn().mockResolvedValue(defaultUserOutput);
     await expect(usecase.execute({ ...defaultInput, password: 'wrongPassword' })).rejects.toThrow(
       ApiBadRequestException
     );
   });
 
   test('when user password are differents, should expect an error', async () => {
-    repository.findById = jest.fn().mockResolvedValue(defaultUserResponse);
+    repository.findOneWithRelation = jest.fn().mockResolvedValue(defaultUserOutput);
     await expect(usecase.execute({ ...defaultInput, confirmPassword: 'wrongPassword' })).rejects.toThrow(
       ApiBadRequestException
     );
   });
 
   test('when change password successfully, should change password', async () => {
-    repository.findById = jest.fn().mockResolvedValue(defaultUserResponse);
-    repository.updateOne = jest.fn();
+    repository.findOneWithRelation = jest.fn().mockResolvedValue(defaultUserOutput);
+    repository.create = jest.fn();
     await expect(usecase.execute(defaultInput)).resolves.toBeUndefined();
-    expect(repository.updateOne).toHaveBeenCalled();
+    expect(repository.create).toHaveBeenCalled();
   });
 });

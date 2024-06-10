@@ -8,12 +8,12 @@ import { ApiTrancingInput } from '@/utils/request';
 import { IUsecase } from '@/utils/usecase';
 
 import { UserEntitySchema } from '../entity/user';
+import { UserPasswordEntitySchema } from '../entity/user-password';
 import { IUserRepository } from '../repository/user';
 
 export const LoginSchema = UserEntitySchema.pick({
-  email: true,
-  password: true
-});
+  email: true
+}).merge(UserPasswordEntitySchema.pick({ password: true }));
 
 export type LoginInput = z.infer<typeof LoginSchema>;
 export type LoginOutput = Promise<{ token: string }>;
@@ -27,17 +27,24 @@ export class LoginUsecase implements IUsecase {
 
   @ValidateSchema(LoginSchema)
   async execute(input: LoginInput, { tracing }: ApiTrancingInput): LoginOutput {
-    const password = this.crypto.createHash(input.password);
-    const login = await this.loginRepository.findOne({
-      email: input.email,
-      password
-    });
+    const login = await this.loginRepository.findOneWithRelation(
+      {
+        email: input.email
+      },
+      { password: true }
+    );
 
     if (!login) {
-      throw new ApiNotFoundException();
+      throw new ApiNotFoundException('userNotFound');
     }
 
-    tracing.logEvent('user-login', `${login.email}`);
+    const password = this.crypto.createHash(input.password);
+
+    if (login.password.password !== password) {
+      throw new ApiNotFoundException('incorrectPassword');
+    }
+
+    tracing.logEvent('user-login', `${login}`);
 
     return this.tokenService.sign({
       email: login.email,

@@ -10,9 +10,8 @@ import { ITokenAdapter } from './adapter';
 
 const Schema = UserEntitySchema.pick({
   email: true,
-  password: true,
   roles: true
-});
+}).merge(z.object({ password: z.string() }));
 
 export type SignInput = z.infer<typeof Schema>;
 

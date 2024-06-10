@@ -1,26 +1,29 @@
 import { z } from 'zod';
 
 import { BaseEntity } from '@/utils/entity';
-import { ApiBadRequestException } from '@/utils/exception';
 
-export enum UserRole {
+import { UserPasswordEntity, UserPasswordEntitySchema } from './user-password';
+
+export enum UserRoleEnum {
   USER = 'USER',
   BACKOFFICE = 'BACKOFFICE'
 }
 
 const ID = z.string().uuid();
 const Email = z.string().email();
-const Password = z.string().trim().min(1).max(200);
+const Name = z.string();
+const Roles = z.array(z.nativeEnum(UserRoleEnum));
+const Password = UserPasswordEntitySchema;
 const CreatedAt = z.date().nullish();
-const Roles = z.array(z.nativeEnum(UserRole));
 const UpdatedAt = z.date().nullish();
 const DeletedAt = z.date().default(null).nullish();
 
 export const UserEntitySchema = z.object({
   id: ID,
+  name: Name,
   email: Email,
-  password: Password,
   roles: Roles,
+  password: Password.optional(),
   createdAt: CreatedAt,
   updatedAt: UpdatedAt,
   deletedAt: DeletedAt
@@ -29,28 +32,16 @@ export const UserEntitySchema = z.object({
 type User = z.infer<typeof UserEntitySchema>;
 
 export class UserEntity extends BaseEntity<UserEntity>(UserEntitySchema) {
+  name: string;
+
   email: string;
 
-  password: string;
+  roles: UserRoleEnum[];
 
-  roles: UserRole[];
+  password: UserPasswordEntity;
 
   constructor(entity: User) {
     super();
     Object.assign(this, this.validate(entity));
-  }
-
-  anonymizePassword() {
-    this.password = '**********';
-  }
-
-  verifyPassword(password: string): void {
-    if (this.password !== password) {
-      throw new ApiBadRequestException('passwordIsIncorrect');
-    }
-  }
-
-  changePassword(password: string): void {
-    this.password = password;
   }
 }

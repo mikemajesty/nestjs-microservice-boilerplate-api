@@ -86,6 +86,10 @@ export class LoggerService implements ILoggerAdapter {
 
     const messages = [message, response?.message, error.message].find(Boolean);
 
+    if (error?.name === 'QueryFailedError') {
+      Object.assign(error, { parameters: undefined });
+    }
+
     const typeError = [type, error?.name === 'ZodError' ? ApiBadRequestException.name : error?.name].find(Boolean);
     this.logger.logger.error(
       {

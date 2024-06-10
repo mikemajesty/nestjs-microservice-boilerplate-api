@@ -12,7 +12,7 @@ import { IUserRepository } from '../repository/user';
 export const UserUpdateSchema = UserEntitySchema.pick({
   id: true
 })
-  .merge(UserEntitySchema.omit({ id: true, password: true }).partial())
+  .merge(UserEntitySchema.omit({ id: true }).partial())
   .strict();
 
 export type UserUpdateInput = Partial<z.infer<typeof UserUpdateSchema>>;
@@ -47,8 +47,6 @@ export class UserUpdateUsecase implements IUsecase {
     const updated = await this.userRepository.findById(entity.id);
 
     const entityUpdated = new UserEntity(updated);
-
-    entityUpdated.anonymizePassword();
 
     tracing.logEvent('user-updated', `user: ${user.email} updated by: ${userData.email}`);
 

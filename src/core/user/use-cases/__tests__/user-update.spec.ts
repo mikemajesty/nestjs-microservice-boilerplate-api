@@ -5,19 +5,19 @@ import { IUserUpdateAdapter } from '@/modules/user/adapter';
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception';
 import { expectZodError, getMockTracing, getMockUUID } from '@/utils/tests';
 
-import { UserEntity, UserRole } from '../../entity/user';
+import { UserEntity, UserRoleEnum } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
 import { UserUpdateUsecase } from '../user-update';
 
 const userInputMock = {
   id: getMockUUID(),
+  name: 'Admin',
   email: 'admin@admin.com',
-  roles: [UserRole.USER]
+  roles: [UserRoleEnum.USER]
 } as UserEntity;
 
 const userOutputMock = {
-  ...userInputMock,
-  password: '**********'
+  ...userInputMock
 } as UserEntity;
 
 describe(UserUpdateUsecase.name, () => {

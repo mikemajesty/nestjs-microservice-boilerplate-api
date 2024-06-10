@@ -1,7 +1,8 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { getConnectionToken } from '@nestjs/mongoose';
-import mongoose, { Connection, PaginateModel, Schema } from 'mongoose';
+import { getRepositoryToken, TypeOrmModule } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
+import { UserEntity } from '@/core/user/entity/user';
 import { IUserRepository } from '@/core/user/repository/user';
 import { UserChangePasswordUsecase } from '@/core/user/use-cases/user-change-password';
 import { UserCreateUsecase } from '@/core/user/use-cases/user-create';
@@ -10,15 +11,13 @@ import { UserGetByIdUsecase } from '@/core/user/use-cases/user-get-by-id';
 import { UserListUsecase } from '@/core/user/use-cases/user-list';
 import { UserUpdateUsecase } from '@/core/user/use-cases/user-update';
 import { RedisCacheModule } from '@/infra/cache/redis';
-import { ConnectionName } from '@/infra/database/enum';
-import { User, UserDocument, UserSchema } from '@/infra/database/mongo/schemas/user';
+import { UserSchema } from '@/infra/database/postgres/schemas/user';
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { SecretsModule } from '@/infra/secrets';
 import { CryptoLibModule, ICryptoAdapter } from '@/libs/crypto';
 import { EventLibModule, IEventAdapter } from '@/libs/event';
 import { TokenLibModule } from '@/libs/token';
 import { IsLoggedMiddleware } from '@/observables/middlewares';
-import { MongoRepositoryModelSessionType } from '@/utils/database/mongoose';
 
 import {
   IUserChangePasswordAdapter,
@@ -32,50 +31,42 @@ import { UserController } from './controller';
 import { UserRepository } from './repository';
 
 @Module({
-  imports: [TokenLibModule, SecretsModule, LoggerModule, RedisCacheModule, CryptoLibModule, EventLibModule],
+  imports: [
+    TokenLibModule,
+    SecretsModule,
+    LoggerModule,
+    RedisCacheModule,
+    CryptoLibModule,
+    EventLibModule,
+    TypeOrmModule.forFeature([UserSchema])
+  ],
   controllers: [UserController],
   providers: [
     {
       provide: IUserRepository,
-      useFactory: async (connection: Connection) => {
-        type Model = mongoose.PaginateModel<UserDocument>;
-
-        //  use if you want transaction
-        const repository: MongoRepositoryModelSessionType<PaginateModel<UserDocument>> = connection.model<
-          UserDocument,
-          Model
-        >(User.name, UserSchema as Schema);
-
-        repository.connection = connection;
-
-        // use if you not want transaction
-        // const repository: PaginateModel<UserDocument> = connection.model<UserDocument, Model>(
-        //   User.name,
-        //   UserSchema as Schema
-        // );
-
+      useFactory: (repository: Repository<UserSchema & UserEntity>) => {
         return new UserRepository(repository);
       },
-      inject: [getConnectionToken(ConnectionName.USER)]
+      inject: [getRepositoryToken(UserSchema)]
     },
     {
       provide: IUserCreateAdapter,
       useFactory: (
         userRepository: IUserRepository,
         loggerService: ILoggerAdapter,
-        crypto: ICryptoAdapter,
-        event: IEventAdapter
+        event: IEventAdapter,
+        crypto: ICryptoAdapter
       ) => {
-        return new UserCreateUsecase(userRepository, loggerService, crypto, event);
+        return new UserCreateUsecase(userRepository, loggerService, event, crypto);
       },
-      inject: [IUserRepository, ILoggerAdapter, ICryptoAdapter, IEventAdapter]
+      inject: [IUserRepository, ILoggerAdapter, IEventAdapter, ICryptoAdapter]
     },
     {
       provide: IUserUpdateAdapter,
       useFactory: (userRepository: IUserRepository, loggerService: ILoggerAdapter) => {
         return new UserUpdateUsecase(userRepository, loggerService);
       },
-      inject: [IUserRepository, ILoggerAdapter, ICryptoAdapter]
+      inject: [IUserRepository, ILoggerAdapter]
     },
     {
       provide: IUserListAdapter,

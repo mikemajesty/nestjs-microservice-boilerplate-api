@@ -1,28 +1,21 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { PaginateModel } from 'mongoose';
+import { FindOptionsWhere, Repository } from 'typeorm';
 
+import { ResetPasswordEntity } from '@/core/reset-password/entity/reset-password';
 import { IResetPasswordRepository } from '@/core/reset-password/repository/reset-password';
-import { ResetPassword, ResetPasswordDocument } from '@/infra/database/mongo/schemas/reset-password';
-import { MongoRepository } from '@/infra/repository';
-import { MongoRepositoryModelSessionType, MongoRepositorySession } from '@/utils/database/mongoose';
+import { TypeORMRepository } from '@/infra/repository/postgres/repository';
+
+import { ResetPasswordSchema } from '../../infra/database/postgres/schemas/resetPassword';
+
+type Model = ResetPasswordSchema & ResetPasswordEntity;
 
 @Injectable()
-export class ResetPasswordRepository
-  extends MongoRepository<ResetPasswordDocument>
-  implements IResetPasswordRepository
-{
-  constructor(
-    @InjectModel(ResetPassword.name)
-    readonly entity: MongoRepositoryModelSessionType<PaginateModel<ResetPasswordDocument>>
-  ) {
-    super(entity);
+export class UserResetPasswordRepository extends TypeORMRepository<Model> implements IResetPasswordRepository {
+  constructor(readonly repository: Repository<Model>) {
+    super(repository);
   }
 
-  async startSession<TTransaction = MongoRepositorySession>(): Promise<TTransaction> {
-    const session = await this.entity.connection.startSession();
-    session.startTransaction();
-
-    return session as TTransaction;
+  async findByIdUserId(id: string): Promise<ResetPasswordEntity> {
+    return await this.repository.findOne({ where: { user: { id } } as FindOptionsWhere<unknown> });
   }
 }

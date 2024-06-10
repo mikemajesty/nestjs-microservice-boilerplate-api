@@ -1,6 +1,6 @@
 import { Test } from '@nestjs/testing';
 
-import { UserEntity, UserRole } from '@/core/user/entity/user';
+import { UserEntity, UserRoleEnum } from '@/core/user/entity/user';
 import { IUserRepository } from '@/core/user/repository/user';
 import { ICryptoAdapter } from '@/libs/crypto';
 import { IEventAdapter } from '@/libs/event';
@@ -92,26 +92,28 @@ describe(ConfirmResetPasswordUsecase.name, () => {
   const defaultUser = new UserEntity({
     id: getMockUUID(),
     email: 'admin@admin.com',
-    password: '****',
-    roles: [UserRole.USER]
+    name: 'Admin',
+    roles: [UserRoleEnum.USER],
+    password: { id: getMockUUID(), password: '****' }
   });
   test('when user not found, should expect an error', async () => {
-    userRepository.findOne = jest.fn().mockResolvedValue(null);
+    userRepository.findOneWithRelation = jest.fn().mockResolvedValue(null);
     await expect(usecase.execute(defaultInput)).rejects.toThrow(ApiNotFoundException);
   });
 
   test('when token was expired, should expect an error', async () => {
-    userRepository.findOne = jest.fn().mockResolvedValue(defaultUser);
+    userRepository.findOneWithRelation = jest.fn().mockResolvedValue(defaultUser);
     repository.findOne = jest.fn().mockResolvedValue(null);
     await expect(usecase.execute(defaultInput)).rejects.toThrow(ApiUnauthorizedException);
   });
-  const defaultResetPassword = new ResetPasswordEntity({ id: getMockUUID(), token: 'token', userId: getMockUUID() });
+  const defaultResetPassword = new ResetPasswordEntity({ id: getMockUUID(), token: 'token', user: defaultUser });
 
   test('when confirm successfully, should expect a void', async () => {
-    userRepository.findOne = jest.fn().mockResolvedValue(defaultUser);
-    userRepository.updateOne = jest.fn();
+    userRepository.findOneWithRelation = jest.fn().mockResolvedValue(defaultUser);
+    userRepository.create = jest.fn();
     repository.findOne = jest.fn().mockResolvedValue(defaultResetPassword);
     repository.remove = jest.fn();
     await expect(usecase.execute(defaultInput)).resolves.toBeUndefined();
+    expect(userRepository.create).toHaveBeenCalled();
   });
 });

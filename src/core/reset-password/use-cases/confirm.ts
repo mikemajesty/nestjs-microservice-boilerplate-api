@@ -40,7 +40,7 @@ export class ConfirmResetPasswordUsecase implements IUsecase {
 
     const token = await this.token.verify<{ id: string }>(input.token);
 
-    const user = await this.userRepository.findOne({ id: token.id });
+    const user = await this.userRepository.findOneWithRelation({ id: token.id }, { password: true });
 
     if (!user) {
       throw new ApiNotFoundException('user not found');
@@ -54,8 +54,9 @@ export class ConfirmResetPasswordUsecase implements IUsecase {
 
     await this.resetpasswordtokenRepository.remove({ userId: user.id });
 
-    user.password = this.crypto.createHash(input.password);
-    await this.userRepository.updateOne({ id: user.id }, user);
+    user.password.password = this.crypto.createHash(input.password);
+
+    await this.userRepository.create(user);
 
     this.event.emit<SendEmailInput>(EventNameEnum.SEND_EMAIL, {
       email: user.email,

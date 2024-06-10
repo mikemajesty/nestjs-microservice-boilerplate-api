@@ -1,7 +1,7 @@
 import { Controller, Delete, Get, Post, Put, Req, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import { UserRole } from '@/core/user/entity/user';
+import { UserRoleEnum } from '@/core/user/entity/user';
 import { UserChangePasswordInput, UserChangePasswordOutput } from '@/core/user/use-cases/user-change-password';
 import { UserCreateInput, UserCreateOutput } from '@/core/user/use-cases/user-create';
 import { UserDeleteInput, UserDeleteOutput } from '@/core/user/use-cases/user-delete';
@@ -26,7 +26,7 @@ import { SwaggerRequest, SwaggerResponse } from './swagger';
 @Controller('users')
 @ApiTags('users')
 @ApiBearerAuth()
-@Roles(UserRole.BACKOFFICE)
+@Roles(UserRoleEnum.BACKOFFICE)
 export class UserController {
   constructor(
     private readonly userCreate: IUserCreateAdapter,

@@ -3,10 +3,10 @@ import { Db } from 'mongodb';
 
 export class CreateUserCollection1709943706267 implements MigrationInterface {
   async up(db: Db): Promise<void> {
-    await db.createCollection('users');
+    await db.createCollection('cats');
   }
 
   async down(db: Db): Promise<void> {
-    await db.dropCollection('users');
+    await db.dropCollection('cats');
   }
 }

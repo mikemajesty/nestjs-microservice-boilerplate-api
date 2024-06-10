@@ -4,7 +4,7 @@ import { ZodSchema, ZodType } from 'zod';
 import { DateUtils } from './date';
 
 export const withID = (entity: { _id?: string; id?: string }) => {
-  entity.id = [entity?.id, entity?._id, uuidv4()].find(Boolean);
+  Object.assign(entity, { id: [entity?.id, entity?._id, uuidv4()].find(Boolean) });
   return entity;
 };
 

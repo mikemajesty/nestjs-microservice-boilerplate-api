@@ -3,15 +3,15 @@ import { Test } from '@nestjs/testing';
 import { IUserListAdapter } from '@/modules/user/adapter';
 import { expectZodError, getMockDate, getMockUUID } from '@/utils/tests';
 
-import { UserEntity, UserRole } from '../../entity/user';
+import { UserEntity, UserRoleEnum } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
 import { UserListUsecase } from '../user-list';
 
 const userMock = {
   id: getMockUUID(),
   email: 'admin@admin.com',
-  password: '**********',
-  roles: [UserRole.USER]
+  name: 'Admin',
+  roles: [UserRoleEnum.USER]
 } as UserEntity;
 
 const usersMock = [

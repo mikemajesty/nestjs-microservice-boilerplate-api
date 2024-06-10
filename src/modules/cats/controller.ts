@@ -6,7 +6,7 @@ import { CatsDeleteInput, CatsDeleteOutput } from '@/core/cats/use-cases/cats-de
 import { CatsGetByIdInput, CatsGetByIdOutput } from '@/core/cats/use-cases/cats-get-by-id';
 import { CatsListInput, CatsListOutput } from '@/core/cats/use-cases/cats-list';
 import { CatsUpdateInput, CatsUpdateOutput } from '@/core/cats/use-cases/cats-update';
-import { UserRole } from '@/core/user/entity/user';
+import { UserRoleEnum } from '@/core/user/entity/user';
 import { Roles } from '@/utils/decorators';
 import { ApiRequest } from '@/utils/request';
 import { SearchHttpSchema } from '@/utils/search';
@@ -24,7 +24,7 @@ import { SwaggerRequest, SwaggerResponse } from './swagger';
 @Controller('cats')
 @ApiTags('cats')
 @ApiBearerAuth()
-@Roles(UserRole.USER)
+@Roles(UserRoleEnum.USER)
 export class CatsController {
   constructor(
     private readonly catsCreate: ICatsCreateAdapter,

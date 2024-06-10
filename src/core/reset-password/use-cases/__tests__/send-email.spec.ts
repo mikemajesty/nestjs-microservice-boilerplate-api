@@ -1,6 +1,6 @@
 import { Test } from '@nestjs/testing';
 
-import { UserEntity, UserRole } from '@/core/user/entity/user';
+import { UserEntity, UserRoleEnum } from '@/core/user/entity/user';
 import { IUserRepository } from '@/core/user/repository/user';
 import { ISecretsAdapter } from '@/infra/secrets';
 import { IEventAdapter } from '@/libs/event';
@@ -87,20 +87,20 @@ describe(SendEmailResetPasswordUsecase.name, () => {
   const defaultUser = new UserEntity({
     id: getMockUUID(),
     email: 'admin@admin.com',
-    password: '****',
-    roles: [UserRole.USER]
+    name: 'Admin',
+    roles: [UserRoleEnum.USER]
   });
-  const defaultResetPassword = new ResetPasswordEntity({ id: getMockUUID(), token: 'token', userId: getMockUUID() });
+  const defaultResetPassword = new ResetPasswordEntity({ id: getMockUUID(), token: 'token', user: defaultUser });
 
   test('when token was founded, should expect void', async () => {
     userRepository.findOne = jest.fn().mockResolvedValue(defaultUser);
-    repository.findOne = jest.fn().mockResolvedValue(defaultResetPassword);
+    repository.findByIdUserId = jest.fn().mockResolvedValue(defaultResetPassword);
     await expect(usecase.execute(defaultInput)).resolves.toBeUndefined();
   });
 
   test('when token was not founded, should expect void', async () => {
     userRepository.findOne = jest.fn().mockResolvedValue(defaultUser);
-    repository.findOne = jest.fn().mockResolvedValue(null);
+    repository.findByIdUserId = jest.fn().mockResolvedValue(null);
     repository.create = jest.fn();
     await expect(usecase.execute(defaultInput)).resolves.toBeUndefined();
   });
