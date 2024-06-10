@@ -3,11 +3,6 @@ import { z } from 'zod';
 import { BaseEntity } from '@/utils/entity';
 import { ApiBadRequestException, ApiNotFoundException } from '@/utils/exception';
 
-export enum UserRole {
-  USER = 'USER',
-  BACKOFFICE = 'BACKOFFICE'
-}
-
 const ID = z.string().uuid();
 const Password = z.string();
 const CreatedAt = z.date().nullish();
