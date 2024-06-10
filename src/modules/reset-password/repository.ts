@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { FindOptionsWhere, Repository } from 'typeorm';
+import { FindOptionsWhere, MoreThan, Repository } from 'typeorm';
 
 import { ResetPasswordEntity } from '@/core/reset-password/entity/reset-password';
 import { IResetPasswordRepository } from '@/core/reset-password/repository/reset-password';
 import { TypeORMRepository } from '@/infra/repository/postgres/repository';
+import { DateUtils } from '@/utils/date';
 
 import { ResetPasswordSchema } from '../../infra/database/postgres/schemas/resetPassword';
 
@@ -16,6 +17,9 @@ export class UserResetPasswordRepository extends TypeORMRepository<Model> implem
   }
 
   async findByIdUserId(id: string): Promise<ResetPasswordEntity> {
-    return await this.repository.findOne({ where: { user: { id } } as FindOptionsWhere<unknown> });
+    const date = DateUtils.getDate().minus(1800000).toJSDate();
+    return await this.repository.findOne({
+      where: { user: { id }, createdAt: MoreThan(date) } as FindOptionsWhere<unknown>
+    });
   }
 }

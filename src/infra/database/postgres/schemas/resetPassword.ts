@@ -5,7 +5,7 @@ import {
   DeleteDateColumn,
   Entity,
   JoinColumn,
-  OneToOne,
+  ManyToOne,
   Relation,
   UpdateDateColumn
 } from 'typeorm';
@@ -20,7 +20,7 @@ export class ResetPasswordSchema extends BaseEntity {
   @Column('text')
   token: string;
 
-  @OneToOne(() => UserSchema, { cascade: ['insert', 'remove', 'update', 'soft-remove'], eager: true })
+  @ManyToOne(() => UserSchema, { cascade: ['insert', 'remove', 'update', 'soft-remove'], eager: true })
   @JoinColumn()
   user: Relation<UserSchema>;
 

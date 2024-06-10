@@ -103,7 +103,7 @@ describe(ConfirmResetPasswordUsecase.name, () => {
 
   test('when token was expired, should expect an error', async () => {
     userRepository.findOneWithRelation = jest.fn().mockResolvedValue(defaultUser);
-    repository.findOne = jest.fn().mockResolvedValue(null);
+    repository.findByIdUserId = jest.fn().mockResolvedValue(null);
     await expect(usecase.execute(defaultInput)).rejects.toThrow(ApiUnauthorizedException);
   });
   const defaultResetPassword = new ResetPasswordEntity({ id: getMockUUID(), token: 'token', user: defaultUser });
@@ -111,7 +111,7 @@ describe(ConfirmResetPasswordUsecase.name, () => {
   test('when confirm successfully, should expect a void', async () => {
     userRepository.findOneWithRelation = jest.fn().mockResolvedValue(defaultUser);
     userRepository.create = jest.fn();
-    repository.findOne = jest.fn().mockResolvedValue(defaultResetPassword);
+    repository.findByIdUserId = jest.fn().mockResolvedValue(defaultResetPassword);
     repository.remove = jest.fn();
     await expect(usecase.execute(defaultInput)).resolves.toBeUndefined();
     expect(userRepository.create).toHaveBeenCalled();

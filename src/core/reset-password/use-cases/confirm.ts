@@ -46,13 +46,11 @@ export class ConfirmResetPasswordUsecase implements IUsecase {
       throw new ApiNotFoundException('user not found');
     }
 
-    const resetpasswordtoken = await this.resetpasswordtokenRepository.findOne({ userId: user.id });
+    const resetpasswordtoken = await this.resetpasswordtokenRepository.findByIdUserId(user.id);
 
     if (!resetpasswordtoken) {
       throw new ApiUnauthorizedException('token was expired');
     }
-
-    await this.resetpasswordtokenRepository.remove({ userId: user.id });
 
     user.password.password = this.crypto.createHash(input.password);
 
@@ -64,5 +62,7 @@ export class ConfirmResetPasswordUsecase implements IUsecase {
       template: 'reset-password',
       payload: { name: user.email }
     });
+
+    await this.resetpasswordtokenRepository.remove({ userId: user.id });
   }
 }

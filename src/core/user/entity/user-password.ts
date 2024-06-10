@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 import { BaseEntity } from '@/utils/entity';
-import { ApiBadRequestException, ApiNotFoundException } from '@/utils/exception';
+import { ApiBadRequestException } from '@/utils/exception';
 
 const ID = z.string().uuid();
 const Password = z.string();
@@ -28,10 +28,6 @@ export class UserPasswordEntity extends BaseEntity<UserPasswordEntity>(UserPassw
   }
 
   verifyPassword(password: string) {
-    if (!password) {
-      throw new ApiNotFoundException('passwordNotFound');
-    }
-
     if (this.password !== password) {
       throw new ApiBadRequestException('incorrectPassword');
     }
