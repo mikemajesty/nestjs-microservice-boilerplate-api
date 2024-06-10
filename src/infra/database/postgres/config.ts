@@ -14,7 +14,7 @@ const dataSource = new DataSource({
   namingStrategy: new SnakeNamingStrategy(),
   logging: true,
   database: process.env.POSTGRES_DATABASE,
-  migrationsTableName: 'migrations_table',
+  migrationsTableName: 'migrations',
   migrations: [path.join(__dirname, '/migrations/*.{ts,js}')],
   entities: [path.join(__dirname, '/schemas/*.{ts,js}')]
 });
