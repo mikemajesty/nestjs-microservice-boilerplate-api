@@ -1,4 +1,4 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { getRepositoryToken, TypeOrmModule } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -14,7 +14,6 @@ import { ISecretsAdapter, SecretsModule } from '@/infra/secrets';
 import { CryptoLibModule, ICryptoAdapter } from '@/libs/crypto';
 import { EventLibModule, IEventAdapter } from '@/libs/event';
 import { ITokenAdapter, TokenLibModule } from '@/libs/token';
-import { IsLoggedMiddleware } from '@/observables/middlewares';
 
 import { UserModule } from '../user/module';
 import { IConfirmResetPasswordAdapter, ISendEmailResetPasswordAdapter } from './adapter';
@@ -71,8 +70,4 @@ import { UserResetPasswordRepository } from './repository';
   ],
   exports: [IResetPasswordRepository, ISendEmailResetPasswordAdapter]
 })
-export class ResetPasswordModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(IsLoggedMiddleware).forRoutes(ResetPasswordController);
-  }
-}
+export class ResetPasswordModule {}

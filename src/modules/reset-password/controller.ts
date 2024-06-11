@@ -1,10 +1,8 @@
 import { Controller, HttpCode, Post, Put, Req, Version } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { ConfirmResetPasswordInput, ConfirmResetPasswordOutput } from '@/core/reset-password/use-cases/confirm';
 import { SendEmailResetPasswordInput, SendEmailResetPasswordOutput } from '@/core/reset-password/use-cases/send-email';
-import { UserRoleEnum } from '@/core/user/entity/user';
-import { Roles } from '@/utils/decorators';
 import { ApiRequest } from '@/utils/request';
 
 import { IConfirmResetPasswordAdapter, ISendEmailResetPasswordAdapter } from './adapter';
@@ -12,8 +10,6 @@ import { SwaggerRequest, SwaggerResponse } from './swagger';
 
 @Controller('/reset-password')
 @ApiTags('reset-password')
-@ApiBearerAuth()
-@Roles(UserRoleEnum.USER, UserRoleEnum.BACKOFFICE)
 export class ResetPasswordController {
   constructor(
     private readonly sendEmailUsecase: ISendEmailResetPasswordAdapter,
