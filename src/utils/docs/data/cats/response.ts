@@ -7,6 +7,7 @@ import { CatsUpdateOutput } from '@/core/cats/use-cases/cats-update';
 import { getMockDate, getMockUUID } from '@/utils/tests';
 
 const entity = {
+  id: getMockUUID(),
   name: 'Miau',
   breed: 'breed',
   age: 1

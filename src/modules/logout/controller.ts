@@ -11,7 +11,7 @@ import { SwaggerRequest, SwaggerResponse } from './swagger';
 @ApiTags('logout')
 @ApiBearerAuth()
 export class LogoutController {
-  constructor(private readonly userLogout: ILogoutAdapter) {}
+  constructor(private readonly logoutUsecase: ILogoutAdapter) {}
 
   @Post('/logout')
   @ApiResponse(SwaggerResponse.logout[401])
@@ -19,6 +19,6 @@ export class LogoutController {
   @HttpCode(401)
   @Version('1')
   async logout(@Req() { body, user, tracing }: ApiRequest): LogoutOutput {
-    return this.userLogout.execute(body as LogoutInput, { user, tracing });
+    return this.logoutUsecase.execute(body as LogoutInput, { user, tracing });
   }
 }

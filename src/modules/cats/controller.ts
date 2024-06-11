@@ -27,11 +27,11 @@ import { SwaggerRequest, SwaggerResponse } from './swagger';
 @Roles(UserRoleEnum.USER)
 export class CatsController {
   constructor(
-    private readonly catsCreate: ICatsCreateAdapter,
-    private readonly catsUpdate: ICatsUpdateAdapter,
-    private readonly catsGetById: ICatsGetByIdAdapter,
-    private readonly catsList: ICatsListAdapter,
-    private readonly catsDelete: ICatsDeleteAdapter
+    private readonly createUsecase: ICatsCreateAdapter,
+    private readonly updateUsecase: ICatsUpdateAdapter,
+    private readonly getByIdUsecase: ICatsGetByIdAdapter,
+    private readonly listUsecase: ICatsListAdapter,
+    private readonly deleteUsecase: ICatsDeleteAdapter
   ) {}
 
   @Post()
@@ -39,7 +39,7 @@ export class CatsController {
   @ApiBody(SwaggerRequest.createBody)
   @Version('1')
   async create(@Req() { body, user, tracing }: ApiRequest): Promise<CatsCreateOutput> {
-    return await this.catsCreate.execute(body as CatsCreateInput, { user, tracing });
+    return await this.createUsecase.execute(body as CatsCreateInput, { user, tracing });
   }
 
   @Put(':id')
@@ -49,7 +49,7 @@ export class CatsController {
   @ApiParam({ name: 'id', required: true })
   @Version('1')
   async update(@Req() { body, user, tracing, params }: ApiRequest): Promise<CatsUpdateOutput> {
-    return await this.catsUpdate.execute({ ...body, id: params.id } as CatsUpdateInput, { user, tracing });
+    return await this.updateUsecase.execute({ ...body, id: params.id } as CatsUpdateInput, { user, tracing });
   }
 
   @Get('/:id')
@@ -58,7 +58,7 @@ export class CatsController {
   @ApiResponse(SwaggerResponse.getByID[404])
   @Version('1')
   async getById(@Req() { params }: ApiRequest): Promise<CatsGetByIdOutput> {
-    return await this.catsGetById.execute(params as CatsGetByIdInput);
+    return await this.getByIdUsecase.execute(params as CatsGetByIdInput);
   }
 
   @Get()
@@ -76,7 +76,7 @@ export class CatsController {
       page: Number(query.page)
     };
 
-    return await this.catsList.execute(input);
+    return await this.listUsecase.execute(input);
   }
 
   @Delete('/:id')
@@ -85,6 +85,6 @@ export class CatsController {
   @ApiResponse(SwaggerResponse.delete[404])
   @Version('1')
   async delete(@Req() { params, user, tracing }: ApiRequest): Promise<CatsDeleteOutput> {
-    return await this.catsDelete.execute(params as CatsDeleteInput, { user, tracing });
+    return await this.deleteUsecase.execute(params as CatsDeleteInput, { user, tracing });
   }
 }

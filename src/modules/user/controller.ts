@@ -29,12 +29,12 @@ import { SwaggerRequest, SwaggerResponse } from './swagger';
 @Roles(UserRoleEnum.BACKOFFICE)
 export class UserController {
   constructor(
-    private readonly userCreate: IUserCreateAdapter,
-    private readonly userUpdate: IUserUpdateAdapter,
-    private readonly userDelete: IUserDeleteAdapter,
-    private readonly userList: IUserListAdapter,
-    private readonly userGetById: IUserGetByIDAdapter,
-    private readonly changePass: IUserChangePasswordAdapter
+    private readonly createUsecase: IUserCreateAdapter,
+    private readonly updateUsecase: IUserUpdateAdapter,
+    private readonly deleteUsecase: IUserDeleteAdapter,
+    private readonly listUsecase: IUserListAdapter,
+    private readonly getByIdUsecase: IUserGetByIDAdapter,
+    private readonly changePassUsecase: IUserChangePasswordAdapter
   ) {}
 
   @Post()
@@ -43,7 +43,7 @@ export class UserController {
   @ApiBody(SwaggerRequest.createBody)
   @Version('1')
   async create(@Req() { body, user, tracing }: ApiRequest): Promise<UserCreateOutput> {
-    return this.userCreate.execute(body as UserCreateInput, { user, tracing });
+    return this.createUsecase.execute(body as UserCreateInput, { user, tracing });
   }
 
   @Put(':id')
@@ -54,7 +54,7 @@ export class UserController {
   @ApiParam({ name: 'id', required: true })
   @Version('1')
   async update(@Req() { body, user, tracing, params }: ApiRequest): Promise<UserUpdateOutput> {
-    return this.userUpdate.execute({ ...body, id: params.id } as UserUpdateInput, { user, tracing });
+    return this.updateUsecase.execute({ ...body, id: params.id } as UserUpdateInput, { user, tracing });
   }
 
   @Get()
@@ -72,7 +72,7 @@ export class UserController {
       page: Number(query.page)
     };
 
-    return await this.userList.execute(input);
+    return await this.listUsecase.execute(input);
   }
 
   @Get('/:id')
@@ -81,7 +81,7 @@ export class UserController {
   @ApiResponse(SwaggerResponse.getByID[404])
   @Version('1')
   async getById(@Req() { params }: ApiRequest): Promise<UserGetByIdOutput> {
-    return await this.userGetById.execute(params as UserGetByIdInput);
+    return await this.getByIdUsecase.execute(params as UserGetByIdInput);
   }
 
   @Put('change-password/:id')
@@ -92,7 +92,7 @@ export class UserController {
   @ApiResponse(SwaggerResponse.changePassword[400])
   @Version('1')
   async changePassword(@Req() { params, body }: ApiRequest): Promise<UserChangePasswordOutput> {
-    return await this.changePass.execute({ id: params.id, ...body } as UserChangePasswordInput);
+    return await this.changePassUsecase.execute({ id: params.id, ...body } as UserChangePasswordInput);
   }
 
   @Delete('/:id')
@@ -101,6 +101,6 @@ export class UserController {
   @ApiResponse(SwaggerResponse.delete[404])
   @Version('1')
   async delete(@Req() { params, user, tracing }: ApiRequest): Promise<UserDeleteOutput> {
-    return await this.userDelete.execute(params as UserDeleteInput, { user, tracing });
+    return await this.deleteUsecase.execute(params as UserDeleteInput, { user, tracing });
   }
 }
