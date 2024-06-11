@@ -24,7 +24,7 @@ export class UserDeleteUsecase implements IUsecase {
     const user = await this.userRepository.findOneWithRelation({ id }, { password: true });
 
     if (!user) {
-      throw new ApiNotFoundException();
+      throw new ApiNotFoundException('userNotFound');
     }
 
     const userEntity = new UserEntity(user);

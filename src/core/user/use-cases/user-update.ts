@@ -29,7 +29,7 @@ export class UserUpdateUsecase implements IUsecase {
     const user = await this.userRepository.findById(input.id);
 
     if (!user) {
-      throw new ApiNotFoundException();
+      throw new ApiNotFoundException('userNotFound');
     }
 
     const entity = new UserEntity({ ...user, ...input });
@@ -37,7 +37,7 @@ export class UserUpdateUsecase implements IUsecase {
     const userExists = await this.userRepository.existsOnUpdate({ email: entity.email }, { id: entity.id });
 
     if (userExists) {
-      throw new ApiConflictException('user exists');
+      throw new ApiConflictException('userExists');
     }
 
     await this.userRepository.updateOne({ id: entity.id }, entity);

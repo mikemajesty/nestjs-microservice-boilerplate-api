@@ -14,7 +14,7 @@
     "build": "nest build",
     "start": "yarn migration:run && node dist/src/main",
     "start:dev": "yarn migration:run && nest start --watch -b swc",
-    "start:debug": "nest start --debug --watch",
+    "start:debug": "yarn migration:run && nest start --debug --watch",
     "prettier": "prettier --write \"src/**/*.json\"",
     "lint": "eslint \"{src,test}/**/*.{ts,js}\" --fix",
     "test": "jest --config=\"./jest.config.ts\" --detectOpenHandles",

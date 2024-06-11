@@ -7,6 +7,7 @@ import { UserUpdateOutput } from '@/core/user/use-cases/user-update';
 import { getMockDate, getMockUUID } from '@/utils/tests';
 
 const entity = {
+  id: getMockUUID(),
   email: 'admin@admin.com',
   name: 'Admin',
   roles: [UserRoleEnum.USER]
@@ -22,7 +23,7 @@ const fullEntity = {
 export const UsersResponse = {
   create: { created: true, id: getMockUUID() } as UserCreateOutput,
   delete: { ...fullEntity, deletedAt: getMockDate() } as UserDeleteOutput,
-  update: fullEntity as UserUpdateOutput,
+  update: { ...fullEntity } as UserUpdateOutput,
   getByID: fullEntity as UserGetByIdOutput,
   list: { docs: [fullEntity], limit: 10, page: 1, total: 1 } as UserListOutput
 };
