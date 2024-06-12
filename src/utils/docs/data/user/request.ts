@@ -1,4 +1,4 @@
-import { UserRoleEnum } from '@/core/user/entity/user';
+import { RoleEnum } from '@/core/role/entity/role';
 import { UserChangePasswordInput } from '@/core/user/use-cases/user-change-password';
 import { UserCreateInput } from '@/core/user/use-cases/user-create';
 import { UserUpdateInput } from '@/core/user/use-cases/user-update';
@@ -8,12 +8,12 @@ export const UsersRequest = {
     name: 'Admin',
     email: 'admin@admin.com',
     password: '*****',
-    roles: Object.values(UserRoleEnum)
+    role: RoleEnum.USER
   } as UserCreateInput,
   update: {
     name: 'Admin',
     email: 'admin@admin.com',
-    roles: Object.values(UserRoleEnum)
+    role: RoleEnum.USER
   } as UserUpdateInput,
   changePassword: { password: '**', confirmPassword: '***', newPassword: '***' } as UserChangePasswordInput
 };

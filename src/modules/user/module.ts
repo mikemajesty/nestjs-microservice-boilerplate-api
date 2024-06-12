@@ -2,6 +2,7 @@ import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { getRepositoryToken, TypeOrmModule } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
+import { IRoleRepository } from '@/core/role/repository/role';
 import { UserEntity } from '@/core/user/entity/user';
 import { IUserRepository } from '@/core/user/repository/user';
 import { UserChangePasswordUsecase } from '@/core/user/use-cases/user-change-password';
@@ -19,6 +20,7 @@ import { EventLibModule, IEventAdapter } from '@/libs/event';
 import { TokenLibModule } from '@/libs/token';
 import { IsLoggedMiddleware } from '@/observables/middlewares';
 
+import { RoleModule } from '../role/module';
 import {
   IUserChangePasswordAdapter,
   IUserCreateAdapter,
@@ -38,7 +40,8 @@ import { UserRepository } from './repository';
     RedisCacheModule,
     CryptoLibModule,
     EventLibModule,
-    TypeOrmModule.forFeature([UserSchema])
+    TypeOrmModule.forFeature([UserSchema]),
+    RoleModule
   ],
   controllers: [UserController],
   providers: [
@@ -55,18 +58,19 @@ import { UserRepository } from './repository';
         userRepository: IUserRepository,
         loggerService: ILoggerAdapter,
         event: IEventAdapter,
-        crypto: ICryptoAdapter
+        crypto: ICryptoAdapter,
+        roleRpository: IRoleRepository
       ) => {
-        return new UserCreateUsecase(userRepository, loggerService, event, crypto);
+        return new UserCreateUsecase(userRepository, loggerService, event, crypto, roleRpository);
       },
-      inject: [IUserRepository, ILoggerAdapter, IEventAdapter, ICryptoAdapter]
+      inject: [IUserRepository, ILoggerAdapter, IEventAdapter, ICryptoAdapter, IRoleRepository]
     },
     {
       provide: IUserUpdateAdapter,
-      useFactory: (userRepository: IUserRepository, loggerService: ILoggerAdapter) => {
-        return new UserUpdateUsecase(userRepository, loggerService);
+      useFactory: (userRepository: IUserRepository, loggerService: ILoggerAdapter, role: IRoleRepository) => {
+        return new UserUpdateUsecase(userRepository, loggerService, role);
       },
-      inject: [IUserRepository, ILoggerAdapter]
+      inject: [IUserRepository, ILoggerAdapter, IRoleRepository]
     },
     {
       provide: IUserListAdapter,

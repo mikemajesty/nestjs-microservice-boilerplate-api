@@ -1,19 +1,15 @@
 import { z } from 'zod';
 
+import { RoleEntity, RoleEntitySchema } from '@/core/role/entity/role';
 import { BaseEntity } from '@/utils/entity';
 
 import { UserPasswordEntity, UserPasswordEntitySchema } from './user-password';
 
-export enum UserRoleEnum {
-  USER = 'USER',
-  BACKOFFICE = 'BACKOFFICE'
-}
-
 const ID = z.string().uuid();
 const Email = z.string().email();
 const Name = z.string();
-const Roles = z.array(z.nativeEnum(UserRoleEnum));
 const Password = UserPasswordEntitySchema;
+const Role = RoleEntitySchema;
 const CreatedAt = z.date().nullish();
 const UpdatedAt = z.date().nullish();
 const DeletedAt = z.date().default(null).nullish();
@@ -22,7 +18,7 @@ export const UserEntitySchema = z.object({
   id: ID,
   name: Name,
   email: Email,
-  roles: Roles,
+  role: Role,
   password: Password.optional(),
   createdAt: CreatedAt,
   updatedAt: UpdatedAt,
@@ -36,7 +32,7 @@ export class UserEntity extends BaseEntity<UserEntity>(UserEntitySchema) {
 
   email: string;
 
-  roles: UserRoleEnum[];
+  role: RoleEntity;
 
   password: UserPasswordEntity;
 

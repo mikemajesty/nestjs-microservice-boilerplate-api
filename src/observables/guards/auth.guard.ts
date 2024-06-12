@@ -1,31 +1,43 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 
-import { UserRoleEnum } from '@/core/user/entity/user';
-import { ROLES_KEY } from '@/utils/decorators';
+import { PermissionEnum } from '@/core/permission/entity/permission';
+import { IRoleRepository } from '@/core/role/repository/role';
+import { PERMISSION_KEY } from '@/utils/decorators';
+import { ApiUnauthorizedException } from '@/utils/exception';
 
 @Injectable()
 export class AuthRoleGuard implements CanActivate {
-  constructor(private reflector: Reflector) {}
+  constructor(
+    private readonly reflector: Reflector,
+    private readonly roleRepository: IRoleRepository
+  ) {}
 
-  canActivate(context: ExecutionContext): boolean {
-    const requiredRoles = this.reflector.getAllAndOverride<UserRoleEnum[]>(ROLES_KEY, [
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const requiredPermissions = this.reflector.getAllAndOverride<PermissionEnum[] | string[]>(PERMISSION_KEY, [
       context.getHandler(),
       context.getClass()
     ]);
 
-    if (!requiredRoles) {
+    if (!requiredPermissions) {
+      return true;
+    }
+
+    const freeAccess = requiredPermissions.find((permission) => PermissionEnum.ALL === permission);
+    if (freeAccess) {
       return true;
     }
 
     const request = context.switchToHttp().getRequest();
 
-    const roles = request?.user?.roles;
+    const role = request?.user?.role;
 
-    if (!roles) {
-      return true;
+    if (!role) {
+      throw new ApiUnauthorizedException();
     }
 
-    return requiredRoles.some((role) => roles.includes(role));
+    const permissions = await this.roleRepository.findWithCache(role);
+
+    return requiredPermissions.some((permission) => permissions.includes(permission));
   }
 }

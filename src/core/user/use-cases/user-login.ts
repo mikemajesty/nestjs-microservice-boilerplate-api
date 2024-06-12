@@ -31,7 +31,7 @@ export class LoginUsecase implements IUsecase {
       {
         email: input.email
       },
-      { password: true }
+      { password: true, role: true }
     );
 
     if (!login) {
@@ -48,7 +48,7 @@ export class LoginUsecase implements IUsecase {
 
     return this.tokenService.sign({
       email: login.email,
-      roles: login.roles
+      role: login.role.name
     });
   }
 }

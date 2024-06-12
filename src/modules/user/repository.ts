@@ -45,7 +45,8 @@ export class UserRepository extends TypeORMRepository<Model> implements IUserRep
       take: input.limit,
       skip,
       order: input.sort,
-      where: input.search as FindOptionsWhere<unknown>
+      where: input.search as FindOptionsWhere<unknown>,
+      relations: { role: true }
     });
 
     return { docs, total, page: input.page, limit: input.limit };

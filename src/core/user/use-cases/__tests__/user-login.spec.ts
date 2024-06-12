@@ -1,12 +1,13 @@
 import { Test } from '@nestjs/testing';
 
+import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
 import { CryptoLibModule, ICryptoAdapter } from '@/libs/crypto';
 import { ITokenAdapter, TokenLibModule } from '@/libs/token';
 import { ILoginAdapter } from '@/modules/login/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
 import { expectZodError, getMockTracing, getMockUUID } from '@/utils/tests';
 
-import { UserEntity, UserRoleEnum } from '../../entity/user';
+import { UserEntity } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
 import { LoginInput, LoginUsecase } from '../user-login';
 
@@ -14,7 +15,7 @@ const userDefaultOutput = {
   id: getMockUUID(),
   email: 'admin@admin.com',
   name: 'Admin',
-  roles: [UserRoleEnum.USER],
+  role: new RoleEntity({ name: RoleEnum.USER }),
   password: { id: getMockUUID(), password: '***' }
 } as UserEntity;
 

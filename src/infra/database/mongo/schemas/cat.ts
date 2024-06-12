@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import paginate from 'mongoose-paginate-v2';
 
-import { CatsEntity } from '@/core/cats/entity/cats';
+import { CatsEntity } from '@/core/cat/entity/cats';
 
 export type CatDocument = Document & CatsEntity;
 

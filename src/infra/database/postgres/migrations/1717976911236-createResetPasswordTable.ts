@@ -19,6 +19,6 @@ export class CreateResetPasswordTable1717976911236 implements MigrationInterface
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.dropTable('reset_password', true);
-    await queryRunner.query('DROP CONSTRAINT FK_de65040d842349a5e6428ff21e6;');
+    await queryRunner.query('ALTER TABLE "reset_password"DROP CONSTRAINT FK_de65040d842349a5e6428ff21e6;');
   }
 }

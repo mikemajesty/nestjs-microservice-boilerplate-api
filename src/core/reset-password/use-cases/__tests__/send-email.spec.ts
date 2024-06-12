@@ -1,6 +1,7 @@
 import { Test } from '@nestjs/testing';
 
-import { UserEntity, UserRoleEnum } from '@/core/user/entity/user';
+import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
+import { UserEntity } from '@/core/user/entity/user';
 import { IUserRepository } from '@/core/user/repository/user';
 import { ISecretsAdapter } from '@/infra/secrets';
 import { IEventAdapter } from '@/libs/event';
@@ -88,7 +89,7 @@ describe(SendEmailResetPasswordUsecase.name, () => {
     id: getMockUUID(),
     email: 'admin@admin.com',
     name: 'Admin',
-    roles: [UserRoleEnum.USER]
+    role: new RoleEntity({ name: RoleEnum.USER })
   });
   const defaultResetPassword = new ResetPasswordEntity({ id: getMockUUID(), token: 'token', user: defaultUser });
 

@@ -1,0 +1,2 @@
+- verificar transaction do postgress
+- adicionar soft remove

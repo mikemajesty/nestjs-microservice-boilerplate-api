@@ -10,8 +10,7 @@ import {
   UpdateDateColumn
 } from 'typeorm';
 
-import { UserRoleEnum } from '@/core/user/entity/user';
-
+import { RoleSchema } from './role';
 import { UserPasswordSchema } from './userPassword';
 
 @Entity({ name: 'users' })
@@ -25,12 +24,13 @@ export class UserSchema extends BaseEntity {
   @Column('text', { unique: true })
   email: string;
 
-  @OneToOne(() => UserPasswordSchema, { cascade: ['insert', 'remove', 'update', 'soft-remove'] })
+  @OneToOne(() => UserPasswordSchema, { cascade: ['insert', 'recover', 'update', 'remove', 'soft-remove'] })
   @JoinColumn()
   password: Relation<UserPasswordSchema>;
 
-  @Column({ type: 'enum', enum: UserRoleEnum, array: true })
-  roles: UserRoleEnum[];
+  @OneToOne(() => RoleSchema, { cascade: ['insert', 'recover', 'update', 'remove', 'soft-remove'] })
+  @JoinColumn()
+  role: Relation<RoleSchema>;
 
   @CreateDateColumn()
   createdAt: Date;

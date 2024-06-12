@@ -1,6 +1,7 @@
 import { Test } from '@nestjs/testing';
 
-import { UserEntity, UserRoleEnum } from '@/core/user/entity/user';
+import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
+import { UserEntity } from '@/core/user/entity/user';
 import { IUserRepository } from '@/core/user/repository/user';
 import { ICryptoAdapter } from '@/libs/crypto';
 import { IEventAdapter } from '@/libs/event';
@@ -93,7 +94,7 @@ describe(ConfirmResetPasswordUsecase.name, () => {
     id: getMockUUID(),
     email: 'admin@admin.com',
     name: 'Admin',
-    roles: [UserRoleEnum.USER],
+    role: new RoleEntity({ name: RoleEnum.USER }),
     password: { id: getMockUUID(), password: '****' }
   });
   test('when user not found, should expect an error', async () => {
