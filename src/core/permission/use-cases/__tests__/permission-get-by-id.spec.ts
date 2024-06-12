@@ -6,7 +6,7 @@ import { expectZodError, getMockUUID } from '@/utils/tests';
 
 import { IPermissionRepository } from '../../repository/permission';
 import { PermissionGetByIDInput, PermissionGetByIDOutput, PermissionGetByIdUsecase } from '../permission-get-by-id';
-import { PermissionEntity, PermissionEnum } from './../../entity/permission';
+import { PermissionEntity } from './../../entity/permission';
 
 const successInput: PermissionGetByIDInput = {
   id: getMockUUID()
@@ -57,7 +57,7 @@ describe('PermissionGetByIdUsecase', () => {
   test('when permission found, should expect a permission that has been found', async () => {
     const findByIdOutput: PermissionGetByIDOutput = new PermissionEntity({
       id: getMockUUID(),
-      name: PermissionEnum.ALL
+      name: 'all'
     });
     repository.findById = jest.fn().mockResolvedValue(findByIdOutput);
 

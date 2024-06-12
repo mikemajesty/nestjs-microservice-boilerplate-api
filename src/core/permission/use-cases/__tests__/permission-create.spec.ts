@@ -4,12 +4,12 @@ import { ILoggerAdapter } from '@/infra/logger';
 import { IPermissionCreateAdapter } from '@/modules/permission/adapter';
 import { expectZodError, getMockUUID } from '@/utils/tests';
 
-import { PermissionEntity, PermissionEnum } from '../../entity/permission';
+import { PermissionEntity } from '../../entity/permission';
 import { IPermissionRepository } from '../../repository/permission';
 import { PermissionCreateInput, PermissionCreateOutput, PermissionCreateUsecase } from '../permission-create';
 
 const successInput: PermissionCreateInput = {
-  name: PermissionEnum.ALL
+  name: 'all'
 };
 
 const failureInput: PermissionCreateInput = {};
@@ -49,7 +49,7 @@ describe(PermissionCreateUsecase.name, () => {
     await expectZodError(
       () => usecase.execute(failureInput),
       (issues) => {
-        expect(issues).toEqual([{ message: 'Invalid input', path: PermissionEntity.nameOf('name') }]);
+        expect(issues).toEqual([{ message: 'Required', path: PermissionEntity.nameOf('name') }]);
       }
     );
   });

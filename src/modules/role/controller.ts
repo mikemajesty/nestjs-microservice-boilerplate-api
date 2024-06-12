@@ -7,6 +7,7 @@ import { RoleDeleteInput, RoleDeleteOutput } from '@/core/role/use-cases/role-de
 import { RoleGetByIDInput, RoleGetByIDOutput } from '@/core/role/use-cases/role-get-by-id';
 import { RoleListInput, RoleListOutput } from '@/core/role/use-cases/role-list';
 import { RoleUpdateInput, RoleUpdateOutput } from '@/core/role/use-cases/role-update';
+import { Permission } from '@/utils/decorators';
 import { ApiRequest } from '@/utils/request';
 import { SearchHttpSchema } from '@/utils/search';
 import { SortHttpSchema } from '@/utils/sort';
@@ -39,6 +40,7 @@ export class RoleController {
   @Post()
   @ApiResponse(SwaggerResponse.create[200])
   @ApiBody(SwaggerRequest.createBody)
+  @Permission('role:create')
   async create(@Req() { body }: ApiRequest): Promise<RoleCreateOutput> {
     return await this.roleCreate.execute(body as RoleCreateInput);
   }
@@ -48,6 +50,7 @@ export class RoleController {
   @ApiResponse(SwaggerResponse.update[404])
   @ApiBody(SwaggerRequest.updateBody)
   @ApiParam({ name: 'id', required: true })
+  @Permission('role:update')
   async update(@Req() { body, params }: ApiRequest): Promise<RoleUpdateOutput> {
     return await this.roleUpdate.execute({ ...body, id: params.id } as RoleUpdateInput);
   }
@@ -56,6 +59,7 @@ export class RoleController {
   @ApiParam({ name: 'id', required: true })
   @ApiResponse(SwaggerResponse.getByID[200])
   @ApiResponse(SwaggerResponse.getByID[404])
+  @Permission('role:getbyid')
   async getById(@Req() { params }: ApiRequest): Promise<RoleGetByIDOutput> {
     return await this.roleGetByID.execute(params as RoleGetByIDInput);
   }
@@ -66,6 +70,7 @@ export class RoleController {
   @ApiQuery(SwaggerRequest.listQuery.sort)
   @ApiQuery(SwaggerRequest.listQuery.search)
   @ApiResponse(SwaggerResponse.list[200])
+  @Permission('role:list')
   async list(@Req() { query }: ApiRequest): Promise<RoleListOutput> {
     const input: RoleListInput = {
       sort: SortHttpSchema.parse(query.sort),
@@ -81,6 +86,7 @@ export class RoleController {
   @ApiParam({ name: 'id', required: true })
   @ApiResponse(SwaggerResponse.delete[200])
   @ApiResponse(SwaggerResponse.delete[404])
+  @Permission('role:delete')
   async delete(@Req() { params }: ApiRequest): Promise<RoleDeleteOutput> {
     return await this.roleDelete.execute(params as RoleDeleteInput);
   }
@@ -88,6 +94,7 @@ export class RoleController {
   @Put('/add-permissions/:id')
   @ApiParam({ name: 'id', required: true })
   @ApiBody(SwaggerRequest.addPermissions)
+  @Permission('role:addpermission')
   async addPermissions(@Req() { body, params }: ApiRequest): Promise<RoleAddPermissionOutput> {
     return await this.roleAddPermission.execute({ ...body, id: params.id } as RoleAddPermissionInput);
   }
@@ -95,6 +102,7 @@ export class RoleController {
   @Put('/remove-permissions/:id')
   @ApiParam({ name: 'id', required: true })
   @ApiBody(SwaggerRequest.deletePermissions)
+  @Permission('role:deletepermission')
   async removePermissions(@Req() { body, params }: ApiRequest): Promise<RoleAddPermissionOutput> {
     return await this.roleDeletePermission.execute({ ...body, id: params.id } as RoleAddPermissionInput);
   }

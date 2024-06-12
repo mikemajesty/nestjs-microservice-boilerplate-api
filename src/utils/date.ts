@@ -30,7 +30,7 @@ export class DateUtils {
     const date1 = DateTime.fromJSDate(date, { zone: 'utc' }).setZone(process.env.TZ);
     const date2 = DateTime.fromJSDate(compareDate, { zone: 'utc' }).setZone(process.env.TZ);
 
-    return date1.diff(date2, compareType)[compareType];
+    return date1.diff(date2, compareType)[`${compareType}`];
   }
 
   static getDate(): DateTime {

@@ -10,7 +10,7 @@ import { ApiNotFoundException } from '@/utils/exception';
 import { expectZodError, getMockUUID } from '@/utils/tests';
 
 import { IPermissionRepository } from '../../repository/permission';
-import { PermissionEntity, PermissionEnum } from './../../entity/permission';
+import { PermissionEntity } from './../../entity/permission';
 
 const successInput: PermissionDeleteInput = {
   id: getMockUUID()
@@ -61,7 +61,7 @@ describe('PermissionDeleteUsecase', () => {
   test('when permission deleted successfully, should expect a permission that has been deleted', async () => {
     const findByIdOutput: PermissionDeleteOutput = new PermissionEntity({
       id: getMockUUID(),
-      name: PermissionEnum.ALL
+      name: 'all'
     });
 
     repository.findById = jest.fn().mockResolvedValue(findByIdOutput);

@@ -9,7 +9,7 @@ import { IPermissionListAdapter } from '@/modules/permission/adapter';
 import { expectZodError, getMockUUID } from '@/utils/tests';
 
 import { IPermissionRepository } from '../../repository/permission';
-import { PermissionEntity, PermissionEnum } from './../../entity/permission';
+import { PermissionEntity } from './../../entity/permission';
 
 const successInput: PermissionListInput = { limit: 1, page: 1, search: {}, sort: { createdAt: -1 } };
 
@@ -52,7 +52,7 @@ describe('PermissionListUsecase', () => {
   test('when permission are found, should expect an permission list', async () => {
     const doc = new PermissionEntity({
       id: getMockUUID(),
-      name: PermissionEnum.ALL,
+      name: 'all',
       createdAt: new Date(),
       updatedAt: new Date()
     });

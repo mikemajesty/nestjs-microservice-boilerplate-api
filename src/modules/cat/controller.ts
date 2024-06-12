@@ -6,6 +6,7 @@ import { CatsDeleteInput, CatsDeleteOutput } from '@/core/cat/use-cases/cats-del
 import { CatsGetByIdInput, CatsGetByIdOutput } from '@/core/cat/use-cases/cats-get-by-id';
 import { CatsListInput, CatsListOutput } from '@/core/cat/use-cases/cats-list';
 import { CatsUpdateInput, CatsUpdateOutput } from '@/core/cat/use-cases/cats-update';
+import { Permission } from '@/utils/decorators';
 import { ApiRequest } from '@/utils/request';
 import { SearchHttpSchema } from '@/utils/search';
 import { SortHttpSchema } from '@/utils/sort';
@@ -35,6 +36,7 @@ export class CatsController {
   @ApiResponse(SwaggerResponse.create[200])
   @ApiBody(SwaggerRequest.createBody)
   @Version('1')
+  @Permission('cat:create')
   async create(@Req() { body, user, tracing }: ApiRequest): Promise<CatsCreateOutput> {
     return await this.createUsecase.execute(body as CatsCreateInput, { user, tracing });
   }
@@ -45,6 +47,7 @@ export class CatsController {
   @ApiBody(SwaggerRequest.updateBody)
   @ApiParam({ name: 'id', required: true })
   @Version('1')
+  @Permission('cat:update')
   async update(@Req() { body, user, tracing, params }: ApiRequest): Promise<CatsUpdateOutput> {
     return await this.updateUsecase.execute({ ...body, id: params.id } as CatsUpdateInput, { user, tracing });
   }
@@ -54,6 +57,7 @@ export class CatsController {
   @ApiResponse(SwaggerResponse.getByID[200])
   @ApiResponse(SwaggerResponse.getByID[404])
   @Version('1')
+  @Permission('cat:getbyid')
   async getById(@Req() { params }: ApiRequest): Promise<CatsGetByIdOutput> {
     return await this.getByIdUsecase.execute(params as CatsGetByIdInput);
   }
@@ -65,6 +69,7 @@ export class CatsController {
   @ApiQuery(SwaggerRequest.listQuery.search)
   @ApiResponse(SwaggerResponse.list[200])
   @Version('1')
+  @Permission('cat:list')
   async list(@Req() { query }: ApiRequest): Promise<CatsListOutput> {
     const input: CatsListInput = {
       sort: SortHttpSchema.parse(query.sort),
@@ -81,6 +86,7 @@ export class CatsController {
   @ApiResponse(SwaggerResponse.delete[200])
   @ApiResponse(SwaggerResponse.delete[404])
   @Version('1')
+  @Permission('cat:delete')
   async delete(@Req() { params, user, tracing }: ApiRequest): Promise<CatsDeleteOutput> {
     return await this.deleteUsecase.execute(params as CatsDeleteInput, { user, tracing });
   }

@@ -7,7 +7,7 @@ import { expectZodError, getMockUUID } from '@/utils/tests';
 
 import { IPermissionRepository } from '../../repository/permission';
 import { PermissionUpdateInput, PermissionUpdateOutput, PermissionUpdateUsecase } from '../permission-update';
-import { PermissionEntity, PermissionEnum } from './../../entity/permission';
+import { PermissionEntity } from './../../entity/permission';
 
 const successInput: PermissionUpdateInput = {
   id: getMockUUID()
@@ -64,7 +64,7 @@ describe('PermissionUpdateUsecase', () => {
   test('when permission updated successfully, should expect an permission that has been updated', async () => {
     const findByIdOutput: PermissionUpdateOutput = new PermissionEntity({
       id: getMockUUID(),
-      name: PermissionEnum.ALL
+      name: 'all'
     });
 
     repository.findById = jest.fn().mockResolvedValue(findByIdOutput);

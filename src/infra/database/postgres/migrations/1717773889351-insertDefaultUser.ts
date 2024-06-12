@@ -1,4 +1,3 @@
-import { PermissionEntity, PermissionEnum } from '@/core/permission/entity/permission';
 import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
 import { UserEntity } from '@/core/user/entity/user';
 import { UserPasswordEntity } from '@/core/user/entity/user-password';
@@ -8,6 +7,7 @@ import { PermissionSchema } from '../schemas/permission';
 import { RoleSchema } from '../schemas/role';
 import { UserSchema } from '../schemas/user';
 import { UserPasswordSchema } from '../schemas/userPassword';
+import { userPermissions } from './1717773889333-insertPermissions';
 
 export class InsertDefaultUser1717773889351 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -16,20 +16,38 @@ export class InsertDefaultUser1717773889351 implements MigrationInterface {
     });
     await queryRunner.manager.insert(UserPasswordSchema, password as QueryDeepPartialEntity<UserPasswordSchema>);
 
-    const permission = new PermissionEntity({ name: PermissionEnum.ALL });
-    await queryRunner.manager.insert(PermissionSchema, permission as QueryDeepPartialEntity<PermissionSchema>);
+    const backofficeRole = new RoleEntity({ name: RoleEnum.BACKOFFICE });
+    await queryRunner.manager.insert(RoleSchema, backofficeRole as QueryDeepPartialEntity<RoleSchema>);
+    const userRole = new RoleEntity({ name: RoleEnum.USER });
+    await queryRunner.manager.insert(RoleSchema, userRole as QueryDeepPartialEntity<RoleSchema>);
 
-    const role = new RoleEntity({ name: RoleEnum.USER });
-    await queryRunner.manager.insert(RoleSchema, role as QueryDeepPartialEntity<RoleSchema>);
-
-    await queryRunner.query(
-      `INSERT INTO permissions_roles (roles_id, permissions_id) VALUES ('${role.id}', '${permission.id}');`
-    );
-
-    const entity = new UserEntity({ email: 'admin@admin.com', name: 'Admin', role });
+    const entity = new UserEntity({ email: 'admin@admin.com', name: 'Admin', role: backofficeRole });
     entity.password = password;
-    entity.role = role;
+    entity.role = backofficeRole;
     await queryRunner.manager.insert(UserSchema, entity as QueryDeepPartialEntity<UserSchema>);
+
+    const insertPromiseList = [];
+
+    const permissions = await queryRunner.manager.find(PermissionSchema);
+
+    for (const userPermission of userPermissions) {
+      const permission = permissions.find((p) => p.name === userPermission);
+      insertPromiseList.push(
+        queryRunner.query(
+          `INSERT INTO permissions_roles (roles_id, permissions_id) VALUES ('${userRole.id}', '${permission.id}');`
+        )
+      );
+    }
+
+    for (const permission of permissions) {
+      insertPromiseList.push(
+        queryRunner.query(
+          `INSERT INTO permissions_roles (roles_id, permissions_id) VALUES ('${backofficeRole.id}', '${permission.id}');`
+        )
+      );
+    }
+
+    await Promise.all(insertPromiseList);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
@@ -45,5 +63,7 @@ export class InsertDefaultUser1717773889351 implements MigrationInterface {
     if (userPassword) {
       await queryRunner.manager.delete(UserPasswordSchema, { id: user.password.id });
     }
+
+    await queryRunner.manager.remove(PermissionSchema);
   }
 }

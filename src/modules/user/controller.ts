@@ -7,6 +7,7 @@ import { UserDeleteInput, UserDeleteOutput } from '@/core/user/use-cases/user-de
 import { UserGetByIdInput, UserGetByIdOutput } from '@/core/user/use-cases/user-get-by-id';
 import { UserListInput, UserListOutput } from '@/core/user/use-cases/user-list';
 import { UserUpdateInput, UserUpdateOutput } from '@/core/user/use-cases/user-update';
+import { Permission } from '@/utils/decorators';
 import { ApiRequest } from '@/utils/request';
 import { SearchHttpSchema } from '@/utils/search';
 import { SortHttpSchema } from '@/utils/sort';
@@ -39,7 +40,7 @@ export class UserController {
   @ApiResponse(SwaggerResponse.create[409])
   @ApiBody(SwaggerRequest.createBody)
   @Version('1')
-  // @Permission('create:user')
+  @Permission('user:create')
   async create(@Req() { body, user, tracing }: ApiRequest): Promise<UserCreateOutput> {
     return this.createUsecase.execute(body as UserCreateInput, { user, tracing });
   }
@@ -51,7 +52,7 @@ export class UserController {
   @ApiBody(SwaggerRequest.updateBody)
   @ApiParam({ name: 'id', required: true })
   @Version('1')
-  // @Permission('update:user')
+  @Permission('user:update')
   async update(@Req() { body, user, tracing, params }: ApiRequest): Promise<UserUpdateOutput> {
     return this.updateUsecase.execute({ ...body, id: params.id } as UserUpdateInput, { user, tracing });
   }
@@ -63,7 +64,7 @@ export class UserController {
   @ApiQuery(SwaggerRequest.listQuery.search)
   @ApiResponse(SwaggerResponse.list[200])
   @Version('1')
-  // @Permission('list:user')
+  @Permission('user:list')
   async list(@Req() { query }: ApiRequest): Promise<UserListOutput> {
     const input: UserListInput = {
       sort: SortHttpSchema.parse(query.sort),
@@ -80,7 +81,7 @@ export class UserController {
   @ApiResponse(SwaggerResponse.getByID[200])
   @ApiResponse(SwaggerResponse.getByID[404])
   @Version('1')
-  // @Permission('getbyid:user')
+  @Permission('user:getbyid')
   async getById(@Req() { params }: ApiRequest): Promise<UserGetByIdOutput> {
     return await this.getByIdUsecase.execute(params as UserGetByIdInput);
   }
@@ -92,7 +93,7 @@ export class UserController {
   @ApiResponse(SwaggerResponse.changePassword[404])
   @ApiResponse(SwaggerResponse.changePassword[400])
   @Version('1')
-  // @Permission('changepassword:user')
+  @Permission('user:changepassword')
   async changePassword(@Req() { params, body }: ApiRequest): Promise<UserChangePasswordOutput> {
     return await this.changePassUsecase.execute({ id: params.id, ...body } as UserChangePasswordInput);
   }
@@ -102,7 +103,7 @@ export class UserController {
   @ApiResponse(SwaggerResponse.delete[200])
   @ApiResponse(SwaggerResponse.delete[404])
   @Version('1')
-  // @Permission('delete:user')
+  @Permission('user:delete')
   async delete(@Req() { params, user, tracing }: ApiRequest): Promise<UserDeleteOutput> {
     return await this.deleteUsecase.execute(params as UserDeleteInput, { user, tracing });
   }

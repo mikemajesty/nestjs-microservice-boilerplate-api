@@ -1,7 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 
-import { PermissionEnum } from '@/core/permission/entity/permission';
 import { IRoleRepository } from '@/core/role/repository/role';
 import { PERMISSION_KEY } from '@/utils/decorators';
 import { ApiUnauthorizedException } from '@/utils/exception';
@@ -14,17 +13,12 @@ export class AuthRoleGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const requiredPermissions = this.reflector.getAllAndOverride<PermissionEnum[] | string[]>(PERMISSION_KEY, [
+    const requiredPermissions = this.reflector.getAllAndOverride<string[]>(PERMISSION_KEY, [
       context.getHandler(),
       context.getClass()
     ]);
 
     if (!requiredPermissions) {
-      return true;
-    }
-
-    const freeAccess = requiredPermissions.find((permission) => PermissionEnum.ALL === permission);
-    if (freeAccess) {
       return true;
     }
 

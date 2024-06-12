@@ -1,4 +1,4 @@
-import { PermissionEntity, PermissionEnum } from '@/core/permission/entity/permission';
+import { PermissionEntity } from '@/core/permission/entity/permission';
 import { PermissionCreateOutput } from '@/core/permission/use-cases/permission-create';
 import { PermissionDeleteOutput } from '@/core/permission/use-cases/permission-delete';
 import { PermissionGetByIDOutput } from '@/core/permission/use-cases/permission-get-by-id';
@@ -7,7 +7,7 @@ import { PermissionUpdateOutput } from '@/core/permission/use-cases/permission-u
 import { Swagger } from '@/utils/docs/swagger';
 
 const input = new PermissionEntity({
-  name: PermissionEnum.ALL
+  name: 'ALL'
 });
 
 const output = new PermissionEntity({ ...input, updatedAt: new Date(), createdAt: new Date(), deletedAt: null });
