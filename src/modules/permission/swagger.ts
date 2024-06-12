@@ -84,7 +84,7 @@ export const SwaggerRequest = {
     search: Swagger.defaultApiQueryOptions({
       name: 'search',
       required: false,
-      description: '<b>name:miau'
+      description: '<b>propertyName:propertyValue'
     })
   }
 };

@@ -91,7 +91,7 @@ export const SwaggerRequest = {
     search: Swagger.defaultApiQueryOptions({
       name: 'search',
       required: false,
-      description: '<b>name:miau'
+      description: '<b>propertyName:propertyValue'
     })
   },
   addPermissions: Swagger.defaultRequestJSON({ permissions: ['user:list', 'user:create'] } as RoleAddPermissionInput),
