@@ -1,15 +1,15 @@
 import { Test } from '@nestjs/testing';
 
-import { IRoleGetByIDAdapter } from '@/modules/role/adapter';
+import { IRoleGetByIdAdapter } from '@/modules/role/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
 import { expectZodError, getMockUUID } from '@/utils/tests';
 
 import { IRoleRepository } from '../../repository/role';
-import { RoleGetByIDInput, RoleGetByIDOutput, RoleGetByIdUsecase } from '../role-get-by-id';
+import { RoleGetByIdInput, RoleGetByIdOutput, RoleGetByIdUsecase } from '../role-get-by-id';
 import { RoleEntity, RoleEnum } from './../../entity/role';
 
 describe(RoleGetByIdUsecase.name, () => {
-  let usecase: IRoleGetByIDAdapter;
+  let usecase: IRoleGetByIdAdapter;
   let repository: IRoleRepository;
 
   beforeEach(async () => {
@@ -20,7 +20,7 @@ describe(RoleGetByIdUsecase.name, () => {
           useValue: {}
         },
         {
-          provide: IRoleGetByIDAdapter,
+          provide: IRoleGetByIdAdapter,
           useFactory: (roleRepository: IRoleRepository) => {
             return new RoleGetByIdUsecase(roleRepository);
           },
@@ -29,7 +29,7 @@ describe(RoleGetByIdUsecase.name, () => {
       ]
     }).compile();
 
-    usecase = app.get(IRoleGetByIDAdapter);
+    usecase = app.get(IRoleGetByIdAdapter);
     repository = app.get(IRoleRepository);
   });
 
@@ -42,7 +42,7 @@ describe(RoleGetByIdUsecase.name, () => {
     );
   });
 
-  const input: RoleGetByIDInput = {
+  const input: RoleGetByIdInput = {
     id: getMockUUID()
   };
 
@@ -53,7 +53,7 @@ describe(RoleGetByIdUsecase.name, () => {
   });
 
   test('when role found, should expect a role that has been found', async () => {
-    const findByIdOutput: RoleGetByIDOutput = new RoleEntity({
+    const findByIdOutput: RoleGetByIdOutput = new RoleEntity({
       id: getMockUUID(),
       name: RoleEnum.USER
     });

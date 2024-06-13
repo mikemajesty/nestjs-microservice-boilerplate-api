@@ -18,7 +18,7 @@ import { IsLoggedMiddleware } from '@/observables/middlewares';
 import {
   IPermissionCreateAdapter,
   IPermissionDeleteAdapter,
-  IPermissionGetByIDAdapter,
+  IPermissionGetByIdAdapter,
   IPermissionListAdapter,
   IPermissionUpdateAdapter
 } from './adapter';
@@ -49,7 +49,7 @@ import { PermissionRepository } from './repository';
       inject: [ILoggerAdapter, IPermissionRepository]
     },
     {
-      provide: IPermissionGetByIDAdapter,
+      provide: IPermissionGetByIdAdapter,
       useFactory: (repository: IPermissionRepository) => new PermissionGetByIdUsecase(repository),
       inject: [IPermissionRepository]
     },

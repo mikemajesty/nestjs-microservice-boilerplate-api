@@ -12,14 +12,14 @@ export const RoleGetByIdSchema = RoleEntitySchema.pick({
   id: true
 });
 
-export type RoleGetByIDInput = z.infer<typeof RoleGetByIdSchema>;
-export type RoleGetByIDOutput = RoleEntity;
+export type RoleGetByIdInput = z.infer<typeof RoleGetByIdSchema>;
+export type RoleGetByIdOutput = RoleEntity;
 
 export class RoleGetByIdUsecase implements IUsecase {
   constructor(private readonly roleRepository: IRoleRepository) {}
 
   @ValidateSchema(RoleGetByIdSchema)
-  async execute({ id }: RoleGetByIDInput): Promise<RoleGetByIDOutput> {
+  async execute({ id }: RoleGetByIdInput): Promise<RoleGetByIdOutput> {
     const role = await this.roleRepository.findById(id);
 
     if (!role) {

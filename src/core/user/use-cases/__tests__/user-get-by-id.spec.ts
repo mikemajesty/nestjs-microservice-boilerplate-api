@@ -1,7 +1,7 @@
 import { Test } from '@nestjs/testing';
 
 import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
-import { IUserGetByIDAdapter } from '@/modules/user/adapter';
+import { IUserGetByIdAdapter } from '@/modules/user/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
 import { expectZodError, getMockUUID } from '@/utils/tests';
 
@@ -17,7 +17,7 @@ const userMock = {
 } as UserEntity;
 
 describe(UserGetByIdUsecase.name, () => {
-  let usecase: IUserGetByIDAdapter;
+  let usecase: IUserGetByIdAdapter;
   let repository: IUserRepository;
 
   beforeEach(async () => {
@@ -29,7 +29,7 @@ describe(UserGetByIdUsecase.name, () => {
           useValue: {}
         },
         {
-          provide: IUserGetByIDAdapter,
+          provide: IUserGetByIdAdapter,
           useFactory: (userRepository: IUserRepository) => {
             return new UserGetByIdUsecase(userRepository);
           },
@@ -38,7 +38,7 @@ describe(UserGetByIdUsecase.name, () => {
       ]
     }).compile();
 
-    usecase = app.get(IUserGetByIDAdapter);
+    usecase = app.get(IUserGetByIdAdapter);
     repository = app.get(IUserRepository);
   });
 

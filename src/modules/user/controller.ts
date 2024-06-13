@@ -16,7 +16,7 @@ import {
   IUserChangePasswordAdapter,
   IUserCreateAdapter,
   IUserDeleteAdapter,
-  IUserGetByIDAdapter,
+  IUserGetByIdAdapter,
   IUserListAdapter,
   IUserUpdateAdapter
 } from './adapter';
@@ -31,7 +31,7 @@ export class UserController {
     private readonly updateUsecase: IUserUpdateAdapter,
     private readonly deleteUsecase: IUserDeleteAdapter,
     private readonly listUsecase: IUserListAdapter,
-    private readonly getByIdUsecase: IUserGetByIDAdapter,
+    private readonly getByIdUsecase: IUserGetByIdAdapter,
     private readonly changePassUsecase: IUserChangePasswordAdapter
   ) {}
 
@@ -78,8 +78,8 @@ export class UserController {
 
   @Get('/:id')
   @ApiParam({ name: 'id', required: true })
-  @ApiResponse(SwaggerResponse.getByID[200])
-  @ApiResponse(SwaggerResponse.getByID[404])
+  @ApiResponse(SwaggerResponse.getById[200])
+  @ApiResponse(SwaggerResponse.getById[404])
   @Version('1')
   @Permission('user:getbyid')
   async getById(@Req() { params }: ApiRequest): Promise<UserGetByIdOutput> {

@@ -37,10 +37,10 @@ export const SwaggerResponse = {
       description: 'user exists.'
     })
   },
-  getByID: {
+  getById: {
     200: Swagger.defaultResponseJSON({
       status: 200,
-      json: UsersResponse.getByID,
+      json: UsersResponse.getById,
       description: 'user found.'
     }),
     404: Swagger.defaultResponseError({

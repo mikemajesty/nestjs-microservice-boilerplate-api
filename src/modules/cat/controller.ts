@@ -54,8 +54,8 @@ export class CatsController {
 
   @Get('/:id')
   @ApiParam({ name: 'id', required: true })
-  @ApiResponse(SwaggerResponse.getByID[200])
-  @ApiResponse(SwaggerResponse.getByID[404])
+  @ApiResponse(SwaggerResponse.getById[200])
+  @ApiResponse(SwaggerResponse.getById[404])
   @Version('1')
   @Permission('cat:getbyid')
   async getById(@Req() { params }: ApiRequest): Promise<CatsGetByIdOutput> {

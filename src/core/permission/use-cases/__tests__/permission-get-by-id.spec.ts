@@ -1,15 +1,15 @@
 import { Test } from '@nestjs/testing';
 
-import { IPermissionGetByIDAdapter } from '@/modules/permission/adapter';
+import { IPermissionGetByIdAdapter } from '@/modules/permission/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
 import { expectZodError, getMockUUID } from '@/utils/tests';
 
 import { IPermissionRepository } from '../../repository/permission';
-import { PermissionGetByIDInput, PermissionGetByIDOutput, PermissionGetByIdUsecase } from '../permission-get-by-id';
+import { PermissionGetByIdInput, PermissionGetByIdOutput, PermissionGetByIdUsecase } from '../permission-get-by-id';
 import { PermissionEntity } from './../../entity/permission';
 
 describe(PermissionGetByIdUsecase.name, () => {
-  let usecase: IPermissionGetByIDAdapter;
+  let usecase: IPermissionGetByIdAdapter;
   let repository: IPermissionRepository;
 
   beforeEach(async () => {
@@ -20,7 +20,7 @@ describe(PermissionGetByIdUsecase.name, () => {
           useValue: {}
         },
         {
-          provide: IPermissionGetByIDAdapter,
+          provide: IPermissionGetByIdAdapter,
           useFactory: (permissionRepository: IPermissionRepository) => {
             return new PermissionGetByIdUsecase(permissionRepository);
           },
@@ -29,7 +29,7 @@ describe(PermissionGetByIdUsecase.name, () => {
       ]
     }).compile();
 
-    usecase = app.get(IPermissionGetByIDAdapter);
+    usecase = app.get(IPermissionGetByIdAdapter);
     repository = app.get(IPermissionRepository);
   });
 
@@ -42,7 +42,7 @@ describe(PermissionGetByIdUsecase.name, () => {
     );
   });
 
-  const input: PermissionGetByIDInput = {
+  const input: PermissionGetByIdInput = {
     id: getMockUUID()
   };
 
@@ -53,7 +53,7 @@ describe(PermissionGetByIdUsecase.name, () => {
   });
 
   test('when permission found, should expect a permission that has been found', async () => {
-    const findByIdOutput: PermissionGetByIDOutput = new PermissionEntity({
+    const findByIdOutput: PermissionGetByIdOutput = new PermissionEntity({
       id: getMockUUID(),
       name: 'all'
     });

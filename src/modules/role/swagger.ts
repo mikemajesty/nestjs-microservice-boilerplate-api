@@ -1,36 +1,19 @@
-import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
-import { RoleAddPermissionInput } from '@/core/role/use-cases/role-add-permission';
-import { RoleCreateOutput } from '@/core/role/use-cases/role-create';
-import { RoleDeleteOutput } from '@/core/role/use-cases/role-delete';
-import { RoleGetByIDOutput } from '@/core/role/use-cases/role-get-by-id';
-import { RoleListOutput } from '@/core/role/use-cases/role-list';
-import { RoleUpdateOutput } from '@/core/role/use-cases/role-update';
+import { RoleRequest } from '@/utils/docs/data/role/request';
+import { RoleResponse } from '@/utils/docs/data/role/response';
 import { Swagger } from '@/utils/docs/swagger';
-
-const input = new RoleEntity({
-  name: RoleEnum.USER
-});
-
-const output = new RoleEntity({
-  ...input,
-  updatedAt: new Date(),
-  createdAt: new Date(),
-  deletedAt: null,
-  permissions: []
-});
 
 export const SwaggerResponse = {
   create: {
     200: Swagger.defaultResponseJSON({
       status: 200,
-      json: { created: true, id: '<uuid>' } as RoleCreateOutput,
+      json: RoleResponse.create,
       description: 'role created.'
     })
   },
   update: {
     200: Swagger.defaultResponseJSON({
       status: 200,
-      json: output as RoleUpdateOutput,
+      json: RoleResponse.update,
       description: 'role updated.'
     }),
     404: Swagger.defaultResponseError({
@@ -40,10 +23,10 @@ export const SwaggerResponse = {
       description: 'role not found.'
     })
   },
-  getByID: {
+  getById: {
     200: Swagger.defaultResponseJSON({
       status: 200,
-      json: output as RoleGetByIDOutput,
+      json: RoleResponse.getById,
       description: 'role found.'
     }),
     404: Swagger.defaultResponseError({
@@ -56,7 +39,7 @@ export const SwaggerResponse = {
   delete: {
     200: Swagger.defaultResponseJSON({
       status: 200,
-      json: output as RoleDeleteOutput,
+      json: RoleResponse.delete,
       description: 'role found.'
     }),
     404: Swagger.defaultResponseError({
@@ -69,7 +52,7 @@ export const SwaggerResponse = {
   list: {
     200: Swagger.defaultResponseJSON({
       status: 200,
-      json: { docs: [output], page: 1, limit: 1, total: 1 } as RoleListOutput,
+      json: RoleResponse.list,
       description: 'role created.'
     })
   },
@@ -100,8 +83,8 @@ export const SwaggerResponse = {
 };
 
 export const SwaggerRequest = {
-  createBody: Swagger.defaultRequestJSON({ ...input, id: undefined } as RoleEntity),
-  updateBody: Swagger.defaultRequestJSON({ name: input.name } as RoleEntity),
+  createBody: Swagger.defaultRequestJSON(RoleRequest.create),
+  updateBody: Swagger.defaultRequestJSON(RoleRequest.update),
   listQuery: {
     pagination: {
       limit: Swagger.defaultApiQueryOptions({ example: 10, name: 'limit', required: false }),
@@ -118,6 +101,6 @@ export const SwaggerRequest = {
       description: '<b>propertyName:propertyValue'
     })
   },
-  addPermissions: Swagger.defaultRequestJSON({ permissions: ['user:list', 'user:create'] } as RoleAddPermissionInput),
-  deletePermissions: Swagger.defaultRequestJSON({ permissions: ['user:list', 'user:create'] } as RoleAddPermissionInput)
+  addPermissions: Swagger.defaultRequestJSON(RoleRequest.addPermission),
+  deletePermissions: Swagger.defaultRequestJSON(RoleRequest.deletePermission)
 };

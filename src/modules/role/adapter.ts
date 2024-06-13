@@ -2,7 +2,7 @@ import { RoleAddPermissionInput, RoleAddPermissionOutput } from '@/core/role/use
 import { RoleCreateInput, RoleCreateOutput } from '@/core/role/use-cases/role-create';
 import { RoleDeleteInput, RoleDeleteOutput } from '@/core/role/use-cases/role-delete';
 import { RoleDeletePermissionInput, RoleDeletePermissionOutput } from '@/core/role/use-cases/role-delete-permission';
-import { RoleGetByIDInput, RoleGetByIDOutput } from '@/core/role/use-cases/role-get-by-id';
+import { RoleGetByIdInput, RoleGetByIdOutput } from '@/core/role/use-cases/role-get-by-id';
 import { RoleListInput, RoleListOutput } from '@/core/role/use-cases/role-list';
 import { RoleUpdateInput, RoleUpdateOutput } from '@/core/role/use-cases/role-update';
 import { IUsecase } from '@/utils/usecase';
@@ -15,8 +15,8 @@ export abstract class IRoleUpdateAdapter implements IUsecase {
   abstract execute(input: RoleUpdateInput): Promise<RoleUpdateOutput>;
 }
 
-export abstract class IRoleGetByIDAdapter implements IUsecase {
-  abstract execute(input: RoleGetByIDInput): Promise<RoleGetByIDOutput>;
+export abstract class IRoleGetByIdAdapter implements IUsecase {
+  abstract execute(input: RoleGetByIdInput): Promise<RoleGetByIdOutput>;
 }
 
 export abstract class IRoleListAdapter implements IUsecase {

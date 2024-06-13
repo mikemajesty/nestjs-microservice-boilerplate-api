@@ -23,7 +23,7 @@ export abstract class IUserDeleteAdapter implements IUsecase {
   abstract execute(input: UserDeleteInput, trace: ApiTrancingInput): Promise<UserDeleteOutput>;
 }
 
-export abstract class IUserGetByIDAdapter implements IUsecase {
+export abstract class IUserGetByIdAdapter implements IUsecase {
   abstract execute(input: UserGetByIdInput): Promise<UserGetByIdOutput>;
 }
 

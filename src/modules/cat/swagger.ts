@@ -1,5 +1,5 @@
-import { CatsRequest } from '@/utils/docs/data/cats/request';
-import { CatsResponse } from '@/utils/docs/data/cats/response';
+import { CatsRequest } from '@/utils/docs/data/cat/request';
+import { CatsResponse } from '@/utils/docs/data/cat/response';
 import { Swagger } from '@/utils/docs/swagger';
 import { ApiNotFoundException } from '@/utils/exception';
 
@@ -26,10 +26,10 @@ export const SwaggerResponse = {
       description: 'cat not found.'
     })
   },
-  getByID: {
+  getById: {
     200: Swagger.defaultResponseJSON({
       status: 200,
-      json: CatsResponse.getByID,
+      json: CatsResponse.getById,
       description: 'cat founded.'
     }),
     404: Swagger.defaultResponseError({

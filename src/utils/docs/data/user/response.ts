@@ -25,6 +25,6 @@ export const UsersResponse = {
   create: { created: true, id: getMockUUID() } as UserCreateOutput,
   delete: { ...fullEntity, deletedAt: getMockDate() } as UserDeleteOutput,
   update: { ...fullEntity } as UserUpdateOutput,
-  getByID: fullEntity as UserGetByIdOutput,
+  getById: fullEntity as UserGetByIdOutput,
   list: { docs: [fullEntity], limit: 10, page: 1, total: 1 } as UserListOutput
 };

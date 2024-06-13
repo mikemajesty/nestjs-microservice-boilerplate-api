@@ -25,7 +25,7 @@ import {
   IRoleCreateAdapter,
   IRoleDeleteAdapter,
   IRoleDeletePermissionAdapter,
-  IRoleGetByIDAdapter,
+  IRoleGetByIdAdapter,
   IRoleListAdapter,
   IRoleUpdateAdapter
 } from './adapter';
@@ -54,7 +54,7 @@ import { RoleRepository } from './repository';
       inject: [ILoggerAdapter, IRoleRepository]
     },
     {
-      provide: IRoleGetByIDAdapter,
+      provide: IRoleGetByIdAdapter,
       useFactory: (repository: IRoleRepository) => new RoleGetByIdUsecase(repository),
       inject: [IRoleRepository]
     },

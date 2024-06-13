@@ -12,14 +12,14 @@ export const PermissionGetByIdSchema = PermissionEntitySchema.pick({
   id: true
 });
 
-export type PermissionGetByIDInput = z.infer<typeof PermissionGetByIdSchema>;
-export type PermissionGetByIDOutput = PermissionEntity;
+export type PermissionGetByIdInput = z.infer<typeof PermissionGetByIdSchema>;
+export type PermissionGetByIdOutput = PermissionEntity;
 
 export class PermissionGetByIdUsecase implements IUsecase {
   constructor(private readonly permissionRepository: IPermissionRepository) {}
 
   @ValidateSchema(PermissionGetByIdSchema)
-  async execute({ id }: PermissionGetByIDInput): Promise<PermissionGetByIDOutput> {
+  async execute({ id }: PermissionGetByIdInput): Promise<PermissionGetByIdOutput> {
     const permission = await this.permissionRepository.findById(id);
 
     if (!permission) {

@@ -1,29 +1,19 @@
-import { PermissionEntity } from '@/core/permission/entity/permission';
-import { PermissionCreateOutput } from '@/core/permission/use-cases/permission-create';
-import { PermissionDeleteOutput } from '@/core/permission/use-cases/permission-delete';
-import { PermissionGetByIDOutput } from '@/core/permission/use-cases/permission-get-by-id';
-import { PermissionListOutput } from '@/core/permission/use-cases/permission-list';
-import { PermissionUpdateOutput } from '@/core/permission/use-cases/permission-update';
+import { PermissionRequest } from '@/utils/docs/data/permission/request';
+import { PermissionResponse } from '@/utils/docs/data/permission/response';
 import { Swagger } from '@/utils/docs/swagger';
-
-const input = new PermissionEntity({
-  name: 'ALL'
-});
-
-const output = new PermissionEntity({ ...input, updatedAt: new Date(), createdAt: new Date(), deletedAt: null });
 
 export const SwaggerResponse = {
   create: {
     200: Swagger.defaultResponseJSON({
       status: 200,
-      json: { created: true, id: '<uuid>' } as PermissionCreateOutput,
+      json: PermissionResponse.create,
       description: 'permission created.'
     })
   },
   update: {
     200: Swagger.defaultResponseJSON({
       status: 200,
-      json: output as PermissionUpdateOutput,
+      json: PermissionResponse.update,
       description: 'permission updated.'
     }),
     404: Swagger.defaultResponseError({
@@ -33,10 +23,10 @@ export const SwaggerResponse = {
       description: 'permission not found.'
     })
   },
-  getByID: {
+  getById: {
     200: Swagger.defaultResponseJSON({
       status: 200,
-      json: output as PermissionGetByIDOutput,
+      json: PermissionResponse.getById,
       description: 'permission found.'
     }),
     404: Swagger.defaultResponseError({
@@ -49,7 +39,7 @@ export const SwaggerResponse = {
   delete: {
     200: Swagger.defaultResponseJSON({
       status: 200,
-      json: output as PermissionDeleteOutput,
+      json: PermissionResponse.delete,
       description: 'permission found.'
     }),
     404: Swagger.defaultResponseError({
@@ -62,15 +52,15 @@ export const SwaggerResponse = {
   list: {
     200: Swagger.defaultResponseJSON({
       status: 200,
-      json: { docs: [output], page: 1, limit: 1, total: 1 } as PermissionListOutput,
+      json: PermissionResponse.list,
       description: 'permission created.'
     })
   }
 };
 
 export const SwaggerRequest = {
-  createBody: Swagger.defaultRequestJSON({ ...input, id: undefined } as PermissionEntity),
-  updateBody: Swagger.defaultRequestJSON({ name: input.name } as PermissionEntity),
+  createBody: Swagger.defaultRequestJSON(PermissionRequest.create),
+  updateBody: Swagger.defaultRequestJSON(PermissionRequest.update),
   listQuery: {
     pagination: {
       limit: Swagger.defaultApiQueryOptions({ example: 10, name: 'limit', required: false }),

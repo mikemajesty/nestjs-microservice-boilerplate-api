@@ -25,7 +25,7 @@ import {
   IUserChangePasswordAdapter,
   IUserCreateAdapter,
   IUserDeleteAdapter,
-  IUserGetByIDAdapter,
+  IUserGetByIdAdapter,
   IUserListAdapter,
   IUserUpdateAdapter
 } from './adapter';
@@ -87,7 +87,7 @@ import { UserRepository } from './repository';
       inject: [IUserRepository]
     },
     {
-      provide: IUserGetByIDAdapter,
+      provide: IUserGetByIdAdapter,
       useFactory: (userRepository: IUserRepository) => {
         return new UserGetByIdUsecase(userRepository);
       },
@@ -107,7 +107,7 @@ import { UserRepository } from './repository';
     IUserUpdateAdapter,
     IUserListAdapter,
     IUserDeleteAdapter,
-    IUserGetByIDAdapter
+    IUserGetByIdAdapter
   ]
 })
 export class UserModule implements NestModule {
