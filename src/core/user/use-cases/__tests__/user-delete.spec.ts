@@ -59,8 +59,8 @@ describe(UserDeleteUsecase.name, () => {
 
   test('when user deleted successfully, should expect an user that has been deleted.', async () => {
     repository.findOneWithRelation = jest.fn().mockResolvedValue(userDefaultOutput);
-    repository.create = jest.fn();
+    repository.softRemove = jest.fn();
     await expect(usecase.execute({ id: getMockUUID() }, getMockTracing())).resolves.toEqual(expect.any(UserEntity));
-    expect(repository.create).toHaveBeenCalled();
+    expect(repository.softRemove).toHaveBeenCalled();
   });
 });

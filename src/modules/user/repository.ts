@@ -33,6 +33,10 @@ export class UserRepository extends TypeORMRepository<Model> implements IUserRep
     });
   }
 
+  async softRemove(entity: Partial<UserEntity>): Promise<UserEntity> {
+    return await this.repository.softRemove(entity);
+  }
+
   @ValidateMongooseFilter<UserEntity>([
     { name: 'email', type: SearchTypeEnum.like },
     { name: 'name', type: SearchTypeEnum.like }

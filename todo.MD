@@ -1,3 +1,1 @@
 - verificar transaction do postgress
-- adicionar soft remove
-- ajustar docs do [add-permission, delete-permission]

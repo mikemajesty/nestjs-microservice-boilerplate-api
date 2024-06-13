@@ -72,6 +72,30 @@ export const SwaggerResponse = {
       json: { docs: [output], page: 1, limit: 1, total: 1 } as RoleListOutput,
       description: 'role created.'
     })
+  },
+  removePermissions: {
+    200: Swagger.defaultResponseJSON({
+      status: 200,
+      description: 'remove permission from role'
+    }),
+    404: Swagger.defaultResponseError({
+      status: 404,
+      route: 'api/v1/roles/remove-permissions/:id',
+      message: 'roleNotFound',
+      description: 'role not found.'
+    })
+  },
+  addPermissions: {
+    200: Swagger.defaultResponseJSON({
+      status: 200,
+      description: 'add permission to role'
+    }),
+    404: Swagger.defaultResponseError({
+      status: 404,
+      route: 'api/v1/roles/add-permissions/:id',
+      message: 'roleNotFound',
+      description: 'role not found.'
+    })
   }
 };
 

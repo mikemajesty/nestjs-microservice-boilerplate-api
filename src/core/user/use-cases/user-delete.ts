@@ -6,7 +6,6 @@ import { ApiTrancingInput } from '@/utils/request';
 import { IUsecase } from '@/utils/usecase';
 
 import { UserEntity, UserEntitySchema } from '../entity/user';
-import { UserPasswordEntity } from '../entity/user-password';
 import { IUserRepository } from '../repository/user';
 
 export const UserDeleteSchema = UserEntitySchema.pick({
@@ -21,7 +20,7 @@ export class UserDeleteUsecase implements IUsecase {
 
   @ValidateSchema(UserDeleteSchema)
   async execute({ id }: UserDeleteInput, { tracing, user: userData }: ApiTrancingInput): Promise<UserDeleteOutput> {
-    const user = await this.userRepository.findOneWithRelation({ id }, { password: true });
+    const user = await this.userRepository.findOneWithRelation({ id }, { password: true, role: true });
 
     if (!user) {
       throw new ApiNotFoundException('userNotFound');
@@ -29,15 +28,7 @@ export class UserDeleteUsecase implements IUsecase {
 
     const userEntity = new UserEntity(user);
 
-    userEntity.setDeleted();
-
-    const userPasswordEntity = new UserPasswordEntity(userEntity.password);
-
-    userPasswordEntity.setDeleted();
-
-    userEntity.password = userPasswordEntity;
-
-    await this.userRepository.create(userEntity);
+    await this.userRepository.softRemove(userEntity);
 
     tracing.logEvent('user-deleted', `user: ${user.email} deleted by: ${userData.email}`);
 

@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, Post, Put, Req } from '@nestjs/common';
+import { Controller, Delete, Get, HttpCode, Post, Put, Req } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { RoleAddPermissionInput, RoleAddPermissionOutput } from '@/core/role/use-cases/role-add-permission';
@@ -94,6 +94,8 @@ export class RoleController {
   @Put('/add-permissions/:id')
   @ApiParam({ name: 'id', required: true })
   @ApiBody(SwaggerRequest.addPermissions)
+  @ApiResponse(SwaggerResponse.addPermissions[200])
+  @ApiResponse(SwaggerResponse.addPermissions[404])
   @Permission('role:addpermission')
   async addPermissions(@Req() { body, params }: ApiRequest): Promise<RoleAddPermissionOutput> {
     return await this.roleAddPermission.execute({ ...body, id: params.id } as RoleAddPermissionInput);
@@ -102,6 +104,9 @@ export class RoleController {
   @Put('/remove-permissions/:id')
   @ApiParam({ name: 'id', required: true })
   @ApiBody(SwaggerRequest.deletePermissions)
+  @ApiResponse(SwaggerResponse.removePermissions[200])
+  @ApiResponse(SwaggerResponse.removePermissions[404])
+  @HttpCode(200)
   @Permission('role:deletepermission')
   async removePermissions(@Req() { body, params }: ApiRequest): Promise<RoleAddPermissionOutput> {
     return await this.roleDeletePermission.execute({ ...body, id: params.id } as RoleAddPermissionInput);
