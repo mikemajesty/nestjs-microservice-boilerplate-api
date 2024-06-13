@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { UserEntitySchema } from '@/core/user/entity/user';
+import { UserEntity, UserEntitySchema } from '@/core/user/entity/user';
 import { IUserRepository } from '@/core/user/repository/user';
 import { SendEmailInput } from '@/infra/email';
 import { ISecretsAdapter } from '@/infra/secrets';
@@ -41,12 +41,7 @@ export class SendEmailResetPasswordUsecase implements IUsecase {
     const resetPassword = await this.resetPasswordRepository.findByIdUserId(user.id);
 
     if (resetPassword) {
-      this.event.emit<SendEmailInput>(EventNameEnum.SEND_EMAIL, {
-        email: user.email,
-        subject: 'Reset password',
-        template: 'reque-reset-password',
-        payload: { name: user.email, link: `${this.secret.HOST}/api/v1/reset-password/${resetPassword.token}` }
-      });
+      this.sendEmail(user, resetPassword.token);
       return;
     }
 
@@ -54,11 +49,15 @@ export class SendEmailResetPasswordUsecase implements IUsecase {
     const entity = new ResetPasswordEntity({ token: hash.token, user: user });
 
     await this.resetPasswordRepository.create(entity);
+    this.sendEmail(user, hash.token);
+  }
+
+  private sendEmail(user: UserEntity, token: string) {
     this.event.emit<SendEmailInput>(EventNameEnum.SEND_EMAIL, {
       email: user.email,
       subject: 'Reset password',
       template: 'reque-reset-password',
-      payload: { name: user.email, link: `${this.secret.HOST}/api/v1/reset-password/${hash.token}` }
+      payload: { name: user.name, link: `${this.secret.HOST}/api/v1/reset-password/${token}` }
     });
   }
 }

@@ -60,7 +60,7 @@ export class ConfirmResetPasswordUsecase implements IUsecase {
       email: user.email,
       subject: 'Password has been changed successfully',
       template: 'reset-password',
-      payload: { name: user.email }
+      payload: { name: user.name }
     });
 
     await this.resetpasswordtokenRepository.remove({ userId: user.id });

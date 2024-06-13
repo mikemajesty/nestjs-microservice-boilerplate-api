@@ -66,7 +66,7 @@ export class UserCreateUsecase implements IUsecase {
       email: input.email,
       subject: 'Welcome',
       template: 'welcome',
-      payload: { name: input.email }
+      payload: { name: input.name }
     });
 
     tracing.logEvent('user-created', `user: ${entity.email} created by: ${userData.email}`);
