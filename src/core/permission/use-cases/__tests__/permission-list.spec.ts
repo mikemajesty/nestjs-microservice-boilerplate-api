@@ -11,11 +11,7 @@ import { expectZodError, getMockUUID } from '@/utils/tests';
 import { IPermissionRepository } from '../../repository/permission';
 import { PermissionEntity } from './../../entity/permission';
 
-const successInput: PermissionListInput = { limit: 1, page: 1, search: {}, sort: { createdAt: -1 } };
-
-const failureInput: PermissionListInput = { search: null, sort: null, limit: 10, page: 1 };
-
-describe('PermissionListUsecase', () => {
+describe(PermissionListUsecase.name, () => {
   let usecase: IPermissionListAdapter;
   let repository: IPermissionRepository;
 
@@ -42,12 +38,14 @@ describe('PermissionListUsecase', () => {
 
   test('when sort input is specified, should expect an error', async () => {
     await expectZodError(
-      () => usecase.execute(failureInput),
+      () => usecase.execute({ search: null, sort: null, limit: 10, page: 1 } as PermissionListInput),
       (issues) => {
         expect(issues).toEqual([{ message: 'Expected object, received null', path: 'sort' }]);
       }
     );
   });
+
+  const input: PermissionListInput = { limit: 1, page: 1, search: {}, sort: { createdAt: -1 } };
 
   test('when permission are found, should expect an permission list', async () => {
     const doc = new PermissionEntity({
@@ -61,7 +59,7 @@ describe('PermissionListUsecase', () => {
 
     repository.paginate = jest.fn().mockResolvedValue(paginateOutput);
 
-    await expect(usecase.execute(successInput)).resolves.toEqual({
+    await expect(usecase.execute(input)).resolves.toEqual({
       docs: [doc],
       page: 1,
       limit: 1,
@@ -74,6 +72,6 @@ describe('PermissionListUsecase', () => {
 
     repository.paginate = jest.fn().mockResolvedValue(paginateOutput);
 
-    await expect(usecase.execute(successInput)).resolves.toEqual(paginateOutput);
+    await expect(usecase.execute(input)).resolves.toEqual(paginateOutput);
   });
 });

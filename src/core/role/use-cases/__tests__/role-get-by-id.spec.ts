@@ -8,13 +8,7 @@ import { IRoleRepository } from '../../repository/role';
 import { RoleGetByIDInput, RoleGetByIDOutput, RoleGetByIdUsecase } from '../role-get-by-id';
 import { RoleEntity, RoleEnum } from './../../entity/role';
 
-const successInput: RoleGetByIDInput = {
-  id: getMockUUID()
-};
-
-const failureInput: RoleGetByIDInput = {};
-
-describe('RoleGetByIdUsecase', () => {
+describe(RoleGetByIdUsecase.name, () => {
   let usecase: IRoleGetByIDAdapter;
   let repository: IRoleRepository;
 
@@ -41,17 +35,21 @@ describe('RoleGetByIdUsecase', () => {
 
   test('when no input is specified, should expect an error', async () => {
     await expectZodError(
-      () => usecase.execute(failureInput),
+      () => usecase.execute({}),
       (issues) => {
         expect(issues).toEqual([{ message: 'Required', path: RoleEntity.nameOf('id') }]);
       }
     );
   });
 
+  const input: RoleGetByIDInput = {
+    id: getMockUUID()
+  };
+
   test('when role not found, should expect an error', async () => {
     repository.findById = jest.fn().mockResolvedValue(null);
 
-    await expect(usecase.execute(successInput)).rejects.toThrowError(ApiNotFoundException);
+    await expect(usecase.execute(input)).rejects.toThrowError(ApiNotFoundException);
   });
 
   test('when role found, should expect a role that has been found', async () => {
@@ -61,6 +59,6 @@ describe('RoleGetByIdUsecase', () => {
     });
     repository.findById = jest.fn().mockResolvedValue(findByIdOutput);
 
-    await expect(usecase.execute(successInput)).resolves.toEqual(findByIdOutput);
+    await expect(usecase.execute(input)).resolves.toEqual(findByIdOutput);
   });
 });

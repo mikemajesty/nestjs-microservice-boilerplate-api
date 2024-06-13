@@ -10,7 +10,7 @@ import { RoleEntity, RoleEntitySchema } from './../entity/role';
 
 export const RoleCreateSchema = RoleEntitySchema.pick({
   name: true
-});
+}).strict();
 
 export type RoleCreateInput = z.infer<typeof RoleCreateSchema>;
 export type RoleCreateOutput = CreatedModel;

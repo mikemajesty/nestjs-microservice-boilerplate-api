@@ -9,13 +9,7 @@ import { IPermissionRepository } from '../../repository/permission';
 import { PermissionUpdateInput, PermissionUpdateOutput, PermissionUpdateUsecase } from '../permission-update';
 import { PermissionEntity } from './../../entity/permission';
 
-const successInput: PermissionUpdateInput = {
-  id: getMockUUID()
-};
-
-const failureInput: PermissionUpdateInput = {};
-
-describe('PermissionUpdateUsecase', () => {
+describe(PermissionUpdateUsecase.name, () => {
   let usecase: IPermissionUpdateAdapter;
   let repository: IPermissionRepository;
 
@@ -48,17 +42,21 @@ describe('PermissionUpdateUsecase', () => {
 
   test('when no input is specified, should expect an error', async () => {
     await expectZodError(
-      () => usecase.execute(failureInput),
+      () => usecase.execute({}),
       (issues) => {
         expect(issues).toEqual([{ message: 'Required', path: PermissionEntity.nameOf('id') }]);
       }
     );
   });
 
+  const input: PermissionUpdateInput = {
+    id: getMockUUID()
+  };
+
   test('when permission not found, should expect an error', async () => {
     repository.findById = jest.fn().mockResolvedValue(null);
 
-    await expect(usecase.execute(successInput)).rejects.toThrowError(ApiNotFoundException);
+    await expect(usecase.execute(input)).rejects.toThrowError(ApiNotFoundException);
   });
 
   test('when permission updated successfully, should expect an permission that has been updated', async () => {
@@ -70,6 +68,6 @@ describe('PermissionUpdateUsecase', () => {
     repository.findById = jest.fn().mockResolvedValue(findByIdOutput);
     repository.updateOne = jest.fn().mockResolvedValue(null);
 
-    await expect(usecase.execute(successInput)).resolves.toEqual(findByIdOutput);
+    await expect(usecase.execute(input)).resolves.toEqual(findByIdOutput);
   });
 });

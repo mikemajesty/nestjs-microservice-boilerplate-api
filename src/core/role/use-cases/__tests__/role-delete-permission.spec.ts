@@ -9,7 +9,7 @@ import { expectZodError, getMockUUID } from '@/utils/tests';
 import { RoleEntity, RoleEnum } from '../../entity/role';
 import { IRoleRepository } from '../../repository/role';
 import { RoleAddPermissionInput } from '../role-add-permission';
-import { RoleDeletePermissionInput, RoleDeletePermissionUsecase } from '../role-delete-permission';
+import { RoleDeletePermissionUsecase } from '../role-delete-permission';
 
 describe(RoleDeletePermissionUsecase.name, () => {
   let usecase: IRoleDeletePermissionAdapter;
@@ -42,10 +42,9 @@ describe(RoleDeletePermissionUsecase.name, () => {
     permissionRepository = app.get(IPermissionRepository);
   });
 
-  const failureInput: RoleDeletePermissionInput = {};
   test('when no input is specified, should expect an error', async () => {
     await expectZodError(
-      () => usecase.execute(failureInput),
+      () => usecase.execute({}),
       (issues) => {
         expect(issues).toEqual([
           { message: 'Required', path: RoleEntity.nameOf('id') },
@@ -55,23 +54,26 @@ describe(RoleDeletePermissionUsecase.name, () => {
     );
   });
 
-  const successInput: RoleAddPermissionInput = {
+  const input: RoleAddPermissionInput = {
     id: getMockUUID(),
     permissions: ['user:create']
   };
   test('when role not exists, should expect an error', async () => {
     repository.findOne = jest.fn().mockResolvedValue(null);
-    await expect(usecase.execute(successInput)).rejects.toThrow(ApiNotFoundException);
+    await expect(usecase.execute(input)).rejects.toThrow(ApiNotFoundException);
   });
 
-  const permissions = [new PermissionEntity({ name: 'user:create' }), new PermissionEntity({ name: 'user:update' })];
-  const roleOutput = new RoleEntity({ name: RoleEnum.USER, permissions });
+  const permissionsOutput = [
+    new PermissionEntity({ name: 'user:create' }),
+    new PermissionEntity({ name: 'user:update' })
+  ];
+  const roleOutput = new RoleEntity({ name: RoleEnum.USER, permissions: permissionsOutput });
   test('when some permisson, should expect an error', async () => {
     repository.findOne = jest.fn().mockResolvedValue(roleOutput);
-    permissionRepository.findIn = jest.fn().mockResolvedValue(permissions);
+    permissionRepository.findIn = jest.fn().mockResolvedValue(permissionsOutput);
     repository.create = jest.fn();
     await expect(
-      usecase.execute({ ...successInput, permissions: successInput.permissions.concat('user:getbyid') })
+      usecase.execute({ ...input, permissions: input.permissions.concat('user:getbyid') })
     ).resolves.toBeUndefined();
     expect(repository.create).toHaveBeenCalled();
   });

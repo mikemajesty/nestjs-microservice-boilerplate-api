@@ -8,13 +8,7 @@ import { expectZodError, getMockUUID } from '@/utils/tests';
 import { IRoleRepository } from '../../repository/role';
 import { RoleEntity, RoleEnum } from './../../entity/role';
 
-const successInput: RoleDeleteInput = {
-  id: getMockUUID()
-};
-
-const failureInput: RoleDeleteInput = {};
-
-describe('RoleDeleteUsecase', () => {
+describe(RoleDeleteUsecase.name, () => {
   let usecase: IRoleDeleteAdapter;
   let repository: IRoleRepository;
 
@@ -41,17 +35,20 @@ describe('RoleDeleteUsecase', () => {
 
   test('when no input is specified, should expect an error', async () => {
     await expectZodError(
-      () => usecase.execute(failureInput),
+      () => usecase.execute({}),
       (issues) => {
         expect(issues).toEqual([{ message: 'Required', path: RoleEntity.nameOf('id') }]);
       }
     );
   });
 
+  const input: RoleDeleteInput = {
+    id: getMockUUID()
+  };
   test('when role not found, should expect an error', async () => {
     repository.findById = jest.fn().mockResolvedValue(null);
 
-    await expect(usecase.execute(successInput)).rejects.toThrowError(ApiNotFoundException);
+    await expect(usecase.execute(input)).rejects.toThrowError(ApiNotFoundException);
   });
 
   test('when role deleted successfully, should expect a role that has been deleted', async () => {
@@ -63,7 +60,7 @@ describe('RoleDeleteUsecase', () => {
     repository.findById = jest.fn().mockResolvedValue(findByIdOutput);
     repository.updateOne = jest.fn();
 
-    await expect(usecase.execute(successInput)).resolves.toEqual({
+    await expect(usecase.execute(input)).resolves.toEqual({
       ...findByIdOutput,
       deletedAt: expect.any(Date)
     });

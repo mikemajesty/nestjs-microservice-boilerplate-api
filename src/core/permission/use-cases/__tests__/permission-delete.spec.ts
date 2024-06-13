@@ -12,13 +12,7 @@ import { expectZodError, getMockUUID } from '@/utils/tests';
 import { IPermissionRepository } from '../../repository/permission';
 import { PermissionEntity } from './../../entity/permission';
 
-const successInput: PermissionDeleteInput = {
-  id: getMockUUID()
-};
-
-const failureInput: PermissionDeleteInput = {};
-
-describe('PermissionDeleteUsecase', () => {
+describe(PermissionDeleteUsecase.name, () => {
   let usecase: IPermissionDeleteAdapter;
   let repository: IPermissionRepository;
 
@@ -45,17 +39,21 @@ describe('PermissionDeleteUsecase', () => {
 
   test('when no input is specified, should expect an error', async () => {
     await expectZodError(
-      () => usecase.execute(failureInput),
+      () => usecase.execute({}),
       (issues) => {
         expect(issues).toEqual([{ message: 'Required', path: PermissionEntity.nameOf('id') }]);
       }
     );
   });
 
+  const input: PermissionDeleteInput = {
+    id: getMockUUID()
+  };
+
   test('when permission not found, should expect an error', async () => {
     repository.findById = jest.fn().mockResolvedValue(null);
 
-    await expect(usecase.execute(successInput)).rejects.toThrowError(ApiNotFoundException);
+    await expect(usecase.execute(input)).rejects.toThrowError(ApiNotFoundException);
   });
 
   test('when permission deleted successfully, should expect a permission that has been deleted', async () => {
@@ -67,7 +65,7 @@ describe('PermissionDeleteUsecase', () => {
     repository.findById = jest.fn().mockResolvedValue(findByIdOutput);
     repository.updateOne = jest.fn();
 
-    await expect(usecase.execute(successInput)).resolves.toEqual({
+    await expect(usecase.execute(input)).resolves.toEqual({
       ...findByIdOutput,
       deletedAt: expect.any(Date)
     });

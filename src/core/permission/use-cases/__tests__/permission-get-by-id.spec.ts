@@ -8,13 +8,7 @@ import { IPermissionRepository } from '../../repository/permission';
 import { PermissionGetByIDInput, PermissionGetByIDOutput, PermissionGetByIdUsecase } from '../permission-get-by-id';
 import { PermissionEntity } from './../../entity/permission';
 
-const successInput: PermissionGetByIDInput = {
-  id: getMockUUID()
-};
-
-const failureInput: PermissionGetByIDInput = {};
-
-describe('PermissionGetByIdUsecase', () => {
+describe(PermissionGetByIdUsecase.name, () => {
   let usecase: IPermissionGetByIDAdapter;
   let repository: IPermissionRepository;
 
@@ -41,17 +35,21 @@ describe('PermissionGetByIdUsecase', () => {
 
   test('when no input is specified, should expect an error', async () => {
     await expectZodError(
-      () => usecase.execute(failureInput),
+      () => usecase.execute({}),
       (issues) => {
         expect(issues).toEqual([{ message: 'Required', path: PermissionEntity.nameOf('id') }]);
       }
     );
   });
 
+  const input: PermissionGetByIDInput = {
+    id: getMockUUID()
+  };
+
   test('when permission not found, should expect an error', async () => {
     repository.findById = jest.fn().mockResolvedValue(null);
 
-    await expect(usecase.execute(successInput)).rejects.toThrowError(ApiNotFoundException);
+    await expect(usecase.execute(input)).rejects.toThrowError(ApiNotFoundException);
   });
 
   test('when permission found, should expect a permission that has been found', async () => {
@@ -61,6 +59,6 @@ describe('PermissionGetByIdUsecase', () => {
     });
     repository.findById = jest.fn().mockResolvedValue(findByIdOutput);
 
-    await expect(usecase.execute(successInput)).resolves.toEqual(findByIdOutput);
+    await expect(usecase.execute(input)).resolves.toEqual(findByIdOutput);
   });
 });

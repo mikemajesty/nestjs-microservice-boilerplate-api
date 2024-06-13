@@ -8,13 +8,7 @@ import { RoleEntity, RoleEnum } from '../../entity/role';
 import { IRoleRepository } from '../../repository/role';
 import { RoleCreateInput, RoleCreateOutput, RoleCreateUsecase } from '../role-create';
 
-const successInput: RoleCreateInput = {
-  name: RoleEnum.USER
-};
-
-const failureInput: RoleCreateInput = {};
-
-describe('RoleCreateUsecase', () => {
+describe(RoleCreateUsecase.name, () => {
   let usecase: IRoleCreateAdapter;
   let repository: IRoleRepository;
 
@@ -47,18 +41,21 @@ describe('RoleCreateUsecase', () => {
 
   test('when no input is specified, should expect an error', async () => {
     await expectZodError(
-      () => usecase.execute(failureInput),
+      () => usecase.execute({}),
       (issues) => {
         expect(issues).toEqual([{ message: 'Required', path: RoleEntity.nameOf('name') }]);
       }
     );
   });
 
+  const input: RoleCreateInput = {
+    name: RoleEnum.USER
+  };
   test('when role created successfully, should expect a role that has been created', async () => {
     const createOutput: RoleCreateOutput = { created: true, id: getMockUUID() };
 
     repository.create = jest.fn().mockResolvedValue(createOutput);
 
-    await expect(usecase.execute(successInput)).resolves.toEqual(createOutput);
+    await expect(usecase.execute(input)).resolves.toEqual(createOutput);
   });
 });

@@ -7,11 +7,7 @@ import { expectZodError, getMockUUID } from '@/utils/tests';
 import { IRoleRepository } from '../../repository/role';
 import { RoleEntity, RoleEnum } from './../../entity/role';
 
-const successInput: RoleListInput = { limit: 1, page: 1, search: {}, sort: { createdAt: -1 } };
-
-const failureInput: RoleListInput = { search: null, sort: null, limit: 10, page: 1 };
-
-describe('RoleListUsecase', () => {
+describe(RoleListUsecase.name, () => {
   let usecase: IRoleListAdapter;
   let repository: IRoleRepository;
 
@@ -38,13 +34,14 @@ describe('RoleListUsecase', () => {
 
   test('when sort input is specified, should expect an error', async () => {
     await expectZodError(
-      () => usecase.execute(failureInput),
+      () => usecase.execute({ search: null, sort: null, limit: 10, page: 1 }),
       (issues) => {
         expect(issues).toEqual([{ message: 'Expected object, received null', path: 'sort' }]);
       }
     );
   });
 
+  const input: RoleListInput = { limit: 1, page: 1, search: {}, sort: { createdAt: -1 } };
   test('when role are found, should expect an role list', async () => {
     const doc = new RoleEntity({
       id: getMockUUID(),
@@ -57,7 +54,7 @@ describe('RoleListUsecase', () => {
 
     repository.paginate = jest.fn().mockResolvedValue(paginateOutput);
 
-    await expect(usecase.execute(successInput)).resolves.toEqual({
+    await expect(usecase.execute(input)).resolves.toEqual({
       docs: [doc],
       page: 1,
       limit: 1,
@@ -70,6 +67,6 @@ describe('RoleListUsecase', () => {
 
     repository.paginate = jest.fn().mockResolvedValue(paginateOutput);
 
-    await expect(usecase.execute(successInput)).resolves.toEqual(paginateOutput);
+    await expect(usecase.execute(input)).resolves.toEqual(paginateOutput);
   });
 });

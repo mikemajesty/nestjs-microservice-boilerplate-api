@@ -101,7 +101,7 @@ export const SwaggerResponse = {
 
 export const SwaggerRequest = {
   createBody: Swagger.defaultRequestJSON({ ...input, id: undefined } as RoleEntity),
-  updateBody: Swagger.defaultRequestJSON({ ...input, id: '<id>' } as RoleEntity),
+  updateBody: Swagger.defaultRequestJSON({ name: input.name } as RoleEntity),
   listQuery: {
     pagination: {
       limit: Swagger.defaultApiQueryOptions({ example: 10, name: 'limit', required: false }),

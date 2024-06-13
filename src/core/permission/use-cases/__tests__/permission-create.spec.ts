@@ -8,12 +8,6 @@ import { PermissionEntity } from '../../entity/permission';
 import { IPermissionRepository } from '../../repository/permission';
 import { PermissionCreateInput, PermissionCreateOutput, PermissionCreateUsecase } from '../permission-create';
 
-const successInput: PermissionCreateInput = {
-  name: 'all'
-};
-
-const failureInput: PermissionCreateInput = {};
-
 describe(PermissionCreateUsecase.name, () => {
   let usecase: IPermissionCreateAdapter;
   let repository: IPermissionRepository;
@@ -47,18 +41,22 @@ describe(PermissionCreateUsecase.name, () => {
 
   test('when no input is specified, should expect an error', async () => {
     await expectZodError(
-      () => usecase.execute(failureInput),
+      () => usecase.execute({}),
       (issues) => {
         expect(issues).toEqual([{ message: 'Required', path: PermissionEntity.nameOf('name') }]);
       }
     );
   });
 
+  const input: PermissionCreateInput = {
+    name: 'all'
+  };
+
   test('when permission created successfully, should expect a permission that has been created', async () => {
     const createOutput: PermissionCreateOutput = { created: true, id: getMockUUID() };
 
     repository.create = jest.fn().mockResolvedValue(createOutput);
 
-    await expect(usecase.execute(successInput)).resolves.toEqual(createOutput);
+    await expect(usecase.execute(input)).resolves.toEqual(createOutput);
   });
 });

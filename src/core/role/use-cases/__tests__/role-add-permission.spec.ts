@@ -41,10 +41,9 @@ describe(RoleAddPermissionUsecase.name, () => {
     permissionRepository = app.get(IPermissionRepository);
   });
 
-  const failureInput: RoleAddPermissionInput = {};
   test('when no input is specified, should expect an error', async () => {
     await expectZodError(
-      () => usecase.execute(failureInput),
+      () => usecase.execute({}),
       (issues) => {
         expect(issues).toEqual([
           { message: 'Required', path: RoleEntity.nameOf('id') },
@@ -54,22 +53,25 @@ describe(RoleAddPermissionUsecase.name, () => {
     );
   });
 
-  const successInput: RoleAddPermissionInput = {
+  const input: RoleAddPermissionInput = {
     id: getMockUUID(),
     permissions: ['user:create', 'user:list']
   };
   test('when role not exists, should expect an error', async () => {
     repository.findOne = jest.fn().mockResolvedValue(null);
-    await expect(usecase.execute(successInput)).rejects.toThrow(ApiNotFoundException);
+    await expect(usecase.execute(input)).rejects.toThrow(ApiNotFoundException);
   });
 
-  const permissions = [new PermissionEntity({ name: 'user:create' }), new PermissionEntity({ name: 'user:update' })];
-  const roleOutput = new RoleEntity({ name: RoleEnum.USER, permissions });
+  const permissionsOutput = [
+    new PermissionEntity({ name: 'user:create' }),
+    new PermissionEntity({ name: 'user:update' })
+  ];
+  const roleOutput = new RoleEntity({ name: RoleEnum.USER, permissions: permissionsOutput });
   test('when delete permission with associated permission succcessfully, should expect an update permission', async () => {
     repository.findOne = jest.fn().mockResolvedValue(roleOutput);
-    permissionRepository.findIn = jest.fn().mockResolvedValue(permissions);
+    permissionRepository.findIn = jest.fn().mockResolvedValue(permissionsOutput);
     repository.create = jest.fn();
-    await expect(usecase.execute(successInput)).resolves.toBeUndefined();
+    await expect(usecase.execute(input)).resolves.toBeUndefined();
     expect(repository.create).toHaveBeenCalled();
   });
 
@@ -78,9 +80,9 @@ describe(RoleAddPermissionUsecase.name, () => {
       ...roleOutput,
       permissions: roleOutput.permissions.filter((p) => p.name !== 'user:create')
     });
-    permissionRepository.findIn = jest.fn().mockResolvedValue(permissions);
+    permissionRepository.findIn = jest.fn().mockResolvedValue(permissionsOutput);
     repository.create = jest.fn();
-    await expect(usecase.execute({ ...successInput, permissions: ['user:create'] })).resolves.toBeUndefined();
+    await expect(usecase.execute({ ...input, permissions: ['user:create'] })).resolves.toBeUndefined();
     expect(repository.create).toHaveBeenCalled();
   });
 });

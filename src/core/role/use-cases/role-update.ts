@@ -10,7 +10,9 @@ import { RoleEntity, RoleEntitySchema } from './../entity/role';
 
 export const RoleUpdateSchema = RoleEntitySchema.pick({
   id: true
-}).merge(RoleEntitySchema.omit({ id: true }).partial());
+})
+  .merge(RoleEntitySchema.pick({ name: true }).partial())
+  .strict();
 
 export type RoleUpdateInput = z.infer<typeof RoleUpdateSchema>;
 export type RoleUpdateOutput = RoleEntity;
@@ -29,9 +31,7 @@ export class RoleUpdateUsecase implements IUsecase {
       throw new ApiNotFoundException();
     }
 
-    const roleFinded = new RoleEntity(role);
-
-    const entity = new RoleEntity({ ...roleFinded, ...input });
+    const entity = new RoleEntity({ ...role, ...input });
 
     await this.roleRepository.updateOne({ id: entity.id }, entity);
 
