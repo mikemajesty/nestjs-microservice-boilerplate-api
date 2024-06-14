@@ -97,20 +97,5 @@ export const SwaggerRequest = {
   create: Swagger.defaultRequestJSON(UsersRequest.create),
   update: Swagger.defaultRequestJSON(UsersRequest.update),
   changePassword: Swagger.defaultRequestJSON(UsersRequest.changePassword),
-  list: {
-    pagination: {
-      limit: Swagger.defaultApiQueryOptions({ example: 10, name: 'limit', required: false }),
-      page: Swagger.defaultApiQueryOptions({ example: 1, name: 'page', required: false })
-    },
-    sort: Swagger.defaultApiQueryOptions({
-      name: 'sort',
-      required: false,
-      description: `<b>createdAt:desc,email:asc`
-    }),
-    search: Swagger.defaultApiQueryOptions({
-      name: 'search',
-      required: false,
-      description: `<b>propertyName1:value,propertyName2:value`
-    })
-  }
+  list: Swagger.defaultRequestListJSON()
 };

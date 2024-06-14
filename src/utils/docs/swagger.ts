@@ -116,6 +116,29 @@ export const Swagger = {
     };
   },
 
+  defaultRequestListJSON(): {
+    pagination: { limit: ApiQueryOptions; page: ApiQueryOptions };
+    sort: ApiQueryOptions;
+    search: ApiQueryOptions;
+  } {
+    return {
+      pagination: {
+        limit: Swagger.defaultApiQueryOptions({ example: 10, name: 'limit', required: false }),
+        page: Swagger.defaultApiQueryOptions({ example: 1, name: 'page', required: false })
+      },
+      sort: Swagger.defaultApiQueryOptions({
+        name: 'sort',
+        required: false,
+        description: `<b>propertyName1:desc,propertyName2:asc`
+      }),
+      search: Swagger.defaultApiQueryOptions({
+        name: 'search',
+        required: false,
+        description: `<b>propertyName1:value,propertyName2:value`
+      })
+    };
+  },
+
   defaultApiQueryOptions({ example, name, required, description }: ApiQueryOptions): ApiQueryOptions {
     return {
       schema: { example },

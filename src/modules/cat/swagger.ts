@@ -64,20 +64,5 @@ export const SwaggerResponse = {
 export const SwaggerRequest = {
   create: Swagger.defaultRequestJSON(CatsRequest.create),
   update: Swagger.defaultRequestJSON(CatsRequest.update),
-  list: {
-    pagination: {
-      limit: Swagger.defaultApiQueryOptions({ example: 10, name: 'limit', required: false }),
-      page: Swagger.defaultApiQueryOptions({ example: 1, name: 'page', required: false })
-    },
-    sort: Swagger.defaultApiQueryOptions({
-      name: 'sort',
-      required: false,
-      description: `<b>createdAt:desc,name:asc`
-    }),
-    search: Swagger.defaultApiQueryOptions({
-      name: 'search',
-      required: false,
-      description: `<b>propertyName1:value,propertyName2:value`
-    })
-  }
+  list: Swagger.defaultRequestListJSON()
 };
