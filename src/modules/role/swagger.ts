@@ -2,23 +2,25 @@ import { RoleRequest } from '@/utils/docs/data/role/request';
 import { RoleResponse } from '@/utils/docs/data/role/response';
 import { Swagger } from '@/utils/docs/swagger';
 
+const BASE_URL = 'api/v1/roles';
+
 export const SwaggerResponse = {
   create: {
     200: Swagger.defaultResponseJSON({
       status: 200,
       json: RoleResponse.create,
-      description: 'role created.'
+      description: 'create role.'
     })
   },
   update: {
     200: Swagger.defaultResponseJSON({
       status: 200,
       json: RoleResponse.update,
-      description: 'role updated.'
+      description: 'update role.'
     }),
     404: Swagger.defaultResponseError({
       status: 404,
-      route: 'api/v1/roles',
+      route: BASE_URL,
       message: 'roleNotFound',
       description: 'role not found.'
     })
@@ -27,11 +29,11 @@ export const SwaggerResponse = {
     200: Swagger.defaultResponseJSON({
       status: 200,
       json: RoleResponse.getById,
-      description: 'role found.'
+      description: 'get role.'
     }),
     404: Swagger.defaultResponseError({
       status: 404,
-      route: 'api/v1/roles/:id',
+      route: `${BASE_URL}/:id`,
       message: 'roleNotFound',
       description: 'role not found.'
     })
@@ -40,11 +42,11 @@ export const SwaggerResponse = {
     200: Swagger.defaultResponseJSON({
       status: 200,
       json: RoleResponse.delete,
-      description: 'role found.'
+      description: 'delete role.'
     }),
     404: Swagger.defaultResponseError({
       status: 404,
-      route: 'api/v1/roles/:id',
+      route: `${BASE_URL}/:id`,
       message: 'roleNotFound',
       description: 'role not found.'
     })
@@ -53,7 +55,7 @@ export const SwaggerResponse = {
     200: Swagger.defaultResponseJSON({
       status: 200,
       json: RoleResponse.list,
-      description: 'role created.'
+      description: 'list role.'
     })
   },
   removePermissions: {
@@ -63,7 +65,7 @@ export const SwaggerResponse = {
     }),
     404: Swagger.defaultResponseError({
       status: 404,
-      route: 'api/v1/roles/remove-permissions/:id',
+      route: `${BASE_URL}/remove-permissions/:id`,
       message: 'roleNotFound',
       description: 'role not found.'
     })
@@ -75,7 +77,7 @@ export const SwaggerResponse = {
     }),
     404: Swagger.defaultResponseError({
       status: 404,
-      route: 'api/v1/roles/add-permissions/:id',
+      route: `${BASE_URL}/add-permissions/:id`,
       message: 'roleNotFound',
       description: 'role not found.'
     })
