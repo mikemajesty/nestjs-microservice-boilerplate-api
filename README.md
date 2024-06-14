@@ -186,6 +186,7 @@ Creating a CRUD in Postgres and Mongo in seconds.
 .
 ├── CHANGELOG.md
 ├── commitlint.config.js
+├── diagram.png
 ├── docker
 │   ├── collector
 │   │   └── collector-config.yaml
@@ -202,14 +203,13 @@ Creating a CRUD in Postgres and Mongo in seconds.
 ├── jest.config.ts
 ├── nest-cli.json
 ├── package.json
-├── package-lock.json
 ├── README.md
 ├── scripts
 │   └── npm-audit.sh
 ├── src
 │   ├── app.module.ts
 │   ├── core
-│   │   ├── cats
+│   │   ├── cat
 │   │   │   ├── entity
 │   │   │   │   └── cats.ts
 │   │   │   ├── repository
@@ -226,6 +226,23 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │   │   │           ├── cats-list.spec.ts
 │   │   │           ├── cats-update.spec.ts
 │   │   │           └── user-get-by-id.spec.ts
+│   │   ├── permission
+│   │   │   ├── entity
+│   │   │   │   └── permission.ts
+│   │   │   ├── repository
+│   │   │   │   └── permission.ts
+│   │   │   └── use-cases
+│   │   │       ├── permission-create.ts
+│   │   │       ├── permission-delete.ts
+│   │   │       ├── permission-get-by-id.ts
+│   │   │       ├── permission-list.ts
+│   │   │       ├── permission-update.ts
+│   │   │       └── __tests__
+│   │   │           ├── permission-create.spec.ts
+│   │   │           ├── permission-delete.spec.ts
+│   │   │           ├── permission-get-by-id.spec.ts
+│   │   │           ├── permission-list.spec.ts
+│   │   │           └── permission-update.spec.ts
 │   │   ├── reset-password
 │   │   │   ├── entity
 │   │   │   │   └── reset-password.ts
@@ -237,6 +254,27 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │   │   │       └── __tests__
 │   │   │           ├── confirm.spec.ts
 │   │   │           └── send-email.spec.ts
+│   │   ├── role
+│   │   │   ├── entity
+│   │   │   │   └── role.ts
+│   │   │   ├── repository
+│   │   │   │   └── role.ts
+│   │   │   └── use-cases
+│   │   │       ├── role-add-permission.ts
+│   │   │       ├── role-create.ts
+│   │   │       ├── role-delete-permission.ts
+│   │   │       ├── role-delete.ts
+│   │   │       ├── role-get-by-id.ts
+│   │   │       ├── role-list.ts
+│   │   │       ├── role-update.ts
+│   │   │       └── __tests__
+│   │   │           ├── role-add-permission.spec.ts
+│   │   │           ├── role-create.spec.ts
+│   │   │           ├── role-delete-permission.spec.ts
+│   │   │           ├── role-delete.spec.ts
+│   │   │           ├── role-get-by-id.spec.ts
+│   │   │           ├── role-list.spec.ts
+│   │   │           └── role-update.spec.ts
 │   │   └── user
 │   │       ├── entity
 │   │       │   ├── user-password.ts
@@ -293,13 +331,23 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │   │   │   │   ├── config.ts
 │   │   │   │   ├── index.ts
 │   │   │   │   ├── migrations
+│   │   │   │   │   ├── 1717769593555-createPermissionTable.ts
+│   │   │   │   │   ├── 1717769593666-createRoleTable.ts
+│   │   │   │   │   ├── 1717769593777-createRolesPermissionsTable.ts
 │   │   │   │   │   ├── 1717769593778-createUsersPasswordTable.ts
 │   │   │   │   │   ├── 1717773444116-createUserTable.ts
+│   │   │   │   │   ├── 1717773444118-addRoleIdToUserTable.ts
+│   │   │   │   │   ├── 1717773889333-insertPermissions.ts
 │   │   │   │   │   ├── 1717773889351-insertDefaultUser.ts
-│   │   │   │   │   └── 1717976911236-createResetPasswordTable.ts
+│   │   │   │   │   ├── 1717976911236-createResetPasswordTable.ts
+│   │   │   │   │   ├── 1718133311187-changeResetPasswordCascadeOptions.ts
+│   │   │   │   │   ├── 1718138151111-addUniqueToRoleAndPermissionName.ts
+│   │   │   │   │   └── 1718294246477-addCOntraintsToPermissionsRole.ts
 │   │   │   │   ├── module.ts
 │   │   │   │   ├── schemas
+│   │   │   │   │   ├── permission.ts
 │   │   │   │   │   ├── resetPassword.ts
+│   │   │   │   │   ├── role.ts
 │   │   │   │   │   ├── userPassword.ts
 │   │   │   │   │   └── user.ts
 │   │   │   │   └── service.ts
@@ -371,7 +419,7 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │   │       └── service.ts
 │   ├── main.ts
 │   ├── modules
-│   │   ├── cats
+│   │   ├── cat
 │   │   │   ├── adapter.ts
 │   │   │   ├── controller.ts
 │   │   │   ├── module.ts
@@ -392,7 +440,19 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │   │   │   ├── controller.ts
 │   │   │   ├── module.ts
 │   │   │   └── swagger.ts
+│   │   ├── permission
+│   │   │   ├── adapter.ts
+│   │   │   ├── controller.ts
+│   │   │   ├── module.ts
+│   │   │   ├── repository.ts
+│   │   │   └── swagger.ts
 │   │   ├── reset-password
+│   │   │   ├── adapter.ts
+│   │   │   ├── controller.ts
+│   │   │   ├── module.ts
+│   │   │   ├── repository.ts
+│   │   │   └── swagger.ts
+│   │   ├── role
 │   │   │   ├── adapter.ts
 │   │   │   ├── controller.ts
 │   │   │   ├── module.ts
@@ -442,7 +502,13 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │       │   └── validate-schema.decorator.ts
 │       ├── docs
 │       │   ├── data
-│       │   │   ├── cats
+│       │   │   ├── cat
+│       │   │   │   ├── request.ts
+│       │   │   │   └── response.ts
+│       │   │   ├── permission
+│       │   │   │   ├── request.ts
+│       │   │   │   └── response.ts
+│       │   │   ├── role
 │       │   │   │   ├── request.ts
 │       │   │   │   └── response.ts
 │       │   │   └── user

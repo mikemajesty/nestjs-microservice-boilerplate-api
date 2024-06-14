@@ -1,1 +1,0 @@
-- verificar transaction do postgress
