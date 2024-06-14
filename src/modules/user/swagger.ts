@@ -94,10 +94,10 @@ export const SwaggerResponse = {
 };
 
 export const SwaggerRequest = {
-  createBody: Swagger.defaultRequestJSON(UsersRequest.create),
-  updateBody: Swagger.defaultRequestJSON(UsersRequest.update),
+  create: Swagger.defaultRequestJSON(UsersRequest.create),
+  update: Swagger.defaultRequestJSON(UsersRequest.update),
   changePassword: Swagger.defaultRequestJSON(UsersRequest.changePassword),
-  listQuery: {
+  list: {
     pagination: {
       limit: Swagger.defaultApiQueryOptions({ example: 10, name: 'limit', required: false }),
       page: Swagger.defaultApiQueryOptions({ example: 1, name: 'page', required: false })

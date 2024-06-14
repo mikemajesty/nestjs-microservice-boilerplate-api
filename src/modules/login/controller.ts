@@ -15,7 +15,7 @@ export class LoginController {
   @Post('/login')
   @ApiResponse(SwaggerResponse.login[200])
   @ApiResponse(SwaggerResponse.login[404])
-  @ApiBody(SwaggerRequest.body)
+  @ApiBody(SwaggerRequest.login)
   @Version('1')
   async login(@Req() { body, user, tracing }: ApiRequest): LoginOutput {
     return this.loginUsecase.execute(body as LoginInput, { user, tracing });

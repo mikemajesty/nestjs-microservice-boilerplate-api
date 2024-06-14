@@ -39,7 +39,7 @@ export class RoleController {
 
   @Post()
   @ApiResponse(SwaggerResponse.create[200])
-  @ApiBody(SwaggerRequest.createBody)
+  @ApiBody(SwaggerRequest.create)
   @Permission('role:create')
   async create(@Req() { body }: ApiRequest): Promise<RoleCreateOutput> {
     return await this.createUsecase.execute(body as RoleCreateInput);
@@ -48,7 +48,7 @@ export class RoleController {
   @Put(':id')
   @ApiResponse(SwaggerResponse.update[200])
   @ApiResponse(SwaggerResponse.update[404])
-  @ApiBody(SwaggerRequest.updateBody)
+  @ApiBody(SwaggerRequest.update)
   @ApiParam({ name: 'id', required: true })
   @Permission('role:update')
   async update(@Req() { body, params }: ApiRequest): Promise<RoleUpdateOutput> {
@@ -65,10 +65,10 @@ export class RoleController {
   }
 
   @Get()
-  @ApiQuery(SwaggerRequest.listQuery.pagination.limit)
-  @ApiQuery(SwaggerRequest.listQuery.pagination.page)
-  @ApiQuery(SwaggerRequest.listQuery.sort)
-  @ApiQuery(SwaggerRequest.listQuery.search)
+  @ApiQuery(SwaggerRequest.list.pagination.limit)
+  @ApiQuery(SwaggerRequest.list.pagination.page)
+  @ApiQuery(SwaggerRequest.list.sort)
+  @ApiQuery(SwaggerRequest.list.search)
   @ApiResponse(SwaggerResponse.list[200])
   @Permission('role:list')
   async list(@Req() { query }: ApiRequest): Promise<RoleListOutput> {
@@ -93,7 +93,7 @@ export class RoleController {
 
   @Put('/add-permissions/:id')
   @ApiParam({ name: 'id', required: true })
-  @ApiBody(SwaggerRequest.addPermissions)
+  @ApiBody(SwaggerRequest.addPermission)
   @ApiResponse(SwaggerResponse.addPermissions[200])
   @ApiResponse(SwaggerResponse.addPermissions[404])
   @Permission('role:addpermission')
@@ -103,7 +103,7 @@ export class RoleController {
 
   @Put('/remove-permissions/:id')
   @ApiParam({ name: 'id', required: true })
-  @ApiBody(SwaggerRequest.deletePermissions)
+  @ApiBody(SwaggerRequest.deletePermission)
   @ApiResponse(SwaggerResponse.removePermissions[200])
   @ApiResponse(SwaggerResponse.removePermissions[404])
   @HttpCode(200)

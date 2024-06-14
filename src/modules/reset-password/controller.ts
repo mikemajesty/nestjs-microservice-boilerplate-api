@@ -19,7 +19,7 @@ export class ResetPasswordController {
   @Post('send-email')
   @ApiResponse(SwaggerResponse.sendEmail[200])
   @ApiResponse(SwaggerResponse.sendEmail[404])
-  @ApiBody(SwaggerRequest.sendEmailBody)
+  @ApiBody(SwaggerRequest.sendEmail)
   @Version('1')
   async sendEmail(@Req() { body }: ApiRequest): Promise<SendEmailResetPasswordOutput> {
     return await this.sendEmailUsecase.execute(body as SendEmailResetPasswordInput);

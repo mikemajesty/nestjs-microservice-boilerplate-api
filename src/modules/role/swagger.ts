@@ -85,9 +85,9 @@ export const SwaggerResponse = {
 };
 
 export const SwaggerRequest = {
-  createBody: Swagger.defaultRequestJSON(RoleRequest.create),
-  updateBody: Swagger.defaultRequestJSON(RoleRequest.update),
-  listQuery: {
+  create: Swagger.defaultRequestJSON(RoleRequest.create),
+  update: Swagger.defaultRequestJSON(RoleRequest.update),
+  list: {
     pagination: {
       limit: Swagger.defaultApiQueryOptions({ example: 10, name: 'limit', required: false }),
       page: Swagger.defaultApiQueryOptions({ example: 1, name: 'page', required: false })
@@ -103,6 +103,6 @@ export const SwaggerRequest = {
       description: '<b>propertyName:propertyValue'
     })
   },
-  addPermissions: Swagger.defaultRequestJSON(RoleRequest.addPermission),
-  deletePermissions: Swagger.defaultRequestJSON(RoleRequest.deletePermission)
+  addPermission: Swagger.defaultRequestJSON(RoleRequest.addPermission),
+  deletePermission: Swagger.defaultRequestJSON(RoleRequest.deletePermission)
 };

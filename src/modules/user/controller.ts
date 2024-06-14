@@ -38,7 +38,7 @@ export class UserController {
   @Post()
   @ApiResponse(SwaggerResponse.create[200])
   @ApiResponse(SwaggerResponse.create[409])
-  @ApiBody(SwaggerRequest.createBody)
+  @ApiBody(SwaggerRequest.create)
   @Version('1')
   @Permission('user:create')
   async create(@Req() { body, user, tracing }: ApiRequest): Promise<UserCreateOutput> {
@@ -49,7 +49,7 @@ export class UserController {
   @ApiResponse(SwaggerResponse.update[200])
   @ApiResponse(SwaggerResponse.update[404])
   @ApiResponse(SwaggerResponse.update[409])
-  @ApiBody(SwaggerRequest.updateBody)
+  @ApiBody(SwaggerRequest.update)
   @ApiParam({ name: 'id', required: true })
   @Version('1')
   @Permission('user:update')
@@ -58,10 +58,10 @@ export class UserController {
   }
 
   @Get()
-  @ApiQuery(SwaggerRequest.listQuery.pagination.limit)
-  @ApiQuery(SwaggerRequest.listQuery.pagination.page)
-  @ApiQuery(SwaggerRequest.listQuery.sort)
-  @ApiQuery(SwaggerRequest.listQuery.search)
+  @ApiQuery(SwaggerRequest.list.pagination.limit)
+  @ApiQuery(SwaggerRequest.list.pagination.page)
+  @ApiQuery(SwaggerRequest.list.sort)
+  @ApiQuery(SwaggerRequest.list.search)
   @ApiResponse(SwaggerResponse.list[200])
   @Version('1')
   @Permission('user:list')

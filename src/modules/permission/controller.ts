@@ -34,7 +34,7 @@ export class PermissionController {
 
   @Post()
   @ApiResponse(SwaggerResponse.create[200])
-  @ApiBody(SwaggerRequest.createBody)
+  @ApiBody(SwaggerRequest.create)
   @Permission('permission:create')
   async create(@Req() { body }: ApiRequest): Promise<PermissionCreateOutput> {
     return await this.createUsecase.execute(body as PermissionCreateInput);
@@ -43,7 +43,7 @@ export class PermissionController {
   @Put(':id')
   @ApiResponse(SwaggerResponse.update[200])
   @ApiResponse(SwaggerResponse.update[404])
-  @ApiBody(SwaggerRequest.updateBody)
+  @ApiBody(SwaggerRequest.update)
   @ApiParam({ name: 'id', required: true })
   @Permission('permission:update')
   async update(@Req() { body, params }: ApiRequest): Promise<PermissionUpdateOutput> {
@@ -60,10 +60,10 @@ export class PermissionController {
   }
 
   @Get()
-  @ApiQuery(SwaggerRequest.listQuery.pagination.limit)
-  @ApiQuery(SwaggerRequest.listQuery.pagination.page)
-  @ApiQuery(SwaggerRequest.listQuery.sort)
-  @ApiQuery(SwaggerRequest.listQuery.search)
+  @ApiQuery(SwaggerRequest.list.pagination.limit)
+  @ApiQuery(SwaggerRequest.list.pagination.page)
+  @ApiQuery(SwaggerRequest.list.sort)
+  @ApiQuery(SwaggerRequest.list.search)
   @ApiResponse(SwaggerResponse.list[200])
   @Permission('permission:list')
   async list(@Req() { query }: ApiRequest): Promise<PermissionListOutput> {

@@ -20,7 +20,7 @@ export const SwaggerResponse = {
 };
 
 export const SwaggerRequest = {
-  body: Swagger.defaultRequestJSON({
+  login: Swagger.defaultRequestJSON({
     email: 'admin@admin.com',
     password: 'admin'
   } as LoginInput)

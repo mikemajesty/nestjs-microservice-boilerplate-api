@@ -16,7 +16,7 @@ export class LogoutController {
 
   @Post('/logout')
   @ApiResponse(SwaggerResponse.logout[401])
-  @ApiBody(SwaggerRequest.body)
+  @ApiBody(SwaggerRequest.logout)
   @HttpCode(401)
   @Version('1')
   @Permission('user:logout')
