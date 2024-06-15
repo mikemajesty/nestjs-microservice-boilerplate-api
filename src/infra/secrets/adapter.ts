@@ -45,4 +45,12 @@ export abstract class ISecretsAdapter {
   IS_LOCAL: boolean;
 
   IS_PRODUCTION: boolean;
+
+  AUTH: {
+    GOOGLE?: {
+      CLIENT_ID?: string;
+      CLIENT_SECRET?: string;
+      REDIRECT_URL?: string;
+    };
+  };
 }

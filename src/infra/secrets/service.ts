@@ -56,4 +56,12 @@ export class SecretsService implements ISecretsAdapter {
   TOKEN_EXPIRATION = this.config.get<number | string>('TOKEN_EXPIRATION');
 
   JWT_SECRET_KEY = this.config.get('JWT_SECRET_KEY');
+
+  AUTH = {
+    GOOGLE: {
+      CLIENT_ID: this.config.get('GOOGLE_CLIENT_ID'),
+      CLIENT_SECRET: this.config.get('GOOGLE_CLIENT_SECRET'),
+      REDIRECT_URL: this.config.get('GOOGLE_REDIRECT_URI')
+    }
+  };
 }

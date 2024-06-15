@@ -49,6 +49,13 @@ import { EnvEnum } from './types';
             USER: z.string(),
             PASS: z.string(),
             FROM: z.string().email()
+          }),
+          AUTH: z.object({
+            GOOGLE: z.object({
+              CLIENT_ID: z.string(),
+              CLIENT_SECRET: z.string(),
+              REDIRECT_URL: z.string().url()
+            })
           })
         });
         const secret = new SecretsService(config);
