@@ -10,7 +10,7 @@ export const SwaggerResponse = {
 };
 
 export const SwaggerRequest = {
-  body: Swagger.defaultRequestJSON({
+  logout: Swagger.defaultRequestJSON({
     token: '<token>'
   })
 };

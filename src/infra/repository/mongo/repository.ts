@@ -8,7 +8,7 @@ import {
   UpdateWithAggregationPipeline
 } from 'mongoose';
 
-import { ConvertMongoFilterToBaseRepository } from '@/common/decorators';
+import { ConvertMongoFilterToBaseRepository } from '@/utils/decorators';
 import { ApiBadRequestException } from '@/utils/exception';
 
 import { IRepository } from '../adapter';
@@ -92,7 +92,7 @@ export class MongoRepository<T extends Document> implements IRepository<T> {
     updated: UpdateWithAggregationPipeline | UpdateQuery<T>,
     options?: unknown
   ): Promise<UpdatedModel> {
-    return await this.model.updateOne(filter, { $set: updated }, options);
+    return await this.model.updateOne(filter, { $set: Object.assign({}, updated) }, options);
   }
 
   @ConvertMongoFilterToBaseRepository()

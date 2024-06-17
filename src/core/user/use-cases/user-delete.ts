@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { ValidateSchema } from '@/common/decorators';
+import { ValidateSchema } from '@/utils/decorators';
 import { ApiNotFoundException } from '@/utils/exception';
 import { ApiTrancingInput } from '@/utils/request';
 import { IUsecase } from '@/utils/usecase';
@@ -20,22 +20,18 @@ export class UserDeleteUsecase implements IUsecase {
 
   @ValidateSchema(UserDeleteSchema)
   async execute({ id }: UserDeleteInput, { tracing, user: userData }: ApiTrancingInput): Promise<UserDeleteOutput> {
-    const entity = await this.userRepository.findById(id);
+    const user = await this.userRepository.findOneWithRelation({ id }, { password: true, role: true });
 
-    if (!entity) {
-      throw new ApiNotFoundException();
+    if (!user) {
+      throw new ApiNotFoundException('userNotFound');
     }
 
-    const user = new UserEntity(entity);
+    const userEntity = new UserEntity(user);
 
-    user.setDeleted();
+    await this.userRepository.softRemove(userEntity);
 
-    await this.userRepository.updateOne({ id: user.id }, user);
+    tracing.logEvent('user-deleted', `user: ${user.email} deleted by: ${userData.email}`);
 
-    user.anonymizePassword();
-
-    tracing.logEvent('user-deleted', `user: ${entity.login} deleted by: ${userData.login}`);
-
-    return user;
+    return userEntity;
   }
 }

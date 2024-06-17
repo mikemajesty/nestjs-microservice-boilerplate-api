@@ -72,7 +72,7 @@ export class LoggerService implements ILoggerAdapter {
     this.logger.logger.warn([obj, message].find(Boolean), message);
   }
 
-  error(error: ErrorType, message?: string, context?: string): void {
+  error(error: ErrorType, message?: string): void {
     const errorResponse = this.getErrorResponse(error);
 
     const response =
@@ -86,11 +86,15 @@ export class LoggerService implements ILoggerAdapter {
 
     const messages = [message, response?.message, error.message].find(Boolean);
 
+    if (error?.name === 'QueryFailedError') {
+      Object.assign(error, { parameters: undefined });
+    }
+
     const typeError = [type, error?.name === 'ZodError' ? ApiBadRequestException.name : error?.name].find(Boolean);
     this.logger.logger.error(
       {
         ...response,
-        context: error?.context ?? context,
+        context: error?.context,
         type: type,
         traceid: this.getTraceId(error),
         createdAt: DateUtils.getISODateString(),
@@ -103,7 +107,7 @@ export class LoggerService implements ILoggerAdapter {
     );
   }
 
-  fatal(error: ErrorType, message?: string, context?: string): void {
+  fatal(error: ErrorType, message?: string): void {
     const messages = [error.message, message].find(Boolean);
 
     const type = {
@@ -114,7 +118,7 @@ export class LoggerService implements ILoggerAdapter {
     this.logger.logger.fatal(
       {
         message: typeof messages === 'string' ? [messages] : messages,
-        context: error?.context ?? context,
+        context: error?.context,
         type: error.name,
         traceid: this.getTraceId(error),
         createdAt: DateUtils.getISODateString(),

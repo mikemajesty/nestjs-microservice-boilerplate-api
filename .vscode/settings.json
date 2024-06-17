@@ -1,31 +1,31 @@
 {
   "editor.tabSize": 2,
   "editor.codeActionsOnSave": {
-    "source.fixAll": "explicit",
-    "source.organizeImports": "never"
+    "source.fixAll": "always",
+    "source.organizeImports": "always"
   },
   "[typescript]": {
     "editor.codeActionsOnSave": {
-      "source.fixAll": "explicit",
-      "source.organizeImports": "never"
+      "source.fixAll": "always",
+      "source.organizeImports": "always"
     },
     "editor.formatOnSave": true,
   },
   "[javascript]": {
     "editor.codeActionsOnSave": {
-      "source.fixAll": "explicit",
-      "source.organizeImports": "never"
+      "source.fixAll": "always",
+      "source.organizeImports": "always"
     },
     "editor.formatOnSave": true,
   },
   "editor.formatOnSave": true,
-  "editor.detectIndentation": false,
+  "editor.detectIndentation": true,
   "javascript.format.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces": false,
   "typescript.format.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces": false,
   "[javascript][typescript]": {
     "editor.codeActionsOnSave": {
-      "source.fixAll": "explicit",
-      "source.organizeImports": "never"
+      "source.fixAll": "always",
+      "source.organizeImports": "always"
     }
   },
 }

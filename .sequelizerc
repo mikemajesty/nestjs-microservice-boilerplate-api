@@ -1,9 +1,0 @@
-const path = require('path');
-require('dotenv').config();
-
-module.exports = {
-  'env': process.env['NODE_ENV'].toLowerCase(),
-  'config': path.resolve('./src/infra/database/postgres', 'config.js'),
-  'models-path': path.resolve('./src/infra/database/postgres/schemas'),
-  'migrations-path': path.resolve('./src/infra/database/postgres', 'migrations')
-};

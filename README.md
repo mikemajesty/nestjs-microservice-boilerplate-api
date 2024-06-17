@@ -102,6 +102,7 @@ Creating a CRUD in Postgres and Mongo in seconds.
   ```
 
 ### Mongo migrations
+
 - create
   ```
   $ yarn migration-mongo:create
@@ -134,6 +135,10 @@ Creating a CRUD in Postgres and Mongo in seconds.
   $ yarn prettier
   ```
 
+### User diagram
+
+![alt text](diagram.png)
+
 ### Microservice architecture.
 
 - I18n
@@ -151,6 +156,7 @@ Creating a CRUD in Postgres and Mongo in seconds.
 - Authentication
   - Login
   - Logout
+  - Forgot Password
 - Authorization
   - Role-based access
 - Error Handler
@@ -160,7 +166,7 @@ Creating a CRUD in Postgres and Mongo in seconds.
 - Interface Adapter Pattern
 - Generic Repository Pattern
   - Mongo Repository (mongoose)
-  - Postgres Repository (sequelize)
+  - Postgres Repository (TypeORM)
 - Swagger Documentation
 - Cache Service
   - Redis
@@ -168,11 +174,8 @@ Creating a CRUD in Postgres and Mongo in seconds.
 - Database
   - mongo
     - Migrations
-    - Replica set
-    - Transaction session
   - postgres
     - Migrations
-    - Transaction session
 - Tests
   - unit
   - 100% coverage
@@ -182,10 +185,8 @@ Creating a CRUD in Postgres and Mongo in seconds.
 ```
 .
 ├── CHANGELOG.md
-├── Dockerfile
-├── README.md
-├── TRACING.md
 ├── commitlint.config.js
+├── diagram.png
 ├── docker
 │   ├── collector
 │   │   └── collector-config.yaml
@@ -198,68 +199,91 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │       └── config.yml
 ├── docker-compose-infra.yml
 ├── docker-compose.yml
+├── Dockerfile
 ├── jest.config.ts
 ├── nest-cli.json
-├── package-lock.json
 ├── package.json
+├── README.md
 ├── scripts
 │   └── npm-audit.sh
 ├── src
 │   ├── app.module.ts
-│   ├── common
-│   │   ├── decorators
-│   │   │   ├── database
-│   │   │   │   ├── mongo
-│   │   │   │   │   ├── convert-mongoose-filter.decorator.ts
-│   │   │   │   │   └── validate-mongoose-filter.decorator.ts
-│   │   │   │   ├── postgres
-│   │   │   │   │   ├── convert-paginate-input-to-sequelize-filter.decorator.ts
-│   │   │   │   │   └── convert-sequelize-filter.decorator.ts
-│   │   │   │   └── validate-database-sort-allowed.decorator.ts
-│   │   │   ├── index.ts
-│   │   │   ├── request-timeout.decorator.ts
-│   │   │   ├── role.decorator.ts
-│   │   │   ├── types.ts
-│   │   │   └── validate-schema.decorator.ts
-│   │   ├── filters
-│   │   │   ├── http-exception.filter.ts
-│   │   │   └── index.ts
-│   │   ├── interceptors
-│   │   │   ├── auth-guard.interceptor.ts
-│   │   │   ├── http-exception.interceptor.ts
-│   │   │   ├── http-logger.interceptor.ts
-│   │   │   ├── index.ts
-│   │   │   ├── metrics.interceptor.ts
-│   │   │   ├── request-timeout.interceptor.ts
-│   │   │   └── tracing.interceptor.ts
-│   │   └── middlewares
-│   │       ├── index.ts
-│   │       └── is-logged.middleware.ts
 │   ├── core
-│   │   ├── cats
+│   │   ├── cat
 │   │   │   ├── entity
 │   │   │   │   └── cats.ts
 │   │   │   ├── repository
 │   │   │   │   └── cats.ts
 │   │   │   └── use-cases
-│   │   │       ├── __tests__
-│   │   │       │   ├── cats-create.spec.ts
-│   │   │       │   ├── cats-delete.spec.ts
-│   │   │       │   ├── cats-list.spec.ts
-│   │   │       │   ├── cats-update.spec.ts
-│   │   │       │   └── user-get-by-id.spec.ts
 │   │   │       ├── cats-create.ts
 │   │   │       ├── cats-delete.ts
 │   │   │       ├── cats-get-by-id.ts
 │   │   │       ├── cats-list.ts
-│   │   │       └── cats-update.ts
+│   │   │       ├── cats-update.ts
+│   │   │       └── __tests__
+│   │   │           ├── cats-create.spec.ts
+│   │   │           ├── cats-delete.spec.ts
+│   │   │           ├── cats-list.spec.ts
+│   │   │           ├── cats-update.spec.ts
+│   │   │           └── user-get-by-id.spec.ts
+│   │   ├── permission
+│   │   │   ├── entity
+│   │   │   │   └── permission.ts
+│   │   │   ├── repository
+│   │   │   │   └── permission.ts
+│   │   │   └── use-cases
+│   │   │       ├── permission-create.ts
+│   │   │       ├── permission-delete.ts
+│   │   │       ├── permission-get-by-id.ts
+│   │   │       ├── permission-list.ts
+│   │   │       ├── permission-update.ts
+│   │   │       └── __tests__
+│   │   │           ├── permission-create.spec.ts
+│   │   │           ├── permission-delete.spec.ts
+│   │   │           ├── permission-get-by-id.spec.ts
+│   │   │           ├── permission-list.spec.ts
+│   │   │           └── permission-update.spec.ts
+│   │   ├── reset-password
+│   │   │   ├── entity
+│   │   │   │   └── reset-password.ts
+│   │   │   ├── repository
+│   │   │   │   └── reset-password.ts
+│   │   │   └── use-cases
+│   │   │       ├── confirm.ts
+│   │   │       ├── send-email.ts
+│   │   │       └── __tests__
+│   │   │           ├── confirm.spec.ts
+│   │   │           └── send-email.spec.ts
+│   │   ├── role
+│   │   │   ├── entity
+│   │   │   │   └── role.ts
+│   │   │   ├── repository
+│   │   │   │   └── role.ts
+│   │   │   └── use-cases
+│   │   │       ├── role-add-permission.ts
+│   │   │       ├── role-create.ts
+│   │   │       ├── role-delete-permission.ts
+│   │   │       ├── role-delete.ts
+│   │   │       ├── role-get-by-id.ts
+│   │   │       ├── role-list.ts
+│   │   │       ├── role-update.ts
+│   │   │       └── __tests__
+│   │   │           ├── role-add-permission.spec.ts
+│   │   │           ├── role-create.spec.ts
+│   │   │           ├── role-delete-permission.spec.ts
+│   │   │           ├── role-delete.spec.ts
+│   │   │           ├── role-get-by-id.spec.ts
+│   │   │           ├── role-list.spec.ts
+│   │   │           └── role-update.spec.ts
 │   │   └── user
 │   │       ├── entity
+│   │       │   ├── user-password.ts
 │   │       │   └── user.ts
 │   │       ├── repository
 │   │       │   └── user.ts
 │   │       └── use-cases
 │   │           ├── __tests__
+│   │           │   ├── user-change-password.spec.ts
 │   │           │   ├── user-create.spec.ts
 │   │           │   ├── user-delete.spec.ts
 │   │           │   ├── user-get-by-id.spec.ts
@@ -267,6 +291,7 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │   │           │   ├── user-login.spec.ts
 │   │           │   ├── user-logout.spec.ts
 │   │           │   └── user-update.spec.ts
+│   │           ├── user-change-password.ts
 │   │           ├── user-create.ts
 │   │           ├── user-delete.ts
 │   │           ├── user-get-by-id.ts
@@ -297,22 +322,45 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │   │   │   │   ├── config.ts
 │   │   │   │   ├── index.ts
 │   │   │   │   ├── migrations
-│   │   │   │   │   ├── 1709943706267_create-user-collection.ts
-│   │   │   │   │   └── 1709944044583_create-user-default.ts
+│   │   │   │   │   └── 1709943706267_createCatsCollection.ts
 │   │   │   │   ├── module.ts
 │   │   │   │   ├── schemas
-│   │   │   │   │   └── user.ts
+│   │   │   │   │   └── cat.ts
 │   │   │   │   └── service.ts
 │   │   │   ├── postgres
-│   │   │   │   ├── config.js
+│   │   │   │   ├── config.ts
 │   │   │   │   ├── index.ts
 │   │   │   │   ├── migrations
-│   │   │   │   │   └── 20230416174316-create-cats-table.js
+│   │   │   │   │   ├── 1717769593555-createPermissionTable.ts
+│   │   │   │   │   ├── 1717769593666-createRoleTable.ts
+│   │   │   │   │   ├── 1717769593777-createRolesPermissionsTable.ts
+│   │   │   │   │   ├── 1717769593778-createUsersPasswordTable.ts
+│   │   │   │   │   ├── 1717773444116-createUserTable.ts
+│   │   │   │   │   ├── 1717773444118-addRoleIdToUserTable.ts
+│   │   │   │   │   ├── 1717773889333-insertPermissions.ts
+│   │   │   │   │   ├── 1717773889351-insertDefaultUser.ts
+│   │   │   │   │   ├── 1717976911236-createResetPasswordTable.ts
+│   │   │   │   │   ├── 1718133311187-changeResetPasswordCascadeOptions.ts
+│   │   │   │   │   ├── 1718138151111-addUniqueToRoleAndPermissionName.ts
+│   │   │   │   │   └── 1718294246477-addCOntraintsToPermissionsRole.ts
 │   │   │   │   ├── module.ts
 │   │   │   │   ├── schemas
-│   │   │   │   │   └── cats.ts
+│   │   │   │   │   ├── permission.ts
+│   │   │   │   │   ├── resetPassword.ts
+│   │   │   │   │   ├── role.ts
+│   │   │   │   │   ├── userPassword.ts
+│   │   │   │   │   └── user.ts
 │   │   │   │   └── service.ts
 │   │   │   └── types.ts
+│   │   ├── email
+│   │   │   ├── adapter.ts
+│   │   │   ├── index.ts
+│   │   │   ├── module.ts
+│   │   │   ├── service.ts
+│   │   │   └── templates
+│   │   │       ├── reque-reset-password.handlebars
+│   │   │       ├── reset-password.handlebars
+│   │   │       └── welcome.handlebars
 │   │   ├── http
 │   │   │   ├── adapter.ts
 │   │   │   ├── index.ts
@@ -338,31 +386,50 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │   │       ├── adapter.ts
 │   │       ├── index.ts
 │   │       ├── module.ts
-│   │       └── service.ts
+│   │       ├── service.ts
+│   │       └── types.ts
 │   ├── libs
-│   │   ├── auth
+│   │   ├── crypto
 │   │   │   ├── adapter.ts
 │   │   │   ├── index.ts
 │   │   │   ├── module.ts
 │   │   │   └── service.ts
-│   │   └── crypto
+│   │   ├── event
+│   │   │   ├── adapter.ts
+│   │   │   ├── index.ts
+│   │   │   ├── module.ts
+│   │   │   ├── service.ts
+│   │   │   └── types.ts
+│   │   ├── i18n
+│   │   │   ├── adapter.ts
+│   │   │   ├── index.ts
+│   │   │   ├── languages
+│   │   │   │   ├── en
+│   │   │   │   │   └── info.json
+│   │   │   │   └── pt
+│   │   │   │       └── info.json
+│   │   │   ├── module.ts
+│   │   │   ├── service.ts
+│   │   │   └── types.ts
+│   │   ├── module.ts
+│   │   └── token
 │   │       ├── adapter.ts
 │   │       ├── index.ts
 │   │       ├── module.ts
 │   │       └── service.ts
 │   ├── main.ts
 │   ├── modules
-│   │   ├── cats
+│   │   ├── cat
 │   │   │   ├── adapter.ts
 │   │   │   ├── controller.ts
 │   │   │   ├── module.ts
 │   │   │   ├── repository.ts
 │   │   │   └── swagger.ts
 │   │   ├── health
-│   │   │   ├── __tests__
-│   │   │   │   └── controller.spec.ts
 │   │   │   ├── controller.ts
-│   │   │   └── module.ts
+│   │   │   ├── module.ts
+│   │   │   └── __tests__
+│   │   │       └── controller.spec.ts
 │   │   ├── login
 │   │   │   ├── adapter.ts
 │   │   │   ├── controller.ts
@@ -373,22 +440,75 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │   │   │   ├── controller.ts
 │   │   │   ├── module.ts
 │   │   │   └── swagger.ts
+│   │   ├── permission
+│   │   │   ├── adapter.ts
+│   │   │   ├── controller.ts
+│   │   │   ├── module.ts
+│   │   │   ├── repository.ts
+│   │   │   └── swagger.ts
+│   │   ├── reset-password
+│   │   │   ├── adapter.ts
+│   │   │   ├── controller.ts
+│   │   │   ├── module.ts
+│   │   │   ├── repository.ts
+│   │   │   └── swagger.ts
+│   │   ├── role
+│   │   │   ├── adapter.ts
+│   │   │   ├── controller.ts
+│   │   │   ├── module.ts
+│   │   │   ├── repository.ts
+│   │   │   └── swagger.ts
 │   │   └── user
 │   │       ├── adapter.ts
 │   │       ├── controller.ts
 │   │       ├── module.ts
 │   │       ├── repository.ts
 │   │       └── swagger.ts
+│   ├── observables
+│   │   ├── filters
+│   │   │   ├── http-exception.filter.ts
+│   │   │   └── index.ts
+│   │   ├── guards
+│   │   │   ├── auth.guard.ts
+│   │   │   └── index.ts
+│   │   ├── interceptors
+│   │   │   ├── http-exception.interceptor.ts
+│   │   │   ├── http-logger.interceptor.ts
+│   │   │   ├── index.ts
+│   │   │   ├── metrics.interceptor.ts
+│   │   │   ├── request-timeout.interceptor.ts
+│   │   │   └── tracing.interceptor.ts
+│   │   └── middlewares
+│   │       ├── index.ts
+│   │       └── is-logged.middleware.ts
 │   └── utils
 │       ├── axios.ts
 │       ├── collection.ts
 │       ├── database
-│       │   ├── mongoose.ts
-│       │   └── sequelize.ts
+│       │   └── mongoose.ts
 │       ├── date.ts
+│       ├── decorators
+│       │   ├── database
+│       │   │   ├── mongo
+│       │   │   │   ├── convert-mongoose-filter.decorator.ts
+│       │   │   │   └── validate-mongoose-filter.decorator.ts
+│       │   │   ├── postgres
+│       │   │   │   └── convert-paginate-input-to-typeorm-filter.decorator.ts
+│       │   │   └── validate-database-sort-allowed.decorator.ts
+│       │   ├── index.ts
+│       │   ├── request-timeout.decorator.ts
+│       │   ├── role.decorator.ts
+│       │   ├── types.ts
+│       │   └── validate-schema.decorator.ts
 │       ├── docs
 │       │   ├── data
-│       │   │   ├── cats
+│       │   │   ├── cat
+│       │   │   │   ├── request.ts
+│       │   │   │   └── response.ts
+│       │   │   ├── permission
+│       │   │   │   ├── request.ts
+│       │   │   │   └── response.ts
+│       │   │   ├── role
 │       │   │   │   ├── request.ts
 │       │   │   │   └── response.ts
 │       │   │   └── user
@@ -396,6 +516,7 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │       │   │       └── response.ts
 │       │   └── swagger.ts
 │       ├── entity.ts
+│       ├── excel.ts
 │       ├── exception.ts
 │       ├── pagination.ts
 │       ├── request.ts
@@ -403,14 +524,16 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │       ├── sort.ts
 │       ├── static
 │       │   └── http-status.json
-│       ├── tests
-│       │   └── tests.ts
-│       └── tracing.ts
+│       ├── tests.ts
+│       ├── text.ts
+│       ├── tracing.ts
+│       ├── usecase.ts
+│       └── zod.ts
 ├── test
-│   └── initialization.js
+│   └── initialization.ts
+├── TRACING.md
 ├── tsconfig.build.json
-├── tsconfig.json
-└── yarn.lock
+└── tsconfig.json
 ```
 
 ---

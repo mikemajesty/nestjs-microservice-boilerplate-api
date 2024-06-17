@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { ValidateSchema } from '@/common/decorators';
+import { ValidateSchema } from '@/utils/decorators';
 import { ApiNotFoundException } from '@/utils/exception';
 import { IUsecase } from '@/utils/usecase';
 
@@ -26,8 +26,6 @@ export class UserGetByIdUsecase implements IUsecase {
     }
 
     const entity = new UserEntity(user);
-
-    entity.anonymizePassword();
 
     return entity;
   }

@@ -1,362 +1,198 @@
-import { Op, Optional, WhereOptions } from 'sequelize';
-import sequelize from 'sequelize';
-import { MakeNullishOptional } from 'sequelize/types/utils';
-import { Model, ModelCtor } from 'sequelize-typescript';
-
-import { ConvertSequelizeFilterToRepository } from '@/common/decorators';
 import {
-  CreatedModel,
-  CreatedOrUpdateModel,
-  DatabaseOperationCommand,
-  IRepository,
-  RemovedModel,
-  UpdatedModel
-} from '@/infra/repository';
-import { DatabaseOptionsSchema, DatabaseOptionsType, SaveOptionsType } from '@/utils/database/sequelize';
+  BaseEntity,
+  FindOneOptions,
+  FindOptionsSelectByString,
+  FindOptionsWhere,
+  In,
+  Raw,
+  Repository,
+  SaveOptions
+} from 'typeorm';
+
 import { IEntity } from '@/utils/entity';
-import { ApiBadRequestException } from '@/utils/exception';
 
-import { validateFindByCommandsFilter } from '../util';
+import { IRepository } from '../adapter';
+import { CreatedModel, CreatedOrUpdateModel, DatabaseOperationCommand, RemovedModel, UpdatedModel } from '../types';
 
-export class SequelizeRepository<T extends ModelCtor & IEntity> implements IRepository<T> {
-  protected Model!: T;
+export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEntity> implements IRepository<T> {
+  constructor(readonly repository: Repository<T>) {}
 
-  constructor(Model: T) {
-    this.Model = Model;
-  }
-
-  async findByCommands<TOptions = DatabaseOptionsType>(
-    filterList: DatabaseOperationCommand<T>[],
-    options?: TOptions
-  ): Promise<T[]> {
-    const { schema } = DatabaseOptionsSchema.parse(options);
-
-    const postgresSearch = {
-      equal: { type: Op.in, like: false },
-      not_equal: { type: Op.notIn, like: false },
-      not_contains: { type: Op.notILike, like: true },
-      contains: { type: Op.iLike, like: true }
-    };
-
-    const searchList = {};
-
-    validateFindByCommandsFilter(filterList);
-
-    for (const filter of filterList) {
-      const command = postgresSearch[filter.command];
-
-      if (command.like) {
-        Object.assign(searchList, {
-          [filter.property]: { [command.type]: { [Op.any]: filter.value.map((v) => `%${v}%`) } }
-        });
-        continue;
-      }
-
-      Object.assign(searchList, { [filter.property]: { [command.type]: filter.value } });
-    }
-
-    Object.assign(searchList, { deletedAt: null });
-
-    const model = await this.Model.schema(schema).findAll({
-      where: searchList as WhereOptions<T>
-    });
-
-    return model.map((m) => m.toJSON());
-  }
-
-  async createOrUpdate<TUpdate = Partial<T>, TOptions = DatabaseOptionsType>(
-    document: TUpdate,
-    options?: TOptions
-  ): Promise<CreatedOrUpdateModel> {
-    const { schema, transaction } = DatabaseOptionsSchema.parse(options);
-
-    if (!document['id']) {
-      throw new ApiBadRequestException('id is required');
-    }
-
-    const exists = await this.findById(document['id'], options);
-
-    if (!exists) {
-      const savedDoc = await this.Model.schema(schema).create<Model<T>>(document as unknown as MakeNullishOptional<T>, {
-        transaction
-      });
-
-      const model = await savedDoc.save();
-
-      return { id: model.id, created: true, updated: false };
-    }
-
-    await this.Model.schema(schema).update(document, {
-      where: { id: exists.id } as WhereOptions<T>,
-      transaction
-    });
-
-    return { id: exists.id, created: false, updated: true };
-  }
-
-  @ConvertSequelizeFilterToRepository()
-  async findAll<TQuery = Partial<T>, TOpt = DatabaseOptionsType>(filter?: TQuery, options?: TOpt): Promise<T[]> {
-    const { schema } = DatabaseOptionsSchema.parse(options);
-
-    const model = await this.Model.schema(schema).findAll({
-      where: filter as WhereOptions<T>
-    });
-
-    return model.map((m) => m.toJSON());
-  }
-
-  @ConvertSequelizeFilterToRepository()
-  async find<TQuery = Partial<T>, TOptions = DatabaseOptionsType>(filter: TQuery, options?: TOptions): Promise<T[]> {
-    const { schema } = DatabaseOptionsSchema.parse(options);
-
-    const model = await this.Model.schema(schema).findAll({
-      where: filter as WhereOptions<T>
-    });
-
-    return model.map((m) => m.toJSON());
-  }
-
-  async findIn<TOptions = DatabaseOptionsType>(
-    filter: { [key in keyof Partial<T>]: string[] },
-    options?: TOptions
-  ): Promise<T[]> {
-    const { schema } = DatabaseOptionsSchema.parse(options);
-
-    const key = Object.keys(filter)[0];
-
-    const model = await this.Model.schema(schema).findAll({
-      where: { [key]: { [sequelize.Op.in]: filter[`${key}`] } } as WhereOptions<T>
-    });
-
-    return model.map((m) => m.toJSON());
-  }
-
-  async findOr<TOptions = DatabaseOptionsType>(
-    propertyList: Array<keyof Partial<T>>,
-    value: string,
-    options?: TOptions
-  ): Promise<T[]> {
-    const { schema } = DatabaseOptionsSchema.parse(options);
-
+  async findOr(propertyList: (keyof T)[], value: string): Promise<T[]> {
     const filter = propertyList.map((property) => {
       return { [property]: value };
     });
 
-    const model = await this.Model.schema(schema).findAll({
-      where: {
-        [sequelize.Op.or]: filter,
-        deletedAt: null
+    Object.assign(filter, { deletedAt: null });
+    return this.repository.find({ where: filter as FindOptionsWhere<T>[] | FindOptionsWhere<T> });
+  }
+
+  async create<TOptions = SaveOptions>(document: T, saveOptions?: TOptions): Promise<CreatedModel> {
+    const entity = this.repository.create(document);
+    const model = await entity.save(saveOptions as SaveOptions);
+    return { created: model.hasId(), id: model.id };
+  }
+
+  async findById(id: string): Promise<T | null> {
+    return this.repository.findOne({ where: { id } } as FindOneOptions<T>);
+  }
+
+  async insertMany(document: T[]): Promise<void> {
+    await this.repository.insert(document as object[]);
+  }
+
+  async createOrUpdate<TUpdate = Partial<T>>(updated: TUpdate): Promise<CreatedOrUpdateModel> {
+    const documentEntity: IEntity = updated as IEntity;
+    if (!documentEntity?.id) {
+      throw new Error('id is required');
+    }
+
+    const exists = await this.findById(documentEntity.id);
+
+    if (!exists) {
+      const created = await this.create(updated as unknown as T);
+
+      return { id: created.id, created: true, updated: false };
+    }
+
+    const row = await this.repository.update(
+      { id: exists['id'] } as FindOptionsWhere<T>,
+      { ...exists, ...updated } as object
+    );
+
+    return { id: exists['id'], created: false, updated: (row.affected || 0) > 0 };
+  }
+
+  async findAll(): Promise<T[]> {
+    return this.repository.find();
+  }
+
+  async find<TQuery = Partial<T>>(filter: TQuery): Promise<T[]> {
+    return this.repository.find({
+      where: { ...filter, deleted_at: null }
+    } as FindOneOptions<T>);
+  }
+
+  async findIn(filter: { [key in keyof Partial<T>]: string[] }): Promise<T[]> {
+    const key = Object.keys(filter)[0];
+    return this.repository.find({
+      where: { [key]: In(filter[`${key}` as keyof Partial<T>]) }
+    } as FindOneOptions<T>);
+  }
+
+  async findByCommands(filterList: DatabaseOperationCommand<T>[]): Promise<T[]> {
+    const searchList: { [key: string]: unknown } = {};
+
+    const postgresSearch = {
+      equal: {
+        query: (value: unknown[]) =>
+          Raw((alias) => `${alias} ILIKE ANY ('{${value.map((v) => `${`${v}`}`).join(', ')}}')`),
+        like: false
+      },
+      not_equal: {
+        query: (value: unknown[]) =>
+          Raw((alias) => `${alias} NOT ILIKE ALL (ARRAY[${value.map((v) => `'${v}'`).join(', ')}])`),
+        like: false
+      },
+      not_contains: {
+        query: (value: unknown[]) =>
+          Raw((alias) => `${alias} NOT ILIKE ALL (ARRAY[${value.map((v) => `'%${v}%'`).join(', ')}])`),
+        like: true
+      },
+      contains: {
+        query: (value: unknown[]) =>
+          Raw((alias) => `${alias} ILIKE ANY ('{${value.map((v) => `${`%${v}%`}`).join(', ')}}')`),
+        like: true
       }
-    });
+    };
 
-    return model.map((m) => m.toJSON());
-  }
-
-  @ConvertSequelizeFilterToRepository()
-  async remove<TQuery = WhereOptions<T>, TOpt = DatabaseOptionsType>(
-    filter: TQuery,
-    options: TOpt
-  ): Promise<RemovedModel> {
-    const { schema, transaction } = DatabaseOptionsSchema.parse(options);
-
-    const model = await this.Model.schema(schema).destroy({
-      where: filter as WhereOptions<T>,
-      transaction
-    });
-
-    return { deletedCount: model, deleted: !!model };
-  }
-
-  @ConvertSequelizeFilterToRepository()
-  async findOne<TQuery = Partial<T>, TOptions = DatabaseOptionsType>(filter: TQuery, options?: TOptions): Promise<T> {
-    const { schema } = DatabaseOptionsSchema.parse(options);
-
-    const model = await this.Model.schema(schema).findOne({
-      where: filter as WhereOptions<T>
-    });
-
-    if (!model) return;
-
-    return model.toJSON();
-  }
-
-  @ConvertSequelizeFilterToRepository()
-  async findOneAndUpdate<TQuery = Partial<T>, TUpdate = Partial<T>, TOptions = DatabaseOptionsType>(
-    filter: TQuery,
-    updated: TUpdate,
-    options?: TOptions
-  ): Promise<T> {
-    const { schema, transaction } = DatabaseOptionsSchema.parse(options);
-
-    const [rowsEffected] = await this.Model.schema(schema).update(updated, {
-      where: filter as WhereOptions<T>,
-      transaction
-    });
-
-    if (!rowsEffected) {
-      return null;
+    for (const filter of filterList) {
+      searchList[`${filter.property.toString()}`] = postgresSearch[filter.command].query(filter.value);
     }
 
-    const model = await this.Model.schema(schema).findOne({
-      where: filter as WhereOptions<T>
-    });
-
-    return model.toJSON();
+    return this.repository.find({
+      where: searchList
+    } as FindOneOptions<T>);
   }
 
-  @ConvertSequelizeFilterToRepository()
-  async updateOne<TQuery = Partial<T>, TUpdate = Partial<T>, TOptions = DatabaseOptionsType>(
-    filter: TQuery,
-    updated: TUpdate,
-    options?: TOptions
-  ): Promise<UpdatedModel> {
-    const { schema, transaction } = DatabaseOptionsSchema.parse(options);
+  async remove<TQuery = Partial<T>>(filter: TQuery): Promise<RemovedModel> {
+    const data = await this.repository.delete(filter as FindOptionsWhere<T>);
+    return { deletedCount: data.affected || 0, deleted: !!data.affected };
+  }
 
-    const model = await this.Model.schema(schema).update(updated, {
-      where: filter as WhereOptions<T>,
-      transaction
-    });
+  async findOne<TQuery = Partial<T>>(filter: TQuery): Promise<T | null> {
+    return this.repository.findOne({
+      where: filter
+    } as FindOneOptions<T>);
+  }
 
+  async updateOne<TQuery = Partial<T>, TUpdate = Partial<T>>(filter: TQuery, updated: TUpdate): Promise<UpdatedModel> {
+    const data = await this.repository.update(filter as FindOptionsWhere<T>, Object.assign({}, updated));
     return {
-      modifiedCount: model.length,
-      matchedCount: model.length,
-      acknowledged: null,
-      upsertedCount: model.length,
-      upsertedId: null
+      modifiedCount: data.affected || 0,
+      upsertedCount: 0,
+      upsertedId: 0,
+      matchedCount: data.affected || 0,
+      acknowledged: !!data.affected
     };
   }
 
-  @ConvertSequelizeFilterToRepository()
-  async updateMany<TQuery = Partial<T>, TUpdate = Partial<T>, TOptions = DatabaseOptionsType>(
+  async findOneAndUpdate<TQuery = Partial<T>, TUpdate = Partial<T>>(
     filter: TQuery,
-    updated: TUpdate,
-    options?: TOptions
-  ): Promise<UpdatedModel> {
-    const { schema, transaction } = DatabaseOptionsSchema.parse(options);
+    updated: TUpdate
+  ): Promise<T | null> {
+    await this.repository.update(filter as FindOptionsWhere<T>, updated as object);
 
-    const model = await this.Model.schema(schema).update(updated, {
-      where: filter as WhereOptions<T>,
-      transaction
-    });
+    return this.findOne(filter);
+  }
 
+  async updateMany<TQuery = Partial<T>, TUpdate = Partial<T>>(filter: TQuery, updated: TUpdate): Promise<UpdatedModel> {
+    const data = await this.repository.update(filter as FindOptionsWhere<T>, updated as object);
     return {
-      modifiedCount: model.length,
-      matchedCount: model.length,
-      acknowledged: null,
-      upsertedCount: model.length,
-      upsertedId: null
+      modifiedCount: data.affected || 0,
+      upsertedCount: 0,
+      upsertedId: 0,
+      matchedCount: data.affected || 0,
+      acknowledged: !!data.affected
     };
   }
 
-  async create<TOptions = SaveOptionsType>(document: T, saveOptions: TOptions): Promise<CreatedModel> {
-    const { schema, transaction } = DatabaseOptionsSchema.parse(saveOptions);
-
-    const savedDoc = await this.Model.schema(schema).create<Model<T>>(document as unknown as MakeNullishOptional<T>, {
-      transaction
-    });
-
-    const model = await savedDoc.save();
-
-    return { id: model.id, created: !!model.id };
-  }
-
-  async insertMany<TOptions = SaveOptionsType>(documents: T[], saveOptions?: TOptions): Promise<void> {
-    const { schema, transaction } = DatabaseOptionsSchema.parse(saveOptions);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await this.Model.schema(schema).bulkCreate<Model<T[]>>(documents as unknown as Optional<T[], any>[], {
-      transaction
-    });
-  }
-
-  @ConvertSequelizeFilterToRepository()
-  async findOneWithExcludeFields<TQuery = Partial<T>, TOptions = DatabaseOptionsType>(
+  async findOneWithSelectFields<TQuery = Partial<T>>(
     filter: TQuery,
-    excludeProperties?: (keyof T)[],
-    options?: TOptions
-  ): Promise<T> {
-    const { schema } = DatabaseOptionsSchema.parse(options);
-
-    const exclude = excludeProperties.map((e) => `${e.toString()}`);
-
-    const model = await this.Model.schema(schema).findOne({
-      where: filter as WhereOptions<T>,
-      attributes: { exclude }
+    includeProperties: (keyof T)[]
+  ): Promise<T | null> {
+    const select = includeProperties.map((e) => `${e.toString()}`);
+    return this.repository.findOne({
+      where: filter as FindOptionsWhere<T>,
+      select: select as FindOptionsSelectByString<T>
     });
-
-    if (!model) return;
-
-    return model.toJSON();
   }
 
-  async findAllWithExcludeFields<TQuery = Partial<T>, TOptions = DatabaseOptionsType>(
-    includeProperties: (keyof T)[],
-    filter?: TQuery,
-    options?: TOptions
-  ): Promise<T[]> {
-    const { schema } = DatabaseOptionsSchema.parse(options);
-
-    const exclude = includeProperties.map((e) => `${e.toString()}`);
-
-    if (!filter) {
-      filter = { deletedAt: null } as TQuery;
-    }
-
-    const model = await this.Model.schema(schema).findAll({
-      where: filter as WhereOptions<T>,
-      attributes: { exclude }
+  async findAllWithSelectFields<TQuery = Partial<T>>(includeProperties: (keyof T)[], filter?: TQuery): Promise<T[]> {
+    const select = includeProperties.map((e) => `${e.toString()}`);
+    return this.repository.find({
+      where: filter as FindOptionsWhere<T>,
+      select: select as FindOptionsSelectByString<T>
     });
-
-    return model.map((m) => m.toJSON());
   }
 
-  @ConvertSequelizeFilterToRepository()
-  async findOneWithSelectFields<TQuery = Partial<T>, TOptions = DatabaseOptionsType>(
-    filter: TQuery,
-    includeProperties: (keyof T)[],
-    options?: TOptions
-  ): Promise<T> {
-    const { schema } = DatabaseOptionsSchema.parse(options);
-
-    const include = includeProperties.map((e) => `${e.toString()}`);
-
-    const model = await this.Model.schema(schema).findOne({
-      where: filter as WhereOptions<T>,
-      attributes: include
+  async findOneWithExcludeFields(filter: unknown, excludeProperties: (keyof T)[]): Promise<T | null> {
+    const select = excludeProperties.map((e) => `${e.toString()}`);
+    return this.repository.findOne({
+      where: filter as FindOptionsWhere<T>,
+      select: this.excludeColumns(select) as FindOptionsSelectByString<T>
     });
-
-    if (!model) return;
-
-    return model.toJSON();
   }
 
-  async findAllWithSelectFields<TQuery = Partial<T>, TOptions = DatabaseOptionsType>(
-    includeProperties: (keyof T)[],
-    filter?: TQuery,
-    options?: TOptions
-  ): Promise<T[]> {
-    const { schema } = DatabaseOptionsSchema.parse(options);
-
-    const include = includeProperties.map((e) => `${e.toString()}`);
-
-    if (!filter) {
-      filter = { deletedAt: null } as TQuery;
-    }
-
-    const model = await this.Model.schema(schema).findAll({
-      where: filter as WhereOptions<T>,
-      attributes: include
+  async findAllWithExcludeFields<TQuery = Partial<T>>(excludeProperties: (keyof T)[], filter?: TQuery): Promise<T[]> {
+    const select = excludeProperties.map((e) => `${e.toString()}`);
+    return this.repository.find({
+      where: filter as FindOptionsWhere<T>,
+      select: this.excludeColumns(select) as FindOptionsSelectByString<T>
     });
-
-    return model.map((m) => m.toJSON());
   }
 
-  async findById<TOpt = DatabaseOptionsType>(id: string, options: TOpt): Promise<T> {
-    const { schema } = DatabaseOptionsSchema.parse(options);
-
-    const model = await this.Model.schema(schema).findOne({ where: { id, deletedAt: null } });
-
-    if (!model) return;
-
-    return model.toJSON();
-  }
+  private excludeColumns = (columnsToExclude: string[]): string[] =>
+    this.repository.metadata.columns
+      .map((column) => column.databaseName)
+      .filter((columnName) => !columnsToExclude.includes(columnName));
 }

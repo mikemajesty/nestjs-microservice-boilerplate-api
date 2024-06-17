@@ -1,21 +1,23 @@
 import { Test } from '@nestjs/testing';
 
+import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
 import { IUserDeleteAdapter } from '@/modules/user/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
 import { expectZodError, getMockTracing, getMockUUID } from '@/utils/tests';
 
-import { UserEntity, UserRole } from '../../entity/user';
+import { UserEntity } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
 import { UserDeleteUsecase } from '../user-delete';
 
-const userMock = {
+const userDefaultOutput = {
   id: getMockUUID(),
-  login: 'login',
-  password: '**********',
-  roles: [UserRole.USER]
+  email: 'admin@admin.com',
+  name: '*Admin',
+  role: new RoleEntity({ name: RoleEnum.USER }),
+  password: { id: getMockUUID(), password: '****' }
 } as UserEntity;
 
-describe('UserDeleteUsecase', () => {
+describe(UserDeleteUsecase.name, () => {
   let usecase: IUserDeleteAdapter;
   let repository: IUserRepository;
 
@@ -51,16 +53,14 @@ describe('UserDeleteUsecase', () => {
   });
 
   test('when user not found, should expect an error', async () => {
-    repository.findById = jest.fn().mockResolvedValue(null);
+    repository.findOneWithRelation = jest.fn().mockResolvedValue(null);
     await expect(usecase.execute({ id: getMockUUID() }, getMockTracing())).rejects.toThrow(ApiNotFoundException);
   });
 
   test('when user deleted successfully, should expect an user that has been deleted.', async () => {
-    repository.findById = jest.fn().mockResolvedValue(userMock);
-    repository.updateOne = jest.fn();
-    await expect(usecase.execute({ id: getMockUUID() }, getMockTracing())).resolves.toEqual({
-      ...userMock,
-      deletedAt: expect.any(Date)
-    });
+    repository.findOneWithRelation = jest.fn().mockResolvedValue(userDefaultOutput);
+    repository.softRemove = jest.fn();
+    await expect(usecase.execute({ id: getMockUUID() }, getMockTracing())).resolves.toEqual(expect.any(UserEntity));
+    expect(repository.softRemove).toHaveBeenCalled();
   });
 });

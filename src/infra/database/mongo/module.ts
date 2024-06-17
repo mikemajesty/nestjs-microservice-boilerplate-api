@@ -14,7 +14,7 @@ import { MongoService } from './service';
 @Module({
   imports: [
     MongooseModule.forRootAsync({
-      connectionName: ConnectionName.USER,
+      connectionName: ConnectionName.CATS,
       useFactory: ({ MONGO: { MONGO_URL } }: ISecretsAdapter, logger: ILoggerAdapter) => {
         const connection = new MongoService().getConnection({ URI: MONGO_URL });
         return {
@@ -38,8 +38,8 @@ import { MongoService } from './service';
           appName: name
         };
       },
-      imports: [SecretsModule, LoggerModule],
-      inject: [ISecretsAdapter, ILoggerAdapter]
+      inject: [ISecretsAdapter, ILoggerAdapter],
+      imports: [SecretsModule, LoggerModule]
     })
   ]
 })

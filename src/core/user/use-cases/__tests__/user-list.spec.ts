@@ -1,17 +1,18 @@
 import { Test } from '@nestjs/testing';
 
+import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
 import { IUserListAdapter } from '@/modules/user/adapter';
 import { expectZodError, getMockDate, getMockUUID } from '@/utils/tests';
 
-import { UserEntity, UserRole } from '../../entity/user';
+import { UserEntity } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
 import { UserListUsecase } from '../user-list';
 
 const userMock = {
   id: getMockUUID(),
-  login: 'login',
-  password: '**********',
-  roles: [UserRole.USER]
+  email: 'admin@admin.com',
+  name: 'Admin',
+  role: new RoleEntity({ name: RoleEnum.USER })
 } as UserEntity;
 
 const usersMock = [
@@ -22,7 +23,7 @@ const usersMock = [
     deletedAt: null
   } as UserEntity
 ];
-describe('UserListUsecase', () => {
+describe(UserListUsecase.name, () => {
   let usecase: IUserListAdapter;
   let repository: IUserRepository;
 

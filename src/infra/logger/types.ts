@@ -8,4 +8,12 @@ export type MessageType = {
 
 export type ErrorType = Error & BaseException;
 
-export type LogLevel = 'fatal' | 'error' | 'warn' | 'info' | 'debug' | 'trace' | 'silent';
+export enum LogLevelEnum {
+  fatal = 'fatal',
+  error = 'error',
+  warn = 'warn',
+  info = 'info',
+  debug = 'debug',
+  trace = 'trace',
+  silent = 'silent'
+}

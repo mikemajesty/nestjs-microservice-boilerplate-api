@@ -1,25 +1,25 @@
 import { z } from 'zod';
 
+import { RoleEntity, RoleEntitySchema } from '@/core/role/entity/role';
 import { BaseEntity } from '@/utils/entity';
 
-export enum UserRole {
-  USER = 'USER',
-  BACKOFFICE = 'BACKOFFICE'
-}
+import { UserPasswordEntity, UserPasswordEntitySchema } from './user-password';
 
 const ID = z.string().uuid();
-const Login = z.string().trim().min(1).max(200);
-const Password = z.string().trim().min(1).max(200);
+const Email = z.string().email();
+const Name = z.string();
+const Password = UserPasswordEntitySchema;
+const Role = RoleEntitySchema;
 const CreatedAt = z.date().nullish();
-const Roles = z.array(z.nativeEnum(UserRole));
 const UpdatedAt = z.date().nullish();
 const DeletedAt = z.date().default(null).nullish();
 
 export const UserEntitySchema = z.object({
   id: ID,
-  login: Login,
-  password: Password,
-  roles: Roles,
+  name: Name,
+  email: Email,
+  role: Role,
+  password: Password.optional(),
   createdAt: CreatedAt,
   updatedAt: UpdatedAt,
   deletedAt: DeletedAt
@@ -28,18 +28,16 @@ export const UserEntitySchema = z.object({
 type User = z.infer<typeof UserEntitySchema>;
 
 export class UserEntity extends BaseEntity<UserEntity>(UserEntitySchema) {
-  login: string;
+  name: string;
 
-  password: string;
+  email: string;
 
-  roles: UserRole[];
+  role: RoleEntity;
+
+  password: UserPasswordEntity;
 
   constructor(entity: User) {
     super();
     Object.assign(this, this.validate(entity));
-  }
-
-  anonymizePassword() {
-    this.password = '**********';
   }
 }

@@ -2,19 +2,19 @@ import { Test } from '@nestjs/testing';
 
 import { ICacheAdapter } from '@/infra/cache';
 import { ISecretsAdapter, SecretsModule } from '@/infra/secrets';
-import { TokenModule } from '@/libs/auth';
+import { TokenLibModule } from '@/libs/token';
 import { ILogoutAdapter } from '@/modules/logout/adapter';
 import { expectZodError, getMockTracing } from '@/utils/tests';
 
 import { LogoutUsecase } from '../user-logout';
 
-describe('LogoutUsecase', () => {
+describe(LogoutUsecase.name, () => {
   let usecase: ILogoutAdapter;
   let cache: ICacheAdapter;
 
   beforeEach(async () => {
     const app = await Test.createTestingModule({
-      imports: [TokenModule, SecretsModule],
+      imports: [TokenLibModule, SecretsModule],
       providers: [
         {
           provide: ICacheAdapter,

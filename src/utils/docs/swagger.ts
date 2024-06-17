@@ -1,4 +1,5 @@
 import { ApiQueryOptions, ApiResponseOptions } from '@nestjs/swagger';
+import { ExamplesObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
 
 import { ErrorModel } from '@/utils/exception';
 import httpStatus from '@/utils/static/http-status.json';
@@ -42,6 +43,41 @@ export const Swagger = {
     };
   },
 
+  defaultResponseWithMultiplesError({
+    status,
+    route,
+    messages,
+    description
+  }: Omit<SwaggerError, 'message'> & {
+    messages: { [key: string]: { value: string[]; description: string } };
+  }): ApiResponseOptions {
+    const examples = {};
+    for (const key in messages) {
+      examples[`${key}`] = {
+        value: {
+          error: {
+            code: status,
+            traceid: '<traceId>',
+            context: 'context',
+            message: messages[`${key}`].value,
+            timestamp: '<timestamp>',
+            path: route
+          }
+        } as ErrorModel,
+        description: messages[`${key}`].description
+      };
+    }
+    return {
+      content: {
+        'application/json': {
+          examples: examples as ExamplesObject
+        }
+      },
+      description,
+      status
+    };
+  },
+
   defaultResponseText({ status, text, description }: SwaggerText): ApiResponseOptions {
     return {
       content: {
@@ -58,13 +94,15 @@ export const Swagger = {
 
   defaultResponseJSON({ status, json, description }: SwaggerJSON): ApiResponseOptions {
     return {
-      content: {
-        'application/json': {
-          schema: {
-            example: json
+      content: json
+        ? {
+            'application/json': {
+              schema: {
+                example: json
+              }
+            }
           }
-        }
-      },
+        : undefined,
       description,
       status
     };
@@ -75,6 +113,29 @@ export const Swagger = {
       schema: {
         example: json
       }
+    };
+  },
+
+  defaultRequestListJSON(): {
+    pagination: { limit: ApiQueryOptions; page: ApiQueryOptions };
+    sort: ApiQueryOptions;
+    search: ApiQueryOptions;
+  } {
+    return {
+      pagination: {
+        limit: Swagger.defaultApiQueryOptions({ example: 10, name: 'limit', required: false }),
+        page: Swagger.defaultApiQueryOptions({ example: 1, name: 'page', required: false })
+      },
+      sort: Swagger.defaultApiQueryOptions({
+        name: 'sort',
+        required: false,
+        description: `<b>propertyName1:desc,propertyName2:asc`
+      }),
+      search: Swagger.defaultApiQueryOptions({
+        name: 'search',
+        required: false,
+        description: `<b>propertyName1:value,propertyName2:value`
+      })
     };
   },
 

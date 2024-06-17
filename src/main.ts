@@ -7,23 +7,22 @@ import bodyParser from 'body-parser';
 import { bold } from 'colorette';
 import compression from 'compression';
 import { NextFunction, Request, Response } from 'express';
-import { rateLimit } from 'express-rate-limit';
 import helmet from 'helmet';
 
-import { AppExceptionFilter } from '@/common/filters';
+import { ILoggerAdapter } from '@/infra/logger/adapter';
+import { ISecretsAdapter } from '@/infra/secrets';
+import { ExceptionFilter } from '@/observables/filters';
 import {
   ExceptionInterceptor,
   HttpLoggerInterceptor,
   MetricsInterceptor,
   TracingInterceptor
-} from '@/common/interceptors';
-import { ILoggerAdapter } from '@/infra/logger/adapter';
-import { ISecretsAdapter } from '@/infra/secrets';
+} from '@/observables/interceptors';
 
 import { description, name, version } from '../package.json';
 import { AppModule } from './app.module';
-import { RequestTimeoutInterceptor } from './common/interceptors/request-timeout.interceptor';
 import { ErrorType } from './infra/logger';
+import { RequestTimeoutInterceptor } from './observables/interceptors/request-timeout.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -36,7 +35,7 @@ async function bootstrap() {
   loggerService.setApplication(name);
   app.useLogger(loggerService);
 
-  app.useGlobalFilters(new AppExceptionFilter(loggerService));
+  app.useGlobalFilters(new ExceptionFilter(loggerService));
 
   app.useGlobalInterceptors(
     new RequestTimeoutInterceptor(new Reflector(), loggerService),
@@ -83,22 +82,8 @@ async function bootstrap() {
     HOST,
     ZIPKIN_URL,
     PROMETHUES_URL,
-    RATE_LIMIT_BY_USER,
     IS_PRODUCTION
   } = app.get(ISecretsAdapter);
-
-  /**
-   *@description @RATE_LIMIT_BY_USER  for each 15 minutes
-   */
-  const MINUTES = 15 * 60 * 1000;
-  const limiter = rateLimit({
-    windowMs: MINUTES,
-    limit: RATE_LIMIT_BY_USER,
-    standardHeaders: 'draft-7',
-    legacyHeaders: false
-  });
-
-  app.use(limiter);
 
   app.use(bodyParser.urlencoded({ extended: true }));
 

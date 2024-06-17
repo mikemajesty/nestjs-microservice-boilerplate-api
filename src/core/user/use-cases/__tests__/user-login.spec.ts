@@ -1,29 +1,31 @@
 import { Test } from '@nestjs/testing';
 
-import { ITokenAdapter, TokenModule } from '@/libs/auth';
+import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
 import { CryptoLibModule, ICryptoAdapter } from '@/libs/crypto';
+import { ITokenAdapter, TokenLibModule } from '@/libs/token';
 import { ILoginAdapter } from '@/modules/login/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
 import { expectZodError, getMockTracing, getMockUUID } from '@/utils/tests';
 
-import { UserEntity, UserRole } from '../../entity/user';
+import { UserEntity } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
-import { LoginUsecase } from '../user-login';
+import { LoginInput, LoginUsecase } from '../user-login';
 
-const userMock = {
+const userDefaultOutput = {
   id: getMockUUID(),
-  login: 'login',
-  password: '**********',
-  roles: [UserRole.USER]
+  email: 'admin@admin.com',
+  name: 'Admin',
+  role: new RoleEntity({ name: RoleEnum.USER }),
+  password: { id: getMockUUID(), password: '***' }
 } as UserEntity;
 
-describe('LoginUsecase', () => {
+describe(LoginUsecase.name, () => {
   let usecase: ILoginAdapter;
   let repository: IUserRepository;
 
   beforeEach(async () => {
     const app = await Test.createTestingModule({
-      imports: [TokenModule, CryptoLibModule],
+      imports: [TokenLibModule, CryptoLibModule],
       providers: [
         {
           provide: IUserRepository,
@@ -48,23 +50,28 @@ describe('LoginUsecase', () => {
       () => usecase.execute({}, getMockTracing()),
       (issues) => {
         expect(issues).toEqual([
-          { message: 'Required', path: UserEntity.nameOf('login') },
-          { message: 'Required', path: UserEntity.nameOf('password') }
+          { message: 'Required', path: UserEntity.nameOf('email') },
+          { message: 'Required', path: 'password' }
         ]);
       }
     );
   });
 
+  const defaultInput: LoginInput = { email: 'admin@admin.com', password: '****' };
   test('when user not found, should expect an error', async () => {
-    repository.findOne = jest.fn().mockResolvedValue(null);
-    await expect(usecase.execute({ login: 'login', password: 'password' }, getMockTracing())).rejects.toThrow(
-      ApiNotFoundException
-    );
+    repository.findOneWithRelation = jest.fn().mockResolvedValue(null);
+    await expect(usecase.execute(defaultInput, getMockTracing())).rejects.toThrow(ApiNotFoundException);
   });
 
-  test('when user found, should expect a token', async () => {
-    repository.findOne = jest.fn().mockResolvedValue(userMock);
-    await expect(usecase.execute({ login: 'login', password: 'password' }, getMockTracing())).resolves.toEqual({
+  test('when password is incorrect, should expect an error', async () => {
+    repository.findOneWithRelation = jest.fn().mockResolvedValue(userDefaultOutput);
+    await expect(usecase.execute(defaultInput, getMockTracing())).rejects.toThrow(ApiNotFoundException);
+  });
+
+  test('when user login successully, should expect a token', async () => {
+    userDefaultOutput.password.password = '69bf0bc46f51b33377c4f3d92caf876714f6bbbe99e7544487327920873f9820';
+    repository.findOneWithRelation = jest.fn().mockResolvedValue(userDefaultOutput);
+    await expect(usecase.execute(defaultInput, getMockTracing())).resolves.toEqual({
       token: expect.any(String)
     });
   });
