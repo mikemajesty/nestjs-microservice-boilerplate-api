@@ -19,10 +19,10 @@ export class UserGetByIdUsecase implements IUsecase {
 
   @ValidateSchema(UserGetByIdSchema)
   async execute({ id }: UserGetByIdInput): Promise<UserGetByIdOutput> {
-    const user = await this.userRepository.findById(id);
+    const user = await this.userRepository.findOneWithRelation({ id }, { role: true });
 
     if (!user) {
-      throw new ApiNotFoundException();
+      throw new ApiNotFoundException('userNotFound');
     }
 
     const entity = new UserEntity(user);

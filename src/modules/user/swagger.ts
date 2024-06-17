@@ -84,6 +84,13 @@ export const SwaggerResponse = {
       description: 'user not found.'
     })
   },
+  me: {
+    200: Swagger.defaultResponseJSON({
+      status: 200,
+      json: UsersResponse.me,
+      description: 'user jwt data.'
+    })
+  },
   list: {
     200: Swagger.defaultResponseJSON({
       status: 200,

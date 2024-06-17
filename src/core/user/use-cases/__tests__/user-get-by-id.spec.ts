@@ -52,12 +52,12 @@ describe(UserGetByIdUsecase.name, () => {
   });
 
   test('when user not found, should expect an errror', async () => {
-    repository.findById = jest.fn().mockResolvedValue(null);
+    repository.findOneWithRelation = jest.fn().mockResolvedValue(null);
     await expect(usecase.execute({ id: getMockUUID() })).rejects.toThrow(ApiNotFoundException);
   });
 
   test('when user getById successfully, should expect a user', async () => {
-    repository.findById = jest.fn().mockResolvedValue(userMock);
+    repository.findOneWithRelation = jest.fn().mockResolvedValue(userMock);
     await expect(usecase.execute({ id: getMockUUID() })).resolves.toEqual(userMock);
   });
 });

@@ -4,7 +4,7 @@ import { ICryptoAdapter } from '@/libs/crypto';
 import { ITokenAdapter } from '@/libs/token';
 import { ValidateSchema } from '@/utils/decorators';
 import { ApiNotFoundException } from '@/utils/exception';
-import { ApiTrancingInput } from '@/utils/request';
+import { ApiTrancingInput, UserRequest } from '@/utils/request';
 import { IUsecase } from '@/utils/usecase';
 
 import { UserEntitySchema } from '../entity/user';
@@ -48,7 +48,8 @@ export class LoginUsecase implements IUsecase {
 
     return this.tokenService.sign({
       email: login.email,
+      name: login.name,
       role: login.role.name
-    });
+    } as UserRequest);
   }
 }

@@ -15,11 +15,13 @@ export type TracingType = {
   finish: () => void;
 };
 
+export type UserRequest = Pick<UserEntity, 'email' | 'name'> & { role: string };
+
 export interface ApiRequest {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   readonly body: any;
   readonly tracing: TracingType;
-  readonly user: Pick<UserEntity, 'email'>;
+  readonly user: UserRequest;
   readonly params: { [key: string]: string };
   readonly query: { [key: string]: string };
   readonly headers: Headers & { authorization: string };

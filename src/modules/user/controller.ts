@@ -8,7 +8,7 @@ import { UserGetByIdInput, UserGetByIdOutput } from '@/core/user/use-cases/user-
 import { UserListInput, UserListOutput } from '@/core/user/use-cases/user-list';
 import { UserUpdateInput, UserUpdateOutput } from '@/core/user/use-cases/user-update';
 import { Permission } from '@/utils/decorators';
-import { ApiRequest } from '@/utils/request';
+import { ApiRequest, UserRequest } from '@/utils/request';
 import { SearchHttpSchema } from '@/utils/search';
 import { SortHttpSchema } from '@/utils/sort';
 
@@ -74,6 +74,13 @@ export class UserController {
     };
 
     return await this.listUsecase.execute(input);
+  }
+
+  @Get('/me')
+  @ApiResponse(SwaggerResponse.me[200])
+  @Version('1')
+  me(@Req() { user }: ApiRequest): UserRequest {
+    return user;
   }
 
   @Get('/:id')

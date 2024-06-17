@@ -1,7 +1,6 @@
 import { z } from 'zod';
 
-import { UserEntity } from '@/core/user/entity/user';
-import { ApiTrancingInput, TracingType } from '@/utils/request';
+import { ApiTrancingInput, TracingType, UserRequest } from '@/utils/request';
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 export const expectZodError = async (callback: Function, expected: Function) => {
@@ -29,6 +28,6 @@ export const getMockTracing = (): ApiTrancingInput => {
         return event;
       }
     } as Partial<TracingType> as TracingType,
-    user: { email: 'test' } as UserEntity
+    user: { email: 'test', name: 'test', role: 'test' } as UserRequest
   };
 };

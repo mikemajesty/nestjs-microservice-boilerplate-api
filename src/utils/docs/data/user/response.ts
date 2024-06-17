@@ -5,6 +5,7 @@ import { UserDeleteOutput } from '@/core/user/use-cases/user-delete';
 import { UserGetByIdOutput } from '@/core/user/use-cases/user-get-by-id';
 import { UserListOutput } from '@/core/user/use-cases/user-list';
 import { UserUpdateOutput } from '@/core/user/use-cases/user-update';
+import { UserRequest } from '@/utils/request';
 import { getMockDate, getMockUUID } from '@/utils/tests';
 
 const entity = {
@@ -26,5 +27,6 @@ export const UsersResponse = {
   delete: { ...fullEntity, deletedAt: getMockDate() } as UserDeleteOutput,
   update: { ...fullEntity } as UserUpdateOutput,
   getById: fullEntity as UserGetByIdOutput,
-  list: { docs: [fullEntity], limit: 10, page: 1, total: 1 } as UserListOutput
+  list: { docs: [fullEntity], limit: 10, page: 1, total: 1 } as UserListOutput,
+  me: { email: 'admin@admin.com', name: 'ADMIN', role: RoleEnum.USER } as UserRequest
 };
