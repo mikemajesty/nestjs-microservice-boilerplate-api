@@ -1,5 +1,3 @@
-import './utils/tracing';
-
 import { RequestMethod, VersioningType } from '@nestjs/common';
 import { NestFactory, Reflector } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -12,12 +10,7 @@ import helmet from 'helmet';
 import { ILoggerAdapter } from '@/infra/logger/adapter';
 import { ISecretsAdapter } from '@/infra/secrets';
 import { ExceptionFilter } from '@/observables/filters';
-import {
-  ExceptionInterceptor,
-  HttpLoggerInterceptor,
-  MetricsInterceptor,
-  TracingInterceptor
-} from '@/observables/interceptors';
+import { ExceptionInterceptor, HttpLoggerInterceptor, TracingInterceptor } from '@/observables/interceptors';
 
 import { description, name, version } from '../package.json';
 import { AppModule } from './app.module';
@@ -41,8 +34,7 @@ async function bootstrap() {
     new RequestTimeoutInterceptor(new Reflector(), loggerService),
     new ExceptionInterceptor(),
     new HttpLoggerInterceptor(loggerService),
-    new TracingInterceptor(loggerService),
-    new MetricsInterceptor()
+    new TracingInterceptor(loggerService)
   );
 
   app.setGlobalPrefix('api', {

@@ -4,7 +4,6 @@ import { ICryptoAdapter } from '@/libs/crypto';
 import { ITokenAdapter } from '@/libs/token';
 import { ValidateSchema } from '@/utils/decorators';
 import { ApiNotFoundException } from '@/utils/exception';
-import { ApiTrancingInput } from '@/utils/request';
 import { IUsecase } from '@/utils/usecase';
 
 import { UserEntitySchema } from '../entity/user';
@@ -26,7 +25,7 @@ export class LoginUsecase implements IUsecase {
   ) {}
 
   @ValidateSchema(LoginSchema)
-  async execute(input: LoginInput, { tracing }: ApiTrancingInput): LoginOutput {
+  async execute(input: LoginInput): LoginOutput {
     const login = await this.loginRepository.findOneWithRelation(
       {
         email: input.email
@@ -43,8 +42,6 @@ export class LoginUsecase implements IUsecase {
     if (login.password.password !== password) {
       throw new ApiNotFoundException('incorrectPassword');
     }
-
-    tracing.logEvent('user-login', `${login}`);
 
     return this.tokenService.sign({
       email: login.email,

@@ -1,5 +1,4 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
-import { SpanStatusCode } from '@opentelemetry/api';
 import { Observable } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { ZodError } from 'zod';
@@ -13,8 +12,6 @@ export class ExceptionInterceptor implements NestInterceptor {
 
         const headers = executionContext.getArgs()[0]?.headers;
 
-        const request = executionContext.switchToHttp().getRequest();
-
         this.sanitizeExternalError(error);
 
         if (typeof error === 'object' && !error.traceid) {
@@ -24,12 +21,6 @@ export class ExceptionInterceptor implements NestInterceptor {
         if (!error?.context) {
           const context = `${executionContext.getClass().name}/${executionContext.getHandler().name}`;
           error.context = context;
-        }
-
-        if (request?.tracing) {
-          request.tracing.addAttribute('http.status_code', error.status);
-          request.tracing.setStatus({ message: error.message, code: SpanStatusCode.ERROR });
-          request.tracing.finish();
         }
 
         throw error;

@@ -41,8 +41,8 @@ export class UserController {
   @ApiBody(SwaggerRequest.create)
   @Version('1')
   @Permission('user:create')
-  async create(@Req() { body, user, tracing }: ApiRequest): Promise<UserCreateOutput> {
-    return this.createUsecase.execute(body as UserCreateInput, { user, tracing });
+  async create(@Req() { body }: ApiRequest): Promise<UserCreateOutput> {
+    return this.createUsecase.execute(body as UserCreateInput);
   }
 
   @Put(':id')
@@ -53,8 +53,8 @@ export class UserController {
   @ApiParam({ name: 'id', required: true })
   @Version('1')
   @Permission('user:update')
-  async update(@Req() { body, user, tracing, params }: ApiRequest): Promise<UserUpdateOutput> {
-    return this.updateUsecase.execute({ ...body, id: params.id } as UserUpdateInput, { user, tracing });
+  async update(@Req() { body, params }: ApiRequest): Promise<UserUpdateOutput> {
+    return this.updateUsecase.execute({ ...body, id: params.id } as UserUpdateInput);
   }
 
   @Get()
@@ -104,7 +104,7 @@ export class UserController {
   @ApiResponse(SwaggerResponse.delete[404])
   @Version('1')
   @Permission('user:delete')
-  async delete(@Req() { params, user, tracing }: ApiRequest): Promise<UserDeleteOutput> {
-    return await this.deleteUsecase.execute(params as UserDeleteInput, { user, tracing });
+  async delete(@Req() { params }: ApiRequest): Promise<UserDeleteOutput> {
+    return await this.deleteUsecase.execute(params as UserDeleteInput);
   }
 }

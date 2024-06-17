@@ -3,7 +3,7 @@ import { Test } from '@nestjs/testing';
 import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
 import { IUserDeleteAdapter } from '@/modules/user/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
-import { expectZodError, getMockTracing, getMockUUID } from '@/utils/tests';
+import { expectZodError, getMockUUID } from '@/utils/tests';
 
 import { UserEntity } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
@@ -45,7 +45,7 @@ describe(UserDeleteUsecase.name, () => {
 
   test('when no input is specified, should expect an error', async () => {
     await expectZodError(
-      () => usecase.execute({ id: 'uuid' }, getMockTracing()),
+      () => usecase.execute({ id: 'uuid' }),
       (issues) => {
         expect(issues).toEqual([{ message: 'Invalid uuid', path: UserEntity.nameOf('id') }]);
       }
@@ -54,13 +54,13 @@ describe(UserDeleteUsecase.name, () => {
 
   test('when user not found, should expect an error', async () => {
     repository.findOneWithRelation = jest.fn().mockResolvedValue(null);
-    await expect(usecase.execute({ id: getMockUUID() }, getMockTracing())).rejects.toThrow(ApiNotFoundException);
+    await expect(usecase.execute({ id: getMockUUID() })).rejects.toThrow(ApiNotFoundException);
   });
 
   test('when user deleted successfully, should expect an user that has been deleted.', async () => {
     repository.findOneWithRelation = jest.fn().mockResolvedValue(userDefaultOutput);
     repository.softRemove = jest.fn();
-    await expect(usecase.execute({ id: getMockUUID() }, getMockTracing())).resolves.toEqual(expect.any(UserEntity));
+    await expect(usecase.execute({ id: getMockUUID() })).resolves.toEqual(expect.any(UserEntity));
     expect(repository.softRemove).toHaveBeenCalled();
   });
 });

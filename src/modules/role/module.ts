@@ -13,7 +13,7 @@ import { RoleGetByIdUsecase } from '@/core/role/use-cases/role-get-by-id';
 import { RoleListUsecase } from '@/core/role/use-cases/role-list';
 import { RoleUpdateUsecase } from '@/core/role/use-cases/role-update';
 import { ICacheAdapter } from '@/infra/cache';
-import { RedisCacheModule } from '@/infra/cache/redis';
+import { MemoryCacheModule } from '@/infra/cache/memory';
 import { RoleSchema } from '@/infra/database/postgres/schemas/role';
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { TokenLibModule } from '@/libs/token';
@@ -33,7 +33,7 @@ import { RoleController } from './controller';
 import { RoleRepository } from './repository';
 
 @Module({
-  imports: [TokenLibModule, LoggerModule, RedisCacheModule, TypeOrmModule.forFeature([RoleSchema]), PermissionModule],
+  imports: [TokenLibModule, LoggerModule, TypeOrmModule.forFeature([RoleSchema]), PermissionModule, MemoryCacheModule],
   controllers: [RoleController],
   providers: [
     {

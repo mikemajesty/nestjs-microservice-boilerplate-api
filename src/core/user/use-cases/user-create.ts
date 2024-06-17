@@ -10,7 +10,6 @@ import { IEventAdapter } from '@/libs/event';
 import { EventNameEnum } from '@/libs/event/types';
 import { ValidateSchema } from '@/utils/decorators';
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception';
-import { ApiTrancingInput } from '@/utils/request';
 import { IUsecase } from '@/utils/usecase';
 
 import { UserEntity, UserEntitySchema } from '../entity/user';
@@ -37,7 +36,7 @@ export class UserCreateUsecase implements IUsecase {
   ) {}
 
   @ValidateSchema(UserCreateSchema)
-  async execute(input: UserCreateInput, { tracing, user: userData }: ApiTrancingInput): Promise<UserCreateOutput> {
+  async execute(input: UserCreateInput): Promise<UserCreateOutput> {
     const role = await this.roleRepository.findOne({ name: input.role });
 
     if (!role) {
@@ -68,8 +67,6 @@ export class UserCreateUsecase implements IUsecase {
       template: 'welcome',
       payload: { name: input.name }
     });
-
-    tracing.logEvent('user-created', `user: ${entity.email} created by: ${userData.email}`);
 
     return user;
   }

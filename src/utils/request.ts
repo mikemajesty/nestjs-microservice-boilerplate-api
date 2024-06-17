@@ -1,18 +1,9 @@
-import { AttributeValue, Context, Span, SpanStatus, TimeInput, Tracer } from '@opentelemetry/api';
 import { AxiosInstance, AxiosRequestConfig } from 'axios';
 
 import { UserEntity } from '@/core/user/entity/user';
 
 export type TracingType = {
-  span: Span;
-  tracer: Tracer;
-  tracerId: string;
   axios: (config?: AxiosRequestConfig) => AxiosInstance;
-  setStatus: (status: SpanStatus) => void;
-  logEvent: (name: string, attributesOrStartTime?: AttributeValue | TimeInput) => void;
-  addAttribute: (key: string, value: AttributeValue) => void;
-  createSpan: (name: string, parent?: Context) => Span;
-  finish: () => void;
 };
 
 export interface ApiRequest {

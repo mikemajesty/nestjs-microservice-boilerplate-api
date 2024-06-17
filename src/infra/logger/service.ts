@@ -29,16 +29,6 @@ export class LoggerService implements ILoggerAdapter {
         {
           level: 'trace',
           stream: pinoPretty(this.getPinoConfig())
-        },
-        {
-          level: 'error',
-          stream: pino.transport({
-            target: 'pino-mongodb',
-            options: {
-              uri: process.env.MONGO_URL,
-              collection: 'logs'
-            }
-          })
         }
       ])
     );

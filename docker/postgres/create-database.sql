@@ -1,1 +1,1 @@
-create database "nestjs-microservice";
+create database "events";

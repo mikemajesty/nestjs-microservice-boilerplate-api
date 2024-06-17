@@ -11,7 +11,6 @@ import { UserDeleteUsecase } from '@/core/user/use-cases/user-delete';
 import { UserGetByIdUsecase } from '@/core/user/use-cases/user-get-by-id';
 import { UserListUsecase } from '@/core/user/use-cases/user-list';
 import { UserUpdateUsecase } from '@/core/user/use-cases/user-update';
-import { RedisCacheModule } from '@/infra/cache/redis';
 import { UserSchema } from '@/infra/database/postgres/schemas/user';
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { SecretsModule } from '@/infra/secrets';
@@ -37,7 +36,6 @@ import { UserRepository } from './repository';
     TokenLibModule,
     SecretsModule,
     LoggerModule,
-    RedisCacheModule,
     CryptoLibModule,
     EventLibModule,
     TypeOrmModule.forFeature([UserSchema]),

@@ -5,7 +5,6 @@ import { IRoleRepository } from '@/core/role/repository/role';
 import { ILoggerAdapter } from '@/infra/logger';
 import { ValidateSchema } from '@/utils/decorators';
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception';
-import { ApiTrancingInput } from '@/utils/request';
 import { IUsecase } from '@/utils/usecase';
 
 import { UserEntity, UserEntitySchema } from '../entity/user';
@@ -30,7 +29,7 @@ export class UserUpdateUsecase implements IUsecase {
   ) {}
 
   @ValidateSchema(UserUpdateSchema)
-  async execute(input: UserUpdateInput, { tracing, user: userData }: ApiTrancingInput): Promise<UserUpdateOutput> {
+  async execute(input: UserUpdateInput): Promise<UserUpdateOutput> {
     const user = await this.userRepository.findOneWithRelation({ id: input.id }, { role: true });
 
     if (!user) {
@@ -58,8 +57,6 @@ export class UserUpdateUsecase implements IUsecase {
     const updated = await this.userRepository.findOneWithRelation({ id: entity.id }, { role: true });
 
     const entityUpdated = new UserEntity(updated);
-
-    tracing.logEvent('user-updated', `user: ${user.email} updated by: ${userData.email}`);
 
     return entityUpdated;
   }
