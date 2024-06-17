@@ -1,5 +1,5 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
+import { getRepositoryToken, TypeOrmModule } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { IPermissionRepository } from '@/core/permission/repository/permission';
