@@ -1,5 +1,10 @@
 # Nestjs boilerplate Microservice API
 
+[![node version][node-image]][node-url]
+
+[node-image]: https://img.shields.io/badge/node.js-%3E=_18.0-green.svg?style=flat-square
+[node-url]: http://nodejs.org/download/
+
 In this microservice I used the best architecture concepts: onion architecture, DDD and clean architecture.
 
 | Statements                                                                               | Branches                                                                             | Functions                                                                              | Lines                                                                          |
