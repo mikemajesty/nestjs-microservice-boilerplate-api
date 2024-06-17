@@ -5,5 +5,4 @@ import { RoleListInput, RoleListOutput } from '../use-cases/role-list';
 
 export abstract class IRoleRepository extends IRepository<RoleEntity> {
   abstract paginate(input: RoleListInput): Promise<RoleListOutput>;
-  abstract findWithCache(role: string): Promise<string[]>;
 }

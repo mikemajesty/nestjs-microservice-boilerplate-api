@@ -30,7 +30,9 @@ export class AuthRoleGuard implements CanActivate {
       throw new ApiUnauthorizedException();
     }
 
-    const permissions = await this.roleRepository.findWithCache(role);
+    const roleData = await this.roleRepository.findOne({ name: role });
+
+    const permissions = roleData.permissions.map((p) => p.name);
 
     return permissions.includes(requiredPermission);
   }
