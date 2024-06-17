@@ -1,5 +1,5 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { getRepositoryToken, TypeOrmModule } from '@nestjs/typeorm';
+import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { IPermissionRepository } from '@/core/permission/repository/permission';
@@ -12,8 +12,6 @@ import { RoleDeletePermissionUsecase } from '@/core/role/use-cases/role-delete-p
 import { RoleGetByIdUsecase } from '@/core/role/use-cases/role-get-by-id';
 import { RoleListUsecase } from '@/core/role/use-cases/role-list';
 import { RoleUpdateUsecase } from '@/core/role/use-cases/role-update';
-import { ICacheAdapter } from '@/infra/cache';
-import { MemoryCacheModule } from '@/infra/cache/memory';
 import { RoleSchema } from '@/infra/database/postgres/schemas/role';
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { TokenLibModule } from '@/libs/token';
@@ -33,15 +31,15 @@ import { RoleController } from './controller';
 import { RoleRepository } from './repository';
 
 @Module({
-  imports: [TokenLibModule, LoggerModule, TypeOrmModule.forFeature([RoleSchema]), PermissionModule, MemoryCacheModule],
+  imports: [TokenLibModule, LoggerModule, TypeOrmModule.forFeature([RoleSchema]), PermissionModule],
   controllers: [RoleController],
   providers: [
     {
       provide: IRoleRepository,
-      useFactory: (repository: Repository<RoleSchema & RoleEntity>, cache: ICacheAdapter) => {
-        return new RoleRepository(repository, cache);
+      useFactory: (repository: Repository<RoleSchema & RoleEntity>) => {
+        return new RoleRepository(repository);
       },
-      inject: [getRepositoryToken(RoleSchema), ICacheAdapter]
+      inject: [getRepositoryToken(RoleSchema)]
     },
     {
       provide: IRoleCreateAdapter,
