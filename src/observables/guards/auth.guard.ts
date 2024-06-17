@@ -13,12 +13,12 @@ export class AuthRoleGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const requiredPermissions = this.reflector.getAllAndOverride<string[]>(PERMISSION_KEY, [
+    const requiredPermission = this.reflector.getAllAndOverride<string>(PERMISSION_KEY, [
       context.getHandler(),
       context.getClass()
     ]);
 
-    if (!requiredPermissions) {
+    if (!requiredPermission) {
       return true;
     }
 
@@ -32,6 +32,6 @@ export class AuthRoleGuard implements CanActivate {
 
     const permissions = await this.roleRepository.findWithCache(role);
 
-    return requiredPermissions.some((permission) => permissions.includes(permission));
+    return permissions.includes(requiredPermission);
   }
 }
