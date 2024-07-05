@@ -52,42 +52,46 @@ describe(UserChangePasswordUsecase.name, () => {
     );
   });
 
-  const defaultInput: UserChangePasswordInput = {
+  const input: UserChangePasswordInput = {
     id: getMockUUID(),
     password: '****',
     confirmPassword: '****',
     newPassword: '****'
   };
+
   test('when user not found, should expect an error', async () => {
     repository.findOneWithRelation = jest.fn().mockResolvedValue(null);
-    await expect(usecase.execute(defaultInput)).rejects.toThrow(ApiNotFoundException);
+
+    await expect(usecase.execute(input)).rejects.toThrow(ApiNotFoundException);
   });
 
-  const defaultUserOutput = new UserEntity({
+  const user = new UserEntity({
     id: getMockUUID(),
     email: 'admin@admin.com',
     name: 'Admin',
     password: new UserPasswordEntity({ password: '69bf0bc46f51b33377c4f3d92caf876714f6bbbe99e7544487327920873f9820' }),
     role: new RoleEntity({ name: RoleEnum.USER })
   });
+
   test('when user password is incorrect, should expect an error', async () => {
-    repository.findOneWithRelation = jest.fn().mockResolvedValue(defaultUserOutput);
-    await expect(usecase.execute({ ...defaultInput, password: 'wrongPassword' })).rejects.toThrow(
-      ApiBadRequestException
-    );
+    repository.findOneWithRelation = jest.fn().mockResolvedValue(user);
+
+    await expect(usecase.execute({ ...input, password: 'wrongPassword' })).rejects.toThrow(ApiBadRequestException);
   });
 
   test('when user password are differents, should expect an error', async () => {
-    repository.findOneWithRelation = jest.fn().mockResolvedValue(defaultUserOutput);
-    await expect(usecase.execute({ ...defaultInput, confirmPassword: 'wrongPassword' })).rejects.toThrow(
+    repository.findOneWithRelation = jest.fn().mockResolvedValue(user);
+
+    await expect(usecase.execute({ ...input, confirmPassword: 'wrongPassword' })).rejects.toThrow(
       ApiBadRequestException
     );
   });
 
   test('when change password successfully, should change password', async () => {
-    repository.findOneWithRelation = jest.fn().mockResolvedValue(defaultUserOutput);
+    repository.findOneWithRelation = jest.fn().mockResolvedValue(user);
     repository.create = jest.fn();
-    await expect(usecase.execute(defaultInput)).resolves.toBeUndefined();
+
+    await expect(usecase.execute(input)).resolves.toBeUndefined();
     expect(repository.create).toHaveBeenCalled();
   });
 });

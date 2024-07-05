@@ -53,10 +53,9 @@ describe(PermissionCreateUsecase.name, () => {
   };
 
   test('when permission created successfully, should expect a permission that has been created', async () => {
-    const createOutput: PermissionCreateOutput = { created: true, id: getMockUUID() };
+    const output: PermissionCreateOutput = { created: true, id: getMockUUID() };
+    repository.create = jest.fn().mockResolvedValue(output);
 
-    repository.create = jest.fn().mockResolvedValue(createOutput);
-
-    await expect(usecase.execute(input)).resolves.toEqual(createOutput);
+    await expect(usecase.execute(input)).resolves.toEqual(output);
   });
 });

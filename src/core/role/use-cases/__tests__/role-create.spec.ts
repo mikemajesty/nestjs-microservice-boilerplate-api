@@ -51,11 +51,11 @@ describe(RoleCreateUsecase.name, () => {
   const input: RoleCreateInput = {
     name: RoleEnum.USER
   };
+
   test('when role created successfully, should expect a role that has been created', async () => {
-    const createOutput: RoleCreateOutput = { created: true, id: getMockUUID() };
+    const output: RoleCreateOutput = { created: true, id: getMockUUID() };
+    repository.create = jest.fn().mockResolvedValue(output);
 
-    repository.create = jest.fn().mockResolvedValue(createOutput);
-
-    await expect(usecase.execute(input)).resolves.toEqual(createOutput);
+    await expect(usecase.execute(input)).resolves.toEqual(output);
   });
 });

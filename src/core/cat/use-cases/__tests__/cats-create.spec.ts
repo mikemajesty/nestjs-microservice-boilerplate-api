@@ -9,13 +9,6 @@ import { CatsEntity } from '../../entity/cats';
 import { ICatsRepository } from '../../repository/cats';
 import { CatsCreateUsecase } from '../cats-create';
 
-const catCreateMock = {
-  id: getMockUUID(),
-  age: 10,
-  breed: 'dummy',
-  name: 'dummy'
-} as CatsEntity;
-
 describe(CatsCreateUsecase.name, () => {
   let usecase: ICatsCreateAdapter;
   let repository: ICatsRepository;
@@ -55,13 +48,22 @@ describe(CatsCreateUsecase.name, () => {
     );
   });
 
+  const cat = new CatsEntity({
+    id: getMockUUID(),
+    age: 10,
+    breed: 'dummy',
+    name: 'dummy'
+  });
+
   test('when cats created successfully, should expect a cats that has been created', async () => {
-    repository.create = jest.fn().mockResolvedValue(catCreateMock);
-    await expect(usecase.execute(catCreateMock, getMockTracing())).resolves.toEqual(catCreateMock);
+    repository.create = jest.fn().mockResolvedValue(cat);
+
+    await expect(usecase.execute(cat, getMockTracing())).resolves.toEqual(cat);
   });
 
   test('when transaction throw an error, should expect an error', async () => {
     repository.create = jest.fn().mockRejectedValue(new ApiInternalServerException());
-    await expect(usecase.execute(catCreateMock, getMockTracing())).rejects.toThrow(ApiInternalServerException);
+
+    await expect(usecase.execute(cat, getMockTracing())).rejects.toThrow(ApiInternalServerException);
   });
 });

@@ -47,20 +47,21 @@ describe(PermissionListUsecase.name, () => {
 
   const input: PermissionListInput = { limit: 1, page: 1, search: {}, sort: { createdAt: -1 } };
 
+  const permission = new PermissionEntity({
+    id: getMockUUID(),
+    name: 'all',
+    createdAt: new Date(),
+    updatedAt: new Date()
+  });
+
+  const permissions = [permission];
+
   test('when permission are found, should expect an permission list', async () => {
-    const doc = new PermissionEntity({
-      id: getMockUUID(),
-      name: 'all',
-      createdAt: new Date(),
-      updatedAt: new Date()
-    });
-
-    const paginateOutput: PermissionListOutput = { docs: [doc], page: 1, limit: 1, total: 1 };
-
-    repository.paginate = jest.fn().mockResolvedValue(paginateOutput);
+    const output: PermissionListOutput = { docs: [permission], page: 1, limit: 1, total: 1 };
+    repository.paginate = jest.fn().mockResolvedValue(output);
 
     await expect(usecase.execute(input)).resolves.toEqual({
-      docs: [doc],
+      docs: permissions,
       page: 1,
       limit: 1,
       total: 1
@@ -68,10 +69,9 @@ describe(PermissionListUsecase.name, () => {
   });
 
   test('when permission not found, should expect an empty list', async () => {
-    const paginateOutput: PermissionListOutput = { docs: [], page: 1, limit: 1, total: 1 };
+    const output: PermissionListOutput = { docs: [], page: 1, limit: 1, total: 1 };
+    repository.paginate = jest.fn().mockResolvedValue(output);
 
-    repository.paginate = jest.fn().mockResolvedValue(paginateOutput);
-
-    await expect(usecase.execute(input)).resolves.toEqual(paginateOutput);
+    await expect(usecase.execute(input)).resolves.toEqual(output);
   });
 });

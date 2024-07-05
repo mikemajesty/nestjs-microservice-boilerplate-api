@@ -42,20 +42,20 @@ describe(RoleListUsecase.name, () => {
   });
 
   const input: RoleListInput = { limit: 1, page: 1, search: {}, sort: { createdAt: -1 } };
+
+  const role = new RoleEntity({
+    id: getMockUUID(),
+    name: RoleEnum.USER,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  });
+
   test('when role are found, should expect an role list', async () => {
-    const doc = new RoleEntity({
-      id: getMockUUID(),
-      name: RoleEnum.USER,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    });
-
-    const paginateOutput: RoleListOutput = { docs: [doc], page: 1, limit: 1, total: 1 };
-
-    repository.paginate = jest.fn().mockResolvedValue(paginateOutput);
+    const output: RoleListOutput = { docs: [role], page: 1, limit: 1, total: 1 };
+    repository.paginate = jest.fn().mockResolvedValue(output);
 
     await expect(usecase.execute(input)).resolves.toEqual({
-      docs: [doc],
+      docs: [role],
       page: 1,
       limit: 1,
       total: 1
@@ -63,10 +63,9 @@ describe(RoleListUsecase.name, () => {
   });
 
   test('when role not found, should expect an empty list', async () => {
-    const paginateOutput: RoleListOutput = { docs: [], page: 1, limit: 1, total: 1 };
+    const output: RoleListOutput = { docs: [], page: 1, limit: 1, total: 1 };
+    repository.paginate = jest.fn().mockResolvedValue(output);
 
-    repository.paginate = jest.fn().mockResolvedValue(paginateOutput);
-
-    await expect(usecase.execute(input)).resolves.toEqual(paginateOutput);
+    await expect(usecase.execute(input)).resolves.toEqual(output);
   });
 });

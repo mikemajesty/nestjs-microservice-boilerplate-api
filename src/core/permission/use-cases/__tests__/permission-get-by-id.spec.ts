@@ -5,7 +5,7 @@ import { ApiNotFoundException } from '@/utils/exception';
 import { expectZodError, getMockUUID } from '@/utils/tests';
 
 import { IPermissionRepository } from '../../repository/permission';
-import { PermissionGetByIdInput, PermissionGetByIdOutput, PermissionGetByIdUsecase } from '../permission-get-by-id';
+import { PermissionGetByIdInput, PermissionGetByIdUsecase } from '../permission-get-by-id';
 import { PermissionEntity } from './../../entity/permission';
 
 describe(PermissionGetByIdUsecase.name, () => {
@@ -52,13 +52,14 @@ describe(PermissionGetByIdUsecase.name, () => {
     await expect(usecase.execute(input)).rejects.toThrowError(ApiNotFoundException);
   });
 
-  test('when permission found, should expect a permission that has been found', async () => {
-    const findByIdOutput: PermissionGetByIdOutput = new PermissionEntity({
-      id: getMockUUID(),
-      name: 'all'
-    });
-    repository.findById = jest.fn().mockResolvedValue(findByIdOutput);
+  const permission = new PermissionEntity({
+    id: getMockUUID(),
+    name: 'all'
+  });
 
-    await expect(usecase.execute(input)).resolves.toEqual(findByIdOutput);
+  test('when permission found, should expect a permission that has been found', async () => {
+    repository.findById = jest.fn().mockResolvedValue(permission);
+
+    await expect(usecase.execute(input)).resolves.toEqual(permission);
   });
 });

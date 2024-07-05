@@ -57,31 +57,34 @@ describe(RoleAddPermissionUsecase.name, () => {
     id: getMockUUID(),
     permissions: ['user:create', 'user:list']
   };
+
   test('when role not exists, should expect an error', async () => {
     repository.findOne = jest.fn().mockResolvedValue(null);
+
     await expect(usecase.execute(input)).rejects.toThrow(ApiNotFoundException);
   });
 
-  const permissionsOutput = [
-    new PermissionEntity({ name: 'user:create' }),
-    new PermissionEntity({ name: 'user:update' })
-  ];
-  const roleOutput = new RoleEntity({ name: RoleEnum.USER, permissions: permissionsOutput });
-  test('when delete permission with associated permission succcessfully, should expect an update permission', async () => {
-    repository.findOne = jest.fn().mockResolvedValue(roleOutput);
-    permissionRepository.findIn = jest.fn().mockResolvedValue(permissionsOutput);
+  const permissions = [new PermissionEntity({ name: 'user:create' }), new PermissionEntity({ name: 'user:update' })];
+
+  const role = new RoleEntity({ name: RoleEnum.USER, permissions: permissions });
+
+  test('when delete permission with associated permission successfully, should expect an update permission', async () => {
+    repository.findOne = jest.fn().mockResolvedValue(role);
+    permissionRepository.findIn = jest.fn().mockResolvedValue(permissions);
     repository.create = jest.fn();
+
     await expect(usecase.execute(input)).resolves.toBeUndefined();
     expect(repository.create).toHaveBeenCalled();
   });
 
-  test('when delete permission without associated permission succcessfully, should expect an update permission', async () => {
+  test('when delete permission without associated permission successfully, should expect an update permission', async () => {
     repository.findOne = jest.fn().mockResolvedValue({
-      ...roleOutput,
-      permissions: roleOutput.permissions.filter((p) => p.name !== 'user:create')
+      ...role,
+      permissions: role.permissions.filter((p) => p.name !== 'user:create')
     });
-    permissionRepository.findIn = jest.fn().mockResolvedValue(permissionsOutput);
+    permissionRepository.findIn = jest.fn().mockResolvedValue(permissions);
     repository.create = jest.fn();
+
     await expect(usecase.execute({ ...input, permissions: ['user:create'] })).resolves.toBeUndefined();
     expect(repository.create).toHaveBeenCalled();
   });

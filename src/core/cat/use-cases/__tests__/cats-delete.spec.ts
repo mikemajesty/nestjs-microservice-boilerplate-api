@@ -9,13 +9,6 @@ import { expectZodError, getMockTracing, getMockUUID } from '@/utils/tests';
 import { CatsEntity } from '../../entity/cats';
 import { ICatsRepository } from '../../repository/cats';
 
-const catMock = {
-  id: getMockUUID(),
-  age: 10,
-  breed: 'dummy',
-  name: 'dummy'
-} as CatsEntity;
-
 describe(CatsDeleteUsecase.name, () => {
   let usecase: ICatsDeleteAdapter;
   let repository: ICatsRepository;
@@ -53,14 +46,23 @@ describe(CatsDeleteUsecase.name, () => {
 
   test('when cats not found, should expect an error', async () => {
     repository.findById = jest.fn().mockResolvedValue(null);
+
     await expect(usecase.execute({ id: getMockUUID() }, getMockTracing())).rejects.toThrow(ApiNotFoundException);
   });
 
+  const cat = new CatsEntity({
+    id: getMockUUID(),
+    age: 10,
+    breed: 'dummy',
+    name: 'dummy'
+  });
+
   test('when cats deleted successfully, should expect a cats that has been deleted', async () => {
-    repository.findById = jest.fn().mockResolvedValue(catMock);
+    repository.findById = jest.fn().mockResolvedValue(cat);
     repository.updateOne = jest.fn();
+
     await expect(usecase.execute({ id: getMockUUID() }, getMockTracing())).resolves.toEqual({
-      ...catMock,
+      ...cat,
       deletedAt: expect.any(Date)
     });
   });

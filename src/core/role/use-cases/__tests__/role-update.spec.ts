@@ -6,7 +6,7 @@ import { ApiNotFoundException } from '@/utils/exception';
 import { expectZodError, getMockUUID } from '@/utils/tests';
 
 import { IRoleRepository } from '../../repository/role';
-import { RoleUpdateInput, RoleUpdateOutput, RoleUpdateUsecase } from '../role-update';
+import { RoleUpdateInput, RoleUpdateUsecase } from '../role-update';
 import { RoleEntity, RoleEnum } from './../../entity/role';
 
 describe(RoleUpdateUsecase.name, () => {
@@ -52,21 +52,22 @@ describe(RoleUpdateUsecase.name, () => {
   const input: RoleUpdateInput = {
     id: getMockUUID()
   };
+
   test('when role not found, should expect an error', async () => {
     repository.findById = jest.fn().mockResolvedValue(null);
 
     await expect(usecase.execute(input)).rejects.toThrowError(ApiNotFoundException);
   });
 
-  test('when role updated successfully, should expect an role that has been updated', async () => {
-    const findByIdOutput: RoleUpdateOutput = new RoleEntity({
-      id: getMockUUID(),
-      name: RoleEnum.USER
-    });
+  const role = new RoleEntity({
+    id: getMockUUID(),
+    name: RoleEnum.USER
+  });
 
-    repository.findById = jest.fn().mockResolvedValue(findByIdOutput);
+  test('when role updated successfully, should expect an role that has been updated', async () => {
+    repository.findById = jest.fn().mockResolvedValue(role);
     repository.updateOne = jest.fn().mockResolvedValue(null);
 
-    await expect(usecase.execute(input)).resolves.toEqual(findByIdOutput);
+    await expect(usecase.execute(input)).resolves.toEqual(role);
   });
 });

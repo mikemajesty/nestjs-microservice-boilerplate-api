@@ -11,14 +11,6 @@ import { UserEntity } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
 import { LoginInput, LoginUsecase } from '../user-login';
 
-const userDefaultOutput = {
-  id: getMockUUID(),
-  email: 'admin@admin.com',
-  name: 'Admin',
-  role: new RoleEntity({ name: RoleEnum.USER }),
-  password: { id: getMockUUID(), password: '***' }
-} as UserEntity;
-
 describe(LoginUsecase.name, () => {
   let usecase: ILoginAdapter;
   let repository: IUserRepository;
@@ -60,17 +52,28 @@ describe(LoginUsecase.name, () => {
   const defaultInput: LoginInput = { email: 'admin@admin.com', password: '****' };
   test('when user not found, should expect an error', async () => {
     repository.findOneWithRelation = jest.fn().mockResolvedValue(null);
+
     await expect(usecase.execute(defaultInput, getMockTracing())).rejects.toThrow(ApiNotFoundException);
   });
 
+  const user = new UserEntity({
+    id: getMockUUID(),
+    email: 'admin@admin.com',
+    name: 'Admin',
+    role: new RoleEntity({ name: RoleEnum.USER }),
+    password: { id: getMockUUID(), password: '***' }
+  });
+
   test('when password is incorrect, should expect an error', async () => {
-    repository.findOneWithRelation = jest.fn().mockResolvedValue(userDefaultOutput);
+    repository.findOneWithRelation = jest.fn().mockResolvedValue(user);
+
     await expect(usecase.execute(defaultInput, getMockTracing())).rejects.toThrow(ApiNotFoundException);
   });
 
   test('when user login successully, should expect a token', async () => {
-    userDefaultOutput.password.password = '69bf0bc46f51b33377c4f3d92caf876714f6bbbe99e7544487327920873f9820';
-    repository.findOneWithRelation = jest.fn().mockResolvedValue(userDefaultOutput);
+    user.password.password = '69bf0bc46f51b33377c4f3d92caf876714f6bbbe99e7544487327920873f9820';
+    repository.findOneWithRelation = jest.fn().mockResolvedValue(user);
+
     await expect(usecase.execute(defaultInput, getMockTracing())).resolves.toEqual({
       token: expect.any(String)
     });

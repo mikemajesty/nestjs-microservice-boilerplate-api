@@ -1,10 +1,6 @@
 import { Test } from '@nestjs/testing';
 
-import {
-  PermissionDeleteInput,
-  PermissionDeleteOutput,
-  PermissionDeleteUsecase
-} from '@/core/permission/use-cases/permission-delete';
+import { PermissionDeleteInput, PermissionDeleteUsecase } from '@/core/permission/use-cases/permission-delete';
 import { IPermissionDeleteAdapter } from '@/modules/permission/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
 import { expectZodError, getMockUUID } from '@/utils/tests';
@@ -56,17 +52,17 @@ describe(PermissionDeleteUsecase.name, () => {
     await expect(usecase.execute(input)).rejects.toThrowError(ApiNotFoundException);
   });
 
-  test('when permission deleted successfully, should expect a permission that has been deleted', async () => {
-    const findByIdOutput: PermissionDeleteOutput = new PermissionEntity({
-      id: getMockUUID(),
-      name: 'all'
-    });
+  const permission = new PermissionEntity({
+    id: getMockUUID(),
+    name: 'all'
+  });
 
-    repository.findById = jest.fn().mockResolvedValue(findByIdOutput);
+  test('when permission deleted successfully, should expect a permission that has been deleted', async () => {
+    repository.findById = jest.fn().mockResolvedValue(permission);
     repository.updateOne = jest.fn();
 
     await expect(usecase.execute(input)).resolves.toEqual({
-      ...findByIdOutput,
+      ...permission,
       deletedAt: expect.any(Date)
     });
   });

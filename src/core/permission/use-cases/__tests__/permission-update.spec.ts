@@ -6,7 +6,7 @@ import { ApiNotFoundException } from '@/utils/exception';
 import { expectZodError, getMockUUID } from '@/utils/tests';
 
 import { IPermissionRepository } from '../../repository/permission';
-import { PermissionUpdateInput, PermissionUpdateOutput, PermissionUpdateUsecase } from '../permission-update';
+import { PermissionUpdateInput, PermissionUpdateUsecase } from '../permission-update';
 import { PermissionEntity } from './../../entity/permission';
 
 describe(PermissionUpdateUsecase.name, () => {
@@ -59,15 +59,15 @@ describe(PermissionUpdateUsecase.name, () => {
     await expect(usecase.execute(input)).rejects.toThrowError(ApiNotFoundException);
   });
 
-  test('when permission updated successfully, should expect an permission that has been updated', async () => {
-    const findByIdOutput: PermissionUpdateOutput = new PermissionEntity({
-      id: getMockUUID(),
-      name: 'all'
-    });
+  const permission = new PermissionEntity({
+    id: getMockUUID(),
+    name: 'all'
+  });
 
-    repository.findById = jest.fn().mockResolvedValue(findByIdOutput);
+  test('when permission updated successfully, should expect an permission that has been updated', async () => {
+    repository.findById = jest.fn().mockResolvedValue(permission);
     repository.updateOne = jest.fn().mockResolvedValue(null);
 
-    await expect(usecase.execute(input)).resolves.toEqual(findByIdOutput);
+    await expect(usecase.execute(input)).resolves.toEqual(permission);
   });
 });

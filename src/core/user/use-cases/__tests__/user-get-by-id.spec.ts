@@ -9,13 +9,6 @@ import { UserEntity } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
 import { UserGetByIdUsecase } from '../user-get-by-id';
 
-const userMock = {
-  id: getMockUUID(),
-  email: 'admin@admin.com',
-  name: 'Admin',
-  role: new RoleEntity({ name: RoleEnum.USER })
-} as UserEntity;
-
 describe(UserGetByIdUsecase.name, () => {
   let usecase: IUserGetByIdAdapter;
   let repository: IUserRepository;
@@ -53,11 +46,20 @@ describe(UserGetByIdUsecase.name, () => {
 
   test('when user not found, should expect an errror', async () => {
     repository.findOneWithRelation = jest.fn().mockResolvedValue(null);
+
     await expect(usecase.execute({ id: getMockUUID() })).rejects.toThrow(ApiNotFoundException);
   });
 
+  const user = new UserEntity({
+    id: getMockUUID(),
+    email: 'admin@admin.com',
+    name: 'Admin',
+    role: new RoleEntity({ name: RoleEnum.USER })
+  });
+
   test('when user getById successfully, should expect a user', async () => {
-    repository.findOneWithRelation = jest.fn().mockResolvedValue(userMock);
-    await expect(usecase.execute({ id: getMockUUID() })).resolves.toEqual(userMock);
+    repository.findOneWithRelation = jest.fn().mockResolvedValue(user);
+
+    await expect(usecase.execute({ id: getMockUUID() })).resolves.toEqual(user);
   });
 });

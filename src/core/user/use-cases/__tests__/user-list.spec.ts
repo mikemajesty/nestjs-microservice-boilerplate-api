@@ -8,21 +8,6 @@ import { UserEntity } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
 import { UserListUsecase } from '../user-list';
 
-const userMock = {
-  id: getMockUUID(),
-  email: 'admin@admin.com',
-  name: 'Admin',
-  role: new RoleEntity({ name: RoleEnum.USER })
-} as UserEntity;
-
-const usersMock = [
-  {
-    ...userMock,
-    createdAt: getMockDate(),
-    updatedAt: getMockDate(),
-    deletedAt: null
-  } as UserEntity
-];
 describe(UserListUsecase.name, () => {
   let usecase: IUserListAdapter;
   let repository: IUserRepository;
@@ -58,11 +43,28 @@ describe(UserListUsecase.name, () => {
     );
   });
 
+  const user = new UserEntity({
+    id: getMockUUID(),
+    email: 'admin@admin.com',
+    name: 'Admin',
+    role: new RoleEntity({ name: RoleEnum.USER })
+  });
+
+  const users = [
+    {
+      ...user,
+      createdAt: getMockDate(),
+      updatedAt: getMockDate(),
+      deletedAt: null
+    } as UserEntity
+  ];
+
   test('when users are found, should expect an user list', async () => {
-    const response = { docs: usersMock, page: 1, limit: 1, total: 1 };
-    repository.paginate = jest.fn().mockResolvedValue(response);
+    const output = { docs: users, page: 1, limit: 1, total: 1 };
+    repository.paginate = jest.fn().mockResolvedValue(output);
+
     await expect(usecase.execute({ limit: 1, page: 1, search: {}, sort: { createdAt: -1 } })).resolves.toEqual({
-      docs: usersMock,
+      docs: users,
       page: 1,
       limit: 1,
       total: 1
@@ -70,10 +72,9 @@ describe(UserListUsecase.name, () => {
   });
 
   test('when users not found, should expect an empty list', async () => {
-    const response = { docs: [], page: 1, limit: 1, total: 1 };
-    repository.paginate = jest.fn().mockResolvedValue(response);
-    await expect(usecase.execute({ limit: 1, page: 1, search: {}, sort: { createdAt: -1 } })).resolves.toEqual(
-      response
-    );
+    const output = { docs: [], page: 1, limit: 1, total: 1 };
+    repository.paginate = jest.fn().mockResolvedValue(output);
+
+    await expect(usecase.execute({ limit: 1, page: 1, search: {}, sort: { createdAt: -1 } })).resolves.toEqual(output);
   });
 });

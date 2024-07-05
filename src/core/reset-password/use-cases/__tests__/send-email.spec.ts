@@ -79,30 +79,35 @@ describe(SendEmailResetPasswordUsecase.name, () => {
     );
   });
 
-  const defaultInput: SendEmailResetPasswordInput = { email: 'admin@admin.com' };
+  const input: SendEmailResetPasswordInput = { email: 'admin@admin.com' };
+
   test('when user not found, should expect an error', async () => {
     userRepository.findOne = jest.fn().mockResolvedValue(null);
-    await expect(usecase.execute(defaultInput)).rejects.toThrow(ApiNotFoundException);
+
+    await expect(usecase.execute(input)).rejects.toThrow(ApiNotFoundException);
   });
 
-  const defaultUser = new UserEntity({
+  const user = new UserEntity({
     id: getMockUUID(),
     email: 'admin@admin.com',
     name: 'Admin',
     role: new RoleEntity({ name: RoleEnum.USER })
   });
-  const defaultResetPassword = new ResetPasswordEntity({ id: getMockUUID(), token: 'token', user: defaultUser });
+
+  const resetPassword = new ResetPasswordEntity({ id: getMockUUID(), token: 'token', user: user });
 
   test('when token was founded, should expect void', async () => {
-    userRepository.findOne = jest.fn().mockResolvedValue(defaultUser);
-    repository.findByIdUserId = jest.fn().mockResolvedValue(defaultResetPassword);
-    await expect(usecase.execute(defaultInput)).resolves.toBeUndefined();
+    userRepository.findOne = jest.fn().mockResolvedValue(user);
+    repository.findByIdUserId = jest.fn().mockResolvedValue(resetPassword);
+
+    await expect(usecase.execute(input)).resolves.toBeUndefined();
   });
 
   test('when token was not founded, should expect void', async () => {
-    userRepository.findOne = jest.fn().mockResolvedValue(defaultUser);
+    userRepository.findOne = jest.fn().mockResolvedValue(user);
     repository.findByIdUserId = jest.fn().mockResolvedValue(null);
     repository.create = jest.fn();
-    await expect(usecase.execute(defaultInput)).resolves.toBeUndefined();
+
+    await expect(usecase.execute(input)).resolves.toBeUndefined();
   });
 });

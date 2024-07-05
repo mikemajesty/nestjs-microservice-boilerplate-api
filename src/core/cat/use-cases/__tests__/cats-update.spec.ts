@@ -9,13 +9,6 @@ import { CatsEntity } from '../../entity/cats';
 import { ICatsRepository } from '../../repository/cats';
 import { CatsUpdateUsecase } from '../cats-update';
 
-const catMock = {
-  id: getMockUUID(),
-  age: 10,
-  breed: 'dummy',
-  name: 'dummy'
-} as CatsEntity;
-
 describe(CatsUpdateUsecase.name, () => {
   let usecase: ICatsUpdateAdapter;
   let repository: ICatsRepository;
@@ -53,12 +46,21 @@ describe(CatsUpdateUsecase.name, () => {
 
   test('when cats not found, should expect an error', async () => {
     repository.findById = jest.fn().mockResolvedValue(null);
+
     await expect(usecase.execute({ id: getMockUUID() }, getMockTracing())).rejects.toThrow(ApiNotFoundException);
   });
 
+  const cat = new CatsEntity({
+    id: getMockUUID(),
+    age: 10,
+    breed: 'dummy',
+    name: 'dummy'
+  });
+
   test('when cats updated successfully, should expect a cats that has been updated', async () => {
-    repository.findById = jest.fn().mockResolvedValue(catMock);
+    repository.findById = jest.fn().mockResolvedValue(cat);
     repository.updateOne = jest.fn().mockResolvedValue(null);
-    await expect(usecase.execute({ id: getMockUUID() }, getMockTracing())).resolves.toEqual(catMock);
+
+    await expect(usecase.execute({ id: getMockUUID() }, getMockTracing())).resolves.toEqual(cat);
   });
 });

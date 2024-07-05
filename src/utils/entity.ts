@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { ZodSchema, ZodType } from 'zod';
+import { ZodSchema } from 'zod';
 
 import { DateUtils } from './date';
 
@@ -18,8 +18,14 @@ export interface IEntity {
   deletedAt?: Date;
 }
 
-export const BaseEntity = <T>(schema: ZodSchema) => {
+export const BaseEntity = <T>() => {
   abstract class Entity implements IEntity {
+    readonly schema: ZodSchema;
+
+    constructor(schema: ZodSchema) {
+      this.schema = schema;
+    }
+
     readonly id: string;
 
     readonly createdAt: Date;
@@ -34,10 +40,10 @@ export const BaseEntity = <T>(schema: ZodSchema) => {
       this.deletedAt = DateUtils.getJSDate();
     }
 
-    validate<T>(entity: T): ZodType {
+    validate<T>(entity: T): T {
       Object.assign(entity, withID(entity));
       Object.assign(this, { id: entity['id'] });
-      return schema.parse(entity);
+      return this.schema.parse(entity) as T;
     }
   }
 

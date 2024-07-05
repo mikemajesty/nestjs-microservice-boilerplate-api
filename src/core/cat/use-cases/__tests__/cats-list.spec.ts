@@ -8,18 +8,6 @@ import { expectZodError, getMockDate, getMockUUID } from '@/utils/tests';
 import { CatsEntity } from '../../entity/cats';
 import { ICatsRepository } from '../../repository/cats';
 
-const catsMock = [
-  {
-    id: getMockUUID(),
-    age: 10,
-    breed: 'dummy',
-    name: 'dummy',
-    createdAt: getMockDate(),
-    updatedAt: getMockDate(),
-    deletedAt: null
-  } as CatsEntity
-];
-
 describe(CatsListUsecase.name, () => {
   let usecase: ICatsListAdapter;
   let repository: ICatsRepository;
@@ -55,11 +43,24 @@ describe(CatsListUsecase.name, () => {
     );
   });
 
+  const cat = new CatsEntity({
+    id: getMockUUID(),
+    age: 10,
+    breed: 'dummy',
+    name: 'dummy',
+    createdAt: getMockDate(),
+    updatedAt: getMockDate(),
+    deletedAt: null
+  });
+
+  const cats = [cat];
+
   test('when cats are found, should expect an user list', async () => {
-    const response = { docs: catsMock, page: 1, limit: 1, total: 1 };
-    repository.paginate = jest.fn().mockResolvedValue(response);
+    const output = { docs: cats, page: 1, limit: 1, total: 1 };
+    repository.paginate = jest.fn().mockResolvedValue(output);
+
     await expect(usecase.execute({ limit: 1, page: 1, search: {}, sort: { createdAt: -1 } })).resolves.toEqual({
-      docs: catsMock,
+      docs: cats,
       page: 1,
       limit: 1,
       total: 1
@@ -67,10 +68,9 @@ describe(CatsListUsecase.name, () => {
   });
 
   test('when cats not found, should expect an empty list', async () => {
-    const response = { docs: [], page: 1, limit: 1, total: 1 };
-    repository.paginate = jest.fn().mockResolvedValue(response);
-    await expect(usecase.execute({ limit: 1, page: 1, search: {}, sort: { createdAt: -1 } })).resolves.toEqual(
-      response
-    );
+    const output = { docs: [], page: 1, limit: 1, total: 1 };
+    repository.paginate = jest.fn().mockResolvedValue(output);
+
+    await expect(usecase.execute({ limit: 1, page: 1, search: {}, sort: { createdAt: -1 } })).resolves.toEqual(output);
   });
 });

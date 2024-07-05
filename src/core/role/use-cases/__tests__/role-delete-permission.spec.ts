@@ -58,20 +58,22 @@ describe(RoleDeletePermissionUsecase.name, () => {
     id: getMockUUID(),
     permissions: ['user:create']
   };
+
   test('when role not exists, should expect an error', async () => {
     repository.findOne = jest.fn().mockResolvedValue(null);
+
     await expect(usecase.execute(input)).rejects.toThrow(ApiNotFoundException);
   });
 
-  const permissionsOutput = [
-    new PermissionEntity({ name: 'user:create' }),
-    new PermissionEntity({ name: 'user:update' })
-  ];
-  const roleOutput = new RoleEntity({ name: RoleEnum.USER, permissions: permissionsOutput });
+  const permissions = [new PermissionEntity({ name: 'user:create' }), new PermissionEntity({ name: 'user:update' })];
+
+  const role = new RoleEntity({ name: RoleEnum.USER, permissions: permissions });
+
   test('when some permisson, should expect an error', async () => {
-    repository.findOne = jest.fn().mockResolvedValue(roleOutput);
-    permissionRepository.findIn = jest.fn().mockResolvedValue(permissionsOutput);
+    repository.findOne = jest.fn().mockResolvedValue(role);
+    permissionRepository.findIn = jest.fn().mockResolvedValue(permissions);
     repository.create = jest.fn();
+
     await expect(
       usecase.execute({ ...input, permissions: input.permissions.concat('user:getbyid') })
     ).resolves.toBeUndefined();
