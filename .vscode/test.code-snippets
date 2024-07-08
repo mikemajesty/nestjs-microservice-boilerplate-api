@@ -1,0 +1,43 @@
+{
+  "Create Usecase Test": {
+    "scope": "javascript,typescript",
+    "prefix": "apitest",
+    "body": [
+      "import { Test } from '@nestjs/testing';",
+      "$1",
+      "import { expectZodError } from '@/utils/tests';",
+      "$2",
+      "describe('RENAME', () => {",
+      "  let usecase: Adapter;",
+      "$3",
+      "  beforeEach(async () => {",
+      "    const app = await Test.createTestingModule({",
+      "      imports: [],",
+      "      providers: [",
+      "        {",
+      "          provide: Adapter,",
+      "          useFactory: () => {",
+      "            return new Usecase();",
+      "          },",
+      "          inject: []",
+      "        }",
+      "      ]",
+      "    }).compile();",
+      "$4",
+      "    usecase = app.get(Adapter);",
+      "  });",
+      "$5",
+      "  test('when no input is specified, should expect an error', async () => {",
+      "    await expectZodError(",
+      "      () => usecase.execute({}),",
+      "      (issues) => {",
+      "        expect(issues).toEqual([]);",
+      "      }",
+      "    );",
+      "  });",
+      "});",
+      "$6"
+    ],
+    "description": "Create usecase test"
+  }
+}

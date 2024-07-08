@@ -1,0 +1,26 @@
+{
+"Create Usecase": {
+  "scope": "javascript,typescript",
+  "prefix": "usecase",
+  "body": [
+    "import { z } from 'zod';",
+    "$1",
+    "import { ValidateSchema } from '@/utils/decorators';",
+    "import { IUsecase } from '@/utils/usecase';",
+    "$2",
+    "export const UseCaseSchema = SchemaValidator.pick({...});",
+    "$3",
+    "export type UseCaseInput = z.infer<typeof UseCaseSchema>;",
+    "export type UseCaseOutput = void;",
+    "$4",
+    "export class Usecase implements IUsecase {",
+    "$5",
+    "  @ValidateSchema(UseCaseSchema)",
+    "  async execute(input: UseCaseInput): Promise<UseCaseOutput> {",
+    "    return input;",
+    "  }",
+    "}",
+  ],
+  "description": "Create usecase"
+}
+}
