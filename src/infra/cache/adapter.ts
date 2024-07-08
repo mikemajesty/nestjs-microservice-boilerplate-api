@@ -1,9 +1,5 @@
 import { MemoryCacheSetType } from './memory/types';
-import {
-  RedisCacheKeyArgument,
-  RedisCacheKeyValue,
-  RedisCacheValeuArgument as RedisCacheValueArgument
-} from './redis/types';
+import { RedisCacheKeyArgument, RedisCacheKeyValue, RedisCacheValueArgument } from './redis/types';
 
 export abstract class ICacheAdapter<T = object> {
   client: T;
