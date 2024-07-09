@@ -7,7 +7,7 @@
       "$1",
       "import { expectZodError } from '@/utils/tests';",
       "$2",
-      "describe('RENAME', () => {",
+      "describe(Usecase.name, () => {",
       "  let usecase: Adapter;",
       "$3",
       "  beforeEach(async () => {",

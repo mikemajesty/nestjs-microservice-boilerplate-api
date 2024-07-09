@@ -9,7 +9,6 @@ import { ICryptoAdapter } from './adapter';
 const CryptoSchema = z.string().min(1).trim();
 
 export type CreateHashInput = z.infer<typeof CryptoSchema>;
-
 export type CreateHashOutput = string;
 
 @Injectable()

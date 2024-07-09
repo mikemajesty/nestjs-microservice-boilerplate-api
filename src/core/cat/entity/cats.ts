@@ -31,6 +31,6 @@ export class CatsEntity extends BaseEntity<CatsEntity>() {
 
   constructor(entity: Cat) {
     super(CatsEntitySchema);
-    Object.assign(this, this.validate<Cat>(entity));
+    Object.assign(this, this.validate(entity));
   }
 }
