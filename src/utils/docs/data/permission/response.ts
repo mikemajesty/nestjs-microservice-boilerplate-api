@@ -6,13 +6,13 @@ import { PermissionListOutput } from '@/core/permission/use-cases/permission-lis
 import { PermissionUpdateOutput } from '@/core/permission/use-cases/permission-update';
 import { getMockDate, getMockUUID } from '@/utils/tests';
 
-const permission = new PermissionEntity({
+const permission = {
   id: getMockUUID(),
   name: 'name',
   createdAt: getMockDate(),
   deletedAt: null,
   updatedAt: getMockDate()
-});
+} as PermissionEntity;
 
 export const PermissionResponse = {
   create: {

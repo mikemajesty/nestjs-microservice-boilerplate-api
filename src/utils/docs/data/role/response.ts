@@ -6,13 +6,13 @@ import { RoleListOutput } from '@/core/role/use-cases/role-list';
 import { RoleUpdateOutput } from '@/core/role/use-cases/role-update';
 import { getMockDate, getMockUUID } from '@/utils/tests';
 
-const role = new RoleEntity({
+const role = {
   id: getMockUUID(),
   name: RoleEnum.USER,
   createdAt: getMockDate(),
   deletedAt: null,
   updatedAt: getMockDate()
-});
+} as RoleEntity;
 
 export const RoleResponse = {
   create: {
