@@ -10,5 +10,8 @@ export abstract class IUserRepository extends IRepository<UserEntity> {
   ): Promise<boolean>;
   abstract paginate(input: UserListInput): Promise<UserListOutput>;
   abstract softRemove(entity: Partial<UserEntity>): Promise<UserEntity>;
-  abstract findOneWithRelation(filter: Partial<UserEntity>, relations: { [key: string]: boolean }): Promise<UserEntity>;
+  abstract findOneWithRelation(
+    filter: Partial<UserEntity>,
+    relations: { [key in keyof Partial<UserEntity>]: true | false }
+  ): Promise<UserEntity>;
 }

@@ -26,13 +26,13 @@ export const RoleEntitySchema = z.object({
 
 type Role = z.infer<typeof RoleEntitySchema>;
 
-export class RoleEntity extends BaseEntity<RoleEntity>() {
+export class RoleEntity extends BaseEntity<RoleEntity>(RoleEntitySchema) {
   name: RoleEnum;
 
   permissions: PermissionEntity[];
 
   constructor(entity: Role) {
-    super(RoleEntitySchema);
+    super();
     Object.assign(this, this.validate(entity));
   }
 }

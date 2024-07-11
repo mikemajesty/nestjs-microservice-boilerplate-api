@@ -24,14 +24,10 @@ export class CatsCreateUsecase implements IUsecase {
   async execute(input: CatsCreateInput, { tracing, user }: ApiTrancingInput): Promise<CatsCreateOutput> {
     const entity = new CatsEntity(input);
 
-    try {
-      const cats = await this.catsRepository.create(entity);
+    const cats = await this.catsRepository.create(entity);
 
-      tracing.logEvent('cats-created', `cats created by: ${user.email}`);
+    tracing.logEvent('cats-created', `cats created by: ${user.email}`);
 
-      return cats;
-    } catch (error) {
-      throw error;
-    }
+    return cats;
   }
 }

@@ -26,7 +26,10 @@ export class UserRepository extends TypeORMRepository<Model> implements IUserRep
     return exists;
   }
 
-  async findOneWithRelation(filter: Partial<UserEntity>, relations: { [key: string]: boolean }): Promise<UserEntity> {
+  async findOneWithRelation(
+    filter: Partial<UserEntity>,
+    relations: { [key in keyof Partial<UserEntity>]: boolean }
+  ): Promise<UserEntity> {
     return await this.repository.findOne({
       where: filter as FindOptionsWhere<unknown>,
       relations: relations as FindOptionsRelations<unknown>

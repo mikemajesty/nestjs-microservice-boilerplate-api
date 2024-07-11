@@ -21,13 +21,13 @@ export const ResetPasswordEntitySchema = z.object({
 
 type ResetPassword = z.infer<typeof ResetPasswordEntitySchema>;
 
-export class ResetPasswordEntity extends BaseEntity<ResetPasswordEntity>() {
+export class ResetPasswordEntity extends BaseEntity<ResetPasswordEntity>(ResetPasswordEntitySchema) {
   token: string;
 
   user: UserEntity;
 
   constructor(entity: ResetPassword) {
-    super(ResetPasswordEntitySchema);
+    super();
     Object.assign(this, this.validate(entity));
   }
 }
