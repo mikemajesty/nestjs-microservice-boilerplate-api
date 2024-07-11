@@ -1347,10 +1347,10 @@
   resolved "https://registry.yarnpkg.com/@microsoft/tsdoc/-/tsdoc-0.15.0.tgz#f29a55df17cb6e87cfbabce33ff6a14a9f85076d"
   integrity sha512-HZpPoABogPvjeJOdzCOSJsXeL/SMCBgBZMVC3X3d7YYp2gf31MfxhUoYUNwf1ERPJOnQc0wkFn9trqI6ZEdZuA==
 
-"@mikemajesty/microservice-crud@5.0.9":
-  version "5.0.9"
-  resolved "https://registry.npmjs.org/@mikemajesty/microservice-crud/-/microservice-crud-5.0.9.tgz"
-  integrity sha512-/rAGuVMal6cY8khHnsNI/lWEgeD3o5KzEZtiPwmVe7hbaEAsBZtqptcSJ+IJhzMAUWXzNiUWVtkTo1t+UFckCQ==
+"@mikemajesty/microservice-crud@5.0.10":
+  version "5.0.10"
+  resolved "https://registry.npmjs.org/@mikemajesty/microservice-crud/-/microservice-crud-5.0.10.tgz"
+  integrity sha512-pzXNLbxYkouup9hC7ym6MwzFtulaYalCoSe21Fy4TR1hL2t8LwGYPjvT80NQNXbwKSHtLKQXds73R4ubCQO90w==
   dependencies:
     arg "^5.0.1"
     chmod "^0.2.1"
@@ -2916,7 +2916,7 @@
 
 "@webassemblyjs/ast@1.12.1", "@webassemblyjs/ast@^1.12.1":
   version "1.12.1"
-  resolved "https://registry.yarnpkg.com/@webassemblyjs/ast/-/ast-1.12.1.tgz#bb16a0e8b1914f979f45864c23819cc3e3f0d4bb"
+  resolved "https://registry.npmjs.org/@webassemblyjs/ast/-/ast-1.12.1.tgz"
   integrity sha512-EKfMUOPRRUTy5UII4qJDGPpqfwjOmZ5jeGFwid9mnoqIFK+e0vqoi1qH56JpmZSzEL53jKnNzScdmftJyG5xWg==
   dependencies:
     "@webassemblyjs/helper-numbers" "1.11.6"
@@ -3017,7 +3017,7 @@
 
 "@webassemblyjs/wasm-parser@1.12.1", "@webassemblyjs/wasm-parser@^1.12.1":
   version "1.12.1"
-  resolved "https://registry.yarnpkg.com/@webassemblyjs/wasm-parser/-/wasm-parser-1.12.1.tgz#c47acb90e6f083391e3fa61d113650eea1e95937"
+  resolved "https://registry.npmjs.org/@webassemblyjs/wasm-parser/-/wasm-parser-1.12.1.tgz"
   integrity sha512-xikIi7c2FHXysxXe3COrVUPSheuBtpcfhbpFj4gmu7KRLYOzANztwUU0IbsqvMqzuNK2+glRGWCEqZo1WCLyAQ==
   dependencies:
     "@webassemblyjs/ast" "1.12.1"
