@@ -27,7 +27,7 @@ export class RoleDeleteUsecase implements IUsecase {
 
     const role = new RoleEntity(model);
 
-    role.setDeleted();
+    role.deactivated();
 
     await this.roleRepository.updateOne({ id: role.id }, role);
 

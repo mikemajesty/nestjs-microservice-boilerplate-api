@@ -36,8 +36,12 @@ export const BaseEntity = <T>() => {
 
     static nameOf = (name: keyof T) => name;
 
-    setDeleted() {
+    deactivated() {
       this.deletedAt = DateUtils.getJSDate();
+    }
+
+    activated() {
+      this.deletedAt = null;
     }
 
     validate<T>(entity: T): T {
