@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { BaseEntity, withID } from '@/utils/entity';
+import { BaseEntity } from '@/utils/entity';
 
 const ID = z.string().uuid();
 const Name = z.string();
@@ -23,6 +23,6 @@ export class PermissionEntity extends BaseEntity<PermissionEntity>() {
 
   constructor(entity: Permission) {
     super(PermissionEntitySchema);
-    Object.assign(this, PermissionEntitySchema.parse(withID(entity)));
+    Object.assign(this, this.validate(entity));
   }
 }

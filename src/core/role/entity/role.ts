@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 import { PermissionEntity, PermissionEntitySchema } from '@/core/permission/entity/permission';
-import { BaseEntity, withID } from '@/utils/entity';
+import { BaseEntity } from '@/utils/entity';
 
 export enum RoleEnum {
   USER = 'USER',
@@ -33,6 +33,6 @@ export class RoleEntity extends BaseEntity<RoleEntity>() {
 
   constructor(entity: Role) {
     super(RoleEntitySchema);
-    Object.assign(this, RoleEntitySchema.parse(withID(entity)));
+    Object.assign(this, this.validate(entity));
   }
 }
