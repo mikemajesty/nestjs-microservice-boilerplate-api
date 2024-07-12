@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, HttpCode, Post, Put, Req } from '@nestjs/common';
+import { Controller, Delete, Get, HttpCode, Post, Put, Req, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { RoleAddPermissionInput, RoleAddPermissionOutput } from '@/core/role/use-cases/role-add-permission';
@@ -40,6 +40,7 @@ export class RoleController {
   @Post()
   @ApiResponse(SwaggerResponse.create[200])
   @ApiBody(SwaggerRequest.create)
+  @Version('1')
   @Permission('role:create')
   async create(@Req() { body }: ApiRequest): Promise<RoleCreateOutput> {
     return await this.createUsecase.execute(body as RoleCreateInput);
@@ -50,6 +51,7 @@ export class RoleController {
   @ApiResponse(SwaggerResponse.update[404])
   @ApiBody(SwaggerRequest.update)
   @ApiParam({ name: 'id', required: true })
+  @Version('1')
   @Permission('role:update')
   async update(@Req() { body, params }: ApiRequest): Promise<RoleUpdateOutput> {
     return await this.updateUsecase.execute({ ...body, id: params.id } as RoleUpdateInput);
@@ -59,6 +61,7 @@ export class RoleController {
   @ApiParam({ name: 'id', required: true })
   @ApiResponse(SwaggerResponse.getById[200])
   @ApiResponse(SwaggerResponse.getById[404])
+  @Version('1')
   @Permission('role:getbyid')
   async getById(@Req() { params }: ApiRequest): Promise<RoleGetByIdOutput> {
     return await this.getByIdUsecase.execute(params as RoleGetByIdInput);
@@ -70,6 +73,7 @@ export class RoleController {
   @ApiQuery(SwaggerRequest.list.sort)
   @ApiQuery(SwaggerRequest.list.search)
   @ApiResponse(SwaggerResponse.list[200])
+  @Version('1')
   @Permission('role:list')
   async list(@Req() { query }: ApiRequest): Promise<RoleListOutput> {
     const input: RoleListInput = {
@@ -86,6 +90,7 @@ export class RoleController {
   @ApiParam({ name: 'id', required: true })
   @ApiResponse(SwaggerResponse.delete[200])
   @ApiResponse(SwaggerResponse.delete[404])
+  @Version('1')
   @Permission('role:delete')
   async delete(@Req() { params }: ApiRequest): Promise<RoleDeleteOutput> {
     return await this.deleteUsecase.execute(params as RoleDeleteInput);
@@ -96,6 +101,7 @@ export class RoleController {
   @ApiBody(SwaggerRequest.addPermission)
   @ApiResponse(SwaggerResponse.addPermissions[200])
   @ApiResponse(SwaggerResponse.addPermissions[404])
+  @Version('1')
   @Permission('role:addpermission')
   async addPermissions(@Req() { body, params }: ApiRequest): Promise<RoleAddPermissionOutput> {
     return await this.addPermissionUsecase.execute({ ...body, id: params.id } as RoleAddPermissionInput);
@@ -107,6 +113,7 @@ export class RoleController {
   @ApiResponse(SwaggerResponse.removePermissions[200])
   @ApiResponse(SwaggerResponse.removePermissions[404])
   @HttpCode(200)
+  @Version('1')
   @Permission('role:deletepermission')
   async removePermissions(@Req() { body, params }: ApiRequest): Promise<RoleAddPermissionOutput> {
     return await this.deletePermissionUsecase.execute({ ...body, id: params.id } as RoleAddPermissionInput);

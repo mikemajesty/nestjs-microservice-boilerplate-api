@@ -164,6 +164,7 @@ Creating a CRUD in Postgres and Mongo in seconds.
   - Forgot Password
 - Authorization
   - Role-based access
+  - Endpoint Permissions
 - Error Handler
 - Libs Structure
 - Dependency Inversion Pattern

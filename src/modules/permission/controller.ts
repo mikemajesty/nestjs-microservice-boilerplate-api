@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, Post, Put, Req } from '@nestjs/common';
+import { Controller, Delete, Get, Post, Put, Req, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { PermissionCreateInput, PermissionCreateOutput } from '@/core/permission/use-cases/permission-create';
@@ -35,6 +35,7 @@ export class PermissionController {
   @Post()
   @ApiResponse(SwaggerResponse.create[200])
   @ApiBody(SwaggerRequest.create)
+  @Version('1')
   @Permission('permission:create')
   async create(@Req() { body }: ApiRequest): Promise<PermissionCreateOutput> {
     return await this.createUsecase.execute(body as PermissionCreateInput);
@@ -45,6 +46,7 @@ export class PermissionController {
   @ApiResponse(SwaggerResponse.update[404])
   @ApiBody(SwaggerRequest.update)
   @ApiParam({ name: 'id', required: true })
+  @Version('1')
   @Permission('permission:update')
   async update(@Req() { body, params }: ApiRequest): Promise<PermissionUpdateOutput> {
     return await this.updateUsecase.execute({ ...body, id: params.id } as PermissionUpdateInput);
@@ -54,6 +56,7 @@ export class PermissionController {
   @ApiParam({ name: 'id', required: true })
   @ApiResponse(SwaggerResponse.getById[200])
   @ApiResponse(SwaggerResponse.getById[404])
+  @Version('1')
   @Permission('permission:getbyid')
   async getById(@Req() { params }: ApiRequest): Promise<PermissionGetByIdOutput> {
     return await this.getByIdUsecase.execute(params as PermissionGetByIdInput);
@@ -65,6 +68,7 @@ export class PermissionController {
   @ApiQuery(SwaggerRequest.list.sort)
   @ApiQuery(SwaggerRequest.list.search)
   @ApiResponse(SwaggerResponse.list[200])
+  @Version('1')
   @Permission('permission:list')
   async list(@Req() { query }: ApiRequest): Promise<PermissionListOutput> {
     const input: PermissionListInput = {
@@ -81,6 +85,7 @@ export class PermissionController {
   @ApiParam({ name: 'id', required: true })
   @ApiResponse(SwaggerResponse.delete[200])
   @ApiResponse(SwaggerResponse.delete[404])
+  @Version('1')
   @Permission('permission:delete')
   async delete(@Req() { params }: ApiRequest): Promise<PermissionDeleteOutput> {
     return await this.deleteUsecase.execute(params as PermissionDeleteInput);

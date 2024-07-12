@@ -18,13 +18,13 @@ export type UserChangePasswordOutput = void;
 
 export class UserChangePasswordUsecase implements IUsecase {
   constructor(
-    private readonly repsotory: IUserRepository,
+    private readonly repository: IUserRepository,
     private readonly crypto: ICryptoAdapter
   ) {}
 
   @ValidateSchema(UserChangePasswordSchema)
   async execute(input: UserChangePasswordInput): Promise<UserChangePasswordOutput> {
-    const user = await this.repsotory.findOneWithRelation({ id: input.id }, { password: true });
+    const user = await this.repository.findOneWithRelation({ id: input.id }, { password: true });
 
     if (!user) {
       throw new ApiNotFoundException('userNotFound');
@@ -45,6 +45,6 @@ export class UserChangePasswordUsecase implements IUsecase {
 
     user.password = entityPassword;
 
-    await this.repsotory.create(user);
+    await this.repository.create(user);
   }
 }
