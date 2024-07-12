@@ -16,40 +16,48 @@ export const LoginSchema = UserEntitySchema.pick({
 }).merge(UserPasswordEntitySchema.pick({ password: true }));
 
 export type LoginInput = z.infer<typeof LoginSchema>;
-export type LoginOutput = Promise<{ token: string }>;
+export type LoginOutput = { accessToken: string; refreshToken: string };
 
 export class LoginUsecase implements IUsecase {
   constructor(
-    private readonly loginRepository: IUserRepository,
+    private readonly userRepository: IUserRepository,
     private readonly tokenService: ITokenAdapter,
     private readonly crypto: ICryptoAdapter
   ) {}
 
   @ValidateSchema(LoginSchema)
-  async execute(input: LoginInput, { tracing }: ApiTrancingInput): LoginOutput {
-    const login = await this.loginRepository.findOneWithRelation(
+  async execute(input: LoginInput, { tracing }: ApiTrancingInput): Promise<LoginOutput> {
+    const user = await this.userRepository.findOneWithRelation(
       {
         email: input.email
       },
       { password: true, role: true }
     );
 
-    if (!login) {
+    if (!user) {
       throw new ApiNotFoundException('userNotFound');
+    }
+
+    if (!user.role) {
+      throw new ApiNotFoundException('roleNotFound');
     }
 
     const password = this.crypto.createHash(input.password);
 
-    if (login.password.password !== password) {
+    if (user.password.password !== password) {
       throw new ApiNotFoundException('incorrectPassword');
     }
 
-    tracing.logEvent('user-login', `${login}`);
+    tracing.logEvent('user-login', `${user}`);
 
-    return this.tokenService.sign({
-      email: login.email,
-      name: login.name,
-      role: login.role.name
+    const { token } = this.tokenService.sign({
+      email: user.email,
+      name: user.name,
+      role: user.role.name
     } as UserRequest);
+
+    const { token: refreshToken } = this.tokenService.sign({ userId: user.id });
+
+    return { accessToken: token, refreshToken };
   }
 }

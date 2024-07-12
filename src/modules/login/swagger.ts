@@ -1,4 +1,5 @@
-import { LoginInput } from '@/core/user/use-cases/user-login';
+import { LoginInput, LoginOutput } from '@/core/user/use-cases/user-login';
+import { RefreshTokenInput, RefreshTokenOutput } from '@/core/user/use-cases/user-refresh-token';
 import { Swagger } from '@/utils/docs/swagger';
 
 const BASE_URL = `api/v1/login`;
@@ -7,14 +8,31 @@ export const SwaggerResponse = {
   login: {
     200: Swagger.defaultResponseJSON({
       status: 200,
-      json: { token: '<token>' },
-      description: 'user logged.'
+      json: { accessToken: '<token>', refreshToken: '<token>' } as LoginOutput,
+      description: 'user login.'
     }),
-    404: Swagger.defaultResponseError({
-      status: 404,
+    404: Swagger.defaultResponseWithMultiplesError({
+      messages: {
+        'user not found': { value: ['userNotFound'], description: 'user not found' },
+        'role not found': { value: ['roleNotFound'], description: 'user role not found' }
+      },
       route: BASE_URL,
-      message: 'userNotFound',
-      description: 'username or password not found.'
+      status: 404
+    })
+  },
+  refresh: {
+    200: Swagger.defaultResponseJSON({
+      status: 200,
+      json: { accessToken: '<token>', refreshToken: '<token>' } as RefreshTokenOutput,
+      description: 'user refresh token.'
+    }),
+    404: Swagger.defaultResponseWithMultiplesError({
+      messages: {
+        'user not found': { value: ['userNotFound'], description: 'user not found' },
+        'role not found': { value: ['roleNotFound'], description: 'user role not found' }
+      },
+      route: BASE_URL,
+      status: 404
     })
   }
 };
@@ -23,5 +41,8 @@ export const SwaggerRequest = {
   login: Swagger.defaultRequestJSON({
     email: 'admin@admin.com',
     password: 'admin'
-  } as LoginInput)
+  } as LoginInput),
+  refresh: Swagger.defaultRequestJSON({
+    refreshToken: '<token>'
+  } as RefreshTokenInput)
 };

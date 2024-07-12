@@ -39,6 +39,7 @@ export abstract class ISecretsAdapter {
   PROMETHUES_URL: string;
 
   TOKEN_EXPIRATION: number | string;
+  REFRESH_TOKEN_EXPIRATION: number | string;
 
   JWT_SECRET_KEY: string;
 

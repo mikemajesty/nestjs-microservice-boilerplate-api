@@ -9,7 +9,7 @@ import { expectZodError, getMockTracing, getMockUUID } from '@/utils/tests';
 
 import { UserEntity } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
-import { LoginInput, LoginUsecase } from '../user-login';
+import { LoginInput, LoginOutput, LoginUsecase } from '../user-login';
 
 describe(LoginUsecase.name, () => {
   let usecase: ILoginAdapter;
@@ -49,11 +49,11 @@ describe(LoginUsecase.name, () => {
     );
   });
 
-  const defaultInput: LoginInput = { email: 'admin@admin.com', password: '****' };
+  const input: LoginInput = { email: 'admin@admin.com', password: '****' };
   test('when user not found, should expect an error', async () => {
     repository.findOneWithRelation = jest.fn().mockResolvedValue(null);
 
-    await expect(usecase.execute(defaultInput, getMockTracing())).rejects.toThrow(ApiNotFoundException);
+    await expect(usecase.execute(input, getMockTracing())).rejects.toThrow(ApiNotFoundException);
   });
 
   const user = new UserEntity({
@@ -64,18 +64,25 @@ describe(LoginUsecase.name, () => {
     password: { id: getMockUUID(), password: '***' }
   });
 
+  test('when user role not found, should expect an error', async () => {
+    repository.findOneWithRelation = jest.fn().mockResolvedValue({ ...user, role: null });
+
+    await expect(usecase.execute(input, getMockTracing())).rejects.toThrow(ApiNotFoundException);
+  });
+
   test('when password is incorrect, should expect an error', async () => {
     repository.findOneWithRelation = jest.fn().mockResolvedValue(user);
 
-    await expect(usecase.execute(defaultInput, getMockTracing())).rejects.toThrow(ApiNotFoundException);
+    await expect(usecase.execute(input, getMockTracing())).rejects.toThrow(ApiNotFoundException);
   });
 
-  test('when user login successully, should expect a token', async () => {
+  test('when user login successfully, should expect a token', async () => {
     user.password.password = '69bf0bc46f51b33377c4f3d92caf876714f6bbbe99e7544487327920873f9820';
     repository.findOneWithRelation = jest.fn().mockResolvedValue(user);
 
-    await expect(usecase.execute(defaultInput, getMockTracing())).resolves.toEqual({
-      token: expect.any(String)
-    });
+    await expect(usecase.execute(input, getMockTracing())).resolves.toEqual({
+      accessToken: expect.any(String),
+      refreshToken: expect.any(String)
+    } as LoginOutput);
   });
 });

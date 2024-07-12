@@ -42,6 +42,7 @@ import { EnvEnum } from './types';
           PROMETHUES_URL: z.string().url(),
           REDIS_URL: z.string().url(),
           TOKEN_EXPIRATION: z.string(),
+          REFRESH_TOKEN_EXPIRATION: z.string(),
           ZIPKIN_URL: z.string().url(),
           EMAIL: z.object({
             HOST: z.string(),

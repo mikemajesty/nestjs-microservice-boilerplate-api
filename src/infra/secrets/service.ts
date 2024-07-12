@@ -54,6 +54,7 @@ export class SecretsService implements ISecretsAdapter {
   PROMETHUES_URL = this.config.get('PROMETHUES_URL');
 
   TOKEN_EXPIRATION = this.config.get<number | string>('TOKEN_EXPIRATION');
+  REFRESH_TOKEN_EXPIRATION = this.config.get<number | string>('REFRESH_TOKEN_EXPIRATION');
 
   JWT_SECRET_KEY = this.config.get('JWT_SECRET_KEY');
 

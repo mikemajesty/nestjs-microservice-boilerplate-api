@@ -162,6 +162,7 @@ Creating a CRUD in Postgres and Mongo in seconds.
   - Login
   - Logout
   - Forgot Password
+  - Refresh Token
 - Authorization
   - Role-based access
   - Endpoint Permissions
