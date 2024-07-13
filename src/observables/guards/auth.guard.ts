@@ -27,7 +27,7 @@ export class AuthRoleGuard implements CanActivate {
     const role = request?.user?.role;
 
     if (!role) {
-      throw new ApiUnauthorizedException();
+      throw new ApiUnauthorizedException('userRoleNotFound');
     }
 
     const roleData = await this.roleRepository.findOne({ name: role });

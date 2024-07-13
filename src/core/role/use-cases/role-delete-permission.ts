@@ -34,9 +34,9 @@ export class RoleDeletePermissionUsecase implements IUsecase {
     const permissions = await this.permissionRepository.findIn({ name: input.permissions });
 
     for (const permission of input.permissions) {
-      const permissionAlreadyCreated = permissions.find((p) => p.name === permission);
+      const permissionExists = permissions.find((p) => p.name === permission);
 
-      if (!permissionAlreadyCreated) {
+      if (!permissionExists) {
         continue;
       }
 

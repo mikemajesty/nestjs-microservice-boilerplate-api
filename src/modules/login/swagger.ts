@@ -2,7 +2,7 @@ import { LoginInput, LoginOutput } from '@/core/user/use-cases/user-login';
 import { RefreshTokenInput, RefreshTokenOutput } from '@/core/user/use-cases/user-refresh-token';
 import { Swagger } from '@/utils/docs/swagger';
 
-const BASE_URL = `api/v1/login`;
+const BASE_URL = `api/v1`;
 
 export const SwaggerResponse = {
   login: {
@@ -16,7 +16,7 @@ export const SwaggerResponse = {
         'user not found': { value: ['userNotFound'], description: 'user not found' },
         'role not found': { value: ['roleNotFound'], description: 'user role not found' }
       },
-      route: BASE_URL,
+      route: BASE_URL.concat('/login'),
       status: 404
     })
   },
@@ -31,7 +31,7 @@ export const SwaggerResponse = {
         'user not found': { value: ['userNotFound'], description: 'user not found' },
         'role not found': { value: ['roleNotFound'], description: 'user role not found' }
       },
-      route: BASE_URL,
+      route: BASE_URL.concat('/refresh'),
       status: 404
     })
   }
