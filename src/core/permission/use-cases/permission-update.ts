@@ -38,9 +38,7 @@ export class PermissionUpdateUsecase implements IUsecase {
       throw new ApiConflictException('permissionExists');
     }
 
-    const permissionFound = new PermissionEntity(permission);
-
-    const entity = new PermissionEntity({ ...permissionFound, ...input });
+    const entity = new PermissionEntity({ ...permission, ...input });
 
     await this.permissionRepository.updateOne({ id: entity.id }, entity);
 
