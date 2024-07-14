@@ -61,7 +61,7 @@ describe(PermissionUpdateUsecase.name, () => {
 
   const permission = new PermissionEntity({
     id: getMockUUID(),
-    name: 'all'
+    name: 'name:permission'
   });
 
   test('when permission exists, should expect an error', async () => {

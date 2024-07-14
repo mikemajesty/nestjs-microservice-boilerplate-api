@@ -49,7 +49,7 @@ describe(PermissionListUsecase.name, () => {
 
   const permission = new PermissionEntity({
     id: getMockUUID(),
-    name: 'all',
+    name: 'name:permission',
     createdAt: new Date(),
     updatedAt: new Date()
   });

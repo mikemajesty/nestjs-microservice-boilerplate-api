@@ -54,7 +54,7 @@ describe(PermissionDeleteUsecase.name, () => {
 
   const permission = new PermissionEntity({
     id: getMockUUID(),
-    name: 'all'
+    name: 'name:permission'
   });
 
   test('when permission deleted successfully, should expect a permission that has been deleted', async () => {

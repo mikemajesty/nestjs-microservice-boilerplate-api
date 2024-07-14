@@ -50,7 +50,7 @@ describe(PermissionCreateUsecase.name, () => {
   });
 
   const input: PermissionCreateInput = {
-    name: 'all'
+    name: 'name:permission'
   };
 
   const output: PermissionEntity = new PermissionEntity({ id: getMockUUID(), name: input.name });
