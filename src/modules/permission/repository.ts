@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { FindOptionsWhere, Repository } from 'typeorm';
+import { FindOptionsWhere, Not, Repository } from 'typeorm';
 
 import { PermissionEntity } from '@/core/permission/entity/permission';
-import { IPermissionRepository } from '@/core/permission/repository/permission';
+import { ExistsOnUpdateInput, IPermissionRepository } from '@/core/permission/repository/permission';
 import { PermissionListInput, PermissionListOutput } from '@/core/permission/use-cases/permission-list';
 import { PermissionSchema } from '@/infra/database/postgres/schemas/permission';
 import { TypeORMRepository } from '@/infra/repository/postgres/repository';
@@ -15,6 +15,10 @@ type Model = PermissionSchema & PermissionEntity;
 export class PermissionRepository extends TypeORMRepository<Model> implements IPermissionRepository {
   constructor(readonly repository: Repository<Model>) {
     super(repository);
+  }
+
+  async existsOnUpdate(input: ExistsOnUpdateInput): Promise<boolean> {
+    return await this.repository.exists({ where: { name: input.nameEquals, id: Not(input.idNotEquals) } });
   }
 
   @ValidateMongooseFilter<PermissionEntity>([{ name: 'name', type: SearchTypeEnum.like }])

@@ -34,6 +34,7 @@ export class PermissionController {
 
   @Post()
   @ApiResponse(SwaggerResponse.create[200])
+  @ApiResponse(SwaggerResponse.create[409])
   @ApiBody(SwaggerRequest.create)
   @Version('1')
   @Permission('permission:create')

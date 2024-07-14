@@ -16,7 +16,7 @@ const permission = {
 
 export const PermissionResponse = {
   create: {
-    created: true,
+    name: 'All',
     id: getMockUUID()
   } as PermissionCreateOutput,
   update: permission as PermissionUpdateOutput,

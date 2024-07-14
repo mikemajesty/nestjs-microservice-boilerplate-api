@@ -2,7 +2,7 @@ import { Test } from '@nestjs/testing';
 
 import { ILoggerAdapter } from '@/infra/logger';
 import { IPermissionUpdateAdapter } from '@/modules/permission/adapter';
-import { ApiNotFoundException } from '@/utils/exception';
+import { ApiConflictException, ApiNotFoundException } from '@/utils/exception';
 import { expectZodError, getMockUUID } from '@/utils/tests';
 
 import { IPermissionRepository } from '../../repository/permission';
@@ -64,9 +64,17 @@ describe(PermissionUpdateUsecase.name, () => {
     name: 'all'
   });
 
+  test('when permission exists, should expect an error', async () => {
+    repository.findById = jest.fn().mockResolvedValue(permission);
+    repository.existsOnUpdate = jest.fn().mockResolvedValue(true);
+
+    await expect(usecase.execute(input)).rejects.toThrow(ApiConflictException);
+  });
+
   test('when permission updated successfully, should expect an permission that has been updated', async () => {
     repository.findById = jest.fn().mockResolvedValue(permission);
     repository.updateOne = jest.fn().mockResolvedValue(null);
+    repository.existsOnUpdate = jest.fn().mockResolvedValue(false);
 
     await expect(usecase.execute(input)).resolves.toEqual(permission);
   });

@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { BaseEntity } from '@/utils/entity';
 
 const ID = z.string().uuid();
-const Name = z.string();
+const Name = z.string().transform((value) => value.trim().replace(/ /g, '_').toLowerCase());
 const CreatedAt = z.date().nullish();
 const UpdatedAt = z.date().nullish();
 const DeletedAt = z.date().default(null).nullish();

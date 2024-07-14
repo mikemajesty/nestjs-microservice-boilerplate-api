@@ -2,11 +2,12 @@ import { Test } from '@nestjs/testing';
 
 import { ILoggerAdapter } from '@/infra/logger';
 import { IPermissionCreateAdapter } from '@/modules/permission/adapter';
+import { ApiConflictException } from '@/utils/exception';
 import { expectZodError, getMockUUID } from '@/utils/tests';
 
 import { PermissionEntity } from '../../entity/permission';
 import { IPermissionRepository } from '../../repository/permission';
-import { PermissionCreateInput, PermissionCreateOutput, PermissionCreateUsecase } from '../permission-create';
+import { PermissionCreateInput, PermissionCreateUsecase } from '../permission-create';
 
 describe(PermissionCreateUsecase.name, () => {
   let usecase: IPermissionCreateAdapter;
@@ -52,10 +53,18 @@ describe(PermissionCreateUsecase.name, () => {
     name: 'all'
   };
 
-  test('when permission created successfully, should expect a permission that has been created', async () => {
-    const output: PermissionCreateOutput = { created: true, id: getMockUUID() };
-    repository.create = jest.fn().mockResolvedValue(output);
+  const output: PermissionEntity = new PermissionEntity({ id: getMockUUID(), name: input.name });
 
-    await expect(usecase.execute(input)).resolves.toEqual(output);
+  test('when permission exists, should expect an error', async () => {
+    repository.findOne = jest.fn().mockResolvedValue(output);
+
+    await expect(usecase.execute(input)).rejects.toThrow(ApiConflictException);
+  });
+
+  test('when permission created successfully, should expect a permission that has been created', async () => {
+    repository.create = jest.fn().mockResolvedValue(true);
+    repository.findOne = jest.fn().mockResolvedValue(null);
+
+    await expect(usecase.execute(input)).resolves.toBeInstanceOf(PermissionEntity);
   });
 });

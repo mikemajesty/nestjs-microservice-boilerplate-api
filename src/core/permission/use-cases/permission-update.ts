@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { IPermissionRepository } from '@/core/permission/repository/permission';
 import { ILoggerAdapter } from '@/infra/logger';
 import { ValidateSchema } from '@/utils/decorators';
-import { ApiNotFoundException } from '@/utils/exception';
+import { ApiConflictException, ApiNotFoundException } from '@/utils/exception';
 import { IUsecase } from '@/utils/usecase';
 
 import { PermissionEntity, PermissionEntitySchema } from './../entity/permission';
@@ -29,16 +29,23 @@ export class PermissionUpdateUsecase implements IUsecase {
       throw new ApiNotFoundException();
     }
 
-    const permissionFinded = new PermissionEntity(permission);
+    const permissionExists = await this.permissionRepository.existsOnUpdate({
+      idNotEquals: input.id,
+      nameEquals: input.name
+    });
 
-    const entity = new PermissionEntity({ ...permissionFinded, ...input });
+    if (permissionExists) {
+      throw new ApiConflictException('permissionExists');
+    }
+
+    const permissionFound = new PermissionEntity(permission);
+
+    const entity = new PermissionEntity({ ...permissionFound, ...input });
 
     await this.permissionRepository.updateOne({ id: entity.id }, entity);
 
     this.loggerService.info({ message: 'permission updated.', obj: { permission: input } });
 
-    const updated = await this.permissionRepository.findById(entity.id);
-
-    return new PermissionEntity(updated);
+    return entity;
   }
 }

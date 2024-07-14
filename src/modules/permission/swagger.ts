@@ -10,6 +10,12 @@ export const SwaggerResponse = {
       status: 200,
       json: PermissionResponse.create,
       description: 'create permission.'
+    }),
+    409: Swagger.defaultResponseError({
+      status: 409,
+      route: BASE_URL,
+      message: 'permissionExists',
+      description: 'permission exists.'
     })
   },
   update: {
