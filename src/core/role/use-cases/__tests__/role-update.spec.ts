@@ -56,7 +56,7 @@ describe(RoleUpdateUsecase.name, () => {
   test('when role not found, should expect an error', async () => {
     repository.findById = jest.fn().mockResolvedValue(null);
 
-    await expect(usecase.execute(input)).rejects.toThrowError(ApiNotFoundException);
+    await expect(usecase.execute(input)).rejects.toThrow(ApiNotFoundException);
   });
 
   const role = new RoleEntity({
