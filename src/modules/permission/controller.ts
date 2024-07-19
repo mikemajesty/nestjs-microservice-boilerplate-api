@@ -38,8 +38,8 @@ export class PermissionController {
   @ApiBody(SwaggerRequest.create)
   @Version('1')
   @Permission('permission:create')
-  async create(@Req() { body }: ApiRequest): Promise<PermissionCreateOutput> {
-    return await this.createUsecase.execute(body as PermissionCreateInput);
+  async create(@Req() { body }: ApiRequest<PermissionCreateInput>): Promise<PermissionCreateOutput> {
+    return await this.createUsecase.execute(body);
   }
 
   @Put(':id')
@@ -49,8 +49,8 @@ export class PermissionController {
   @ApiParam({ name: 'id', required: true })
   @Version('1')
   @Permission('permission:update')
-  async update(@Req() { body, params }: ApiRequest): Promise<PermissionUpdateOutput> {
-    return await this.updateUsecase.execute({ ...body, id: params.id } as PermissionUpdateInput);
+  async update(@Req() { body, params }: ApiRequest<PermissionUpdateInput>): Promise<PermissionUpdateOutput> {
+    return await this.updateUsecase.execute({ ...body, id: params.id });
   }
 
   @Get('/:id')
@@ -59,8 +59,8 @@ export class PermissionController {
   @ApiResponse(SwaggerResponse.getById[404])
   @Version('1')
   @Permission('permission:getbyid')
-  async getById(@Req() { params }: ApiRequest): Promise<PermissionGetByIdOutput> {
-    return await this.getByIdUsecase.execute(params as PermissionGetByIdInput);
+  async getById(@Req() { params }: ApiRequest<PermissionGetByIdInput>): Promise<PermissionGetByIdOutput> {
+    return await this.getByIdUsecase.execute(params);
   }
 
   @Get()
@@ -71,7 +71,7 @@ export class PermissionController {
   @ApiResponse(SwaggerResponse.list[200])
   @Version('1')
   @Permission('permission:list')
-  async list(@Req() { query }: ApiRequest): Promise<PermissionListOutput> {
+  async list(@Req() { query }: ApiRequest<PermissionListInput>): Promise<PermissionListOutput> {
     const input: PermissionListInput = {
       sort: SortHttpSchema.parse(query.sort),
       search: SearchHttpSchema.parse(query.search),
@@ -88,7 +88,7 @@ export class PermissionController {
   @ApiResponse(SwaggerResponse.delete[404])
   @Version('1')
   @Permission('permission:delete')
-  async delete(@Req() { params }: ApiRequest): Promise<PermissionDeleteOutput> {
-    return await this.deleteUsecase.execute(params as PermissionDeleteInput);
+  async delete(@Req() { params }: ApiRequest<PermissionDeleteInput>): Promise<PermissionDeleteOutput> {
+    return await this.deleteUsecase.execute(params);
   }
 }

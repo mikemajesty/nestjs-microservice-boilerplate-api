@@ -21,8 +21,8 @@ export class ResetPasswordController {
   @ApiResponse(SwaggerResponse.sendEmail[404])
   @ApiBody(SwaggerRequest.sendEmail)
   @Version('1')
-  async sendEmail(@Req() { body }: ApiRequest): Promise<SendEmailResetPasswordOutput> {
-    return await this.sendEmailUsecase.execute(body as SendEmailResetPasswordInput);
+  async sendEmail(@Req() { body }: ApiRequest<SendEmailResetPasswordInput>): Promise<SendEmailResetPasswordOutput> {
+    return await this.sendEmailUsecase.execute(body);
   }
 
   @Put(':token')
@@ -34,10 +34,10 @@ export class ResetPasswordController {
   @ApiBody(SwaggerRequest.confirmResetPassword)
   @Version('1')
   @HttpCode(200)
-  async receive(@Req() { params, body }: ApiRequest): Promise<ConfirmResetPasswordOutput> {
+  async receive(@Req() { params, body }: ApiRequest<ConfirmResetPasswordInput>): Promise<ConfirmResetPasswordOutput> {
     return await this.confirmResetPasswordUsecase.execute({
       token: params.token,
       ...body
-    } as ConfirmResetPasswordInput);
+    });
   }
 }

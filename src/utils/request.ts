@@ -17,9 +17,8 @@ export type TracingType = {
 
 export type UserRequest = Pick<UserEntity, 'email' | 'name'> & { role: string };
 
-export interface ApiRequest {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  readonly body: any;
+export interface ApiRequest<Body> {
+  readonly body: Body;
   readonly tracing: TracingType;
   readonly user: UserRequest;
   readonly params: { [key: string]: string };
@@ -36,7 +35,9 @@ export interface ApiRequest {
   }[];
 }
 
-export type ApiTrancingInput = Pick<ApiRequest, 'user' | 'tracing'>;
+interface ApiTracingBody {}
+
+export type ApiTrancingInput = Pick<ApiRequest<ApiTracingBody>, 'user' | 'tracing'>;
 
 export const getPathWithoutUUID = (path: string) =>
   path.replace(/[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/, 'uuid');

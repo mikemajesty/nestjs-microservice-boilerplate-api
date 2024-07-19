@@ -37,8 +37,8 @@ export class CatsController {
   @ApiBody(SwaggerRequest.create)
   @Version('1')
   @Permission('cat:create')
-  async create(@Req() { body, user, tracing }: ApiRequest): Promise<CatsCreateOutput> {
-    return await this.createUsecase.execute(body as CatsCreateInput, { user, tracing });
+  async create(@Req() { body, user, tracing }: ApiRequest<CatsCreateInput>): Promise<CatsCreateOutput> {
+    return await this.createUsecase.execute(body, { user, tracing });
   }
 
   @Put(':id')
@@ -48,8 +48,8 @@ export class CatsController {
   @ApiParam({ name: 'id', required: true })
   @Version('1')
   @Permission('cat:update')
-  async update(@Req() { body, user, tracing, params }: ApiRequest): Promise<CatsUpdateOutput> {
-    return await this.updateUsecase.execute({ ...body, id: params.id } as CatsUpdateInput, { user, tracing });
+  async update(@Req() { body, user, tracing, params }: ApiRequest<CatsUpdateInput>): Promise<CatsUpdateOutput> {
+    return await this.updateUsecase.execute({ ...body, id: params.id }, { user, tracing });
   }
 
   @Get('/:id')
@@ -58,8 +58,8 @@ export class CatsController {
   @ApiResponse(SwaggerResponse.getById[404])
   @Version('1')
   @Permission('cat:getbyid')
-  async getById(@Req() { params }: ApiRequest): Promise<CatsGetByIdOutput> {
-    return await this.getByIdUsecase.execute(params as CatsGetByIdInput);
+  async getById(@Req() { params }: ApiRequest<CatsGetByIdInput>): Promise<CatsGetByIdOutput> {
+    return await this.getByIdUsecase.execute(params);
   }
 
   @Get()
@@ -70,7 +70,7 @@ export class CatsController {
   @ApiResponse(SwaggerResponse.list[200])
   @Version('1')
   @Permission('cat:list')
-  async list(@Req() { query }: ApiRequest): Promise<CatsListOutput> {
+  async list(@Req() { query }: ApiRequest<CatsListInput>): Promise<CatsListOutput> {
     const input: CatsListInput = {
       sort: SortHttpSchema.parse(query.sort),
       search: SearchHttpSchema.parse(query.search),
@@ -87,7 +87,7 @@ export class CatsController {
   @ApiResponse(SwaggerResponse.delete[404])
   @Version('1')
   @Permission('cat:delete')
-  async delete(@Req() { params, user, tracing }: ApiRequest): Promise<CatsDeleteOutput> {
-    return await this.deleteUsecase.execute(params as CatsDeleteInput, { user, tracing });
+  async delete(@Req() { params, user, tracing }: ApiRequest<CatsDeleteInput>): Promise<CatsDeleteOutput> {
+    return await this.deleteUsecase.execute(params, { user, tracing });
   }
 }
