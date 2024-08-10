@@ -6,7 +6,7 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "prepare": "husky install",
+    "prepare": "husky",
     "build": "nest build",
     "start": "yarn migration:run && node dist/src/main",
     "start:dev": "yarn migration:run && nest start --watch -b swc",
