@@ -32,6 +32,11 @@ export abstract class IRepository<T> {
     options?: TOptions | null
   ): Promise<T[]>;
 
+  abstract findOneByCommands<TOptions = unknown>(
+    filterList: DatabaseOperationCommand<T>[],
+    options?: TOptions | null
+  ): Promise<T>;
+
   abstract remove<TQuery = Partial<T>, TOpt = unknown>(filter: TQuery, opt?: TOpt): Promise<RemovedModel>;
 
   abstract findOne<TQuery = Partial<T>, TOptions = unknown>(filter: TQuery, options?: TOptions): Promise<T>;

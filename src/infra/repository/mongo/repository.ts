@@ -138,6 +138,15 @@ export class MongoRepository<T extends Document> implements IRepository<T> {
     return data.map((d) => d.toObject({ virtuals: true }));
   }
 
+  async findOneByCommands(filterList: DatabaseOperationCommand<T>[], options?: QueryOptions): Promise<T> {
+    const data = await this.findByCommands(filterList, options);
+
+    if (data.length) {
+      return data.find(Boolean);
+    }
+
+    return null;
+  }
   async findByCommands(filterList: DatabaseOperationCommand<T>[], options?: QueryOptions): Promise<T[]> {
     const mongoSearch = {
       equal: { type: '$in', like: false },

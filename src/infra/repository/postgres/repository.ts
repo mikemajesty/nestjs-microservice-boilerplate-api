@@ -79,6 +79,16 @@ export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEn
     } as FindOneOptions<T>);
   }
 
+  async findOneByCommands(filterList: DatabaseOperationCommand<T>[]): Promise<T> {
+    const data = await this.findByCommands(filterList);
+
+    if (data.length) {
+      return data.find(Boolean);
+    }
+
+    return null;
+  }
+
   async findByCommands(filterList: DatabaseOperationCommand<T>[]): Promise<T[]> {
     const searchList: { [key: string]: unknown } = {};
 
