@@ -14,7 +14,7 @@
     "prettier": "prettier --write \"src/**/*.json\"",
     "lint": "eslint \"{src,test}/**/*.{ts,js}\" --fix",
     "test": "jest --config=\"./jest.config.ts\" --detectOpenHandles",
-    "test:cov": "jest --coverage --detectOpenHandles && yarn make-badges",
+    "test:cov": "jest --config=\"./jest-coverage.config.ts\" --coverage --detectOpenHandles && yarn make-badges",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "infra": "./docker/mongo/start-replicaset.sh",
     "scaffold": "./node_modules/@mikemajesty/microservice-crud/bin/microservice-crud",

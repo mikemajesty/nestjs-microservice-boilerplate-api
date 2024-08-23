@@ -7,15 +7,7 @@ export default {
   rootDir: 'src/core',
   testRegex: '.*\\.spec\\.ts$',
   transform: {
-    '^.+\\.(t|j)s$': [
-      '@swc/jest',
-      {
-        jsc: {
-          target: 'es2021'
-        },
-        sourceMaps: 'inline'
-      }
-    ]
+    '^.+\\.(t|j)s$': 'ts-jest'
   },
   setupFilesAfterEnv: ['../../test/initialization.ts'],
   testEnvironment: 'node',
