@@ -142,7 +142,7 @@ Creating a CRUD in Postgres and Mongo in seconds.
 
 ### Architecture diagram
 
-## ![alt text](onionarch.webp)
+## ![alt text](OnionGraph.jpg)
 
 ### User diagram
 
