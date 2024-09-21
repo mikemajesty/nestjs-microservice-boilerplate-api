@@ -3,7 +3,7 @@ import { ApiBadRequestException } from '@/utils/exception';
 
 import { AllowedFilter, SearchTypeEnum } from '../../types';
 
-export function ValidateMongooseFilter<T>(allowedFilterList: AllowedFilter<T>[] = []) {
+export function ConvertMongooseFilter<T>(allowedFilterList: AllowedFilter<T>[] = []) {
   return (target: unknown, propertyKey: string, descriptor: PropertyDescriptor) => {
     const originalMethod = descriptor.value;
     descriptor.value = function (...args: { search: { [key: string]: string } }[]) {

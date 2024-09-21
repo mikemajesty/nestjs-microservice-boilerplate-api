@@ -6,7 +6,7 @@ import { ExistsOnUpdateInput, IPermissionRepository } from '@/core/permission/re
 import { PermissionListInput, PermissionListOutput } from '@/core/permission/use-cases/permission-list';
 import { PermissionSchema } from '@/infra/database/postgres/schemas/permission';
 import { TypeORMRepository } from '@/infra/repository/postgres/repository';
-import { SearchTypeEnum, ValidateDatabaseSortAllowed, ValidateMongooseFilter } from '@/utils/decorators';
+import { ConvertTypeOrmFilter, SearchTypeEnum, ValidateDatabaseSortAllowed } from '@/utils/decorators';
 import { calculateSkip } from '@/utils/pagination';
 
 type Model = PermissionSchema & PermissionEntity;
@@ -21,7 +21,7 @@ export class PermissionRepository extends TypeORMRepository<Model> implements IP
     return await this.repository.exists({ where: { name: input.nameEquals, id: Not(input.idNotEquals) } });
   }
 
-  @ValidateMongooseFilter<PermissionEntity>([{ name: 'name', type: SearchTypeEnum.like }])
+  @ConvertTypeOrmFilter<PermissionEntity>([{ name: 'name', type: SearchTypeEnum.like }])
   @ValidateDatabaseSortAllowed<PermissionEntity>('name', 'createdAt')
   async paginate(input: PermissionListInput): Promise<PermissionListOutput> {
     const skip = calculateSkip(input);

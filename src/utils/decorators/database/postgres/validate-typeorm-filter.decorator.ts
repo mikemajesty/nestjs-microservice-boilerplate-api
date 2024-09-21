@@ -4,7 +4,7 @@ import { ApiBadRequestException } from '@/utils/exception';
 
 import { AllowedFilter, SearchTypeEnum } from '../../types';
 
-export function ValidatePostgresFilter<T>(allowedFilterList: AllowedFilter<T>[] = []) {
+export function ConvertTypeOrmFilter<T>(allowedFilterList: AllowedFilter<T>[] = []) {
   return (target: unknown, propertyKey: string, descriptor: PropertyDescriptor) => {
     const originalMethod = descriptor.value;
     descriptor.value = function (...args: { search: { [key: string]: string } }[]) {

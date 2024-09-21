@@ -8,7 +8,7 @@ import { CatsListInput, CatsListOutput } from '@/core/cat/use-cases/cats-list';
 import { Cat, CatDocument } from '@/infra/database/mongo/schemas/cat';
 import { MongoRepository } from '@/infra/repository';
 import { MongoRepositoryModelSessionType } from '@/utils/database/mongoose';
-import { SearchTypeEnum, ValidateDatabaseSortAllowed, ValidatePostgresFilter } from '@/utils/decorators';
+import { ConvertMongooseFilter, SearchTypeEnum, ValidateDatabaseSortAllowed } from '@/utils/decorators';
 
 @Injectable()
 export class CatsRepository extends MongoRepository<CatDocument> implements ICatsRepository {
@@ -17,7 +17,7 @@ export class CatsRepository extends MongoRepository<CatDocument> implements ICat
   }
 
   @ValidateDatabaseSortAllowed<CatsEntity>('createdAt', 'breed')
-  @ValidatePostgresFilter<CatsEntity>([
+  @ConvertMongooseFilter<CatsEntity>([
     { name: 'name', type: SearchTypeEnum.like },
     { name: 'breed', type: SearchTypeEnum.like },
     { name: 'age', type: SearchTypeEnum.equal }

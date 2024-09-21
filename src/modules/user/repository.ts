@@ -6,7 +6,7 @@ import { IUserRepository } from '@/core/user/repository/user';
 import { UserListInput, UserListOutput } from '@/core/user/use-cases/user-list';
 import { UserSchema } from '@/infra/database/postgres/schemas/user';
 import { TypeORMRepository } from '@/infra/repository/postgres/repository';
-import { SearchTypeEnum, ValidateDatabaseSortAllowed, ValidateMongooseFilter } from '@/utils/decorators';
+import { ConvertTypeOrmFilter, SearchTypeEnum, ValidateDatabaseSortAllowed } from '@/utils/decorators';
 import { calculateSkip } from '@/utils/pagination';
 
 type Model = UserSchema & UserEntity;
@@ -40,7 +40,7 @@ export class UserRepository extends TypeORMRepository<Model> implements IUserRep
     return await this.repository.softRemove(entity);
   }
 
-  @ValidateMongooseFilter<UserEntity>([
+  @ConvertTypeOrmFilter<UserEntity>([
     { name: 'email', type: SearchTypeEnum.like },
     { name: 'name', type: SearchTypeEnum.like }
   ])

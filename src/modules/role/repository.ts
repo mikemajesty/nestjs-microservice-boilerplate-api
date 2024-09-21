@@ -6,7 +6,7 @@ import { IRoleRepository } from '@/core/role/repository/role';
 import { RoleListInput, RoleListOutput } from '@/core/role/use-cases/role-list';
 import { RoleSchema } from '@/infra/database/postgres/schemas/role';
 import { TypeORMRepository } from '@/infra/repository/postgres/repository';
-import { SearchTypeEnum, ValidateDatabaseSortAllowed, ValidateMongooseFilter } from '@/utils/decorators';
+import { ConvertTypeOrmFilter, SearchTypeEnum, ValidateDatabaseSortAllowed } from '@/utils/decorators';
 import { calculateSkip } from '@/utils/pagination';
 
 type Model = RoleSchema & RoleEntity;
@@ -17,7 +17,7 @@ export class RoleRepository extends TypeORMRepository<Model> implements IRoleRep
     super(repository);
   }
 
-  @ValidateMongooseFilter<RoleEntity>([{ name: 'name', type: SearchTypeEnum.like }])
+  @ConvertTypeOrmFilter<RoleEntity>([{ name: 'name', type: SearchTypeEnum.like }])
   @ValidateDatabaseSortAllowed<RoleEntity>('name', 'createdAt')
   async paginate(input: RoleListInput): Promise<RoleListOutput> {
     const skip = calculateSkip(input);
