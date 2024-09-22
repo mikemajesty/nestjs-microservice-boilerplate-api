@@ -15,7 +15,7 @@ export const calculateMongoSkip = (page: number, limit: number): number => {
   return ((page || 1) - 1) * Number(limit || 10);
 };
 
-const diacriticSensitiveRegex = (text = ''): string => {
+export const diacriticSensitiveRegex = (text = ''): string => {
   return text
     .replace(/a/g, '[a,á,à,ä,â,ã]')
     .replace(/e/g, '[e,é,ë,è,ê]')

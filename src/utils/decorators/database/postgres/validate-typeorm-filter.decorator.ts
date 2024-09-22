@@ -1,4 +1,4 @@
-import { ILike } from 'typeorm';
+import { Raw } from 'typeorm';
 
 import { ApiBadRequestException } from '@/utils/exception';
 
@@ -31,7 +31,9 @@ export function ConvertTypeOrmFilter<T>(allowedFilterList: AllowedFilter<T>[] = 
         }
 
         if (allowedFilter.type === SearchTypeEnum.like) {
-          where[allowedFilter.name.toString()] = ILike(`%${filter}%`);
+          where[`${allowedFilter.name.toString()}`] = Raw((alias) => `unaccent(${alias}) ilike unaccent(:value)`, {
+            value: filter
+          });
         }
       }
 
