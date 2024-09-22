@@ -27,7 +27,7 @@ export function ConvertTypeOrmFilter<T>(allowedFilterList: AllowedFilter<T>[] = 
         if (!filter) continue;
 
         if (allowedFilter.type === SearchTypeEnum.equal) {
-          where[allowedFilter.name.toString()] = filter;
+          where[`${allowedFilter.name.toString()}`] = filter;
         }
 
         if (allowedFilter.type === SearchTypeEnum.like) {

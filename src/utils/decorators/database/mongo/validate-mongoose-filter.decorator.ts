@@ -32,11 +32,11 @@ export function ConvertMongooseFilter<T>(allowedFilterList: AllowedFilter<T>[] =
         if (!filter) continue;
 
         if (allowedFilter.type === SearchTypeEnum.equal) {
-          where[allowedFilter.name as string] = filter;
+          where[`${allowedFilter.name as string}`] = filter;
         }
 
         if (allowedFilter.type === SearchTypeEnum.like) {
-          where[allowedFilter.name as string] = {
+          where[`${allowedFilter.name as string}`] = {
             $regex: createMongoRegexText(filter),
             $options: 'i'
           };
