@@ -147,6 +147,7 @@ export class MongoRepository<T extends Document> implements IRepository<T> {
 
     return null;
   }
+  
   async findByCommands(filterList: DatabaseOperationCommand<T>[], options?: QueryOptions): Promise<T[]> {
     const mongoSearch = {
       equal: { type: '$in', like: false },
@@ -164,12 +165,16 @@ export class MongoRepository<T extends Document> implements IRepository<T> {
 
       if (command.like) {
         Object.assign(searchList, {
-          [filter.property]: { [command.type]: filter.value.map((value) => new RegExp(`^${value}`, 'i')) }
+          [filter.property === 'id' ? '_id' : filter.property]: {
+            [command.type]: filter.value.map((value) => new RegExp(`^${value}`, 'i'))
+          }
         });
         continue;
       }
 
-      Object.assign(searchList, { [filter.property]: { [command.type]: filter.value } });
+      Object.assign(searchList, {
+        [filter.property === 'id' ? '_id' : filter.property]: { [command.type]: filter.value }
+      });
     }
 
     Object.assign(searchList, { deletedAt: null });
