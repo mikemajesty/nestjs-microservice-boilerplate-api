@@ -30,8 +30,8 @@ export class LoginController {
   @ApiResponse(SwaggerResponse.login[404])
   @ApiBody(SwaggerRequest.login)
   @Version('1')
-  async login(@Req() { body, user, tracing }: ApiRequest): Promise<LoginOutput> {
-    return this.loginUsecase.execute(body as LoginInput, { user, tracing });
+  async login(@Req() { body, user, tracing }: ApiRequest<LoginInput>): Promise<LoginOutput> {
+    return this.loginUsecase.execute(body, { user, tracing });
   }
 
   @Post('refresh')
@@ -39,8 +39,8 @@ export class LoginController {
   @ApiResponse(SwaggerResponse.refresh[404])
   @ApiBody(SwaggerRequest.refresh)
   @Version('1')
-  async refresh(@Req() { body }: ApiRequest): Promise<RefreshTokenOutput> {
-    return this.refreshTokenUsecase.execute(body as RefreshTokenInput);
+  async refresh(@Req() { body }: ApiRequest<RefreshTokenInput>): Promise<RefreshTokenOutput> {
+    return this.refreshTokenUsecase.execute(body);
   }
 
   @Get('login/google')

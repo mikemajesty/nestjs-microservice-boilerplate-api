@@ -20,7 +20,7 @@ export class LogoutController {
   @HttpCode(401)
   @Version('1')
   @Permission('user:logout')
-  async logout(@Req() { body, user, tracing }: ApiRequest): LogoutOutput {
-    return this.logoutUsecase.execute(body as LogoutInput, { user, tracing });
+  async logout(@Req() { body, user, tracing }: ApiRequest<LogoutInput>): LogoutOutput {
+    return this.logoutUsecase.execute(body, { user, tracing });
   }
 }
