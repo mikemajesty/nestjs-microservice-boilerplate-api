@@ -123,7 +123,7 @@ export class MongoRepository<T extends Document> implements IRepository<T> {
 
   async findIn(input: { [key in keyof T]: string[] }, options?: QueryOptions): Promise<T[]> {
     const key = Object.keys(input)[0];
-    const filter = { [key]: { $in: input[key === 'id' ? '_id' : key] }, deletedAt: null };
+    const filter = { [key === 'id' ? '_id' : key]: { $in: input[`${key}`] }, deletedAt: null };
     const data = await this.model.find(filter, null, options);
 
     return data.map((d) => d.toObject({ virtuals: true }));
