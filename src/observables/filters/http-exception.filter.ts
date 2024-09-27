@@ -42,7 +42,9 @@ export class ExceptionFilter implements AppExceptionFilter {
     }
 
     if (exception instanceof ZodError) {
-      return exception.issues.map((i) => `${i.path.join('.')}: ${i.message.toLowerCase()}`);
+      return exception.issues.map((i) => {
+        return `${i.path.join('.') || 'key'}: ${i.message.toLowerCase()}`;
+      });
     }
 
     if (exception instanceof AxiosError) {
