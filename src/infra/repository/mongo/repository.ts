@@ -147,7 +147,7 @@ export class MongoRepository<T extends Document> implements IRepository<T> {
 
     return null;
   }
-  
+
   async findByCommands(filterList: DatabaseOperationCommand<T>[], options?: QueryOptions): Promise<T[]> {
     const mongoSearch = {
       equal: { type: '$in', like: false },

@@ -1,6 +1,6 @@
 import { ArgumentsHost, Catch, ExceptionFilter as AppExceptionFilter, HttpException, HttpStatus } from '@nestjs/common';
 import { AxiosError } from 'axios';
-import { ZodError } from 'zod';
+import { ZodError, ZodIssue } from 'zod';
 
 import { ILoggerAdapter } from '@/infra/logger/adapter';
 import { DateUtils } from '@/utils/date';
@@ -42,8 +42,14 @@ export class ExceptionFilter implements AppExceptionFilter {
     }
 
     if (exception instanceof ZodError) {
-      return exception.issues.map((i) => {
-        return `${i.path.join('.') || 'key'}: ${i.message.toLowerCase()}`;
+      return exception.issues.map((i: ZodIssue & { keys: string[] }) => {
+        const path = i.keys?.join('.') || i.path.join('.') || 'key';
+
+        const idArrayError = new RegExp(/^\d./).exec(path);
+        if (idArrayError?.length) {
+          return `${path.replace(/^\d./, `array position: ${Number(new RegExp(/^\d/).exec(path)[0])}, property: `)}: ${i.message.toLowerCase()}`;
+        }
+        return `${path}: ${i.message.toLowerCase()}`;
       });
     }
 

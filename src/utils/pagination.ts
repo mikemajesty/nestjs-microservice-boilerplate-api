@@ -37,8 +37,12 @@ export const PaginationSchema = z
   });
 
 export type PaginationInput<T> = z.infer<typeof PaginationSchema> & SortInput & SearchInput<Partial<T>>;
-export type PaginationOutput<T> = z.infer<typeof PaginationSchema> & { total: number; docs: T[] };
+export type PaginationOutput<T> = z.infer<typeof PaginationSchema> & { total: number; docs: T[]; totalPages?: number };
 
 export const calculateSkip = (input: z.infer<typeof PaginationSchema>) => {
   return (input.page - 1) * input.limit;
+};
+
+export const calculateTotalPages = ({ limit, total }: { limit: number; total: number }) => {
+  return Number(Math.ceil(total / limit));
 };
