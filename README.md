@@ -7,8 +7,8 @@
 
 In this microservice I used the best architecture concepts: Onion Architecture, DDD and Ports and Adapters.
 
-| Statements                                                                                 | Branches                                                                             | Functions                                                                              | Lines                                                                          |
-| ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Statements                                                                               | Branches                                                                             | Functions                                                                              | Lines                                                                          |
+| ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
 | ![Statements](https://img.shields.io/badge/statements-100%25-brightgreen.svg?style=flat) | ![Branches](https://img.shields.io/badge/branches-100%25-brightgreen.svg?style=flat) | ![Functions](https://img.shields.io/badge/functions-100%25-brightgreen.svg?style=flat) | ![Lines](https://img.shields.io/badge/lines-100%25-brightgreen.svg?style=flat) |
 
 ### Building and Running the application
@@ -224,21 +224,21 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │   ├── core
 │   │   ├── cat
 │   │   │   ├── entity
-│   │   │   │   └── cats.ts
+│   │   │   │   └── cat.ts
 │   │   │   ├── repository
-│   │   │   │   └── cats.ts
+│   │   │   │   └── cat.ts
 │   │   │   └── use-cases
-│   │   │       ├── cats-create.ts
-│   │   │       ├── cats-delete.ts
-│   │   │       ├── cats-get-by-id.ts
-│   │   │       ├── cats-list.ts
-│   │   │       ├── cats-update.ts
+│   │   │       ├── cat-create.ts
+│   │   │       ├── cat-delete.ts
+│   │   │       ├── cat-get-by-id.ts
+│   │   │       ├── cat-list.ts
+│   │   │       ├── cat-update.ts
 │   │   │       └── __tests__
-│   │   │           ├── cats-create.spec.ts
-│   │   │           ├── cats-delete.spec.ts
-│   │   │           ├── cats-list.spec.ts
-│   │   │           ├── cats-update.spec.ts
-│   │   │           └── user-get-by-id.spec.ts
+│   │   │           ├── cat-create.spec.ts
+│   │   │           ├── cat-delete.spec.ts
+│   │   │           ├── cat-list.spec.ts
+│   │   │           ├── cat-update.spec.ts
+│   │   │           └── cat-get-by-id.spec.ts
 │   │   ├── permission
 │   │   │   ├── entity
 │   │   │   │   └── permission.ts

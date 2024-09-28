@@ -1,35 +1,35 @@
 import { Controller, Delete, Get, Post, Put, Req, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import { CatsCreateInput, CatsCreateOutput } from '@/core/cat/use-cases/cats-create';
-import { CatsDeleteInput, CatsDeleteOutput } from '@/core/cat/use-cases/cats-delete';
-import { CatsGetByIdInput, CatsGetByIdOutput } from '@/core/cat/use-cases/cats-get-by-id';
-import { CatsListInput, CatsListOutput } from '@/core/cat/use-cases/cats-list';
-import { CatsUpdateInput, CatsUpdateOutput } from '@/core/cat/use-cases/cats-update';
+import { CatCreateInput, CatCreateOutput } from '@/core/cat/use-cases/cat-create';
+import { CatDeleteInput, CatDeleteOutput } from '@/core/cat/use-cases/cat-delete';
+import { CatGetByIdInput, CatGetByIdOutput } from '@/core/cat/use-cases/cat-get-by-id';
+import { CatListInput, CatListOutput } from '@/core/cat/use-cases/cat-list';
+import { CatUpdateInput, CatUpdateOutput } from '@/core/cat/use-cases/cat-update';
 import { Permission } from '@/utils/decorators';
 import { ApiRequest } from '@/utils/request';
 import { SearchHttpSchema } from '@/utils/search';
 import { SortHttpSchema } from '@/utils/sort';
 
 import {
-  ICatsCreateAdapter,
-  ICatsDeleteAdapter,
-  ICatsGetByIdAdapter,
-  ICatsListAdapter,
-  ICatsUpdateAdapter
+  ICatCreateAdapter,
+  ICatDeleteAdapter,
+  ICatGetByIdAdapter,
+  ICatListAdapter,
+  ICatUpdateAdapter
 } from './adapter';
 import { SwaggerRequest, SwaggerResponse } from './swagger';
 
 @Controller('cats')
 @ApiTags('cats')
 @ApiBearerAuth()
-export class CatsController {
+export class CatController {
   constructor(
-    private readonly createUsecase: ICatsCreateAdapter,
-    private readonly updateUsecase: ICatsUpdateAdapter,
-    private readonly getByIdUsecase: ICatsGetByIdAdapter,
-    private readonly listUsecase: ICatsListAdapter,
-    private readonly deleteUsecase: ICatsDeleteAdapter
+    private readonly createUsecase: ICatCreateAdapter,
+    private readonly updateUsecase: ICatUpdateAdapter,
+    private readonly getByIdUsecase: ICatGetByIdAdapter,
+    private readonly listUsecase: ICatListAdapter,
+    private readonly deleteUsecase: ICatDeleteAdapter
   ) {}
 
   @Post()
@@ -37,8 +37,8 @@ export class CatsController {
   @ApiBody(SwaggerRequest.create)
   @Version('1')
   @Permission('cat:create')
-  async create(@Req() { body, user, tracing }: ApiRequest): Promise<CatsCreateOutput> {
-    return await this.createUsecase.execute(body as CatsCreateInput, { user, tracing });
+  async create(@Req() { body, user, tracing }: ApiRequest): Promise<CatCreateOutput> {
+    return await this.createUsecase.execute(body as CatCreateInput, { user, tracing });
   }
 
   @Put(':id')
@@ -48,8 +48,8 @@ export class CatsController {
   @ApiParam({ name: 'id', required: true })
   @Version('1')
   @Permission('cat:update')
-  async update(@Req() { body, user, tracing, params }: ApiRequest): Promise<CatsUpdateOutput> {
-    return await this.updateUsecase.execute({ ...body, id: params.id } as CatsUpdateInput, { user, tracing });
+  async update(@Req() { body, user, tracing, params }: ApiRequest): Promise<CatUpdateOutput> {
+    return await this.updateUsecase.execute({ ...body, id: params.id } as CatUpdateInput, { user, tracing });
   }
 
   @Get('/:id')
@@ -58,8 +58,8 @@ export class CatsController {
   @ApiResponse(SwaggerResponse.getById[404])
   @Version('1')
   @Permission('cat:getbyid')
-  async getById(@Req() { params }: ApiRequest): Promise<CatsGetByIdOutput> {
-    return await this.getByIdUsecase.execute(params as CatsGetByIdInput);
+  async getById(@Req() { params }: ApiRequest): Promise<CatGetByIdOutput> {
+    return await this.getByIdUsecase.execute(params as CatGetByIdInput);
   }
 
   @Get()
@@ -70,8 +70,8 @@ export class CatsController {
   @ApiResponse(SwaggerResponse.list[200])
   @Version('1')
   @Permission('cat:list')
-  async list(@Req() { query }: ApiRequest): Promise<CatsListOutput> {
-    const input: CatsListInput = {
+  async list(@Req() { query }: ApiRequest): Promise<CatListOutput> {
+    const input: CatListInput = {
       sort: SortHttpSchema.parse(query.sort),
       search: SearchHttpSchema.parse(query.search),
       limit: Number(query.limit),
@@ -87,7 +87,7 @@ export class CatsController {
   @ApiResponse(SwaggerResponse.delete[404])
   @Version('1')
   @Permission('cat:delete')
-  async delete(@Req() { params, user, tracing }: ApiRequest): Promise<CatsDeleteOutput> {
-    return await this.deleteUsecase.execute(params as CatsDeleteInput, { user, tracing });
+  async delete(@Req() { params, user, tracing }: ApiRequest): Promise<CatDeleteOutput> {
+    return await this.deleteUsecase.execute(params as CatDeleteInput, { user, tracing });
   }
 }

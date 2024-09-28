@@ -1,5 +1,5 @@
-import { CatsRequest } from '@/utils/docs/data/cat/request';
-import { CatsResponse } from '@/utils/docs/data/cat/response';
+import { CatRequest } from '@/utils/docs/data/cat/request';
+import { CatResponse } from '@/utils/docs/data/cat/response';
 import { Swagger } from '@/utils/docs/swagger';
 import { ApiNotFoundException } from '@/utils/exception';
 
@@ -9,14 +9,14 @@ export const SwaggerResponse = {
   create: {
     200: Swagger.defaultResponseJSON({
       status: 200,
-      json: CatsResponse.create,
+      json: CatResponse.create,
       description: 'create user.'
     })
   },
   update: {
     200: Swagger.defaultResponseJSON({
       status: 200,
-      json: CatsResponse.update,
+      json: CatResponse.update,
       description: 'update user.'
     }),
     404: Swagger.defaultResponseError({
@@ -29,7 +29,7 @@ export const SwaggerResponse = {
   getById: {
     200: Swagger.defaultResponseJSON({
       status: 200,
-      json: CatsResponse.getById,
+      json: CatResponse.getById,
       description: 'cat founded.'
     }),
     404: Swagger.defaultResponseError({
@@ -42,7 +42,7 @@ export const SwaggerResponse = {
   delete: {
     200: Swagger.defaultResponseJSON({
       status: 200,
-      json: CatsResponse.delete,
+      json: CatResponse.delete,
       description: 'cat deleted.'
     }),
     404: Swagger.defaultResponseError({
@@ -55,14 +55,14 @@ export const SwaggerResponse = {
   list: {
     200: Swagger.defaultResponseJSON({
       status: 200,
-      json: CatsResponse.list,
+      json: CatResponse.list,
       description: 'cat created.'
     })
   }
 };
 
 export const SwaggerRequest = {
-  create: Swagger.defaultRequestJSON(CatsRequest.create),
-  update: Swagger.defaultRequestJSON(CatsRequest.update),
+  create: Swagger.defaultRequestJSON(CatRequest.create),
+  update: Swagger.defaultRequestJSON(CatRequest.update),
   list: Swagger.defaultRequestListJSON()
 };

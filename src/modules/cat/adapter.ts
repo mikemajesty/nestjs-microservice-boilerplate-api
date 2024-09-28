@@ -1,27 +1,27 @@
-import { CatsCreateInput, CatsCreateOutput } from '@/core/cat/use-cases/cats-create';
-import { CatsDeleteInput, CatsDeleteOutput } from '@/core/cat/use-cases/cats-delete';
-import { CatsGetByIdInput, CatsGetByIdOutput } from '@/core/cat/use-cases/cats-get-by-id';
-import { CatsListInput, CatsListOutput } from '@/core/cat/use-cases/cats-list';
-import { CatsUpdateInput, CatsUpdateOutput } from '@/core/cat/use-cases/cats-update';
+import { CatCreateInput, CatCreateOutput } from '@/core/cat/use-cases/cat-create';
+import { CatDeleteInput, CatDeleteOutput } from '@/core/cat/use-cases/cat-delete';
+import { CatGetByIdInput, CatGetByIdOutput } from '@/core/cat/use-cases/cat-get-by-id';
+import { CatListInput, CatListOutput } from '@/core/cat/use-cases/cat-list';
+import { CatUpdateInput, CatUpdateOutput } from '@/core/cat/use-cases/cat-update';
 import { ApiTrancingInput } from '@/utils/request';
 import { IUsecase } from '@/utils/usecase';
 
-export abstract class ICatsCreateAdapter implements IUsecase {
-  abstract execute(input: CatsCreateInput, trace: ApiTrancingInput): Promise<CatsCreateOutput>;
+export abstract class ICatCreateAdapter implements IUsecase {
+  abstract execute(input: CatCreateInput, trace: ApiTrancingInput): Promise<CatCreateOutput>;
 }
 
-export abstract class ICatsUpdateAdapter implements IUsecase {
-  abstract execute(input: CatsUpdateInput, trace: ApiTrancingInput): Promise<CatsUpdateOutput>;
+export abstract class ICatUpdateAdapter implements IUsecase {
+  abstract execute(input: CatUpdateInput, trace: ApiTrancingInput): Promise<CatUpdateOutput>;
 }
 
-export abstract class ICatsGetByIdAdapter implements IUsecase {
-  abstract execute(input: CatsGetByIdInput): Promise<CatsGetByIdOutput>;
+export abstract class ICatGetByIdAdapter implements IUsecase {
+  abstract execute(input: CatGetByIdInput): Promise<CatGetByIdOutput>;
 }
 
-export abstract class ICatsListAdapter implements IUsecase {
-  abstract execute(input: CatsListInput): Promise<CatsListOutput>;
+export abstract class ICatListAdapter implements IUsecase {
+  abstract execute(input: CatListInput): Promise<CatListOutput>;
 }
 
-export abstract class ICatsDeleteAdapter implements IUsecase {
-  abstract execute(input: CatsDeleteInput, trace: ApiTrancingInput): Promise<CatsDeleteOutput>;
+export abstract class ICatDeleteAdapter implements IUsecase {
+  abstract execute(input: CatDeleteInput, trace: ApiTrancingInput): Promise<CatDeleteOutput>;
 }

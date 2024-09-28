@@ -1,63 +1,63 @@
 import { Test } from '@nestjs/testing';
 
-import { CatsDeleteUsecase } from '@/core/cat/use-cases/cats-delete';
+import { CatDeleteUsecase } from '@/core/cat/use-cases/cat-delete';
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
-import { ICatsDeleteAdapter } from '@/modules/cat/adapter';
+import { ICatDeleteAdapter } from '@/modules/cat/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
 import { expectZodError, getMockTracing, getMockUUID } from '@/utils/tests';
 
-import { CatsEntity } from '../../entity/cats';
-import { ICatsRepository } from '../../repository/cats';
+import { CatEntity } from '../../entity/cat';
+import { ICatRepository } from '../../repository/cat';
 
-describe(CatsDeleteUsecase.name, () => {
-  let usecase: ICatsDeleteAdapter;
-  let repository: ICatsRepository;
+describe(CatDeleteUsecase.name, () => {
+  let usecase: ICatDeleteAdapter;
+  let repository: ICatRepository;
 
   beforeEach(async () => {
     const app = await Test.createTestingModule({
       imports: [LoggerModule],
       providers: [
         {
-          provide: ICatsRepository,
+          provide: ICatRepository,
           useValue: {}
         },
         {
-          provide: ICatsDeleteAdapter,
-          useFactory: (catsRepository: ICatsRepository) => {
-            return new CatsDeleteUsecase(catsRepository);
+          provide: ICatDeleteAdapter,
+          useFactory: (catRepository: ICatRepository) => {
+            return new CatDeleteUsecase(catRepository);
           },
-          inject: [ICatsRepository, ILoggerAdapter]
+          inject: [ICatRepository, ILoggerAdapter]
         }
       ]
     }).compile();
 
-    usecase = app.get(ICatsDeleteAdapter);
-    repository = app.get(ICatsRepository);
+    usecase = app.get(ICatDeleteAdapter);
+    repository = app.get(ICatRepository);
   });
 
   test('when no input is specified, should expect an error', async () => {
     await expectZodError(
       () => usecase.execute({}, getMockTracing()),
       (issues) => {
-        expect(issues).toEqual([{ message: 'Required', path: CatsEntity.nameOf('id') }]);
+        expect(issues).toEqual([{ message: 'Required', path: CatEntity.nameOf('id') }]);
       }
     );
   });
 
-  test('when cats not found, should expect an error', async () => {
+  test('when cat not found, should expect an error', async () => {
     repository.findById = jest.fn().mockResolvedValue(null);
 
     await expect(usecase.execute({ id: getMockUUID() }, getMockTracing())).rejects.toThrow(ApiNotFoundException);
   });
 
-  const cat = new CatsEntity({
+  const cat = new CatEntity({
     id: getMockUUID(),
     age: 10,
     breed: 'dummy',
     name: 'dummy'
   });
 
-  test('when cats deleted successfully, should expect a cats that has been deleted', async () => {
+  test('when cat deleted successfully, should expect a cat that has been deleted', async () => {
     repository.findById = jest.fn().mockResolvedValue(cat);
     repository.updateOne = jest.fn();
 

@@ -10,7 +10,7 @@ const CreatedAt = z.date().nullish();
 const UpdatedAt = z.date().nullish();
 const DeletedAt = z.date().default(null).nullish();
 
-export const CatsEntitySchema = z.object({
+export const CatEntitySchema = z.object({
   id: ID,
   name: Name,
   breed: Breed,
@@ -20,9 +20,9 @@ export const CatsEntitySchema = z.object({
   deletedAt: DeletedAt
 });
 
-type Cat = z.infer<typeof CatsEntitySchema>;
+type Cat = z.infer<typeof CatEntitySchema>;
 
-export class CatsEntity extends BaseEntity<CatsEntity>(CatsEntitySchema) {
+export class CatEntity extends BaseEntity<CatEntity>(CatEntitySchema) {
   name: string;
 
   breed: string;

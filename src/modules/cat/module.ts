@@ -2,12 +2,12 @@ import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { getConnectionToken } from '@nestjs/mongoose';
 import mongoose, { Connection, PaginateModel, Schema } from 'mongoose';
 
-import { ICatsRepository } from '@/core/cat/repository/cats';
-import { CatsCreateUsecase } from '@/core/cat/use-cases/cats-create';
-import { CatsDeleteUsecase } from '@/core/cat/use-cases/cats-delete';
-import { CatsGetByIdUsecase } from '@/core/cat/use-cases/cats-get-by-id';
-import { CatsListUsecase } from '@/core/cat/use-cases/cats-list';
-import { CatsUpdateUsecase } from '@/core/cat/use-cases/cats-update';
+import { ICatRepository } from '@/core/cat/repository/cat';
+import { CatCreateUsecase } from '@/core/cat/use-cases/cat-create';
+import { CatDeleteUsecase } from '@/core/cat/use-cases/cat-delete';
+import { CatGetByIdUsecase } from '@/core/cat/use-cases/cat-get-by-id';
+import { CatListUsecase } from '@/core/cat/use-cases/cat-list';
+import { CatUpdateUsecase } from '@/core/cat/use-cases/cat-update';
 import { RedisCacheModule } from '@/infra/cache/redis';
 import { ConnectionName } from '@/infra/database/enum';
 import { Cat, CatDocument, CatSchema } from '@/infra/database/mongo/schemas/cat';
@@ -18,21 +18,21 @@ import { IsLoggedMiddleware } from '@/observables/middlewares';
 import { MongoRepositoryModelSessionType } from '@/utils/database/mongoose';
 
 import {
-  ICatsCreateAdapter,
-  ICatsDeleteAdapter,
-  ICatsGetByIdAdapter,
-  ICatsListAdapter,
-  ICatsUpdateAdapter
+  ICatCreateAdapter,
+  ICatDeleteAdapter,
+  ICatGetByIdAdapter,
+  ICatListAdapter,
+  ICatUpdateAdapter
 } from './adapter';
-import { CatsController } from './controller';
-import { CatsRepository } from './repository';
+import { CatController } from './controller';
+import { CatRepository } from './repository';
 
 @Module({
   imports: [TokenLibModule, LoggerModule, RedisCacheModule, PostgresDatabaseModule],
-  controllers: [CatsController],
+  controllers: [CatController],
   providers: [
     {
-      provide: ICatsRepository,
+      provide: ICatRepository,
       useFactory: async (connection: Connection) => {
         type Model = mongoose.PaginateModel<CatDocument>;
 
@@ -50,40 +50,40 @@ import { CatsRepository } from './repository';
         //   UserSchema as Schema
         // );
 
-        return new CatsRepository(repository);
+        return new CatRepository(repository);
       },
       inject: [getConnectionToken(ConnectionName.CATS)]
     },
     {
-      provide: ICatsCreateAdapter,
-      useFactory: (repository: ICatsRepository) => new CatsCreateUsecase(repository),
-      inject: [ICatsRepository]
+      provide: ICatCreateAdapter,
+      useFactory: (repository: ICatRepository) => new CatCreateUsecase(repository),
+      inject: [ICatRepository]
     },
     {
-      provide: ICatsUpdateAdapter,
-      useFactory: (logger: ILoggerAdapter, repository: ICatsRepository) => new CatsUpdateUsecase(repository, logger),
-      inject: [ILoggerAdapter, ICatsRepository]
+      provide: ICatUpdateAdapter,
+      useFactory: (logger: ILoggerAdapter, repository: ICatRepository) => new CatUpdateUsecase(repository, logger),
+      inject: [ILoggerAdapter, ICatRepository]
     },
     {
-      provide: ICatsGetByIdAdapter,
-      useFactory: (repository: ICatsRepository) => new CatsGetByIdUsecase(repository),
-      inject: [ICatsRepository]
+      provide: ICatGetByIdAdapter,
+      useFactory: (repository: ICatRepository) => new CatGetByIdUsecase(repository),
+      inject: [ICatRepository]
     },
     {
-      provide: ICatsListAdapter,
-      useFactory: (repository: ICatsRepository) => new CatsListUsecase(repository),
-      inject: [ICatsRepository]
+      provide: ICatListAdapter,
+      useFactory: (repository: ICatRepository) => new CatListUsecase(repository),
+      inject: [ICatRepository]
     },
     {
-      provide: ICatsDeleteAdapter,
-      useFactory: (repository: ICatsRepository) => new CatsDeleteUsecase(repository),
-      inject: [ICatsRepository]
+      provide: ICatDeleteAdapter,
+      useFactory: (repository: ICatRepository) => new CatDeleteUsecase(repository),
+      inject: [ICatRepository]
     }
   ],
   exports: []
 })
-export class CatsModule implements NestModule {
+export class CatModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(IsLoggedMiddleware).forRoutes(CatsController);
+    consumer.apply(IsLoggedMiddleware).forRoutes(CatController);
   }
 }

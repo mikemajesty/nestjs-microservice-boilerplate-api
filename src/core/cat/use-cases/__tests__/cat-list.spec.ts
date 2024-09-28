@@ -1,37 +1,37 @@
 import { Test } from '@nestjs/testing';
 
-import { CatsListUsecase } from '@/core/cat/use-cases/cats-list';
+import { CatListUsecase } from '@/core/cat/use-cases/cat-list';
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
-import { ICatsListAdapter } from '@/modules/cat/adapter';
+import { ICatListAdapter } from '@/modules/cat/adapter';
 import { expectZodError, getMockDate, getMockUUID } from '@/utils/tests';
 
-import { CatsEntity } from '../../entity/cats';
-import { ICatsRepository } from '../../repository/cats';
+import { CatEntity } from '../../entity/cat';
+import { ICatRepository } from '../../repository/cat';
 
-describe(CatsListUsecase.name, () => {
-  let usecase: ICatsListAdapter;
-  let repository: ICatsRepository;
+describe(CatListUsecase.name, () => {
+  let usecase: ICatListAdapter;
+  let repository: ICatRepository;
 
   beforeEach(async () => {
     const app = await Test.createTestingModule({
       imports: [LoggerModule],
       providers: [
         {
-          provide: ICatsRepository,
+          provide: ICatRepository,
           useValue: {}
         },
         {
-          provide: ICatsListAdapter,
-          useFactory: (catsRepository: ICatsRepository) => {
-            return new CatsListUsecase(catsRepository);
+          provide: ICatListAdapter,
+          useFactory: (catRepository: ICatRepository) => {
+            return new CatListUsecase(catRepository);
           },
-          inject: [ICatsRepository, ILoggerAdapter]
+          inject: [ICatRepository, ILoggerAdapter]
         }
       ]
     }).compile();
 
-    usecase = app.get(ICatsListAdapter);
-    repository = app.get(ICatsRepository);
+    usecase = app.get(ICatListAdapter);
+    repository = app.get(ICatRepository);
   });
 
   test('when no input is specified, should expect an error', async () => {
@@ -43,7 +43,7 @@ describe(CatsListUsecase.name, () => {
     );
   });
 
-  const cat = new CatsEntity({
+  const cat = new CatEntity({
     id: getMockUUID(),
     age: 10,
     breed: 'dummy',
