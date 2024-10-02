@@ -27,25 +27,22 @@ export class RefreshTokenUsecase implements IUsecase {
       throw new ApiBadRequestException('incorrectToken');
     }
 
-    const user = await this.userRepository.findOneWithRelation(
-      {
-        id: userToken.userId
-      },
-      { role: true }
-    );
+    const user = await this.userRepository.findOne({
+      id: userToken.userId
+    });
 
     if (!user) {
       throw new ApiNotFoundException('userNotFound');
     }
 
-    if (!user.role) {
+    if (!user.roles.length) {
       throw new ApiNotFoundException('roleNotFound');
     }
 
     const { token } = this.tokenService.sign({
       email: user.email,
       name: user.name,
-      role: user.role.name
+      roles: user.roles.map((r) => r.name)
     } as UserRequest);
 
     const { token: refreshToken } = this.tokenService.sign({ userId: user.id });

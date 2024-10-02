@@ -20,7 +20,7 @@ export class UserDeleteUsecase implements IUsecase {
 
   @ValidateSchema(UserDeleteSchema)
   async execute({ id }: UserDeleteInput, { tracing, user: userData }: ApiTrancingInput): Promise<UserDeleteOutput> {
-    const user = await this.userRepository.findOneWithRelation({ id }, { password: true, role: true });
+    const user = await this.userRepository.findOneWithRelation({ id }, { password: true });
 
     if (!user) {
       throw new ApiNotFoundException('userNotFound');

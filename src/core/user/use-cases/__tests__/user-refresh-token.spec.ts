@@ -54,14 +54,14 @@ describe(RefreshTokenUsecase.name, () => {
   const input: RefreshTokenInput = { refreshToken: '<token>' };
   test('when token is incorrect, should expect an error', async () => {
     token.verify = jest.fn().mockResolvedValue({ userId: null });
-    repository.findOneWithRelation = jest.fn().mockResolvedValue(null);
+    repository.findOne = jest.fn().mockResolvedValue(null);
 
     await expect(usecase.execute(input)).rejects.toThrow(ApiBadRequestException);
   });
 
   test('when user not found, should expect an error', async () => {
     token.verify = jest.fn().mockResolvedValue({ userId: getMockUUID() });
-    repository.findOneWithRelation = jest.fn().mockResolvedValue(null);
+    repository.findOne = jest.fn().mockResolvedValue(null);
 
     await expect(usecase.execute(input)).rejects.toThrow(ApiNotFoundException);
   });
@@ -70,13 +70,13 @@ describe(RefreshTokenUsecase.name, () => {
     id: getMockUUID(),
     email: 'admin@admin.com',
     name: 'Admin',
-    role: new RoleEntity({ name: RoleEnum.USER }),
+    roles: [new RoleEntity({ name: RoleEnum.USER })],
     password: { id: getMockUUID(), password: '***' }
   });
 
   test('when user role not found, should expect an error', async () => {
     token.verify = jest.fn().mockResolvedValue({ userId: getMockUUID() });
-    repository.findOneWithRelation = jest.fn().mockResolvedValue({ ...user, role: null });
+    repository.findOne = jest.fn().mockResolvedValue({ ...user, roles: [] });
 
     await expect(usecase.execute(input)).rejects.toThrow(ApiNotFoundException);
   });
@@ -85,7 +85,7 @@ describe(RefreshTokenUsecase.name, () => {
     token.verify = jest.fn().mockResolvedValue({ userId: getMockUUID() });
     token.sign = jest.fn().mockReturnValue({ token: '<token>' });
     user.password.password = '69bf0bc46f51b33377c4f3d92caf876714f6bbbe99e7544487327920873f9820';
-    repository.findOneWithRelation = jest.fn().mockResolvedValue(user);
+    repository.findOne = jest.fn().mockResolvedValue(user);
 
     await expect(usecase.execute(input)).resolves.toEqual({
       accessToken: expect.any(String),

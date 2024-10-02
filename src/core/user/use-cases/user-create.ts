@@ -22,7 +22,7 @@ export const UserCreateSchema = UserEntitySchema.pick({
   name: true
 })
   .merge(UserPasswordEntitySchema.pick({ password: true }))
-  .merge(z.object({ role: z.nativeEnum(RoleEnum) }));
+  .merge(z.object({ roles: z.array(z.nativeEnum(RoleEnum)).min(1) }));
 
 export type UserCreateInput = z.infer<typeof UserCreateSchema>;
 export type UserCreateOutput = CreatedModel;
@@ -38,13 +38,13 @@ export class UserCreateUsecase implements IUsecase {
 
   @ValidateSchema(UserCreateSchema)
   async execute(input: UserCreateInput, { tracing, user: userData }: ApiTrancingInput): Promise<UserCreateOutput> {
-    const role = await this.roleRepository.findOne({ name: input.role });
+    const roles = await this.roleRepository.findIn({ name: input.roles });
 
-    if (!role) {
+    if (roles.length < input.roles.length) {
       throw new ApiNotFoundException('roleNotFound');
     }
 
-    const entity = new UserEntity({ name: input.name, email: input.email, role });
+    const entity = new UserEntity({ name: input.name, email: input.email, roles: roles });
 
     const password = this.crypto.createHash(input.password);
 

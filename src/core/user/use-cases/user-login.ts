@@ -31,14 +31,14 @@ export class LoginUsecase implements IUsecase {
       {
         email: input.email
       },
-      { password: true, role: true }
+      { password: true }
     );
 
     if (!user) {
       throw new ApiNotFoundException('userNotFound');
     }
 
-    if (!user.role) {
+    if (!user.roles.length) {
       throw new ApiNotFoundException('roleNotFound');
     }
 
@@ -53,7 +53,7 @@ export class LoginUsecase implements IUsecase {
     const { token } = this.tokenService.sign({
       email: user.email,
       name: user.name,
-      role: user.role.name
+      roles: user.roles.map((r) => r.name)
     } as UserRequest);
 
     const { token: refreshToken } = this.tokenService.sign({ userId: user.id });

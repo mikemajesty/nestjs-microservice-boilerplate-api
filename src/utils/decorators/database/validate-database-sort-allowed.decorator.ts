@@ -5,7 +5,7 @@ import { PaginationSchema } from '@/utils/pagination';
 import { SearchSchema } from '@/utils/search';
 import { SortSchema } from '@/utils/sort';
 
-const ListSchema = z.intersection(PaginationSchema, SortSchema.merge(SearchSchema));
+export const ListSchema = z.intersection(PaginationSchema, SortSchema.merge(SearchSchema));
 
 type AllowedSort<T> = keyof T;
 

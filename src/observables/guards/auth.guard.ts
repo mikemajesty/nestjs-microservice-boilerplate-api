@@ -24,15 +24,19 @@ export class AuthRoleGuard implements CanActivate {
 
     const request = context.switchToHttp().getRequest();
 
-    const role = request?.user?.role;
+    const roles = request?.user?.roles;
 
-    if (!role) {
+    if (!roles?.length) {
       throw new ApiUnauthorizedException('userRoleNotFound');
     }
 
-    const roleData = await this.roleRepository.findOne({ name: role });
+    const rolesData = await this.roleRepository.findIn({ name: roles });
 
-    const permissions = roleData.permissions.map((p) => p.name);
+    const permissions = [];
+
+    for (const permission of new Set(rolesData.map((role) => role.permissions).flat())) {
+      permissions.push(permission.name);
+    }
 
     return permissions.includes(requiredPermission);
   }

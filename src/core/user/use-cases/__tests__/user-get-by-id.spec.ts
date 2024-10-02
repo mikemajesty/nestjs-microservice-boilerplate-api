@@ -45,7 +45,7 @@ describe(UserGetByIdUsecase.name, () => {
   });
 
   test('when user not found, should expect an errror', async () => {
-    repository.findOneWithRelation = jest.fn().mockResolvedValue(null);
+    repository.findOne = jest.fn().mockResolvedValue(null);
 
     await expect(usecase.execute({ id: getMockUUID() })).rejects.toThrow(ApiNotFoundException);
   });
@@ -54,11 +54,11 @@ describe(UserGetByIdUsecase.name, () => {
     id: getMockUUID(),
     email: 'admin@admin.com',
     name: 'Admin',
-    role: new RoleEntity({ name: RoleEnum.USER })
+    roles: [new RoleEntity({ name: RoleEnum.USER })]
   });
 
   test('when user getById successfully, should expect a user', async () => {
-    repository.findOneWithRelation = jest.fn().mockResolvedValue(user);
+    repository.findOne = jest.fn().mockResolvedValue(user);
 
     await expect(usecase.execute({ id: getMockUUID() })).resolves.toEqual(user);
   });

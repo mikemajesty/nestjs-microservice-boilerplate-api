@@ -16,7 +16,7 @@ export const UserUpdateSchema = UserEntitySchema.pick({
   name: true,
   email: true
 })
-  .merge(z.object({ role: z.nativeEnum(RoleEnum) }))
+  .merge(z.object({ roles: z.array(z.nativeEnum(RoleEnum)) }))
   .strict();
 
 export type UserUpdateInput = Partial<z.infer<typeof UserUpdateSchema>>;
@@ -31,19 +31,19 @@ export class UserUpdateUsecase implements IUsecase {
 
   @ValidateSchema(UserUpdateSchema)
   async execute(input: UserUpdateInput, { tracing, user: userData }: ApiTrancingInput): Promise<UserUpdateOutput> {
-    const user = await this.userRepository.findOneWithRelation({ id: input.id }, { role: true });
+    const user = await this.userRepository.findOne({ id: input.id });
 
     if (!user) {
       throw new ApiNotFoundException('userNotFound');
     }
 
-    const role = await this.roleRepository.findOne({ name: input.role });
+    const roles = await this.roleRepository.findIn({ name: input.roles });
 
-    if (!role) {
+    if (roles.length < input.roles.length) {
       throw new ApiNotFoundException('roleNotFound');
     }
 
-    const entity = new UserEntity({ ...user, ...input, role });
+    const entity = new UserEntity({ ...user, ...input, roles });
 
     const userExists = await this.userRepository.existsOnUpdate({ email: entity.email }, { id: entity.id });
 
@@ -51,11 +51,11 @@ export class UserUpdateUsecase implements IUsecase {
       throw new ApiConflictException('userExists');
     }
 
-    await this.userRepository.updateOne({ id: entity.id }, entity);
+    await this.userRepository.create(entity);
 
     this.loggerService.info({ message: 'user updated.', obj: { user: input } });
 
-    const updated = await this.userRepository.findOneWithRelation({ id: entity.id }, { role: true });
+    const updated = await this.userRepository.findOne({ id: entity.id });
 
     const entityUpdated = new UserEntity(updated);
 

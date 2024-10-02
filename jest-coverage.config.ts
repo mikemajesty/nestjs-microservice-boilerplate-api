@@ -11,6 +11,15 @@ export default {
   },
   setupFilesAfterEnv: ['../../test/initialization.ts'],
   testEnvironment: 'node',
+  collectCoverage: true,
+  coverageThreshold: {
+    global: {
+      branches: 100,
+      functions: 100,
+      lines: 100,
+      statements: 100
+    }
+  },
   collectCoverageFrom: ['**/*.ts'],
   coverageDirectory: '../../coverage',
   coverageReporters: ['json-summary', 'lcov'],

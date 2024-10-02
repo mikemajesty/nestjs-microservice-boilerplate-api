@@ -12,7 +12,7 @@ const entity = {
   id: getMockUUID(),
   email: 'admin@admin.com',
   name: 'Admin',
-  role: { name: RoleEnum.USER }
+  roles: [{ name: RoleEnum.USER }]
 } as UserEntity;
 
 const fullEntity = {
@@ -28,5 +28,5 @@ export const UsersResponse = {
   update: { ...fullEntity } as UserUpdateOutput,
   getById: fullEntity as UserGetByIdOutput,
   list: { docs: [fullEntity], limit: 10, page: 1, total: 1 } as UserListOutput,
-  me: { email: 'admin@admin.com', name: 'ADMIN', role: RoleEnum.USER } as UserRequest
+  me: { email: 'admin@admin.com', name: 'ADMIN', roles: [RoleEnum.USER] } as UserRequest
 };

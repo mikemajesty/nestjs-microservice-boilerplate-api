@@ -18,7 +18,7 @@ export const UserEntitySchema = z.object({
   id: ID,
   name: Name,
   email: Email,
-  role: Role.optional(),
+  roles: z.array(Role.optional()).min(1),
   password: Password.optional(),
   createdAt: CreatedAt,
   updatedAt: UpdatedAt,
@@ -32,7 +32,7 @@ export class UserEntity extends BaseEntity<UserEntity>(UserEntitySchema) {
 
   email: string;
 
-  role: RoleEntity;
+  roles: RoleEntity[];
 
   password: UserPasswordEntity;
 

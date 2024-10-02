@@ -72,10 +72,7 @@ export class LoginController {
       }
     );
 
-    const user = await this.userRepository.findOneWithRelation(
-      { email: profile.email },
-      { password: true, role: true }
-    );
+    const user = await this.userRepository.findOneWithRelation({ email: profile.email }, { password: true });
 
     const tokenNewPassword = this.tokenService.sign({
       email: user.email,
@@ -90,7 +87,7 @@ export class LoginController {
     const tokenAuthorization = this.tokenService.sign({
       email: user.email,
       name: profile.name,
-      role: user.role.name
+      roles: user.roles.map((r) => r.name)
     });
 
     res.redirect(`/home?token=${tokenAuthorization.token}`);

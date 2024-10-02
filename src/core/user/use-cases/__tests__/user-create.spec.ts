@@ -66,7 +66,7 @@ describe(UserCreateUsecase.name, () => {
           { message: 'Required', path: UserEntity.nameOf('email') },
           { message: 'Required', path: UserEntity.nameOf('name') },
           { message: 'Required', path: UserPasswordEntity.nameOf('password') },
-          { message: 'Required', path: UserEntity.nameOf('role') }
+          { message: 'Required', path: UserEntity.nameOf('roles') }
         ]);
       }
     );
@@ -76,11 +76,11 @@ describe(UserCreateUsecase.name, () => {
     email: 'admin@admin.com',
     name: 'Admin',
     password: '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918',
-    role: RoleEnum.USER
+    roles: [RoleEnum.USER]
   };
 
   test('when role not found, should expect an error', async () => {
-    roleRepository.findOne = jest.fn().mockResolvedValue(null);
+    roleRepository.findIn = jest.fn().mockResolvedValue([]);
     await expect(usecase.execute(input, getMockTracing())).rejects.toThrow(ApiNotFoundException);
   });
 
@@ -90,12 +90,12 @@ describe(UserCreateUsecase.name, () => {
     id: getMockUUID(),
     email: 'admin@admin.com',
     name: 'Admin',
-    role: new RoleEntity({ name: RoleEnum.USER }),
+    roles: [new RoleEntity({ name: RoleEnum.USER })],
     password: new UserPasswordEntity({ password: '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918' })
   });
 
   test('when the user is created successfully, should expect an user that has been created', async () => {
-    roleRepository.findOne = jest.fn().mockResolvedValue(role);
+    roleRepository.findIn = jest.fn().mockResolvedValue([role]);
     repository.findOne = jest.fn().mockResolvedValue(null);
     repository.create = jest.fn().mockResolvedValue(user);
 
@@ -103,14 +103,14 @@ describe(UserCreateUsecase.name, () => {
   });
 
   test('when user already exists, should expect an error', async () => {
-    roleRepository.findOne = jest.fn().mockResolvedValue(role);
+    roleRepository.findIn = jest.fn().mockResolvedValue([role]);
     repository.findOne = jest.fn().mockResolvedValue(user);
 
     await expect(usecase.execute(input, getMockTracing())).rejects.toThrow(ApiConflictException);
   });
 
   test('when user created successfully, should expect an user', async () => {
-    roleRepository.findOne = jest.fn().mockResolvedValue(role);
+    roleRepository.findIn = jest.fn().mockResolvedValue([role]);
     repository.findOne = jest.fn().mockResolvedValue(null);
     repository.create = jest.fn().mockResolvedValue(user);
 

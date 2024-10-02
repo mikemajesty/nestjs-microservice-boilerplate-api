@@ -8,9 +8,9 @@ import { ApiUnauthorizedException } from '@/utils/exception';
 
 import { ITokenAdapter } from './adapter';
 
-const Schema = UserEntitySchema.pick({
+export const Schema = UserEntitySchema.pick({
   email: true,
-  role: true
+  roles: true
 }).merge(z.object({ password: z.string() }));
 
 export type SignInput = z.infer<typeof Schema>;

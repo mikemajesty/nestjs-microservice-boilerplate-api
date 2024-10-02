@@ -31,7 +31,8 @@ export const backofficePermissions = [
   'role:addpermission',
   'role:deletepermission'
 ];
-export class insertPermissions1717773889333 implements MigrationInterface {
+
+export class insertPermissions1727654555722 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const permissionsPromises = [];
     for (const permission of userPermissions.concat(backofficePermissions)) {

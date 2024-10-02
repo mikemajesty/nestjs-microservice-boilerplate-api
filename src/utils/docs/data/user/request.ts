@@ -8,7 +8,7 @@ export const UsersRequest = {
     name: 'Admin',
     email: 'admin@admin.com',
     password: '*****',
-    role: RoleEnum.USER
+    roles: [RoleEnum.USER]
   } as UserCreateInput,
   update: {
     name: 'Admin',

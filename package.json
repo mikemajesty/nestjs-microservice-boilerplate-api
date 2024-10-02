@@ -80,7 +80,7 @@
     "ts-jest": "^29.2.5",
     "typeorm": "^0.3.20",
     "typeorm-naming-strategies": "^4.1.0",
-    "typescript": "5.6.2",
+    "typescript": "5.5.4",
     "uuid": "^10.0.0",
     "write-excel-file": "^2.0.10",
     "zod": "^3.23.8"

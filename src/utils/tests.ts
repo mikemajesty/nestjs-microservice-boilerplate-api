@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import { ApiTrancingInput, TracingType, UserRequest } from '@/utils/request';
 
-// eslint-disable-next-line @typescript-eslint/ban-types
+// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 export const expectZodError = async (callback: Function, expected: Function) => {
   try {
     await callback();
@@ -28,6 +28,6 @@ export const getMockTracing = (): ApiTrancingInput => {
         return event;
       }
     } as Partial<TracingType> as TracingType,
-    user: { email: 'test', name: 'test', role: 'test' } as UserRequest
+    user: { email: 'test', name: 'test', roles: ['test'] } as UserRequest
   };
 };

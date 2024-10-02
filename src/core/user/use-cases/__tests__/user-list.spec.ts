@@ -47,7 +47,7 @@ describe(UserListUsecase.name, () => {
     id: getMockUUID(),
     email: 'admin@admin.com',
     name: 'Admin',
-    role: new RoleEntity({ name: RoleEnum.USER })
+    roles: [new RoleEntity({ name: RoleEnum.USER })]
   });
 
   const users = [

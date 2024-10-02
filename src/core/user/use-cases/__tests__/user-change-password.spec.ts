@@ -70,7 +70,7 @@ describe(UserChangePasswordUsecase.name, () => {
     email: 'admin@admin.com',
     name: 'Admin',
     password: new UserPasswordEntity({ password: '69bf0bc46f51b33377c4f3d92caf876714f6bbbe99e7544487327920873f9820' }),
-    role: new RoleEntity({ name: RoleEnum.USER })
+    roles: [new RoleEntity({ name: RoleEnum.USER })]
   });
 
   test('when user password is incorrect, should expect an error', async () => {

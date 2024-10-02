@@ -4,9 +4,9 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
-  Index,
   JoinColumn,
-  ManyToOne,
+  JoinTable,
+  ManyToMany,
   OneToOne,
   Relation,
   UpdateDateColumn
@@ -16,7 +16,6 @@ import { RoleSchema } from './role';
 import { UserPasswordSchema } from './userPassword';
 
 @Entity({ name: 'users' })
-@Index(['email', 'deletedAt'], { unique: true })
 export class UserSchema extends BaseEntity {
   @Column({ type: 'uuid', primary: true })
   id: string;
@@ -31,9 +30,9 @@ export class UserSchema extends BaseEntity {
   @JoinColumn()
   password: Relation<UserPasswordSchema>;
 
-  @ManyToOne(() => RoleSchema, { cascade: ['insert', 'recover', 'update'] })
-  @JoinColumn()
-  role: Relation<RoleSchema>;
+  @ManyToMany(() => RoleSchema, { eager: true, cascade: ['recover'] })
+  @JoinTable({ name: 'users_roles' })
+  roles: Relation<RoleSchema[]>;
 
   @CreateDateColumn()
   createdAt: Date;

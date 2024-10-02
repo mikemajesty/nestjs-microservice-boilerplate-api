@@ -60,12 +60,12 @@ describe(LoginUsecase.name, () => {
     id: getMockUUID(),
     email: 'admin@admin.com',
     name: 'Admin',
-    role: new RoleEntity({ name: RoleEnum.USER }),
+    roles: [new RoleEntity({ name: RoleEnum.USER })],
     password: { id: getMockUUID(), password: '***' }
   });
 
   test('when user role not found, should expect an error', async () => {
-    repository.findOneWithRelation = jest.fn().mockResolvedValue({ ...user, role: null });
+    repository.findOneWithRelation = jest.fn().mockResolvedValue({ ...user, roles: [] });
 
     await expect(usecase.execute(input, getMockTracing())).rejects.toThrow(ApiNotFoundException);
   });

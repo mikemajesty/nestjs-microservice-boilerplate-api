@@ -51,7 +51,7 @@ describe(UserUpdateUsecase.name, () => {
           { message: 'Required', path: UserEntity.nameOf('id') },
           { message: 'Required', path: UserEntity.nameOf('name') },
           { message: 'Required', path: UserEntity.nameOf('email') },
-          { message: 'Required', path: UserEntity.nameOf('role') }
+          { message: 'Required', path: UserEntity.nameOf('roles') }
         ]);
       }
     );
@@ -61,18 +61,18 @@ describe(UserUpdateUsecase.name, () => {
     id: getMockUUID(),
     name: 'Admin',
     email: 'admin@admin.com',
-    role: new RoleEntity({ name: RoleEnum.USER })
+    roles: [new RoleEntity({ name: RoleEnum.USER })]
   });
 
   const input: UserUpdateInput = {
     id: user.id,
     email: user.email,
     name: user.name,
-    role: user.role.name
+    roles: [RoleEnum.USER]
   };
 
   test('when user not found, should expect an error', async () => {
-    repository.findOneWithRelation = jest.fn().mockResolvedValue(null);
+    repository.findOne = jest.fn().mockResolvedValue(null);
 
     await expect(usecase.execute(input, getMockTracing())).rejects.toThrow(ApiNotFoundException);
   });
@@ -80,25 +80,25 @@ describe(UserUpdateUsecase.name, () => {
   const role = new RoleEntity({ name: RoleEnum.USER });
 
   test('when user already exists, should expect an error', async () => {
-    repository.findOneWithRelation = jest.fn().mockResolvedValue(user);
+    repository.findOne = jest.fn().mockResolvedValue(user);
     repository.existsOnUpdate = jest.fn().mockResolvedValue(user);
-    roleRepository.findOne = jest.fn().mockResolvedValue(role);
+    roleRepository.findIn = jest.fn().mockResolvedValue([role]);
 
     await expect(usecase.execute(input, getMockTracing())).rejects.toThrow(ApiConflictException);
   });
 
   test('when nole not found, should expect an error', async () => {
-    repository.findOneWithRelation = jest.fn().mockResolvedValue(user);
-    roleRepository.findOne = jest.fn().mockResolvedValue(null);
+    repository.findOne = jest.fn().mockResolvedValue(user);
+    roleRepository.findIn = jest.fn().mockResolvedValue([]);
 
     await expect(usecase.execute(input, getMockTracing())).rejects.toThrow(ApiNotFoundException);
   });
 
   test('when user updated successfully, should expect an user that has been updated', async () => {
-    repository.findOneWithRelation = jest.fn().mockResolvedValue(user);
+    repository.findOne = jest.fn().mockResolvedValue(user);
     repository.existsOnUpdate = jest.fn().mockResolvedValue(null);
-    roleRepository.findOne = jest.fn().mockResolvedValue(role);
-    repository.updateOne = jest.fn();
+    roleRepository.findIn = jest.fn().mockResolvedValue([role]);
+    repository.create = jest.fn();
 
     await expect(usecase.execute(input, getMockTracing())).resolves.toEqual(user);
   });

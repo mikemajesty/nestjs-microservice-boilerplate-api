@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { z } from 'zod';
 
+import { ApiInternalServerException } from '@/utils/exception';
 import { ZodInferSchema } from '@/utils/zod';
 
 import { LogLevelEnum } from '../logger';
@@ -65,7 +66,7 @@ import { EnvEnum } from './types';
           SecretsSchema.parse(secret);
         } catch (error) {
           const message = error.issues.map((i) => `SecretsService.${i.path.join('.')}: ${i.message}`);
-          throw { ...error, message };
+          throw new ApiInternalServerException({ ...error, message });
         }
 
         return SecretsSchema.parse(secret);
