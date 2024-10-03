@@ -28,7 +28,7 @@ export class RoleUpdateUsecase implements IUsecase {
     const role = await this.roleRepository.findById(input.id);
 
     if (!role) {
-      throw new ApiNotFoundException();
+      throw new ApiNotFoundException('roleNotFound');
     }
 
     const entity = new RoleEntity({ ...role, ...input });

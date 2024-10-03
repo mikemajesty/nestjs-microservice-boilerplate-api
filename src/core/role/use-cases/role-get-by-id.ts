@@ -23,7 +23,7 @@ export class RoleGetByIdUsecase implements IUsecase {
     const role = await this.roleRepository.findById(id);
 
     if (!role) {
-      throw new ApiNotFoundException();
+      throw new ApiNotFoundException('roleNotFound');
     }
 
     return new RoleEntity(role);

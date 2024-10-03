@@ -22,7 +22,7 @@ export class PermissionDeleteUsecase implements IUsecase {
     const model = await this.permissionRepository.findById(id);
 
     if (!model) {
-      throw new ApiNotFoundException();
+      throw new ApiNotFoundException('permissionNotFound');
     }
 
     const permission = new PermissionEntity(model);

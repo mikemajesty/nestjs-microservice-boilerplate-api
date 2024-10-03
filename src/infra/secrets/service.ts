@@ -16,7 +16,7 @@ export class SecretsService implements ISecretsAdapter {
 
   ENV = this.config.get<EnvEnum>('NODE_ENV');
 
-  PORT = Number(this.config.get<number>('PORT'));
+  PORT = this.config.get<number>('PORT');
 
   HOST = this.config.get('HOST');
 

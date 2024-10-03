@@ -39,7 +39,10 @@ import { EnvEnum } from './types';
             POSTGRES_URL: z.string().url(),
             POSTGRES_PGADMIN_URL: z.string().url()
           }),
-          PORT: z.number(),
+          PORT: z
+            .number()
+            .or(z.string())
+            .transform((p) => Number(p)),
           PROMETHUES_URL: z.string().url(),
           REDIS_URL: z.string().url(),
           TOKEN_EXPIRATION: z.string(),

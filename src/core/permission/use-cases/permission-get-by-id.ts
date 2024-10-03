@@ -23,7 +23,7 @@ export class PermissionGetByIdUsecase implements IUsecase {
     const permission = await this.permissionRepository.findById(id);
 
     if (!permission) {
-      throw new ApiNotFoundException();
+      throw new ApiNotFoundException('permissionNotFound');
     }
 
     return new PermissionEntity(permission);

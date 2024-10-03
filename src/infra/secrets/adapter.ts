@@ -3,7 +3,7 @@ export abstract class ISecretsAdapter {
 
   SYNC_DATABASE?: boolean | string;
 
-  PORT: number;
+  PORT: number | string;
 
   HOST: string;
 

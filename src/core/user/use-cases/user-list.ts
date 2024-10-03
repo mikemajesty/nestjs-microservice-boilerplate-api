@@ -23,8 +23,8 @@ export class UserListUsecase implements IUsecase {
 
     return {
       docs: users.docs.map((u) => {
-        const model = new UserEntity(u);
-        return model;
+        const entity = new UserEntity(u);
+        return entity;
       }),
       limit: users.limit,
       page: users.page,

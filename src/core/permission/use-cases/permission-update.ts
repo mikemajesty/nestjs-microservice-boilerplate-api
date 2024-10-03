@@ -26,7 +26,7 @@ export class PermissionUpdateUsecase implements IUsecase {
     const permission = await this.permissionRepository.findById(input.id);
 
     if (!permission) {
-      throw new ApiNotFoundException();
+      throw new ApiNotFoundException('permissionNotFound');
     }
 
     const permissionExists = await this.permissionRepository.existsOnUpdate({

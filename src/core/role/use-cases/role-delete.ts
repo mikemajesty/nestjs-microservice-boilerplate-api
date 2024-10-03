@@ -22,7 +22,7 @@ export class RoleDeleteUsecase implements IUsecase {
     const model = await this.roleRepository.findById(id);
 
     if (!model) {
-      throw new ApiNotFoundException();
+      throw new ApiNotFoundException('roleNotFound');
     }
 
     const role = new RoleEntity(model);
