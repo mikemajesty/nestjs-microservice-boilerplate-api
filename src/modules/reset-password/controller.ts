@@ -1,8 +1,14 @@
 import { Controller, HttpCode, Post, Put, Req, Version } from '@nestjs/common';
 import { ApiBody, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import { ConfirmResetPasswordInput, ConfirmResetPasswordOutput } from '@/core/reset-password/use-cases/confirm';
-import { SendEmailResetPasswordInput, SendEmailResetPasswordOutput } from '@/core/reset-password/use-cases/send-email';
+import {
+  ResetPasswordConfirmInput,
+  ResetPasswordConfirmOutput
+} from '@/core/reset-password/use-cases/reset-password-confirm';
+import {
+  ResetPasswordSendEmailInput,
+  ResetPasswordSendEmailOutput
+} from '@/core/reset-password/use-cases/reset-password-send-email';
 import { ApiRequest } from '@/utils/request';
 
 import { IConfirmResetPasswordAdapter, ISendEmailResetPasswordAdapter } from './adapter';
@@ -21,8 +27,8 @@ export class ResetPasswordController {
   @ApiResponse(SwaggerResponse.sendEmail[404])
   @ApiBody(SwaggerRequest.sendEmail)
   @Version('1')
-  async sendEmail(@Req() { body }: ApiRequest): Promise<SendEmailResetPasswordOutput> {
-    return await this.sendEmailUsecase.execute(body as SendEmailResetPasswordInput);
+  async sendEmail(@Req() { body }: ApiRequest): Promise<ResetPasswordSendEmailOutput> {
+    return await this.sendEmailUsecase.execute(body as ResetPasswordSendEmailInput);
   }
 
   @Put(':token')
@@ -34,10 +40,10 @@ export class ResetPasswordController {
   @ApiBody(SwaggerRequest.confirmResetPassword)
   @Version('1')
   @HttpCode(200)
-  async receive(@Req() { params, body }: ApiRequest): Promise<ConfirmResetPasswordOutput> {
+  async confirmResetPassword(@Req() { params, body }: ApiRequest): Promise<ResetPasswordConfirmOutput> {
     return await this.confirmResetPasswordUsecase.execute({
       token: params.token,
       ...body
-    } as ConfirmResetPasswordInput);
+    } as ResetPasswordConfirmInput);
   }
 }

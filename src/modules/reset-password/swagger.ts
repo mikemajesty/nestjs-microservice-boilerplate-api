@@ -1,5 +1,5 @@
-import { ConfirmResetPasswordInput } from '@/core/reset-password/use-cases/confirm';
-import { SendEmailResetPasswordInput } from '@/core/reset-password/use-cases/send-email';
+import { ResetPasswordConfirmInput } from '@/core/reset-password/use-cases/reset-password-confirm';
+import { ResetPasswordSendEmailInput } from '@/core/reset-password/use-cases/reset-password-send-email';
 import { Swagger } from '@/utils/docs/swagger';
 
 const BASE_URL = 'api/v1/reset-password';
@@ -55,9 +55,9 @@ export const SwaggerResponse = {
 export const SwaggerRequest = {
   sendEmail: Swagger.defaultRequestJSON({
     email: 'admin@admin.com'
-  } as SendEmailResetPasswordInput),
+  } as ResetPasswordSendEmailInput),
   confirmResetPassword: Swagger.defaultRequestJSON({
     confirmPassword: '*****',
     password: '*****'
-  } as ConfirmResetPasswordInput)
+  } as ResetPasswordConfirmInput)
 };

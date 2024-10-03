@@ -12,9 +12,9 @@ import { expectZodError, getMockUUID } from '@/utils/tests';
 
 import { ResetPasswordEntity } from '../../entity/reset-password';
 import { IResetPasswordRepository } from '../../repository/reset-password';
-import { ConfirmResetPasswordInput, ConfirmResetPasswordUsecase } from '../confirm';
+import { ResetPasswordConfirmInput, ResetPasswordConfirmUsecase } from '../reset-password-confirm';
 
-describe(ConfirmResetPasswordUsecase.name, () => {
+describe(ResetPasswordConfirmUsecase.name, () => {
   let usecase: IConfirmResetPasswordAdapter;
   let repository: IResetPasswordRepository;
   let userRepository: IUserRepository;
@@ -58,7 +58,7 @@ describe(ConfirmResetPasswordUsecase.name, () => {
             event: IEventAdapter,
             crypto: ICryptoAdapter
           ) => {
-            return new ConfirmResetPasswordUsecase(repository, userRepository, token, event, crypto);
+            return new ResetPasswordConfirmUsecase(repository, userRepository, token, event, crypto);
           },
           inject: [IResetPasswordRepository, IUserRepository, ITokenAdapter, IEventAdapter, ICryptoAdapter]
         }
@@ -89,7 +89,7 @@ describe(ConfirmResetPasswordUsecase.name, () => {
     );
   });
 
-  const input: ConfirmResetPasswordInput = { confirmPassword: '123456', password: '123456', token: 'token' };
+  const input: ResetPasswordConfirmInput = { confirmPassword: '123456', password: '123456', token: 'token' };
 
   const user = new UserEntity({
     id: getMockUUID(),

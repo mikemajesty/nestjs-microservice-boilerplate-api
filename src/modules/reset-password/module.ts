@@ -4,8 +4,8 @@ import { Repository } from 'typeorm';
 
 import { ResetPasswordEntity } from '@/core/reset-password/entity/reset-password';
 import { IResetPasswordRepository } from '@/core/reset-password/repository/reset-password';
-import { ConfirmResetPasswordUsecase } from '@/core/reset-password/use-cases/confirm';
-import { SendEmailResetPasswordUsecase } from '@/core/reset-password/use-cases/send-email';
+import { ResetPasswordConfirmUsecase } from '@/core/reset-password/use-cases/reset-password-confirm';
+import { ResetPasswordSendEmailUsecase } from '@/core/reset-password/use-cases/reset-password-send-email';
 import { IUserRepository } from '@/core/user/repository/user';
 import { RedisCacheModule } from '@/infra/cache/redis';
 import { ResetPasswordSchema } from '@/infra/database/postgres/schemas/resetPassword';
@@ -18,7 +18,7 @@ import { ITokenAdapter, TokenLibModule } from '@/libs/token';
 import { UserModule } from '../user/module';
 import { IConfirmResetPasswordAdapter, ISendEmailResetPasswordAdapter } from './adapter';
 import { ResetPasswordController } from './controller';
-import { UserResetPasswordRepository } from './repository';
+import { ResetPasswordRepository } from './repository';
 
 @Module({
   imports: [
@@ -37,7 +37,7 @@ import { UserResetPasswordRepository } from './repository';
     {
       provide: IResetPasswordRepository,
       useFactory: (repository: Repository<ResetPasswordSchema & ResetPasswordEntity>) => {
-        return new UserResetPasswordRepository(repository);
+        return new ResetPasswordRepository(repository);
       },
       inject: [getRepositoryToken(ResetPasswordSchema)]
     },
@@ -50,7 +50,7 @@ import { UserResetPasswordRepository } from './repository';
         event: IEventAdapter,
         secret: ISecretsAdapter
       ) => {
-        return new SendEmailResetPasswordUsecase(resetpasswordtokenRepository, userRepository, token, event, secret);
+        return new ResetPasswordSendEmailUsecase(resetpasswordtokenRepository, userRepository, token, event, secret);
       },
       inject: [IResetPasswordRepository, IUserRepository, ITokenAdapter, IEventAdapter, ISecretsAdapter]
     },
@@ -63,7 +63,7 @@ import { UserResetPasswordRepository } from './repository';
         event: IEventAdapter,
         crypto: ICryptoAdapter
       ) => {
-        return new ConfirmResetPasswordUsecase(resetpasswordtokenRepository, userRepository, token, event, crypto);
+        return new ResetPasswordConfirmUsecase(resetpasswordtokenRepository, userRepository, token, event, crypto);
       },
       inject: [IResetPasswordRepository, IUserRepository, ITokenAdapter, IEventAdapter, ICryptoAdapter]
     }

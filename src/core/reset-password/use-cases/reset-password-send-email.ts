@@ -14,14 +14,14 @@ import { IUsecase } from '@/utils/usecase';
 import { ResetPasswordEntity } from '../entity/reset-password';
 import { IResetPasswordRepository } from '../repository/reset-password';
 
-export const SendEmailResetPasswordSchema = UserEntitySchema.pick({
+export const ResetPasswordSendEmailSchema = UserEntitySchema.pick({
   email: true
 });
 
-export type SendEmailResetPasswordInput = z.infer<typeof SendEmailResetPasswordSchema>;
-export type SendEmailResetPasswordOutput = void;
+export type ResetPasswordSendEmailInput = z.infer<typeof ResetPasswordSendEmailSchema>;
+export type ResetPasswordSendEmailOutput = void;
 
-export class SendEmailResetPasswordUsecase implements IUsecase {
+export class ResetPasswordSendEmailUsecase implements IUsecase {
   constructor(
     private readonly resetPasswordRepository: IResetPasswordRepository,
     private readonly userRepository: IUserRepository,
@@ -30,8 +30,8 @@ export class SendEmailResetPasswordUsecase implements IUsecase {
     private readonly secret: ISecretsAdapter
   ) {}
 
-  @ValidateSchema(SendEmailResetPasswordSchema)
-  async execute({ email }: SendEmailResetPasswordInput): Promise<SendEmailResetPasswordOutput> {
+  @ValidateSchema(ResetPasswordSendEmailSchema)
+  async execute({ email }: ResetPasswordSendEmailInput): Promise<ResetPasswordSendEmailOutput> {
     const user = await this.userRepository.findOne({ email });
 
     if (!user) {

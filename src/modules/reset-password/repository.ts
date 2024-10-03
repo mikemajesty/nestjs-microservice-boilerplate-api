@@ -11,7 +11,7 @@ import { ResetPasswordSchema } from '../../infra/database/postgres/schemas/reset
 type Model = ResetPasswordSchema & ResetPasswordEntity;
 
 @Injectable()
-export class UserResetPasswordRepository extends TypeORMRepository<Model> implements IResetPasswordRepository {
+export class ResetPasswordRepository extends TypeORMRepository<Model> implements IResetPasswordRepository {
   constructor(readonly repository: Repository<Model>) {
     super(repository);
   }

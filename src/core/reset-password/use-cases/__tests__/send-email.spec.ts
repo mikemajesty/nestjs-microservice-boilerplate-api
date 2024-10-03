@@ -12,9 +12,9 @@ import { expectZodError, getMockUUID } from '@/utils/tests';
 
 import { ResetPasswordEntity } from '../../entity/reset-password';
 import { IResetPasswordRepository } from '../../repository/reset-password';
-import { SendEmailResetPasswordInput, SendEmailResetPasswordUsecase } from '../send-email';
+import { ResetPasswordSendEmailInput, ResetPasswordSendEmailUsecase } from '../reset-password-send-email';
 
-describe(SendEmailResetPasswordUsecase.name, () => {
+describe(ResetPasswordSendEmailUsecase.name, () => {
   let usecase: ISendEmailResetPasswordAdapter;
   let repository: IResetPasswordRepository;
   let userRepository: IUserRepository;
@@ -58,7 +58,7 @@ describe(SendEmailResetPasswordUsecase.name, () => {
             event: IEventAdapter,
             secret: ISecretsAdapter
           ) => {
-            return new SendEmailResetPasswordUsecase(repository, userRepository, token, event, secret);
+            return new ResetPasswordSendEmailUsecase(repository, userRepository, token, event, secret);
           },
           inject: [IResetPasswordRepository, IUserRepository, ITokenAdapter, IEventAdapter, ISecretsAdapter]
         }
@@ -79,7 +79,7 @@ describe(SendEmailResetPasswordUsecase.name, () => {
     );
   });
 
-  const input: SendEmailResetPasswordInput = { email: 'admin@admin.com' };
+  const input: ResetPasswordSendEmailInput = { email: 'admin@admin.com' };
 
   test('when user not found, should expect an error', async () => {
     userRepository.findOne = jest.fn().mockResolvedValue(null);

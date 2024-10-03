@@ -12,16 +12,16 @@ import { IUsecase } from '@/utils/usecase';
 
 import { IResetPasswordRepository } from '../repository/reset-password';
 
-export const ConfirmResetPasswordSchema = z.object({
+export const ResetPasswordConfirmSchema = z.object({
   token: z.string(),
   password: z.string().min(5).max(200),
   confirmPassword: z.string().min(5).max(200)
 });
 
-export type ConfirmResetPasswordInput = z.infer<typeof ConfirmResetPasswordSchema>;
-export type ConfirmResetPasswordOutput = void;
+export type ResetPasswordConfirmInput = z.infer<typeof ResetPasswordConfirmSchema>;
+export type ResetPasswordConfirmOutput = void;
 
-export class ConfirmResetPasswordUsecase implements IUsecase {
+export class ResetPasswordConfirmUsecase implements IUsecase {
   constructor(
     private readonly resetpasswordtokenRepository: IResetPasswordRepository,
     private readonly userRepository: IUserRepository,
@@ -30,8 +30,8 @@ export class ConfirmResetPasswordUsecase implements IUsecase {
     private readonly crypto: ICryptoAdapter
   ) {}
 
-  @ValidateSchema(ConfirmResetPasswordSchema)
-  async execute(input: ConfirmResetPasswordInput): Promise<ConfirmResetPasswordOutput> {
+  @ValidateSchema(ResetPasswordConfirmSchema)
+  async execute(input: ResetPasswordConfirmInput): Promise<ResetPasswordConfirmOutput> {
     const samePassword = input.password === input.confirmPassword;
 
     if (!samePassword) {
