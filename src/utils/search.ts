@@ -35,14 +35,12 @@ export const SearchHttpSchema = z
     if (!searchString) return null;
     const search = {};
 
-    String(searchString)
-      .split(',')
-      .forEach((s) => {
-        const propertyIndex = s.indexOf(':');
-        const value = s.slice(propertyIndex + 1, s.length);
-        const [field] = s.split(':');
-        search[`${field}`] = value.trim();
-      });
+    searchString.split(',').forEach((s) => {
+      const propertyIndex = s.indexOf(':');
+      const value = s.slice(propertyIndex + 1, s.length);
+      const [field] = s.split(':');
+      search[`${field}`] = value.trim();
+    });
 
     return search;
   });

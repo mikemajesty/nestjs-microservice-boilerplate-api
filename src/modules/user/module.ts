@@ -67,8 +67,8 @@ import { UserRepository } from './repository';
     },
     {
       provide: IUserUpdateAdapter,
-      useFactory: (userRepository: IUserRepository, loggerService: ILoggerAdapter, role: IRoleRepository) => {
-        return new UserUpdateUsecase(userRepository, loggerService, role);
+      useFactory: (userRepository: IUserRepository, loggerService: ILoggerAdapter, roleRepository: IRoleRepository) => {
+        return new UserUpdateUsecase(userRepository, loggerService, roleRepository);
       },
       inject: [IUserRepository, ILoggerAdapter, IRoleRepository]
     },

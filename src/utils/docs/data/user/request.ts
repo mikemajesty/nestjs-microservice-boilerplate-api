@@ -13,7 +13,7 @@ export const UsersRequest = {
   update: {
     name: 'Admin',
     email: 'admin@admin.com',
-    role: RoleEnum.USER
+    roles: [RoleEnum.USER]
   } as UserUpdateInput,
   changePassword: { password: '**', confirmPassword: '***', newPassword: '***' } as UserChangePasswordInput
 };

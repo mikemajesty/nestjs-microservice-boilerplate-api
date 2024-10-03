@@ -1,4 +1,5 @@
-import { RoleEnum } from '@/core/role/entity/role';
+import { PermissionEntity } from '@/core/permission/entity/permission';
+import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
 import { UserEntity } from '@/core/user/entity/user';
 import { UserCreateOutput } from '@/core/user/use-cases/user-create';
 import { UserDeleteOutput } from '@/core/user/use-cases/user-delete';
@@ -12,7 +13,7 @@ const entity = {
   id: getMockUUID(),
   email: 'admin@admin.com',
   name: 'Admin',
-  roles: [{ name: RoleEnum.USER }]
+  roles: [new RoleEntity({ name: RoleEnum.USER, permissions: [new PermissionEntity({ name: 'permission:create' })] })]
 } as UserEntity;
 
 const fullEntity = {

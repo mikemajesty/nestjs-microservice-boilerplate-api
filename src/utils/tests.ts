@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { RoleEnum } from '@/core/role/entity/role';
 import { ApiTrancingInput, TracingType, UserRequest } from '@/utils/request';
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
@@ -28,6 +29,6 @@ export const getMockTracing = (): ApiTrancingInput => {
         return event;
       }
     } as Partial<TracingType> as TracingType,
-    user: { email: 'test', name: 'test', roles: ['test'] } as UserRequest
+    user: { email: 'test', name: 'test', roles: [RoleEnum.USER] } as UserRequest
   };
 };
