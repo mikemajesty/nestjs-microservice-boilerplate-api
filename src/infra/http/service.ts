@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import axios, { AxiosInstance } from 'axios';
+import axios, { Axios, AxiosInstance } from 'axios';
 import axiosBetterStacktrace from 'axios-better-stacktrace';
 import https from 'https';
 
@@ -35,7 +35,7 @@ export class HttpService implements IHttpAdapter {
     );
   }
 
-  instance(): AxiosInstance {
+  instance(): AxiosInstance | Axios {
     return this.axios;
   }
 }

@@ -23,7 +23,7 @@ export type ResetPasswordConfirmOutput = void;
 
 export class ResetPasswordConfirmUsecase implements IUsecase {
   constructor(
-    private readonly resetpasswordtokenRepository: IResetPasswordRepository,
+    private readonly resetPasswordTokenRepository: IResetPasswordRepository,
     private readonly userRepository: IUserRepository,
     private readonly token: ITokenAdapter,
     private readonly event: IEventAdapter,
@@ -46,9 +46,9 @@ export class ResetPasswordConfirmUsecase implements IUsecase {
       throw new ApiNotFoundException('user not found');
     }
 
-    const resetpasswordtoken = await this.resetpasswordtokenRepository.findByIdUserId(user.id);
+    const resetPasswordToken = await this.resetPasswordTokenRepository.findByIdUserId(user.id);
 
-    if (!resetpasswordtoken) {
+    if (!resetPasswordToken) {
       throw new ApiUnauthorizedException('token was expired');
     }
 
@@ -63,6 +63,6 @@ export class ResetPasswordConfirmUsecase implements IUsecase {
       payload: { name: user.name }
     });
 
-    await this.resetpasswordtokenRepository.remove({ userId: user.id });
+    await this.resetPasswordTokenRepository.remove({ userId: user.id });
   }
 }

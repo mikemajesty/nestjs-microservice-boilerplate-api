@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 
-import { LoggerModule } from '@/infra/logger';
+import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 
 import { IHttpAdapter } from './adapter';
 import { HttpService } from './service';
@@ -10,7 +10,10 @@ import { HttpService } from './service';
   providers: [
     {
       provide: IHttpAdapter,
-      useClass: HttpService
+      useFactory: (logger: ILoggerAdapter) => {
+        return new HttpService(logger);
+      },
+      inject: [ILoggerAdapter]
     }
   ],
   exports: [IHttpAdapter]
