@@ -4,25 +4,6 @@ import { ExamplesObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.in
 import { ErrorModel } from '@/utils/exception';
 import httpStatus from '@/utils/static/http-status.json';
 
-type SwaggerError = {
-  status: number;
-  route: string;
-  message?: string | unknown;
-  description?: string;
-};
-
-type SwaggerText = {
-  status: number;
-  text: string | unknown;
-  description?: string;
-};
-
-type SwaggerJSON = {
-  status: number;
-  json?: unknown;
-  description?: string;
-};
-
 export const Swagger = {
   defaultResponseError({ status, route, message, description }: SwaggerError): ApiResponseOptions {
     return {
@@ -58,7 +39,7 @@ export const Swagger = {
           error: {
             code: status,
             traceid: '<traceId>',
-            context: 'context',
+            context: '<context>',
             message: messages[`${key}`].value,
             timestamp: '<timestamp>',
             path: route
@@ -149,4 +130,23 @@ export const Swagger = {
       type: 'string'
     };
   }
+};
+
+type SwaggerError = {
+  status: number;
+  route: string;
+  message?: string | unknown;
+  description?: string;
+};
+
+type SwaggerText = {
+  status: number;
+  text: string | unknown;
+  description?: string;
+};
+
+type SwaggerJSON = {
+  status: number;
+  json?: unknown;
+  description?: string;
 };

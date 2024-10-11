@@ -75,6 +75,16 @@ export class CollectionUtil {
   static hasDuplicated = (collection: unknown[] = []) => {
     return new Set(collection).size !== collection.length;
   };
+
+  static chunk(list: unknown[], size: number) {
+    const array = [];
+    for (let i = 0; i < list.length; i += size) {
+      const chunk = list.slice(i, i + size);
+      array.push(chunk);
+    }
+
+    return array;
+  }
 }
 
 export type LastType = {

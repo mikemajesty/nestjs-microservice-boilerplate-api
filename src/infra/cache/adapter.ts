@@ -1,7 +1,8 @@
 import { MemoryCacheSetType } from './memory/types';
 import { RedisCacheKeyArgument, RedisCacheKeyValue, RedisCacheValueArgument } from './redis/types';
 
-export abstract class ICacheAdapter<T = object> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export abstract class ICacheAdapter<T = any> {
   client: T;
 
   abstract isConnected(): Promise<void> | void;

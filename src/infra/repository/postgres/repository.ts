@@ -75,7 +75,7 @@ export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEn
   async findIn(filter: { [key in keyof Partial<T>]: string[] }): Promise<T[]> {
     const key = Object.keys(filter)[0];
     return this.repository.find({
-      where: { [key]: In(filter[`${key}` as keyof Partial<T>]) }
+      where: { [key]: In(filter[`${key}` as keyof Partial<T>]), deleted_at: null }
     } as FindOneOptions<T>);
   }
 
