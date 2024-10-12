@@ -97,6 +97,7 @@ export class LoggerService implements ILoggerAdapter {
         context: error?.context,
         type: type,
         traceid: this.getTraceId(error),
+        externalApiCurl: error['curl'],
         createdAt: DateUtils.getISODateString(),
         application: this.app,
         stack: error.stack?.replace(/\n/g, ''),

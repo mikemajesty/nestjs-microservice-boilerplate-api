@@ -3,6 +3,7 @@ import { BaseException } from '@/utils/exception';
 export type MessageType = {
   message: string;
   context?: string;
+  externalApiCurl?: string;
   obj?: object;
 };
 
