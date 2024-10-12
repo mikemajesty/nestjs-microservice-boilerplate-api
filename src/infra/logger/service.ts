@@ -173,7 +173,7 @@ export class LoggerService implements ILoggerAdapter {
         req: (request) => {
           return {
             method: request.method,
-            curl: PinoRequestConverter.getCurl(request)
+            curl: PinoRequestConverter.getCurl(request, ['password', 'cpf'])
           };
         },
         res: pino.stdSerializers.res

@@ -24,7 +24,7 @@ export const interceptAxiosResponseError = (error) => {
   error.message = message;
 
   error.status = status;
-  error.curl = AxiosConverter.getCurl(error);
+  error.curl = AxiosConverter.getCurl(error, ['password', 'cpf']);
 };
 
 type RequestRetry = {
