@@ -6,7 +6,7 @@ import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity
 import { PermissionSchema } from '../schemas/permission';
 import { RoleSchema } from '../schemas/role';
 import { UserSchema } from '../schemas/user';
-import { UserPasswordSchema } from '../schemas/userPassword';
+import { UserPasswordSchema } from '../schemas/user-password';
 import { userPermissions } from './1727654555722-insertPermissions';
 
 export class insertUser1727655177319 implements MigrationInterface {

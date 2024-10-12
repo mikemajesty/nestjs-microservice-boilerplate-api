@@ -6,7 +6,7 @@ import { IResetPasswordRepository } from '@/core/reset-password/repository/reset
 import { TypeORMRepository } from '@/infra/repository/postgres/repository';
 import { DateUtils } from '@/utils/date';
 
-import { ResetPasswordSchema } from '../../infra/database/postgres/schemas/resetPassword';
+import { ResetPasswordSchema } from '../../infra/database/postgres/schemas/reset-password';
 
 type Model = ResetPasswordSchema & ResetPasswordEntity;
 

@@ -8,7 +8,7 @@ import { ResetPasswordConfirmUsecase } from '@/core/reset-password/use-cases/res
 import { ResetPasswordSendEmailUsecase } from '@/core/reset-password/use-cases/reset-password-send-email';
 import { IUserRepository } from '@/core/user/repository/user';
 import { RedisCacheModule } from '@/infra/cache/redis';
-import { ResetPasswordSchema } from '@/infra/database/postgres/schemas/resetPassword';
+import { ResetPasswordSchema } from '@/infra/database/postgres/schemas/reset-password';
 import { LoggerModule } from '@/infra/logger';
 import { ISecretsAdapter, SecretsModule } from '@/infra/secrets';
 import { CryptoLibModule, ICryptoAdapter } from '@/libs/crypto';

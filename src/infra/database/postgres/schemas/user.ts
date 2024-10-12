@@ -13,7 +13,7 @@ import {
 } from 'typeorm';
 
 import { RoleSchema } from './role';
-import { UserPasswordSchema } from './userPassword';
+import { UserPasswordSchema } from './user-password';
 
 @Entity({ name: 'users' })
 export class UserSchema extends BaseEntity {

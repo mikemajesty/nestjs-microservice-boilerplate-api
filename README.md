@@ -198,6 +198,10 @@ Creating a CRUD in Postgres and Mongo in seconds.
 ```
 .
 ├── CHANGELOG.md
+├── Dockerfile
+├── OnionGraph.jpg
+├── README.md
+├── TRACING.md
 ├── commitlint.config.js
 ├── diagram.png
 ├── docker
@@ -212,11 +216,12 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │       └── config.yml
 ├── docker-compose-infra.yml
 ├── docker-compose.yml
-├── Dockerfile
+├── eslint.config.mjs
+├── jest-coverage.config.ts
 ├── jest.config.ts
 ├── nest-cli.json
+├── package-lock.json
 ├── package.json
-├── README.md
 ├── scripts
 │   └── npm-audit.sh
 ├── src
@@ -228,66 +233,66 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │   │   │   ├── repository
 │   │   │   │   └── cat.ts
 │   │   │   └── use-cases
+│   │   │       ├── __tests__
+│   │   │       │   ├── cat-create.spec.ts
+│   │   │       │   ├── cat-delete.spec.ts
+│   │   │       │   ├── cat-get-by-id.spec.ts
+│   │   │       │   ├── cat-list.spec.ts
+│   │   │       │   └── cat-update.spec.ts
 │   │   │       ├── cat-create.ts
 │   │   │       ├── cat-delete.ts
 │   │   │       ├── cat-get-by-id.ts
 │   │   │       ├── cat-list.ts
-│   │   │       ├── cat-update.ts
-│   │   │       └── __tests__
-│   │   │           ├── cat-create.spec.ts
-│   │   │           ├── cat-delete.spec.ts
-│   │   │           ├── cat-list.spec.ts
-│   │   │           ├── cat-update.spec.ts
-│   │   │           └── cat-get-by-id.spec.ts
+│   │   │       └── cat-update.ts
 │   │   ├── permission
 │   │   │   ├── entity
 │   │   │   │   └── permission.ts
 │   │   │   ├── repository
 │   │   │   │   └── permission.ts
 │   │   │   └── use-cases
+│   │   │       ├── __tests__
+│   │   │       │   ├── permission-create.spec.ts
+│   │   │       │   ├── permission-delete.spec.ts
+│   │   │       │   ├── permission-get-by-id.spec.ts
+│   │   │       │   ├── permission-list.spec.ts
+│   │   │       │   └── permission-update.spec.ts
 │   │   │       ├── permission-create.ts
 │   │   │       ├── permission-delete.ts
 │   │   │       ├── permission-get-by-id.ts
 │   │   │       ├── permission-list.ts
-│   │   │       ├── permission-update.ts
-│   │   │       └── __tests__
-│   │   │           ├── permission-create.spec.ts
-│   │   │           ├── permission-delete.spec.ts
-│   │   │           ├── permission-get-by-id.spec.ts
-│   │   │           ├── permission-list.spec.ts
-│   │   │           └── permission-update.spec.ts
+│   │   │       └── permission-update.ts
 │   │   ├── reset-password
 │   │   │   ├── entity
 │   │   │   │   └── reset-password.ts
 │   │   │   ├── repository
 │   │   │   │   └── reset-password.ts
 │   │   │   └── use-cases
-│   │   │       ├── confirm.ts
-│   │   │       ├── send-email.ts
-│   │   │       └── __tests__
-│   │   │           ├── confirm.spec.ts
-│   │   │           └── send-email.spec.ts
+│   │   │       ├── __tests__
+│   │   │       │   ├── reset-password-confirm.spec.ts
+│   │   │       │   └── reset-password-send-email.spec.ts
+│   │   │       ├── reset-password-confirm.ts
+│   │   │       └── reset-password-send-email.ts
 │   │   ├── role
 │   │   │   ├── entity
 │   │   │   │   └── role.ts
 │   │   │   ├── repository
 │   │   │   │   └── role.ts
 │   │   │   └── use-cases
+│   │   │       ├── __tests__
+│   │   │       │   ├── role-add-permission.spec.ts
+│   │   │       │   ├── role-create.spec.ts
+│   │   │       │   ├── role-delete-permission.spec.ts
+│   │   │       │   ├── role-delete.spec.ts
+│   │   │       │   ├── role-get-by-id.spec.ts
+│   │   │       │   ├── role-list.spec.ts
+│   │   │       │   └── role-update.spec.ts
 │   │   │       ├── role-add-permission.ts
 │   │   │       ├── role-create.ts
 │   │   │       ├── role-delete-permission.ts
 │   │   │       ├── role-delete.ts
 │   │   │       ├── role-get-by-id.ts
 │   │   │       ├── role-list.ts
-│   │   │       ├── role-update.ts
-│   │   │       └── __tests__
-│   │   │           ├── role-add-permission.spec.ts
-│   │   │           ├── role-create.spec.ts
-│   │   │           ├── role-delete-permission.spec.ts
-│   │   │           ├── role-delete.spec.ts
-│   │   │           ├── role-get-by-id.spec.ts
-│   │   │           ├── role-list.spec.ts
-│   │   │           └── role-update.spec.ts
+│   │   │       └── role-update.ts
 │   │   └── user
 │   │       ├── entity
 │   │       │   ├── user-password.ts
@@ -303,6 +308,7 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │   │           │   ├── user-list.spec.ts
 │   │           │   ├── user-login.spec.ts
 │   │           │   ├── user-logout.spec.ts
+│   │           │   ├── user-refresh-token.spec.ts
 │   │           │   └── user-update.spec.ts
 │   │           ├── user-change-password.ts
 │   │           ├── user-create.ts
@@ -311,6 +317,7 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │   │           ├── user-list.ts
 │   │           ├── user-login.ts
 │   │           ├── user-logout.ts
+│   │           ├── user-refresh-token.ts
 │   │           └── user-update.ts
 │   ├── infra
 │   │   ├── cache
@@ -344,24 +351,24 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │   │   │   │   ├── config.ts
 │   │   │   │   ├── index.ts
 │   │   │   │   ├── migrations
-│   │   │   │   │   ├── 1717769593555-createPermissionTable.ts
-│   │   │   │   │   ├── 1717769593666-createRoleTable.ts
-│   │   │   │   │   ├── 1717769593777-createRolesPermissionsTable.ts
-│   │   │   │   │   ├── 1717769593778-createUsersPasswordTable.ts
-│   │   │   │   │   ├── 1717773444116-createUserTable.ts
-│   │   │   │   │   ├── 1717773444118-addRoleIdToUserTable.ts
-│   │   │   │   │   ├── 1717773889333-insertPermissions.ts
-│   │   │   │   │   ├── 1717773889351-insertDefaultUser.ts
-│   │   │   │   │   ├── 1717976911236-createResetPasswordTable.ts
-│   │   │   │   │   ├── 1718133311187-changeResetPasswordCascadeOptions.ts
-│   │   │   │   │   ├── 1718138151111-addUniqueToRoleAndPermissionName.ts
-│   │   │   │   │   └── 1718294246477-addCOntraintsToPermissionsRole.ts
+│   │   │   │   │   ├── 1727653462661-createPermissionTable.ts
+│   │   │   │   │   ├── 1727653565690-createRoleTable.ts
+│   │   │   │   │   ├── 1727653630438-createUserPasswordTable.ts
+│   │   │   │   │   ├── 1727653714156-createUserTable.ts
+│   │   │   │   │   ├── 1727653808424-createResetPassword.ts
+│   │   │   │   │   ├── 1727653954337-createPermissionRoleTable.ts
+│   │   │   │   │   ├── 1727654008041-createUserRoleTable.ts
+│   │   │   │   │   ├── 1727654289658-createTableRelationship.ts
+│   │   │   │   │   ├── 1727654555722-insertPermissions.ts
+│   │   │   │   │   ├── 1727654843890-insertRoles.ts
+│   │   │   │   │   ├── 1727655177319-insertUser.ts
+│   │   │   │   │   └── 1727657387427-addUnaccentExtension.ts
 │   │   │   │   ├── module.ts
 │   │   │   │   ├── schemas
 │   │   │   │   │   ├── permission.ts
-│   │   │   │   │   ├── resetPassword.ts
+│   │   │   │   │   ├── reset-password.ts
 │   │   │   │   │   ├── role.ts
-│   │   │   │   │   ├── userPassword.ts
+│   │   │   │   │   ├── user-password.ts
 │   │   │   │   │   └── user.ts
 │   │   │   │   └── service.ts
 │   │   │   └── types.ts
@@ -439,10 +446,10 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │   │   │   ├── repository.ts
 │   │   │   └── swagger.ts
 │   │   ├── health
+│   │   │   ├── __tests__
+│   │   │   │   └── controller.spec.ts
 │   │   │   ├── controller.ts
-│   │   │   ├── module.ts
-│   │   │   └── __tests__
-│   │   │       └── controller.spec.ts
+│   │   │   └── module.ts
 │   │   ├── login
 │   │   │   ├── adapter.ts
 │   │   │   ├── controller.ts
@@ -506,7 +513,7 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │       │   │   │   ├── convert-mongoose-filter.decorator.ts
 │       │   │   │   └── validate-mongoose-filter.decorator.ts
 │       │   │   ├── postgres
-│       │   │   │   └── convert-paginate-input-to-typeorm-filter.decorator.ts
+│       │   │   │   └── validate-typeorm-filter.decorator.ts
 │       │   │   └── validate-database-sort-allowed.decorator.ts
 │       │   ├── index.ts
 │       │   ├── request-timeout.decorator.ts
@@ -544,9 +551,9 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │       └── zod.ts
 ├── test
 │   └── initialization.ts
-├── TRACING.md
 ├── tsconfig.build.json
-└── tsconfig.json
+├── tsconfig.json
+└── yarn.lock
 ```
 
 ---
