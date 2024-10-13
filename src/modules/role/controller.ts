@@ -50,7 +50,7 @@ export class RoleController {
   @ApiResponse(SwaggerResponse.update[200])
   @ApiResponse(SwaggerResponse.update[404])
   @ApiBody(SwaggerRequest.update)
-  @ApiParam({ name: 'id', required: true })
+  @ApiParam({ name: 'id', required: true, allowEmptyValue: false })
   @Version('1')
   @Permission('role:update')
   async update(@Req() { body, params }: ApiRequest): Promise<RoleUpdateOutput> {
@@ -58,7 +58,7 @@ export class RoleController {
   }
 
   @Get('/:id')
-  @ApiParam({ name: 'id', required: true })
+  @ApiParam({ name: 'id', required: true, allowEmptyValue: false })
   @ApiResponse(SwaggerResponse.getById[200])
   @ApiResponse(SwaggerResponse.getById[404])
   @Version('1')
@@ -87,7 +87,7 @@ export class RoleController {
   }
 
   @Delete('/:id')
-  @ApiParam({ name: 'id', required: true })
+  @ApiParam({ name: 'id', required: true, allowEmptyValue: false })
   @ApiResponse(SwaggerResponse.delete[200])
   @ApiResponse(SwaggerResponse.delete[404])
   @Version('1')
@@ -97,7 +97,7 @@ export class RoleController {
   }
 
   @Put('/add-permissions/:id')
-  @ApiParam({ name: 'id', required: true })
+  @ApiParam({ name: 'id', required: true, allowEmptyValue: false })
   @ApiBody(SwaggerRequest.addPermission)
   @ApiResponse(SwaggerResponse.addPermissions[200])
   @ApiResponse(SwaggerResponse.addPermissions[404])
@@ -108,7 +108,7 @@ export class RoleController {
   }
 
   @Put('/remove-permissions/:id')
-  @ApiParam({ name: 'id', required: true })
+  @ApiParam({ name: 'id', required: true, allowEmptyValue: false })
   @ApiBody(SwaggerRequest.deletePermission)
   @ApiResponse(SwaggerResponse.removePermissions[200])
   @ApiResponse(SwaggerResponse.removePermissions[404])

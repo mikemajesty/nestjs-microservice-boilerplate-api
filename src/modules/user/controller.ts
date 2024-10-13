@@ -50,7 +50,7 @@ export class UserController {
   @ApiResponse(SwaggerResponse.update[404])
   @ApiResponse(SwaggerResponse.update[409])
   @ApiBody(SwaggerRequest.update)
-  @ApiParam({ name: 'id', required: true })
+  @ApiParam({ name: 'id', required: true, allowEmptyValue: false })
   @Version('1')
   @Permission('user:update')
   async update(@Req() { body, user, tracing, params }: ApiRequest): Promise<UserUpdateOutput> {
@@ -84,7 +84,7 @@ export class UserController {
   }
 
   @Get('/:id')
-  @ApiParam({ name: 'id', required: true })
+  @ApiParam({ name: 'id', required: true, allowEmptyValue: false })
   @ApiResponse(SwaggerResponse.getById[200])
   @ApiResponse(SwaggerResponse.getById[404])
   @Version('1')
@@ -94,7 +94,7 @@ export class UserController {
   }
 
   @Put('change-password/:id')
-  @ApiParam({ name: 'id', required: true })
+  @ApiParam({ name: 'id', required: true, allowEmptyValue: false })
   @ApiBody(SwaggerRequest.changePassword)
   @ApiResponse(SwaggerResponse.changePassword[200])
   @ApiResponse(SwaggerResponse.changePassword[404])
@@ -106,7 +106,7 @@ export class UserController {
   }
 
   @Delete('/:id')
-  @ApiParam({ name: 'id', required: true })
+  @ApiParam({ name: 'id', required: true, allowEmptyValue: false })
   @ApiResponse(SwaggerResponse.delete[200])
   @ApiResponse(SwaggerResponse.delete[404])
   @Version('1')

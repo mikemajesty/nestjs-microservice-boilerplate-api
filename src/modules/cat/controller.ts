@@ -45,7 +45,7 @@ export class CatController {
   @ApiResponse(SwaggerResponse.update[200])
   @ApiResponse(SwaggerResponse.update[404])
   @ApiBody(SwaggerRequest.update)
-  @ApiParam({ name: 'id', required: true })
+  @ApiParam({ name: 'id', required: true, allowEmptyValue: false })
   @Version('1')
   @Permission('cat:update')
   async update(@Req() { body, user, tracing, params }: ApiRequest): Promise<CatUpdateOutput> {
@@ -53,7 +53,7 @@ export class CatController {
   }
 
   @Get('/:id')
-  @ApiParam({ name: 'id', required: true })
+  @ApiParam({ name: 'id', required: true, allowEmptyValue: false })
   @ApiResponse(SwaggerResponse.getById[200])
   @ApiResponse(SwaggerResponse.getById[404])
   @Version('1')
@@ -82,7 +82,7 @@ export class CatController {
   }
 
   @Delete('/:id')
-  @ApiParam({ name: 'id', required: true })
+  @ApiParam({ name: 'id', required: true, allowEmptyValue: false })
   @ApiResponse(SwaggerResponse.delete[200])
   @ApiResponse(SwaggerResponse.delete[404])
   @Version('1')
