@@ -135,8 +135,8 @@ export class MongoRepository<T extends Document> implements IRepository<T> {
   }
 
   async findOr(propertyList: (keyof T)[], value: string, options?: QueryOptions): Promise<T[]> {
-    const filter = propertyList.map((property) => {
-      return { [property]: value };
+    const filter = propertyList.map((key) => {
+      return { [key === 'id' ? '_id' : key]: value };
     });
     const data = await this.model.find({ $or: filter as FilterQuery<T>[], deletedAt: null }, null, options);
 
