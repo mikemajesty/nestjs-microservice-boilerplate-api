@@ -5,7 +5,6 @@ import { IRoleRepository } from '@/core/role/repository/role';
 import { SendEmailInput } from '@/infra/email';
 import { ILoggerAdapter } from '@/infra/logger';
 import { CreatedModel } from '@/infra/repository';
-import { ICryptoAdapter } from '@/libs/crypto';
 import { IEventAdapter } from '@/libs/event';
 import { EventNameEnum } from '@/libs/event/types';
 import { ValidateSchema } from '@/utils/decorators';
@@ -32,7 +31,6 @@ export class UserCreateUsecase implements IUsecase {
     private readonly userRepository: IUserRepository,
     private readonly loggerService: ILoggerAdapter,
     private readonly event: IEventAdapter,
-    private readonly crypto: ICryptoAdapter,
     private readonly roleRepository: IRoleRepository
   ) {}
 
@@ -46,9 +44,11 @@ export class UserCreateUsecase implements IUsecase {
 
     const entity = new UserEntity({ name: input.name, email: input.email, roles: roles });
 
-    const password = this.crypto.createHash(input.password);
+    const passwordEntity = new UserPasswordEntity({ password: input.password });
 
-    entity.password = new UserPasswordEntity({ password });
+    passwordEntity.createPassword();
+
+    entity.password = passwordEntity;
 
     const userExists = await this.userRepository.findOne({
       email: entity.email

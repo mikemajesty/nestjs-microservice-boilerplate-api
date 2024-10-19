@@ -15,7 +15,6 @@ import { RedisCacheModule } from '@/infra/cache/redis';
 import { UserSchema } from '@/infra/database/postgres/schemas/user';
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { SecretsModule } from '@/infra/secrets';
-import { CryptoLibModule, ICryptoAdapter } from '@/libs/crypto';
 import { EventLibModule, IEventAdapter } from '@/libs/event';
 import { TokenLibModule } from '@/libs/token';
 import { IsLoggedMiddleware } from '@/observables/middlewares';
@@ -38,7 +37,6 @@ import { UserRepository } from './repository';
     SecretsModule,
     LoggerModule,
     RedisCacheModule,
-    CryptoLibModule,
     EventLibModule,
     TypeOrmModule.forFeature([UserSchema]),
     RoleModule
@@ -58,12 +56,11 @@ import { UserRepository } from './repository';
         userRepository: IUserRepository,
         loggerService: ILoggerAdapter,
         event: IEventAdapter,
-        crypto: ICryptoAdapter,
         roleRpository: IRoleRepository
       ) => {
-        return new UserCreateUsecase(userRepository, loggerService, event, crypto, roleRpository);
+        return new UserCreateUsecase(userRepository, loggerService, event, roleRpository);
       },
-      inject: [IUserRepository, ILoggerAdapter, IEventAdapter, ICryptoAdapter, IRoleRepository]
+      inject: [IUserRepository, ILoggerAdapter, IEventAdapter, IRoleRepository]
     },
     {
       provide: IUserUpdateAdapter,
@@ -95,10 +92,10 @@ import { UserRepository } from './repository';
     },
     {
       provide: IUserChangePasswordAdapter,
-      useFactory: (userRepository: IUserRepository, crypto: ICryptoAdapter) => {
-        return new UserChangePasswordUsecase(userRepository, crypto);
+      useFactory: (userRepository: IUserRepository) => {
+        return new UserChangePasswordUsecase(userRepository);
       },
-      inject: [IUserRepository, ICryptoAdapter]
+      inject: [IUserRepository]
     }
   ],
   exports: [

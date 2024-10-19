@@ -1,10 +1,9 @@
 import { Test } from '@nestjs/testing';
 
 import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
-import { CryptoLibModule, ICryptoAdapter } from '@/libs/crypto';
 import { ITokenAdapter, TokenLibModule } from '@/libs/token';
 import { ILoginAdapter } from '@/modules/login/adapter';
-import { ApiNotFoundException } from '@/utils/exception';
+import { ApiBadRequestException, ApiNotFoundException } from '@/utils/exception';
 import { expectZodError, getMockTracing, getMockUUID } from '@/utils/tests';
 
 import { UserEntity } from '../../entity/user';
@@ -17,7 +16,7 @@ describe(LoginUsecase.name, () => {
 
   beforeEach(async () => {
     const app = await Test.createTestingModule({
-      imports: [TokenLibModule, CryptoLibModule],
+      imports: [TokenLibModule],
       providers: [
         {
           provide: IUserRepository,
@@ -25,10 +24,10 @@ describe(LoginUsecase.name, () => {
         },
         {
           provide: ILoginAdapter,
-          useFactory: (userRepository: IUserRepository, token: ITokenAdapter, crypto: ICryptoAdapter) => {
-            return new LoginUsecase(userRepository, token, crypto);
+          useFactory: (userRepository: IUserRepository, token: ITokenAdapter) => {
+            return new LoginUsecase(userRepository, token);
           },
-          inject: [IUserRepository, ITokenAdapter, ICryptoAdapter]
+          inject: [IUserRepository, ITokenAdapter]
         }
       ]
     }).compile();
@@ -73,7 +72,7 @@ describe(LoginUsecase.name, () => {
   test('when password is incorrect, should expect an error', async () => {
     repository.findOneWithRelation = jest.fn().mockResolvedValue(user);
 
-    await expect(usecase.execute(input, getMockTracing())).rejects.toThrow(ApiNotFoundException);
+    await expect(usecase.execute(input, getMockTracing())).rejects.toThrow(ApiBadRequestException);
   });
 
   test('when user login successfully, should expect a token', async () => {

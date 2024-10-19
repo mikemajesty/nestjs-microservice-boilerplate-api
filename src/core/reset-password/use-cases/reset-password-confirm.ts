@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
+import { UserPasswordEntity } from '@/core/user/entity/user-password';
 import { IUserRepository } from '@/core/user/repository/user';
 import { SendEmailInput } from '@/infra/email';
-import { ICryptoAdapter } from '@/libs/crypto';
 import { IEventAdapter } from '@/libs/event';
 import { EventNameEnum } from '@/libs/event/types';
 import { ITokenAdapter } from '@/libs/token';
@@ -26,8 +26,7 @@ export class ResetPasswordConfirmUsecase implements IUsecase {
     private readonly resetPasswordTokenRepository: IResetPasswordRepository,
     private readonly userRepository: IUserRepository,
     private readonly token: ITokenAdapter,
-    private readonly event: IEventAdapter,
-    private readonly crypto: ICryptoAdapter
+    private readonly event: IEventAdapter
   ) {}
 
   @ValidateSchema(ResetPasswordConfirmSchema)
@@ -52,7 +51,9 @@ export class ResetPasswordConfirmUsecase implements IUsecase {
       throw new ApiUnauthorizedException('token was expired');
     }
 
-    user.password.password = this.crypto.createHash(input.password);
+    const passwordEntity = new UserPasswordEntity(user.password);
+
+    passwordEntity.createPassword();
 
     await this.userRepository.create(user);
 

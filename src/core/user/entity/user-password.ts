@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { CryptoUtils } from '@/utils/crypto';
 import { BaseEntity } from '@/utils/entity';
 import { ApiBadRequestException } from '@/utils/exception';
 
@@ -25,6 +26,11 @@ export class UserPasswordEntity extends BaseEntity<UserPasswordEntity>(UserPassw
   constructor(entity: UserPassword) {
     super();
     Object.assign(this, this.validate(entity));
+  }
+
+  createPassword() {
+    this.password = CryptoUtils.createHash(this.password);
+    return this.password;
   }
 
   verifyPassword(password: string) {

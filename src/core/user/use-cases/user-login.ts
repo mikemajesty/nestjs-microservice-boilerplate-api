@@ -1,6 +1,5 @@
 import { z } from 'zod';
 
-import { ICryptoAdapter } from '@/libs/crypto';
 import { ITokenAdapter } from '@/libs/token';
 import { ValidateSchema } from '@/utils/decorators';
 import { ApiNotFoundException } from '@/utils/exception';
@@ -8,7 +7,7 @@ import { ApiTrancingInput, UserRequest } from '@/utils/request';
 import { IUsecase } from '@/utils/usecase';
 
 import { UserEntitySchema } from '../entity/user';
-import { UserPasswordEntitySchema } from '../entity/user-password';
+import { UserPasswordEntity, UserPasswordEntitySchema } from '../entity/user-password';
 import { IUserRepository } from '../repository/user';
 
 export const LoginSchema = UserEntitySchema.pick({
@@ -21,8 +20,7 @@ export type LoginOutput = { accessToken: string; refreshToken: string };
 export class LoginUsecase implements IUsecase {
   constructor(
     private readonly userRepository: IUserRepository,
-    private readonly tokenService: ITokenAdapter,
-    private readonly crypto: ICryptoAdapter
+    private readonly tokenService: ITokenAdapter
   ) {}
 
   @ValidateSchema(LoginSchema)
@@ -42,11 +40,11 @@ export class LoginUsecase implements IUsecase {
       throw new ApiNotFoundException('roleNotFound');
     }
 
-    const password = this.crypto.createHash(input.password);
+    const passwordEntity = new UserPasswordEntity({ password: input.password });
 
-    if (user.password.password !== password) {
-      throw new ApiNotFoundException('incorrectPassword');
-    }
+    passwordEntity.createPassword();
+
+    passwordEntity.verifyPassword(user.password.password);
 
     tracing.logEvent('user-login', `${user}`);
 

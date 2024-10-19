@@ -3,7 +3,6 @@ import { Test } from '@nestjs/testing';
 import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
 import { UserEntity } from '@/core/user/entity/user';
 import { IUserRepository } from '@/core/user/repository/user';
-import { ICryptoAdapter } from '@/libs/crypto';
 import { IEventAdapter } from '@/libs/event';
 import { ITokenAdapter } from '@/libs/token';
 import { IConfirmResetPasswordAdapter } from '@/modules/reset-password/adapter';
@@ -28,12 +27,6 @@ describe(ResetPasswordConfirmUsecase.name, () => {
           useValue: {}
         },
         {
-          provide: ICryptoAdapter,
-          useValue: {
-            createHash: jest.fn().mockReturnValue('hash')
-          }
-        },
-        {
           provide: IResetPasswordRepository,
           useValue: {}
         },
@@ -55,12 +48,11 @@ describe(ResetPasswordConfirmUsecase.name, () => {
             repository: IResetPasswordRepository,
             userRepository: IUserRepository,
             token: ITokenAdapter,
-            event: IEventAdapter,
-            crypto: ICryptoAdapter
+            event: IEventAdapter
           ) => {
-            return new ResetPasswordConfirmUsecase(repository, userRepository, token, event, crypto);
+            return new ResetPasswordConfirmUsecase(repository, userRepository, token, event);
           },
-          inject: [IResetPasswordRepository, IUserRepository, ITokenAdapter, IEventAdapter, ICryptoAdapter]
+          inject: [IResetPasswordRepository, IUserRepository, ITokenAdapter, IEventAdapter]
         }
       ]
     }).compile();

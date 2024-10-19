@@ -3,7 +3,6 @@ import { Test } from '@nestjs/testing';
 import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
 import { IRoleRepository } from '@/core/role/repository/role';
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
-import { CryptoLibModule, ICryptoAdapter } from '@/libs/crypto';
 import { IEventAdapter } from '@/libs/event';
 import { IUserCreateAdapter } from '@/modules/user/adapter';
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception';
@@ -21,7 +20,7 @@ describe(UserCreateUsecase.name, () => {
 
   beforeEach(async () => {
     const app = await Test.createTestingModule({
-      imports: [LoggerModule, CryptoLibModule],
+      imports: [LoggerModule],
       providers: [
         {
           provide: IUserRepository,
@@ -43,12 +42,11 @@ describe(UserCreateUsecase.name, () => {
             userRepository: IUserRepository,
             logger: ILoggerAdapter,
             event: IEventAdapter,
-            crypto: ICryptoAdapter,
             roleRepository: IRoleRepository
           ) => {
-            return new UserCreateUsecase(userRepository, logger, event, crypto, roleRepository);
+            return new UserCreateUsecase(userRepository, logger, event, roleRepository);
           },
-          inject: [IUserRepository, ILoggerAdapter, IEventAdapter, ICryptoAdapter, IRoleRepository]
+          inject: [IUserRepository, ILoggerAdapter, IEventAdapter, IRoleRepository]
         }
       ]
     }).compile();

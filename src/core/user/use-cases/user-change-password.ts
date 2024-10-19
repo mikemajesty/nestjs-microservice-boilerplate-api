@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { ICryptoAdapter } from '@/libs/crypto';
+import { CryptoUtils } from '@/utils/crypto';
 import { ValidateSchema } from '@/utils/decorators';
 import { ApiBadRequestException, ApiNotFoundException } from '@/utils/exception';
 import { IUsecase } from '@/utils/usecase';
@@ -17,10 +17,7 @@ export type UserChangePasswordInput = z.infer<typeof UserChangePasswordSchema>;
 export type UserChangePasswordOutput = void;
 
 export class UserChangePasswordUsecase implements IUsecase {
-  constructor(
-    private readonly repository: IUserRepository,
-    private readonly crypto: ICryptoAdapter
-  ) {}
+  constructor(private readonly repository: IUserRepository) {}
 
   @ValidateSchema(UserChangePasswordSchema)
   async execute(input: UserChangePasswordInput): Promise<UserChangePasswordOutput> {
@@ -32,7 +29,7 @@ export class UserChangePasswordUsecase implements IUsecase {
 
     const entityPassword = new UserPasswordEntity(user.password);
 
-    const password = this.crypto.createHash(input.password);
+    const password = CryptoUtils.createHash(input.password);
 
     entityPassword.verifyPassword(password);
 
@@ -40,8 +37,9 @@ export class UserChangePasswordUsecase implements IUsecase {
       throw new ApiBadRequestException('passwordIsDifferent');
     }
 
-    const newPassword = this.crypto.createHash(input.newPassword);
-    entityPassword.password = newPassword;
+    entityPassword.password = input.newPassword;
+
+    entityPassword.createPassword();
 
     user.password = entityPassword;
 

@@ -2,7 +2,6 @@ import { Test } from '@nestjs/testing';
 
 import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
 import { LoggerModule } from '@/infra/logger';
-import { CryptoLibModule, ICryptoAdapter } from '@/libs/crypto';
 import { IUserChangePasswordAdapter } from '@/modules/user/adapter';
 import { ApiBadRequestException, ApiNotFoundException } from '@/utils/exception';
 import { expectZodError, getMockUUID } from '@/utils/tests';
@@ -18,7 +17,7 @@ describe(UserChangePasswordUsecase.name, () => {
 
   beforeEach(async () => {
     const app = await Test.createTestingModule({
-      imports: [LoggerModule, CryptoLibModule],
+      imports: [LoggerModule],
       providers: [
         {
           provide: IUserRepository,
@@ -26,10 +25,10 @@ describe(UserChangePasswordUsecase.name, () => {
         },
         {
           provide: IUserChangePasswordAdapter,
-          useFactory: (userRepository: IUserRepository, crypto: ICryptoAdapter) => {
-            return new UserChangePasswordUsecase(userRepository, crypto);
+          useFactory: (userRepository: IUserRepository) => {
+            return new UserChangePasswordUsecase(userRepository);
           },
-          inject: [IUserRepository, ICryptoAdapter]
+          inject: [IUserRepository]
         }
       ]
     }).compile();

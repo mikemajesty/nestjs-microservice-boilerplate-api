@@ -11,7 +11,6 @@ import { RedisCacheModule } from '@/infra/cache/redis';
 import { ResetPasswordSchema } from '@/infra/database/postgres/schemas/reset-password';
 import { LoggerModule } from '@/infra/logger';
 import { ISecretsAdapter, SecretsModule } from '@/infra/secrets';
-import { CryptoLibModule, ICryptoAdapter } from '@/libs/crypto';
 import { EventLibModule, IEventAdapter } from '@/libs/event';
 import { ITokenAdapter, TokenLibModule } from '@/libs/token';
 
@@ -28,7 +27,6 @@ import { ResetPasswordRepository } from './repository';
     RedisCacheModule,
     UserModule,
     TokenLibModule,
-    CryptoLibModule,
     EventLibModule,
     TypeOrmModule.forFeature([ResetPasswordSchema])
   ],
@@ -60,12 +58,11 @@ import { ResetPasswordRepository } from './repository';
         resetpasswordtokenRepository: IResetPasswordRepository,
         userRepository: IUserRepository,
         token: ITokenAdapter,
-        event: IEventAdapter,
-        crypto: ICryptoAdapter
+        event: IEventAdapter
       ) => {
-        return new ResetPasswordConfirmUsecase(resetpasswordtokenRepository, userRepository, token, event, crypto);
+        return new ResetPasswordConfirmUsecase(resetpasswordtokenRepository, userRepository, token, event);
       },
-      inject: [IResetPasswordRepository, IUserRepository, ITokenAdapter, IEventAdapter, ICryptoAdapter]
+      inject: [IResetPasswordRepository, IUserRepository, ITokenAdapter, IEventAdapter]
     }
   ],
   exports: [IResetPasswordRepository, ISendEmailResetPasswordAdapter]
