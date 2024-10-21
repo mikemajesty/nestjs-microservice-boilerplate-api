@@ -144,13 +144,39 @@ export class MongoRepository<T extends Document> implements IRepository<T> {
   }
 
   async findOneByCommands(filterList: DatabaseOperationCommand<T>[], options?: QueryOptions): Promise<T> {
-    const data = await this.findByCommands(filterList, options);
+    const mongoSearch = {
+      equal: { type: '$in', like: false },
+      not_equal: { type: '$nin', like: false },
+      not_contains: { type: '$nin', like: true },
+      contains: { type: '$in', like: true }
+    };
 
-    if (data.length) {
-      return data.find(Boolean);
+    const searchList = {};
+
+    validateFindByCommandsFilter(filterList);
+
+    for (const filter of filterList) {
+      const command = mongoSearch[filter.command];
+
+      if (command.like) {
+        Object.assign(searchList, {
+          [filter.property === 'id' ? '_id' : filter.property]: {
+            [command.type]: filter.value.map((value) => new RegExp(`^${value}`, 'i'))
+          }
+        });
+        continue;
+      }
+
+      Object.assign(searchList, {
+        [filter.property === 'id' ? '_id' : filter.property]: { [command.type]: filter.value }
+      });
     }
 
-    return null;
+    Object.assign(searchList, { deletedAt: null });
+
+    const data = await this.model.findOne(searchList, null, options);
+
+    return data ?? null;
   }
 
   async findByCommands(filterList: DatabaseOperationCommand<T>[], options?: QueryOptions): Promise<T[]> {

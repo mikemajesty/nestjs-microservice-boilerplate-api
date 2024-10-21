@@ -12,8 +12,6 @@ export class SecretsService implements ISecretsAdapter {
 
   IS_PRODUCTION = this.config.get<EnvEnum>('NODE_ENV') === EnvEnum.PRD;
 
-  SYNC_DATABASE = this.config.get('SYNC_DATABASE') === 'true';
-
   ENV = this.config.get<EnvEnum>('NODE_ENV');
 
   PORT = this.config.get<number>('PORT');

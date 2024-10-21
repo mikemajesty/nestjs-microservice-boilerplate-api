@@ -1,8 +1,6 @@
 export abstract class ISecretsAdapter {
   ENV: string;
 
-  SYNC_DATABASE?: boolean | string;
-
   PORT: number | string;
 
   HOST: string;

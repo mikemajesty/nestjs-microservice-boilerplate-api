@@ -80,13 +80,38 @@ export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEn
   }
 
   async findOneByCommands(filterList: DatabaseOperationCommand<T>[]): Promise<T> {
-    const data = await this.findByCommands(filterList);
+    const searchList: { [key: string]: unknown } = {};
 
-    if (data.length) {
-      return data.find(Boolean);
+    const postgresSearch = {
+      equal: {
+        query: (value: unknown[]) =>
+          Raw((alias) => `${alias} ILIKE ANY ('{${value.map((v) => `${`${v}`}`).join(', ')}}')`),
+        like: false
+      },
+      not_equal: {
+        query: (value: unknown[]) =>
+          Raw((alias) => `${alias} NOT ILIKE ALL (ARRAY[${value.map((v) => `'${v}'`).join(', ')}])`),
+        like: false
+      },
+      not_contains: {
+        query: (value: unknown[]) =>
+          Raw((alias) => `${alias} NOT ILIKE ALL (ARRAY[${value.map((v) => `'%${v}%'`).join(', ')}])`),
+        like: true
+      },
+      contains: {
+        query: (value: unknown[]) =>
+          Raw((alias) => `${alias} ILIKE ANY ('{${value.map((v) => `${`%${v}%`}`).join(', ')}}')`),
+        like: true
+      }
+    };
+
+    for (const filter of filterList) {
+      searchList[`${filter.property.toString()}`] = postgresSearch[filter.command].query(filter.value);
     }
 
-    return null;
+    return this.repository.findOne({
+      where: searchList
+    } as FindOneOptions<T>);
   }
 
   async findByCommands(filterList: DatabaseOperationCommand<T>[]): Promise<T[]> {

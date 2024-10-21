@@ -11,16 +11,16 @@ import { PostgresService } from './service';
 @Module({
   imports: [
     TypeOrmModule.forRootAsync({
-      useFactory: ({ POSTGRES: { POSTGRES_URL }, SYNC_DATABASE }: ISecretsAdapter) => {
+      useFactory: ({ POSTGRES: { POSTGRES_URL }, IS_LOCAL }: ISecretsAdapter) => {
         const conn = new PostgresService().getConnection({ URI: POSTGRES_URL });
         return {
           ...conn,
           timeout: 5000,
           connectTimeout: 5000,
-          logging: SYNC_DATABASE as boolean,
+          logging: IS_LOCAL,
           autoLoadEntities: true,
           namingStrategy: new SnakeNamingStrategy(),
-          synchronize: SYNC_DATABASE as boolean,
+          synchronize: IS_LOCAL,
           migrationsTableName: 'migrations',
           migrations: [path.join(__dirname, '/migrations/*.{ts,js}')],
           entities: [path.join(__dirname, '/schemas/*.{ts,js}')]

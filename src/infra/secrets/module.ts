@@ -22,7 +22,6 @@ import { EnvEnum } from './types';
       useFactory: (config: ConfigService) => {
         const SecretsSchema = z.object<ZodInferSchema<ISecretsAdapter>>({
           ENV: z.nativeEnum(EnvEnum),
-          SYNC_DATABASE: z.string().or(z.boolean()).optional(),
           HOST: z.string(),
           IS_LOCAL: z.boolean(),
           IS_PRODUCTION: z.boolean(),
