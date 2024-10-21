@@ -1,4 +1,5 @@
 import { ApiBadRequestException } from './exception';
+import { SortEnum } from './sort';
 
 export class CollectionUtil {
   static groupBy = <T>(collection: unknown[] = [], key: string): { [key: string]: T[] } => {
@@ -85,6 +86,28 @@ export class CollectionUtil {
 
     return array;
   }
+
+  static nullValuesAlwaysComeLast = <T>(collection: T[], key: keyof T, sort: SortEnum = SortEnum.asc) => {
+    return collection.sort((a, b) => {
+      if (a[key.toString()] === b[key.toString()]) {
+        return 0;
+      }
+
+      if (a[key.toString()] === null) {
+        return 1;
+      }
+
+      if (b[key.toString()] === null) {
+        return -1;
+      }
+
+      if (sort === SortEnum.asc) {
+        return a[key.toString()] < b[key.toString()] ? -1 : 1;
+      }
+
+      return a[key.toString()] < b[key.toString()] ? 1 : -1;
+    });
+  };
 }
 
 export type LastType = {
