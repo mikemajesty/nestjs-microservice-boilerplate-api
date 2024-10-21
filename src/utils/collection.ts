@@ -87,7 +87,7 @@ export class CollectionUtil {
     return array;
   }
 
-  static nullValuesAlwaysComeLast = <T>(collection: T[], key: keyof T, sort: SortEnum = SortEnum.asc) => {
+  static sortNullToLastPosition = <T>(collection: T[], key: keyof T, sort: SortEnum = SortEnum.asc) => {
     return collection.sort((a, b) => {
       if (a[key.toString()] === b[key.toString()]) {
         return 0;
