@@ -27,7 +27,7 @@ export class ExceptionFilter implements AppExceptionFilter {
       error: {
         code: status,
         traceid: exception.traceid,
-        context: exception.context,
+        context: exception.context ?? exception?.parameters?.context,
         message,
         timestamp: DateUtils.getDateStringWithFormat(),
         path: request.url
