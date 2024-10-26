@@ -1,4 +1,5 @@
 import { Test } from '@nestjs/testing';
+import { ZodIssue } from 'zod';
 
 import { LoggerModule } from '@/infra/logger';
 import { ICatCreateAdapter } from '@/modules/cat/adapter';
@@ -38,7 +39,7 @@ describe(CatCreateUsecase.name, () => {
   test('when no input is specified, should expect an error', async () => {
     await TestUtils.expectZodError(
       () => usecase.execute({}, TestUtils.getMockTracing()),
-      (issues) => {
+      (issues: ZodIssue[]) => {
         expect(issues).toEqual([
           { message: 'Required', path: CatEntity.nameOf('name') },
           { message: 'Required', path: CatEntity.nameOf('breed') },

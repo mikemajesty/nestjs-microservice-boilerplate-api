@@ -1,4 +1,5 @@
 import { Test } from '@nestjs/testing';
+import { ZodIssue } from 'zod';
 
 import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
 import { IUserListAdapter } from '@/modules/user/adapter';
@@ -6,7 +7,7 @@ import { TestUtils } from '@/utils/tests';
 
 import { UserEntity } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
-import { UserListUsecase } from '../user-list';
+import { UserListOutput, UserListUsecase } from '../user-list';
 
 describe(UserListUsecase.name, () => {
   let usecase: IUserListAdapter;
@@ -37,7 +38,7 @@ describe(UserListUsecase.name, () => {
   test('when no input is specified, should expect an error', async () => {
     await TestUtils.expectZodError(
       () => usecase.execute({ search: null, sort: null, limit: 10, page: 1 }),
-      (issues) => {
+      (issues: ZodIssue[]) => {
         expect(issues).toEqual([{ message: 'Expected object, received null', path: 'sort' }]);
       }
     );
@@ -72,7 +73,7 @@ describe(UserListUsecase.name, () => {
   });
 
   test('when users not found, should expect an empty list', async () => {
-    const output = { docs: [], page: 1, limit: 1, total: 1 };
+    const output: UserListOutput = { docs: [], page: 1, limit: 1, total: 1 };
     repository.paginate = jest.fn().mockResolvedValue(output);
 
     await expect(usecase.execute({ limit: 1, page: 1, search: {}, sort: { createdAt: -1 } })).resolves.toEqual(output);

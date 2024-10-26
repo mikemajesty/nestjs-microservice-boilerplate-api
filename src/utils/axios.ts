@@ -5,7 +5,8 @@ import { AxiosConverter } from 'nestjs-convert-to-curl';
 import { ILoggerAdapter } from '@/infra/logger';
 
 export class AxiosUtils {
-  static interceptAxiosResponseError = (error) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static interceptAxiosResponseError = (error: any) => {
     error.stack = error.stack.replace(
       /AxiosError.*node:internal\/process\/task_queues:[0-9]+:[0-9]+\).*axiosBetterStacktrace.ts:[0-9]+:[0-9]+\)/g,
       ''
@@ -31,7 +32,8 @@ export class AxiosUtils {
   static requestRetry = ({ axios, logger, status: statusRetry = [503, 422, 408] }: RequestRetry) => {
     axiosRetry(axios, {
       shouldResetTimeout: true,
-      retryDelay: (retryCount, axiosError) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      retryDelay: (retryCount, axiosError: any) => {
         logger.warn({
           message: `retry attempt: ${retryCount}`,
           obj: {

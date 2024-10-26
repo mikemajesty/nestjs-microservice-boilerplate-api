@@ -1,4 +1,5 @@
 import { Test } from '@nestjs/testing';
+import { ZodIssue } from 'zod';
 
 import { RoleDeleteInput, RoleDeleteUsecase } from '@/core/role/use-cases/role-delete';
 import { IRoleDeleteAdapter } from '@/modules/role/adapter';
@@ -36,7 +37,7 @@ describe(RoleDeleteUsecase.name, () => {
   test('when no input is specified, should expect an error', async () => {
     await TestUtils.expectZodError(
       () => usecase.execute({}),
-      (issues) => {
+      (issues: ZodIssue[]) => {
         expect(issues).toEqual([{ message: 'Required', path: RoleEntity.nameOf('id') }]);
       }
     );

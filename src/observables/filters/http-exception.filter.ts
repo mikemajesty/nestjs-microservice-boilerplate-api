@@ -18,7 +18,8 @@ export class ExceptionFilter implements AppExceptionFilter {
 
     const status = this.getStatus(exception);
 
-    exception.traceid = [exception.traceid, request['id']].find(Boolean);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    exception.traceid = [exception.traceid, (request as any)['id']].find(Boolean);
 
     this.loggerService.error(exception, exception.message);
     const message = this.getMessage(exception, status);

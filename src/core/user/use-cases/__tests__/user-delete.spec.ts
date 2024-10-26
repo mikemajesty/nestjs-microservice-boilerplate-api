@@ -1,4 +1,5 @@
 import { Test } from '@nestjs/testing';
+import { ZodIssue } from 'zod';
 
 import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
 import { IUserDeleteAdapter } from '@/modules/user/adapter';
@@ -38,7 +39,7 @@ describe(UserDeleteUsecase.name, () => {
   test('when no input is specified, should expect an error', async () => {
     await TestUtils.expectZodError(
       () => usecase.execute({ id: 'uuid' }, TestUtils.getMockTracing()),
-      (issues) => {
+      (issues: ZodIssue[]) => {
         expect(issues).toEqual([{ message: 'Invalid uuid', path: UserEntity.nameOf('id') }]);
       }
     );

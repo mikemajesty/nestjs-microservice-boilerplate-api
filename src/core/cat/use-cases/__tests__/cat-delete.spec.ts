@@ -1,4 +1,5 @@
 import { Test } from '@nestjs/testing';
+import { ZodIssue } from 'zod';
 
 import { CatDeleteUsecase } from '@/core/cat/use-cases/cat-delete';
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
@@ -38,7 +39,7 @@ describe(CatDeleteUsecase.name, () => {
   test('when no input is specified, should expect an error', async () => {
     await TestUtils.expectZodError(
       () => usecase.execute({}, TestUtils.getMockTracing()),
-      (issues) => {
+      (issues: ZodIssue[]) => {
         expect(issues).toEqual([{ message: 'Required', path: CatEntity.nameOf('id') }]);
       }
     );

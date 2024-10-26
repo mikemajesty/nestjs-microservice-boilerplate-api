@@ -1,4 +1,5 @@
 import { Test } from '@nestjs/testing';
+import { ZodIssue } from 'zod';
 
 import {
   PermissionListInput,
@@ -39,7 +40,7 @@ describe(PermissionListUsecase.name, () => {
   test('when sort input is specified, should expect an error', async () => {
     await TestUtils.expectZodError(
       () => usecase.execute({ search: null, sort: null, limit: 10, page: 1 } as PermissionListInput),
-      (issues) => {
+      (issues: ZodIssue[]) => {
         expect(issues).toEqual([{ message: 'Expected object, received null', path: 'sort' }]);
       }
     );

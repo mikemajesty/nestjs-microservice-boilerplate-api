@@ -1,4 +1,5 @@
 import { Test } from '@nestjs/testing';
+import { ZodIssue } from 'zod';
 
 import { IPermissionGetByIdAdapter } from '@/modules/permission/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
@@ -36,7 +37,7 @@ describe(PermissionGetByIdUsecase.name, () => {
   test('when no input is specified, should expect an error', async () => {
     await TestUtils.expectZodError(
       () => usecase.execute({}),
-      (issues) => {
+      (issues: ZodIssue[]) => {
         expect(issues).toEqual([{ message: 'Required', path: PermissionEntity.nameOf('id') }]);
       }
     );
