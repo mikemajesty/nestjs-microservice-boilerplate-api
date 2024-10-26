@@ -33,7 +33,7 @@ export const SearchHttpSchema = z
   )
   .transform((searchString) => {
     if (!searchString) return null;
-    const search = {};
+    const search: { [key: string]: unknown } = {};
 
     searchString.split(',').forEach((s) => {
       const propertyIndex = s.indexOf(':');

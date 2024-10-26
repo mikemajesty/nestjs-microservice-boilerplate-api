@@ -32,7 +32,7 @@ export const Swagger = {
   }: Omit<SwaggerError, 'message'> & {
     messages: { [key: string]: { value: string[]; description: string } };
   }): ApiResponseOptions {
-    const examples = {};
+    const examples: { [key: string]: unknown } = {};
     for (const key in messages) {
       examples[`${key}`] = {
         value: {

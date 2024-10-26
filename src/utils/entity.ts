@@ -40,7 +40,7 @@ export const BaseEntity = <T>(schema: ZodSchema) => {
 
     validate<T>(entity: T): T {
       Object.assign(entity, withID(entity));
-      Object.assign(this, { id: entity['id'] });
+      Object.assign(this, { id: (entity as { id: string }).id });
       return schema.parse(entity) as T;
     }
   }
