@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { ApiBadRequestException } from '@/utils/exception';
 import { PaginationSchema } from '@/utils/pagination';
 import { SearchSchema } from '@/utils/search';
-import { SortSchema } from '@/utils/sort';
+import { SortEnum, SortSchema } from '@/utils/sort';
 
 export const ListSchema = z.intersection(PaginationSchema, SortSchema.merge(SearchSchema));
 
@@ -15,7 +15,7 @@ export function ValidateDatabaseSortAllowed<T>(...allowedSortList: AllowedSort<T
     descriptor.value = function (...args: z.infer<typeof ListSchema>[]) {
       const input = args[0];
 
-      const sort = {};
+      const sort: { [key: string]: SortEnum } = {};
 
       const sortList = (allowedSortList || []) as unknown as string[];
 

@@ -13,7 +13,7 @@ export const Swagger = {
             code: status,
             traceid: '<traceId>',
             context: 'context',
-            message: [[httpStatus[String(status)], message].find(Boolean)],
+            message: [[(httpStatus as { [key: string]: unknown })[String(status)], message].find(Boolean)],
             timestamp: '<timestamp>',
             path: route
           }
@@ -77,12 +77,12 @@ export const Swagger = {
     return {
       content: json
         ? {
-            'application/json': {
-              schema: {
-                example: json
-              }
+          'application/json': {
+            schema: {
+              example: json
             }
           }
+        }
         : undefined,
       description,
       status

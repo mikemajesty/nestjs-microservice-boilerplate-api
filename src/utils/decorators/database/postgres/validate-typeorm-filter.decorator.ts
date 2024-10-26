@@ -10,7 +10,8 @@ export function ConvertTypeOrmFilter<T>(allowedFilterList: AllowedFilter<T>[] = 
     descriptor.value = function (...args: { search: { [key: string]: string } }[]) {
       const input = args[0];
 
-      const where = {};
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const where: { [key: string]: any } = {};
 
       const filterNameList = allowedFilterList.map((f) => f.name as string);
 
