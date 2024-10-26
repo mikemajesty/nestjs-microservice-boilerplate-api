@@ -11,10 +11,10 @@ import { RedisInstrumentation } from '@opentelemetry/instrumentation-redis-4';
 import { Resource } from '@opentelemetry/resources';
 import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
 import { NodeSDK } from '@opentelemetry/sdk-node';
-import { v4 as uuidv4 } from 'uuid';
 
 import { name, version } from '../../package.json';
 import { getPathWithoutUUID } from './request';
+import { UUIDUtils } from './uuid';
 
 diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.ERROR);
 
@@ -47,7 +47,7 @@ const sdk = new NodeSDK({
       requestHook: (span: Span | any, request: ClientRequest | IncomingMessage | any) => {
         const id = [request['id'], request['traceid'], request['headers']?.traceid].find(Boolean);
         if (!id) {
-          request['headers'].traceid = uuidv4();
+          request['headers'].traceid = UUIDUtils.create();
           request['id'] = request['headers'].traceid;
           span.setAttribute('traceid', request['id']);
         }

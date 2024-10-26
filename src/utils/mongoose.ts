@@ -1,11 +1,15 @@
 import { Connection, Types } from 'mongoose';
 
 export class MongoUtils {
-  static createObjectId = (id?: string) => {
+  static createObjectId = (id?: string): Types.ObjectId => {
     return new Types.ObjectId(id);
   };
 
-  static skipParentheses = (filter: string) => {
+  static isObjectId = (id?: string): boolean => {
+    return Types.ObjectId.isValid(id);
+  };
+
+  static skipParentheses = (filter: string): string => {
     return filter?.replace('(', '\\(')?.replace(')', '\\)');
   };
 

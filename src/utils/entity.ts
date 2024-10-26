@@ -1,10 +1,10 @@
-import { v4 as uuidv4 } from 'uuid';
 import { ZodSchema } from 'zod';
 
 import { DateUtils } from './date';
+import { UUIDUtils } from './uuid';
 
 export const withID = (entity: { _id?: string; id?: string }) => {
-  Object.assign(entity, { id: [entity?.id, entity?._id, uuidv4()].find(Boolean) });
+  Object.assign(entity, { id: [entity?.id, entity?._id, UUIDUtils.create()].find(Boolean) });
   return entity;
 };
 

@@ -2,7 +2,8 @@ import { ApiQueryOptions, ApiResponseOptions } from '@nestjs/swagger';
 import { ExamplesObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
 
 import { ErrorModel } from '@/utils/exception';
-import httpStatus from '@/utils/static/http-status.json';
+
+import { DefaultErrorMessage } from '../http-status';
 
 export const Swagger = {
   defaultResponseError({ status, route, message, description }: SwaggerError): ApiResponseOptions {
@@ -13,7 +14,7 @@ export const Swagger = {
             code: status,
             traceid: '<traceId>',
             context: 'context',
-            message: [[(httpStatus as { [key: string]: unknown })[String(status)], message].find(Boolean)],
+            message: [[DefaultErrorMessage[String(status)], message].find(Boolean)],
             timestamp: '<timestamp>',
             path: route
           }

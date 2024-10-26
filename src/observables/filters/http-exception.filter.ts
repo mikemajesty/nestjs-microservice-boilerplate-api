@@ -5,7 +5,7 @@ import { ZodError, ZodIssue } from 'zod';
 import { ILoggerAdapter } from '@/infra/logger/adapter';
 import { DateUtils } from '@/utils/date';
 import { BaseException, ErrorModel } from '@/utils/exception';
-import errorStatus from '@/utils/static/http-status.json';
+import { DefaultErrorMessage } from '@/utils/http-status';
 
 @Catch()
 export class ExceptionFilter implements AppExceptionFilter {
@@ -37,7 +37,7 @@ export class ExceptionFilter implements AppExceptionFilter {
   }
 
   private getMessage(exception: BaseException, status: string | number): string[] {
-    const defaultError = (errorStatus as { [key: string]: string })[String(status)];
+    const defaultError = DefaultErrorMessage[String(status)];
     if (defaultError) {
       return [defaultError];
     }

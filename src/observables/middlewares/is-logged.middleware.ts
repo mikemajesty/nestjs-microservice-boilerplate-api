@@ -1,11 +1,11 @@
 import { HttpStatus, Injectable, NestMiddleware } from '@nestjs/common';
 import { NextFunction, Request, Response } from 'express';
-import { v4 as uuidv4 } from 'uuid';
 
 import { ICacheAdapter } from '@/infra/cache';
 import { ILoggerAdapter } from '@/infra/logger';
 import { ITokenAdapter } from '@/libs/token';
 import { UserRequest } from '@/utils/request';
+import { UUIDUtils } from '@/utils/uuid';
 
 import { ApiUnauthorizedException } from '../../utils/exception';
 
@@ -20,7 +20,7 @@ export class IsLoggedMiddleware implements NestMiddleware {
     const tokenHeader = request.headers.authorization;
 
     if (!request.headers?.traceid) {
-      Object.assign(request.headers, { traceid: request['id'] ?? uuidv4() });
+      Object.assign(request.headers, { traceid: request['id'] ?? UUIDUtils.create() });
     }
 
     if (!tokenHeader) {

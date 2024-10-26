@@ -15,7 +15,7 @@ import { PostgresDatabaseModule } from '@/infra/database/postgres/module';
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { TokenLibModule } from '@/libs/token';
 import { IsLoggedMiddleware } from '@/observables/middlewares';
-import { MongoRepositoryModelSessionType } from '@/utils/database/mongoose';
+import { MongoRepositoryModelSessionType } from '@/utils/mongoose';
 
 import {
   ICatCreateAdapter,

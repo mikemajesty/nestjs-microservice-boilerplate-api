@@ -1,5 +1,5 @@
-import { MongoUtils } from '@/utils/database/mongoose';
 import { ApiBadRequestException } from '@/utils/exception';
+import { MongoUtils } from '@/utils/mongoose';
 
 import { AllowedFilter, SearchTypeEnum } from '../../types';
 

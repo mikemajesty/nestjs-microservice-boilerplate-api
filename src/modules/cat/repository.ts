@@ -7,8 +7,8 @@ import { ICatRepository } from '@/core/cat/repository/cat';
 import { CatListInput, CatListOutput } from '@/core/cat/use-cases/cat-list';
 import { Cat, CatDocument } from '@/infra/database/mongo/schemas/cat';
 import { MongoRepository } from '@/infra/repository';
-import { MongoRepositoryModelSessionType } from '@/utils/database/mongoose';
 import { ConvertMongooseFilter, SearchTypeEnum, ValidateDatabaseSortAllowed } from '@/utils/decorators';
+import { MongoRepositoryModelSessionType } from '@/utils/mongoose';
 
 @Injectable()
 export class CatRepository extends MongoRepository<CatDocument> implements ICatRepository {

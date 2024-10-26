@@ -6,10 +6,10 @@ import { PinoRequestConverter } from 'convert-pino-request-to-curl';
 import { LevelWithSilent, Logger, multistream, pino } from 'pino';
 import { HttpLogger, Options, pinoHttp } from 'pino-http';
 import pinoPretty, { PrettyOptions } from 'pino-pretty';
-import { v4 as uuidv4 } from 'uuid';
 
 import { DateUtils } from '@/utils/date';
 import { ApiBadRequestException, BaseException } from '@/utils/exception';
+import { UUIDUtils } from '@/utils/uuid';
 
 import { ILoggerAdapter } from './adapter';
 import { ErrorType, MessageType } from './types';
@@ -246,7 +246,7 @@ export class LoggerService implements ILoggerAdapter {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private getTraceId(error: any): string {
-    if (typeof error === 'string') return uuidv4();
+    if (typeof error === 'string') return UUIDUtils.create();
     return [error.traceid, this.logger.logger.bindings()?.traceid].find(Boolean);
   }
 }
