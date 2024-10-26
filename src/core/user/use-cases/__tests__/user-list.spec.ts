@@ -2,7 +2,7 @@ import { Test } from '@nestjs/testing';
 
 import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
 import { IUserListAdapter } from '@/modules/user/adapter';
-import { expectZodError, getMockDate, getMockUUID } from '@/utils/tests';
+import { TestUtils } from '@/utils/tests';
 
 import { UserEntity } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
@@ -35,7 +35,7 @@ describe(UserListUsecase.name, () => {
   });
 
   test('when no input is specified, should expect an error', async () => {
-    await expectZodError(
+    await TestUtils.expectZodError(
       () => usecase.execute({ search: null, sort: null, limit: 10, page: 1 }),
       (issues) => {
         expect(issues).toEqual([{ message: 'Expected object, received null', path: 'sort' }]);
@@ -44,7 +44,7 @@ describe(UserListUsecase.name, () => {
   });
 
   const user = new UserEntity({
-    id: getMockUUID(),
+    id: TestUtils.getMockUUID(),
     email: 'admin@admin.com',
     name: 'Admin',
     roles: [new RoleEntity({ name: RoleEnum.USER })]
@@ -53,8 +53,8 @@ describe(UserListUsecase.name, () => {
   const users = [
     {
       ...user,
-      createdAt: getMockDate(),
-      updatedAt: getMockDate(),
+      createdAt: TestUtils.getMockDate(),
+      updatedAt: TestUtils.getMockDate(),
       deletedAt: null
     } as UserEntity
   ];

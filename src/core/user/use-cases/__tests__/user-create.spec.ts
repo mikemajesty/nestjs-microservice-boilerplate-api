@@ -6,7 +6,7 @@ import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { IEventAdapter } from '@/libs/event';
 import { IUserCreateAdapter } from '@/modules/user/adapter';
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception';
-import { expectZodError, getMockTracing, getMockUUID } from '@/utils/tests';
+import { TestUtils } from '@/utils/tests';
 
 import { UserEntity } from '../../entity/user';
 import { UserPasswordEntity } from '../../entity/user-password';
@@ -57,8 +57,8 @@ describe(UserCreateUsecase.name, () => {
   });
 
   test('when no input is specified, should expect an error', async () => {
-    await expectZodError(
-      () => usecase.execute({}, getMockTracing()),
+    await TestUtils.expectZodError(
+      () => usecase.execute({}, TestUtils.getMockTracing()),
       (issues) => {
         expect(issues).toEqual([
           { message: 'Required', path: UserEntity.nameOf('email') },
@@ -79,13 +79,13 @@ describe(UserCreateUsecase.name, () => {
 
   test('when role not found, should expect an error', async () => {
     roleRepository.findIn = jest.fn().mockResolvedValue([]);
-    await expect(usecase.execute(input, getMockTracing())).rejects.toThrow(ApiNotFoundException);
+    await expect(usecase.execute(input, TestUtils.getMockTracing())).rejects.toThrow(ApiNotFoundException);
   });
 
   const role = new RoleEntity({ name: RoleEnum.USER });
 
   const user = new UserEntity({
-    id: getMockUUID(),
+    id: TestUtils.getMockUUID(),
     email: 'admin@admin.com',
     name: 'Admin',
     roles: [new RoleEntity({ name: RoleEnum.USER })],
@@ -97,14 +97,14 @@ describe(UserCreateUsecase.name, () => {
     repository.findOne = jest.fn().mockResolvedValue(null);
     repository.create = jest.fn().mockResolvedValue(user);
 
-    await expect(usecase.execute(input, getMockTracing())).resolves.toEqual(user);
+    await expect(usecase.execute(input, TestUtils.getMockTracing())).resolves.toEqual(user);
   });
 
   test('when user already exists, should expect an error', async () => {
     roleRepository.findIn = jest.fn().mockResolvedValue([role]);
     repository.findOne = jest.fn().mockResolvedValue(user);
 
-    await expect(usecase.execute(input, getMockTracing())).rejects.toThrow(ApiConflictException);
+    await expect(usecase.execute(input, TestUtils.getMockTracing())).rejects.toThrow(ApiConflictException);
   });
 
   test('when user created successfully, should expect an user', async () => {
@@ -112,6 +112,6 @@ describe(UserCreateUsecase.name, () => {
     repository.findOne = jest.fn().mockResolvedValue(null);
     repository.create = jest.fn().mockResolvedValue(user);
 
-    await expect(usecase.execute(input, getMockTracing())).resolves.toEqual(user);
+    await expect(usecase.execute(input, TestUtils.getMockTracing())).resolves.toEqual(user);
   });
 });

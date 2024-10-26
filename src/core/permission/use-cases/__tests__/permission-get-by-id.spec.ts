@@ -2,7 +2,7 @@ import { Test } from '@nestjs/testing';
 
 import { IPermissionGetByIdAdapter } from '@/modules/permission/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
-import { expectZodError, getMockUUID } from '@/utils/tests';
+import { TestUtils } from '@/utils/tests';
 
 import { IPermissionRepository } from '../../repository/permission';
 import { PermissionGetByIdInput, PermissionGetByIdUsecase } from '../permission-get-by-id';
@@ -34,7 +34,7 @@ describe(PermissionGetByIdUsecase.name, () => {
   });
 
   test('when no input is specified, should expect an error', async () => {
-    await expectZodError(
+    await TestUtils.expectZodError(
       () => usecase.execute({}),
       (issues) => {
         expect(issues).toEqual([{ message: 'Required', path: PermissionEntity.nameOf('id') }]);
@@ -43,7 +43,7 @@ describe(PermissionGetByIdUsecase.name, () => {
   });
 
   const input: PermissionGetByIdInput = {
-    id: getMockUUID()
+    id: TestUtils.getMockUUID()
   };
 
   test('when permission not found, should expect an error', async () => {
@@ -53,7 +53,7 @@ describe(PermissionGetByIdUsecase.name, () => {
   });
 
   const permission = new PermissionEntity({
-    id: getMockUUID(),
+    id: TestUtils.getMockUUID(),
     name: 'name:permission'
   });
 

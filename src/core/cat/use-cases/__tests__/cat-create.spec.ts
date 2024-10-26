@@ -3,7 +3,7 @@ import { Test } from '@nestjs/testing';
 import { LoggerModule } from '@/infra/logger';
 import { ICatCreateAdapter } from '@/modules/cat/adapter';
 import { ApiInternalServerException } from '@/utils/exception';
-import { expectZodError, getMockTracing, getMockUUID } from '@/utils/tests';
+import { TestUtils } from '@/utils/tests';
 
 import { CatEntity } from '../../entity/cat';
 import { ICatRepository } from '../../repository/cat';
@@ -36,8 +36,8 @@ describe(CatCreateUsecase.name, () => {
   });
 
   test('when no input is specified, should expect an error', async () => {
-    await expectZodError(
-      () => usecase.execute({}, getMockTracing()),
+    await TestUtils.expectZodError(
+      () => usecase.execute({}, TestUtils.getMockTracing()),
       (issues) => {
         expect(issues).toEqual([
           { message: 'Required', path: CatEntity.nameOf('name') },
@@ -49,7 +49,7 @@ describe(CatCreateUsecase.name, () => {
   });
 
   const cat = new CatEntity({
-    id: getMockUUID(),
+    id: TestUtils.getMockUUID(),
     age: 10,
     breed: 'dummy',
     name: 'dummy'
@@ -58,12 +58,12 @@ describe(CatCreateUsecase.name, () => {
   test('when cat created successfully, should expect a cat that has been created', async () => {
     repository.create = jest.fn().mockResolvedValue(cat);
 
-    await expect(usecase.execute(cat, getMockTracing())).resolves.toEqual(cat);
+    await expect(usecase.execute(cat, TestUtils.getMockTracing())).resolves.toEqual(cat);
   });
 
   test('when transaction throw an error, should expect an error', async () => {
     repository.create = jest.fn().mockRejectedValue(new ApiInternalServerException());
 
-    await expect(usecase.execute(cat, getMockTracing())).rejects.toThrow(ApiInternalServerException);
+    await expect(usecase.execute(cat, TestUtils.getMockTracing())).rejects.toThrow(ApiInternalServerException);
   });
 });

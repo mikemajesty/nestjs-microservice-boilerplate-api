@@ -2,7 +2,7 @@ import { Test } from '@nestjs/testing';
 
 import { RoleListInput, RoleListOutput, RoleListUsecase } from '@/core/role/use-cases/role-list';
 import { IRoleListAdapter } from '@/modules/role/adapter';
-import { expectZodError, getMockUUID } from '@/utils/tests';
+import { TestUtils } from '@/utils/tests';
 
 import { IRoleRepository } from '../../repository/role';
 import { RoleEntity, RoleEnum } from './../../entity/role';
@@ -33,7 +33,7 @@ describe(RoleListUsecase.name, () => {
   });
 
   test('when sort input is specified, should expect an error', async () => {
-    await expectZodError(
+    await TestUtils.expectZodError(
       () => usecase.execute({ search: null, sort: null, limit: 10, page: 1 }),
       (issues) => {
         expect(issues).toEqual([{ message: 'Expected object, received null', path: 'sort' }]);
@@ -44,7 +44,7 @@ describe(RoleListUsecase.name, () => {
   const input: RoleListInput = { limit: 1, page: 1, search: {}, sort: { createdAt: -1 } };
 
   const role = new RoleEntity({
-    id: getMockUUID(),
+    id: TestUtils.getMockUUID(),
     name: RoleEnum.USER,
     createdAt: new Date(),
     updatedAt: new Date()

@@ -4,25 +4,25 @@ import { PermissionDeleteOutput } from '@/core/permission/use-cases/permission-d
 import { PermissionGetByIdOutput } from '@/core/permission/use-cases/permission-get-by-id';
 import { PermissionListOutput } from '@/core/permission/use-cases/permission-list';
 import { PermissionUpdateOutput } from '@/core/permission/use-cases/permission-update';
-import { getMockDate, getMockUUID } from '@/utils/tests';
+import { TestUtils } from '@/utils/tests';
 
 const permission = {
-  id: getMockUUID(),
+  id: TestUtils.getMockUUID(),
   name: 'name',
-  createdAt: getMockDate(),
+  createdAt: TestUtils.getMockDate(),
   deletedAt: null,
-  updatedAt: getMockDate()
+  updatedAt: TestUtils.getMockDate()
 } as PermissionEntity;
 
 export const PermissionResponse = {
   create: {
     name: 'name:permission',
-    id: getMockUUID()
+    id: TestUtils.getMockUUID()
   } as PermissionCreateOutput,
   update: permission as PermissionUpdateOutput,
   delete: {
     ...permission,
-    deletedAt: getMockDate()
+    deletedAt: TestUtils.getMockDate()
   } as PermissionDeleteOutput,
   list: {
     docs: [permission],

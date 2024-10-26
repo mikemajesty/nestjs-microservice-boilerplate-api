@@ -2,7 +2,7 @@ import { Test } from '@nestjs/testing';
 
 import { ILoggerAdapter } from '@/infra/logger';
 import { IRoleCreateAdapter } from '@/modules/role/adapter';
-import { expectZodError, getMockUUID } from '@/utils/tests';
+import { TestUtils } from '@/utils/tests';
 
 import { RoleEntity, RoleEnum } from '../../entity/role';
 import { IRoleRepository } from '../../repository/role';
@@ -40,7 +40,7 @@ describe(RoleCreateUsecase.name, () => {
   });
 
   test('when no input is specified, should expect an error', async () => {
-    await expectZodError(
+    await TestUtils.expectZodError(
       () => usecase.execute({}),
       (issues) => {
         expect(issues).toEqual([{ message: 'Required', path: RoleEntity.nameOf('name') }]);
@@ -53,7 +53,7 @@ describe(RoleCreateUsecase.name, () => {
   };
 
   test('when role created successfully, should expect a role that has been created', async () => {
-    const output: RoleCreateOutput = { created: true, id: getMockUUID() };
+    const output: RoleCreateOutput = { created: true, id: TestUtils.getMockUUID() };
     repository.create = jest.fn().mockResolvedValue(output);
 
     await expect(usecase.execute(input)).resolves.toEqual(output);

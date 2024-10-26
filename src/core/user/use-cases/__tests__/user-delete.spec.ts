@@ -3,7 +3,7 @@ import { Test } from '@nestjs/testing';
 import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
 import { IUserDeleteAdapter } from '@/modules/user/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
-import { expectZodError, getMockTracing, getMockUUID } from '@/utils/tests';
+import { TestUtils } from '@/utils/tests';
 
 import { UserEntity } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
@@ -36,8 +36,8 @@ describe(UserDeleteUsecase.name, () => {
   });
 
   test('when no input is specified, should expect an error', async () => {
-    await expectZodError(
-      () => usecase.execute({ id: 'uuid' }, getMockTracing()),
+    await TestUtils.expectZodError(
+      () => usecase.execute({ id: 'uuid' }, TestUtils.getMockTracing()),
       (issues) => {
         expect(issues).toEqual([{ message: 'Invalid uuid', path: UserEntity.nameOf('id') }]);
       }
@@ -47,22 +47,26 @@ describe(UserDeleteUsecase.name, () => {
   test('when user not found, should expect an error', async () => {
     repository.findOneWithRelation = jest.fn().mockResolvedValue(null);
 
-    await expect(usecase.execute({ id: getMockUUID() }, getMockTracing())).rejects.toThrow(ApiNotFoundException);
+    await expect(usecase.execute({ id: TestUtils.getMockUUID() }, TestUtils.getMockTracing())).rejects.toThrow(
+      ApiNotFoundException
+    );
   });
 
   const user = new UserEntity({
-    id: getMockUUID(),
+    id: TestUtils.getMockUUID(),
     email: 'admin@admin.com',
     name: '*Admin',
     roles: [new RoleEntity({ name: RoleEnum.USER })],
-    password: { id: getMockUUID(), password: '****' }
+    password: { id: TestUtils.getMockUUID(), password: '****' }
   });
 
   test('when user deleted successfully, should expect an user that has been deleted.', async () => {
     repository.findOneWithRelation = jest.fn().mockResolvedValue(user);
     repository.softRemove = jest.fn();
 
-    await expect(usecase.execute({ id: getMockUUID() }, getMockTracing())).resolves.toEqual(expect.any(UserEntity));
+    await expect(usecase.execute({ id: TestUtils.getMockUUID() }, TestUtils.getMockTracing())).resolves.toEqual(
+      expect.any(UserEntity)
+    );
     expect(repository.softRemove).toHaveBeenCalled();
   });
 });

@@ -3,7 +3,7 @@ import { Test } from '@nestjs/testing';
 import { RoleDeleteInput, RoleDeleteUsecase } from '@/core/role/use-cases/role-delete';
 import { IRoleDeleteAdapter } from '@/modules/role/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
-import { expectZodError, getMockUUID } from '@/utils/tests';
+import { TestUtils } from '@/utils/tests';
 
 import { IRoleRepository } from '../../repository/role';
 import { RoleEntity, RoleEnum } from './../../entity/role';
@@ -34,7 +34,7 @@ describe(RoleDeleteUsecase.name, () => {
   });
 
   test('when no input is specified, should expect an error', async () => {
-    await expectZodError(
+    await TestUtils.expectZodError(
       () => usecase.execute({}),
       (issues) => {
         expect(issues).toEqual([{ message: 'Required', path: RoleEntity.nameOf('id') }]);
@@ -43,7 +43,7 @@ describe(RoleDeleteUsecase.name, () => {
   });
 
   const input: RoleDeleteInput = {
-    id: getMockUUID()
+    id: TestUtils.getMockUUID()
   };
 
   test('when role not found, should expect an error', async () => {
@@ -53,7 +53,7 @@ describe(RoleDeleteUsecase.name, () => {
   });
 
   const role = new RoleEntity({
-    id: getMockUUID(),
+    id: TestUtils.getMockUUID(),
     name: RoleEnum.USER
   });
 

@@ -13,7 +13,7 @@ import axiosBetterStacktrace from 'axios-better-stacktrace';
 import { Observable, tap } from 'rxjs';
 
 import { ILoggerAdapter } from '@/infra/logger';
-import { interceptAxiosResponseError, requestRetry } from '@/utils/axios';
+import { AxiosUtils } from '@/utils/axios';
 import { getPathWithoutUUID, TracingType } from '@/utils/request';
 
 import { name, version } from '../../../package.json';
@@ -51,12 +51,12 @@ export class TracingInterceptor implements NestInterceptor {
 
           axiosBetterStacktrace(http);
 
-          requestRetry({ axios: http, logger: this.logger });
+          AxiosUtils.requestRetry({ axios: http, logger: this.logger });
 
           http.interceptors.response.use(
             (response) => response,
             (error) => {
-              interceptAxiosResponseError(error);
+              AxiosUtils.interceptAxiosResponseError(error);
               return Promise.reject(error);
             }
           );

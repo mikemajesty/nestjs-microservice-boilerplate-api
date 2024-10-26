@@ -1,4 +1,4 @@
-import { createMongoRegexText } from '@/utils/database/mongoose';
+import { MongoUtils } from '@/utils/database/mongoose';
 import { ApiBadRequestException } from '@/utils/exception';
 
 import { AllowedFilter, SearchTypeEnum } from '../../types';
@@ -37,7 +37,7 @@ export function ConvertMongooseFilter<T>(allowedFilterList: AllowedFilter<T>[] =
 
         if (allowedFilter.type === SearchTypeEnum.like) {
           where[`${allowedFilter.name as string}`] = {
-            $regex: createMongoRegexText(filter),
+            $regex: MongoUtils.createMongoRegexText(filter),
             $options: 'i'
           };
         }

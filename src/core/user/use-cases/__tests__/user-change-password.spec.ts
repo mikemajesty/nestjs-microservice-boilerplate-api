@@ -4,7 +4,7 @@ import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
 import { LoggerModule } from '@/infra/logger';
 import { IUserChangePasswordAdapter } from '@/modules/user/adapter';
 import { ApiBadRequestException, ApiNotFoundException } from '@/utils/exception';
-import { expectZodError, getMockUUID } from '@/utils/tests';
+import { TestUtils } from '@/utils/tests';
 
 import { UserEntity } from '../../entity/user';
 import { UserPasswordEntity } from '../../entity/user-password';
@@ -38,7 +38,7 @@ describe(UserChangePasswordUsecase.name, () => {
   });
 
   test('when no input is specified, should expect an error', async () => {
-    await expectZodError(
+    await TestUtils.expectZodError(
       () => usecase.execute({}),
       (issues) => {
         expect(issues).toEqual([
@@ -52,7 +52,7 @@ describe(UserChangePasswordUsecase.name, () => {
   });
 
   const input: UserChangePasswordInput = {
-    id: getMockUUID(),
+    id: TestUtils.getMockUUID(),
     password: '****',
     confirmPassword: '****',
     newPassword: '****'
@@ -65,7 +65,7 @@ describe(UserChangePasswordUsecase.name, () => {
   });
 
   const user = new UserEntity({
-    id: getMockUUID(),
+    id: TestUtils.getMockUUID(),
     email: 'admin@admin.com',
     name: 'Admin',
     password: new UserPasswordEntity({ password: '69bf0bc46f51b33377c4f3d92caf876714f6bbbe99e7544487327920873f9820' }),

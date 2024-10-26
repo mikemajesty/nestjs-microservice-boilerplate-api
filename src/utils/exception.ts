@@ -11,7 +11,7 @@ export type ErrorModel = {
   };
 };
 
-type ParametersType = { [key: string]: unknown };
+type ParametersType = { [key: string]: unknown; context?: string; externalApi?: string };
 
 type MessageType = string | string[];
 

@@ -8,7 +8,7 @@ import { IEventAdapter } from '@/libs/event';
 import { ITokenAdapter } from '@/libs/token';
 import { IConfirmResetPasswordAdapter, ISendEmailResetPasswordAdapter } from '@/modules/reset-password/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
-import { expectZodError, getMockUUID } from '@/utils/tests';
+import { TestUtils } from '@/utils/tests';
 
 import { ResetPasswordEntity } from '../../entity/reset-password';
 import { IResetPasswordRepository } from '../../repository/reset-password';
@@ -71,7 +71,7 @@ describe(ResetPasswordSendEmailUsecase.name, () => {
   });
 
   test('when no input is specified, should expect an error', async () => {
-    await expectZodError(
+    await TestUtils.expectZodError(
       () => usecase.execute({}),
       (issues) => {
         expect(issues).toEqual([{ message: 'Required', path: 'email' }]);
@@ -88,13 +88,13 @@ describe(ResetPasswordSendEmailUsecase.name, () => {
   });
 
   const user = new UserEntity({
-    id: getMockUUID(),
+    id: TestUtils.getMockUUID(),
     email: 'admin@admin.com',
     name: 'Admin',
     roles: [new RoleEntity({ name: RoleEnum.USER })]
   });
 
-  const resetPassword = new ResetPasswordEntity({ id: getMockUUID(), token: 'token', user: user });
+  const resetPassword = new ResetPasswordEntity({ id: TestUtils.getMockUUID(), token: 'token', user: user });
 
   test('when token was founded, should expect void', async () => {
     userRepository.findOne = jest.fn().mockResolvedValue(user);

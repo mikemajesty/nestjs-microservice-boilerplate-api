@@ -3,7 +3,7 @@ import { Test } from '@nestjs/testing';
 import { ILoggerAdapter } from '@/infra/logger';
 import { IPermissionCreateAdapter } from '@/modules/permission/adapter';
 import { ApiConflictException } from '@/utils/exception';
-import { expectZodError, getMockUUID } from '@/utils/tests';
+import { TestUtils } from '@/utils/tests';
 
 import { PermissionEntity } from '../../entity/permission';
 import { IPermissionRepository } from '../../repository/permission';
@@ -41,7 +41,7 @@ describe(PermissionCreateUsecase.name, () => {
   });
 
   test('when no input is specified, should expect an error', async () => {
-    await expectZodError(
+    await TestUtils.expectZodError(
       () => usecase.execute({}),
       (issues) => {
         expect(issues).toEqual([{ message: 'Required', path: PermissionEntity.nameOf('name') }]);
@@ -53,7 +53,7 @@ describe(PermissionCreateUsecase.name, () => {
     name: 'name:permission'
   };
 
-  const output: PermissionEntity = new PermissionEntity({ id: getMockUUID(), name: input.name });
+  const output: PermissionEntity = new PermissionEntity({ id: TestUtils.getMockUUID(), name: input.name });
 
   test('when permission exists, should expect an error', async () => {
     repository.findOne = jest.fn().mockResolvedValue(output);

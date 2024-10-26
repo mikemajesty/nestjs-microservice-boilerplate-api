@@ -4,7 +4,7 @@ import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
 import { ITokenAdapter } from '@/libs/token';
 import { IRefreshTokenAdapter } from '@/modules/login/adapter';
 import { ApiBadRequestException, ApiNotFoundException } from '@/utils/exception';
-import { expectZodError, getMockUUID } from '@/utils/tests';
+import { TestUtils } from '@/utils/tests';
 
 import { UserEntity } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
@@ -43,7 +43,7 @@ describe(RefreshTokenUsecase.name, () => {
   });
 
   test('when no input is specified, should expect an error', async () => {
-    await expectZodError(
+    await TestUtils.expectZodError(
       () => usecase.execute({}),
       (issues) => {
         expect(issues).toEqual([{ message: 'Required', path: 'refreshToken' }]);
@@ -60,29 +60,29 @@ describe(RefreshTokenUsecase.name, () => {
   });
 
   test('when user not found, should expect an error', async () => {
-    token.verify = jest.fn().mockResolvedValue({ userId: getMockUUID() });
+    token.verify = jest.fn().mockResolvedValue({ userId: TestUtils.getMockUUID() });
     repository.findOne = jest.fn().mockResolvedValue(null);
 
     await expect(usecase.execute(input)).rejects.toThrow(ApiNotFoundException);
   });
 
   const user = new UserEntity({
-    id: getMockUUID(),
+    id: TestUtils.getMockUUID(),
     email: 'admin@admin.com',
     name: 'Admin',
     roles: [new RoleEntity({ name: RoleEnum.USER })],
-    password: { id: getMockUUID(), password: '***' }
+    password: { id: TestUtils.getMockUUID(), password: '***' }
   });
 
   test('when user role not found, should expect an error', async () => {
-    token.verify = jest.fn().mockResolvedValue({ userId: getMockUUID() });
+    token.verify = jest.fn().mockResolvedValue({ userId: TestUtils.getMockUUID() });
     repository.findOne = jest.fn().mockResolvedValue({ ...user, roles: [] });
 
     await expect(usecase.execute(input)).rejects.toThrow(ApiNotFoundException);
   });
 
   test('when user refresh token successfully, should expect a token', async () => {
-    token.verify = jest.fn().mockResolvedValue({ userId: getMockUUID() });
+    token.verify = jest.fn().mockResolvedValue({ userId: TestUtils.getMockUUID() });
     token.sign = jest.fn().mockReturnValue({ token: '<token>' });
     user.password.password = '69bf0bc46f51b33377c4f3d92caf876714f6bbbe99e7544487327920873f9820';
     repository.findOne = jest.fn().mockResolvedValue(user);

@@ -7,10 +7,10 @@ import { UserGetByIdOutput } from '@/core/user/use-cases/user-get-by-id';
 import { UserListOutput } from '@/core/user/use-cases/user-list';
 import { UserUpdateOutput } from '@/core/user/use-cases/user-update';
 import { UserRequest } from '@/utils/request';
-import { getMockDate, getMockUUID } from '@/utils/tests';
+import { TestUtils } from '@/utils/tests';
 
 const entity = {
-  id: getMockUUID(),
+  id: TestUtils.getMockUUID(),
   email: 'admin@admin.com',
   name: 'Admin',
   roles: [new RoleEntity({ name: RoleEnum.USER, permissions: [new PermissionEntity({ name: 'permission:create' })] })]
@@ -18,14 +18,14 @@ const entity = {
 
 const fullEntity = {
   ...entity,
-  createdAt: getMockDate(),
-  updatedAt: getMockDate(),
+  createdAt: TestUtils.getMockDate(),
+  updatedAt: TestUtils.getMockDate(),
   deletedAt: null
 } as UserEntity;
 
 export const UsersResponse = {
-  create: { created: true, id: getMockUUID() } as UserCreateOutput,
-  delete: { ...fullEntity, deletedAt: getMockDate() } as UserDeleteOutput,
+  create: { created: true, id: TestUtils.getMockUUID() } as UserCreateOutput,
+  delete: { ...fullEntity, deletedAt: TestUtils.getMockDate() } as UserDeleteOutput,
   update: { ...fullEntity } as UserUpdateOutput,
   getById: fullEntity as UserGetByIdOutput,
   list: { docs: [fullEntity], limit: 10, page: 1, total: 1 } as UserListOutput,

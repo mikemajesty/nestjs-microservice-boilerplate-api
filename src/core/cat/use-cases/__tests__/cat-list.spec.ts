@@ -3,7 +3,7 @@ import { Test } from '@nestjs/testing';
 import { CatListUsecase } from '@/core/cat/use-cases/cat-list';
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { ICatListAdapter } from '@/modules/cat/adapter';
-import { expectZodError, getMockDate, getMockUUID } from '@/utils/tests';
+import { TestUtils } from '@/utils/tests';
 
 import { CatEntity } from '../../entity/cat';
 import { ICatRepository } from '../../repository/cat';
@@ -35,7 +35,7 @@ describe(CatListUsecase.name, () => {
   });
 
   test('when no input is specified, should expect an error', async () => {
-    await expectZodError(
+    await TestUtils.expectZodError(
       () => usecase.execute({ search: null, sort: null, limit: 10, page: 1 }),
       (issues) => {
         expect(issues).toEqual([{ message: 'Expected object, received null', path: 'sort' }]);
@@ -44,12 +44,12 @@ describe(CatListUsecase.name, () => {
   });
 
   const cat = new CatEntity({
-    id: getMockUUID(),
+    id: TestUtils.getMockUUID(),
     age: 10,
     breed: 'dummy',
     name: 'dummy',
-    createdAt: getMockDate(),
-    updatedAt: getMockDate(),
+    createdAt: TestUtils.getMockDate(),
+    updatedAt: TestUtils.getMockDate(),
     deletedAt: null
   });
 

@@ -4,7 +4,7 @@ import { PermissionEntity } from '@/core/permission/entity/permission';
 import { IPermissionRepository } from '@/core/permission/repository/permission';
 import { IRoleDeletePermissionAdapter } from '@/modules/role/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
-import { expectZodError, getMockUUID } from '@/utils/tests';
+import { TestUtils } from '@/utils/tests';
 
 import { RoleEntity, RoleEnum } from '../../entity/role';
 import { IRoleRepository } from '../../repository/role';
@@ -43,7 +43,7 @@ describe(RoleDeletePermissionUsecase.name, () => {
   });
 
   test('when no input is specified, should expect an error', async () => {
-    await expectZodError(
+    await TestUtils.expectZodError(
       () => usecase.execute({}),
       (issues) => {
         expect(issues).toEqual([
@@ -55,7 +55,7 @@ describe(RoleDeletePermissionUsecase.name, () => {
   });
 
   const input: RoleAddPermissionInput = {
-    id: getMockUUID(),
+    id: TestUtils.getMockUUID(),
     permissions: ['user:create']
   };
 

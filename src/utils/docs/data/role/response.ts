@@ -4,25 +4,25 @@ import { RoleDeleteOutput } from '@/core/role/use-cases/role-delete';
 import { RoleGetByIdOutput } from '@/core/role/use-cases/role-get-by-id';
 import { RoleListOutput } from '@/core/role/use-cases/role-list';
 import { RoleUpdateOutput } from '@/core/role/use-cases/role-update';
-import { getMockDate, getMockUUID } from '@/utils/tests';
+import { TestUtils } from '@/utils/tests';
 
 const role = {
-  id: getMockUUID(),
+  id: TestUtils.getMockUUID(),
   name: RoleEnum.USER,
-  createdAt: getMockDate(),
+  createdAt: TestUtils.getMockDate(),
   deletedAt: null,
-  updatedAt: getMockDate()
+  updatedAt: TestUtils.getMockDate()
 } as RoleEntity;
 
 export const RoleResponse = {
   create: {
     created: true,
-    id: getMockUUID()
+    id: TestUtils.getMockUUID()
   } as RoleCreateOutput,
   update: role as RoleUpdateOutput,
   delete: {
     ...role,
-    deletedAt: getMockDate()
+    deletedAt: TestUtils.getMockDate()
   } as RoleDeleteOutput,
   list: {
     docs: [role],

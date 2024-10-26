@@ -3,7 +3,7 @@ import { Test } from '@nestjs/testing';
 import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
 import { IUserGetByIdAdapter } from '@/modules/user/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
-import { expectZodError, getMockUUID } from '@/utils/tests';
+import { TestUtils } from '@/utils/tests';
 
 import { UserEntity } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
@@ -36,7 +36,7 @@ describe(UserGetByIdUsecase.name, () => {
   });
 
   test('when no input is specified, should expect an error', async () => {
-    await expectZodError(
+    await TestUtils.expectZodError(
       () => usecase.execute({}),
       (issues) => {
         expect(issues).toEqual([{ message: 'Required', path: UserEntity.nameOf('id') }]);
@@ -47,11 +47,11 @@ describe(UserGetByIdUsecase.name, () => {
   test('when user not found, should expect an errror', async () => {
     repository.findOne = jest.fn().mockResolvedValue(null);
 
-    await expect(usecase.execute({ id: getMockUUID() })).rejects.toThrow(ApiNotFoundException);
+    await expect(usecase.execute({ id: TestUtils.getMockUUID() })).rejects.toThrow(ApiNotFoundException);
   });
 
   const user = new UserEntity({
-    id: getMockUUID(),
+    id: TestUtils.getMockUUID(),
     email: 'admin@admin.com',
     name: 'Admin',
     roles: [new RoleEntity({ name: RoleEnum.USER })]
@@ -60,6 +60,6 @@ describe(UserGetByIdUsecase.name, () => {
   test('when user getById successfully, should expect a user', async () => {
     repository.findOne = jest.fn().mockResolvedValue(user);
 
-    await expect(usecase.execute({ id: getMockUUID() })).resolves.toEqual(user);
+    await expect(usecase.execute({ id: TestUtils.getMockUUID() })).resolves.toEqual(user);
   });
 });

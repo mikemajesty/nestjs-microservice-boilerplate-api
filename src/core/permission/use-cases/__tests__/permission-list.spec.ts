@@ -6,7 +6,7 @@ import {
   PermissionListUsecase
 } from '@/core/permission/use-cases/permission-list';
 import { IPermissionListAdapter } from '@/modules/permission/adapter';
-import { expectZodError, getMockUUID } from '@/utils/tests';
+import { TestUtils } from '@/utils/tests';
 
 import { IPermissionRepository } from '../../repository/permission';
 import { PermissionEntity } from './../../entity/permission';
@@ -37,7 +37,7 @@ describe(PermissionListUsecase.name, () => {
   });
 
   test('when sort input is specified, should expect an error', async () => {
-    await expectZodError(
+    await TestUtils.expectZodError(
       () => usecase.execute({ search: null, sort: null, limit: 10, page: 1 } as PermissionListInput),
       (issues) => {
         expect(issues).toEqual([{ message: 'Expected object, received null', path: 'sort' }]);
@@ -48,7 +48,7 @@ describe(PermissionListUsecase.name, () => {
   const input: PermissionListInput = { limit: 1, page: 1, search: {}, sort: { createdAt: -1 } };
 
   const permission = new PermissionEntity({
-    id: getMockUUID(),
+    id: TestUtils.getMockUUID(),
     name: 'name:permission',
     createdAt: new Date(),
     updatedAt: new Date()

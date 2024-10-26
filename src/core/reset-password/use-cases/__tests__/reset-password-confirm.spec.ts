@@ -7,7 +7,7 @@ import { IEventAdapter } from '@/libs/event';
 import { ITokenAdapter } from '@/libs/token';
 import { IConfirmResetPasswordAdapter } from '@/modules/reset-password/adapter';
 import { ApiBadRequestException, ApiNotFoundException, ApiUnauthorizedException } from '@/utils/exception';
-import { expectZodError, getMockUUID } from '@/utils/tests';
+import { TestUtils } from '@/utils/tests';
 
 import { ResetPasswordEntity } from '../../entity/reset-password';
 import { IResetPasswordRepository } from '../../repository/reset-password';
@@ -33,7 +33,7 @@ describe(ResetPasswordConfirmUsecase.name, () => {
         {
           provide: ITokenAdapter,
           useValue: {
-            verify: jest.fn().mockReturnValue({ id: getMockUUID() })
+            verify: jest.fn().mockReturnValue({ id: TestUtils.getMockUUID() })
           }
         },
         {
@@ -63,7 +63,7 @@ describe(ResetPasswordConfirmUsecase.name, () => {
   });
 
   test('when no input is specified, should expect an error', async () => {
-    await expectZodError(
+    await TestUtils.expectZodError(
       () => usecase.execute({}),
       (issues) => {
         expect(issues).toEqual([
@@ -84,11 +84,11 @@ describe(ResetPasswordConfirmUsecase.name, () => {
   const input: ResetPasswordConfirmInput = { confirmPassword: '123456', password: '123456', token: 'token' };
 
   const user = new UserEntity({
-    id: getMockUUID(),
+    id: TestUtils.getMockUUID(),
     email: 'admin@admin.com',
     name: 'Admin',
     roles: [new RoleEntity({ name: RoleEnum.USER })],
-    password: { id: getMockUUID(), password: '****' }
+    password: { id: TestUtils.getMockUUID(), password: '****' }
   });
 
   test('when user not found, should expect an error', async () => {
@@ -103,7 +103,7 @@ describe(ResetPasswordConfirmUsecase.name, () => {
 
     await expect(usecase.execute(input)).rejects.toThrow(ApiUnauthorizedException);
   });
-  const defaultResetPassword = new ResetPasswordEntity({ id: getMockUUID(), token: 'token', user: user });
+  const defaultResetPassword = new ResetPasswordEntity({ id: TestUtils.getMockUUID(), token: 'token', user: user });
 
   test('when confirm successfully, should expect a void', async () => {
     userRepository.findOneWithRelation = jest.fn().mockResolvedValue(user);

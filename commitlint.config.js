@@ -1,4 +1,4 @@
-const { readdirSync } = require("fs");
+const { readdirSync } = require('fs');
 
 const getDirectories = (source) =>
   readdirSync(source, { withFileTypes: true })
@@ -11,13 +11,25 @@ for (const path of getDirectories('./src').map((p) => `./src/${p}`)) {
   scopes.push(...files.filter((item) => item.isDirectory()).map((item) => item.name));
 }
 
-scopes.push('remove', 'revert', 'conflict', "config", "entity", "utils", "deps", "modules", "test", "migration")
+scopes.push(
+  'remove',
+  'revert',
+  'conflict',
+  'config',
+  'entity',
+  'utils',
+  'deps',
+  'modules',
+  'test',
+  'migration',
+  'core'
+);
 
 module.exports = {
   extends: ['@commitlint/config-conventional'],
   ignores: [(message) => message.includes('release')],
   rules: {
-    "scope-empty": [2, "never"],
-    "scope-enum": [2, "always", scopes]
+    'scope-empty': [2, 'never'],
+    'scope-enum': [2, 'always', scopes]
   }
 };

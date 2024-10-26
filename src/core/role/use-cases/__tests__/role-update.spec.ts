@@ -3,7 +3,7 @@ import { Test } from '@nestjs/testing';
 import { ILoggerAdapter } from '@/infra/logger';
 import { IRoleUpdateAdapter } from '@/modules/role/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
-import { expectZodError, getMockUUID } from '@/utils/tests';
+import { TestUtils } from '@/utils/tests';
 
 import { IRoleRepository } from '../../repository/role';
 import { RoleUpdateInput, RoleUpdateUsecase } from '../role-update';
@@ -41,7 +41,7 @@ describe(RoleUpdateUsecase.name, () => {
   });
 
   test('when no input is specified, should expect an error', async () => {
-    await expectZodError(
+    await TestUtils.expectZodError(
       () => usecase.execute({}),
       (issues) => {
         expect(issues).toEqual([{ message: 'Required', path: RoleEntity.nameOf('id') }]);
@@ -50,7 +50,7 @@ describe(RoleUpdateUsecase.name, () => {
   });
 
   const input: RoleUpdateInput = {
-    id: getMockUUID()
+    id: TestUtils.getMockUUID()
   };
 
   test('when role not found, should expect an error', async () => {
@@ -60,7 +60,7 @@ describe(RoleUpdateUsecase.name, () => {
   });
 
   const role = new RoleEntity({
-    id: getMockUUID(),
+    id: TestUtils.getMockUUID(),
     name: RoleEnum.USER
   });
 

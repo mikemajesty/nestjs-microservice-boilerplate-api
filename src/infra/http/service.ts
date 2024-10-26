@@ -3,7 +3,7 @@ import axios, { Axios, AxiosInstance } from 'axios';
 import axiosBetterStacktrace from 'axios-better-stacktrace';
 import https from 'https';
 
-import { interceptAxiosResponseError, requestRetry } from '@/utils/axios';
+import { AxiosUtils } from '@/utils/axios';
 import { TracingType } from '@/utils/request';
 
 import { ILoggerAdapter } from '../logger';
@@ -22,14 +22,14 @@ export class HttpService implements IHttpAdapter {
     });
 
     this.axios = axios.create({ proxy: false, httpsAgent });
-    requestRetry({ axios: this.axios, logger: this.loggerService });
+    AxiosUtils.requestRetry({ axios: this.axios, logger: this.loggerService });
 
     axiosBetterStacktrace(this.axios);
 
     this.axios.interceptors.response.use(
       (response) => response,
       (error) => {
-        interceptAxiosResponseError(error);
+        AxiosUtils.interceptAxiosResponseError(error);
         return Promise.reject(error);
       }
     );

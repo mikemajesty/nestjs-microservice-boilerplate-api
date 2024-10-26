@@ -3,7 +3,7 @@ import { Test } from '@nestjs/testing';
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { ICatGetByIdAdapter } from '@/modules/cat/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
-import { expectZodError, getMockUUID } from '@/utils/tests';
+import { TestUtils } from '@/utils/tests';
 
 import { CatEntity } from '../../entity/cat';
 import { ICatRepository } from '../../repository/cat';
@@ -36,7 +36,7 @@ describe(CatGetByIdUsecase.name, () => {
   });
 
   test('when no input is specified, should expect an error', async () => {
-    await expectZodError(
+    await TestUtils.expectZodError(
       () => usecase.execute({}),
       (issues) => {
         expect(issues).toEqual([{ message: 'Required', path: CatEntity.nameOf('id') }]);
@@ -47,11 +47,11 @@ describe(CatGetByIdUsecase.name, () => {
   test('when cat not found, should expect an error', async () => {
     repository.findById = jest.fn().mockResolvedValue(null);
 
-    await expect(usecase.execute({ id: getMockUUID() })).rejects.toThrow(ApiNotFoundException);
+    await expect(usecase.execute({ id: TestUtils.getMockUUID() })).rejects.toThrow(ApiNotFoundException);
   });
 
   const cat = new CatEntity({
-    id: getMockUUID(),
+    id: TestUtils.getMockUUID(),
     name: 'Miau',
     breed: 'dummy',
     age: 10
@@ -60,6 +60,6 @@ describe(CatGetByIdUsecase.name, () => {
   test('when cat found, should expect a cat that has been found', async () => {
     repository.findById = jest.fn().mockResolvedValue(cat);
 
-    await expect(usecase.execute({ id: getMockUUID() })).resolves.toEqual(cat);
+    await expect(usecase.execute({ id: TestUtils.getMockUUID() })).resolves.toEqual(cat);
   });
 });
