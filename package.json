@@ -102,6 +102,7 @@
     "@types/node": "^22.7.4",
     "@types/nodemailer": "^6.4.16",
     "@types/supertest": "^6.0.2",
+    "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^8.7.0",
     "@typescript-eslint/parser": "^8.7.0",
     "concurrently": "^9.0.1",

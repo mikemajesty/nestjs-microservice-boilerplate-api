@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { ICacheAdapter } from '@/infra/cache';
 import { ILoggerAdapter } from '@/infra/logger';
 import { ITokenAdapter } from '@/libs/token';
+import { UserRequest } from '@/utils/request';
 
 import { ApiUnauthorizedException } from '../../utils/exception';
 
@@ -15,11 +16,11 @@ export class IsLoggedMiddleware implements NestMiddleware {
     private readonly loggerService: ILoggerAdapter,
     private readonly redisService: ICacheAdapter
   ) {}
-  async use(request: Request, response: Response, next: NextFunction): Promise<void> {
+  async use(request: Request & { user: UserRequest }, response: Response, next: NextFunction): Promise<void> {
     const tokenHeader = request.headers.authorization;
 
     if (!request.headers?.traceid) {
-      request.headers.traceid = request['id'] ?? uuidv4();
+      Object.assign(request.headers, { traceid: request['id'] ?? uuidv4() });
     }
 
     if (!tokenHeader) {
@@ -38,14 +39,14 @@ export class IsLoggedMiddleware implements NestMiddleware {
       next(new ApiUnauthorizedException('you have been logged out'));
     }
 
-    const userDecoded = await this.tokenService.verify(token).catch((error) => {
+    const userDecoded = (await this.tokenService.verify<UserRequest>(token).catch((error) => {
       request.id = request.headers.traceid;
       error.status = HttpStatus.UNAUTHORIZED;
       this.loggerService.logger(request, response);
       next(error);
-    });
+    })) as UserRequest;
 
-    request['user'] = userDecoded;
+    request.user = userDecoded;
 
     next();
   }
