@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ClientRequest, IncomingMessage, ServerResponse } from 'node:http';
 
 import { diag, DiagConsoleLogger, DiagLogLevel, Span } from '@opentelemetry/api';
@@ -37,12 +38,13 @@ const sdk = new NodeSDK({
   metricReader: metricReader,
   instrumentations: [
     new HttpInstrumentation({
-      responseHook: (span: Span, res: IncomingMessage | ServerResponse) => {
+      responseHook: (span: Span | any, res: IncomingMessage | ServerResponse | any) => {
         if (span['parentSpanId']) {
           span.updateName(updateSpanName(span, res['req']));
         }
       },
-      requestHook: (span: Span, request: ClientRequest | IncomingMessage) => {
+
+      requestHook: (span: Span | any, request: ClientRequest | IncomingMessage | any) => {
         const id = [request['id'], request['traceid'], request['headers']?.traceid].find(Boolean);
         if (!id) {
           request['headers'].traceid = uuidv4();
@@ -55,20 +57,22 @@ const sdk = new NodeSDK({
     }),
     new RedisInstrumentation({
       requireParentSpan: true,
-      responseHook: (span: Span) => {
+
+      responseHook: (span: Span | any) => {
         const [name, method] = span['name'].split('-');
         span.updateName(`${name} => ${method}`);
       }
     }),
     new MongoDBInstrumentation({
       enhancedDatabaseReporting: true,
-      responseHook: (span: Span) => {
+
+      responseHook: (span: Span | any) => {
         span.updateName(`mongodb => ${span['name'].split('.')[1]}`);
       }
     }),
     new PgInstrumentation({
       requireParentSpan: true,
-      responseHook: (span: Span) => {
+      responseHook: (span: Span | any) => {
         span.updateName(`postgres => ${span['name'].split(' ')[0]}`);
       }
     })
@@ -85,7 +89,7 @@ process.on('SIGTERM', () => {
     .finally(() => process.exit(0));
 });
 
-const updateSpanName = (span: Span, request: ClientRequest | IncomingMessage) => {
+const updateSpanName = (span: Span | any, request: ClientRequest | IncomingMessage | any) => {
   if (span['parentSpanId']) {
     return `${span['name']} => ${request['protocol']}//${request['host']}${getPathWithoutUUID(request['path'])}`;
   }
