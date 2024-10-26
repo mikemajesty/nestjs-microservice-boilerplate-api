@@ -33,14 +33,15 @@ export class MongoRepository<T extends Document> implements IRepository<T> {
     document: UpdateWithAggregationPipeline | UpdateQuery<T>,
     options?: unknown
   ): Promise<CreatedOrUpdateModel> {
-    if (!document['id']) {
+    const doc = document as { id: string | number };
+    if (!doc['id']) {
       throw new ApiBadRequestException('id is required');
     }
 
-    const exists = await this.findById(document['id']);
+    const exists = await this.findById(doc['id']);
 
     if (!exists) {
-      const createdEntity = new this.model({ ...document, _id: document['id'] });
+      const createdEntity = new this.model({ ...document, _id: doc['id'] });
       const savedResult = await createdEntity.save(options);
 
       return { id: savedResult.id, created: true, updated: false };
@@ -122,11 +123,12 @@ export class MongoRepository<T extends Document> implements IRepository<T> {
   }
 
   async findIn(input: { [key in keyof T]: string[] }, options?: QueryOptions): Promise<T[]> {
-    const where = {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const where: any = {
       deletedAt: null
     };
     for (const key of Object.keys(input)) {
-      where[key === 'id' ? '_id' : key] = { $in: input[`${key}`] };
+      where[key === 'id' ? '_id' : key] = { $in: (input as { [key: string]: unknown })[`${key}`] };
     }
     const filter = where;
     const data = await this.model.find(filter, null, options);

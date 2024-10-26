@@ -97,7 +97,8 @@ export class LoggerService implements ILoggerAdapter {
         context: error?.context,
         type: type,
         traceid: this.getTraceId(error),
-        externalApiCurl: error['curl'],
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        externalApiCurl: (error as any)['curl'],
         createdAt: DateUtils.getISODateString(),
         application: this.app,
         stack: error.stack?.replace(/\n/g, ''),
@@ -136,7 +137,8 @@ export class LoggerService implements ILoggerAdapter {
       colorize: isColorSupported,
       levelFirst: true,
       ignore: 'pid,hostname',
-      messageFormat: (log: unknown, messageKey: string) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      messageFormat: (log: any, messageKey: string) => {
         const message = log[String(messageKey)];
         if (this.app) {
           return `[${blue(this.app)}] ${message}`;
@@ -242,7 +244,8 @@ export class LoggerService implements ILoggerAdapter {
     ].find((c) => c.conditional);
   }
 
-  private getTraceId(error): string {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private getTraceId(error: any): string {
     if (typeof error === 'string') return uuidv4();
     return [error.traceid, this.logger.logger.bindings()?.traceid].find(Boolean);
   }

@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { z } from 'zod';
+import { z, ZodIssue } from 'zod';
 
 import { ApiInternalServerException } from '@/utils/exception';
 import { ZodInferSchema } from '@/utils/zod';
@@ -67,7 +67,7 @@ import { EnvEnum } from './types';
         try {
           SecretsSchema.parse(secret);
         } catch (error) {
-          const message = error.issues.map((i) => `SecretsService.${i.path.join('.')}: ${i.message}`);
+          const message = error.issues.map((i: ZodIssue) => `SecretsService.${i.path.join('.')}: ${i.message}`);
           throw new ApiInternalServerException({ ...error, message });
         }
 

@@ -13,7 +13,8 @@ import { LogLevelEnum } from './types';
       provide: ILoggerAdapter,
       useFactory: async ({ LOG_LEVEL }: ISecretsAdapter) => {
         const logger = new LoggerService();
-        await logger.connect(LogLevelEnum[`${LOG_LEVEL}`]);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await logger.connect((LogLevelEnum as any)[`${LOG_LEVEL}`]);
         return logger;
       },
       inject: [ISecretsAdapter]

@@ -37,7 +37,8 @@ export class ExceptionInterceptor implements NestInterceptor {
     );
   }
 
-  private getStatusCode(error): number {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private getStatusCode(error: any): number {
     if (error instanceof ZodError) {
       return 400;
     }
@@ -55,7 +56,8 @@ export class ExceptionInterceptor implements NestInterceptor {
     ].find(Boolean);
   }
 
-  private sanitizeExternalError(error) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private sanitizeExternalError(error: any) {
     if (typeof error?.response === 'object' && error?.isAxiosError) {
       const status = [error?.response?.data?.code, error?.response?.data?.error?.code, error?.status].find(Boolean);
       error.message = [error?.response?.data?.message, error?.response?.data?.error?.message, error.message].find(

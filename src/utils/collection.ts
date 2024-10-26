@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ApiBadRequestException } from './exception';
 import { SortEnum } from './sort';
 
@@ -7,7 +8,7 @@ export class CollectionUtil {
       throw new ApiBadRequestException();
     }
 
-    return collection.reduce((prev, next) => {
+    return collection.reduce((prev: any, next: any) => {
       prev[next[key]] = prev[next[key]] ?? [];
       prev[next[key]].push(next);
       return prev;
@@ -15,7 +16,7 @@ export class CollectionUtil {
   };
 
   static group = (collection: unknown[]) => {
-    return collection.reduce(function (rv, x: string | number) {
+    return collection.reduce((rv: any, x: string | number) => {
       (rv[x] = rv[x] || []).push(x);
       return rv;
     }, {});
@@ -26,7 +27,7 @@ export class CollectionUtil {
       throw new ApiBadRequestException('key is required');
     }
 
-    return collection.reduce((prev, current) => {
+    return collection.reduce((prev: any, current: any) => {
       return Number(prev[key] > current[key]) ? prev : current;
     });
   };
@@ -40,7 +41,7 @@ export class CollectionUtil {
       throw new ApiBadRequestException('key is required');
     }
 
-    return collection.reduce((prev, current) => {
+    return collection.reduce((prev: any, current: any) => {
       return Number(prev[key] > current[key]) ? current : prev;
     });
   };
@@ -60,7 +61,7 @@ export class CollectionUtil {
       throw new ApiBadRequestException('key is required');
     }
 
-    return collection.reduce((prev, current): number => {
+    return collection.reduce((prev: any, current: any): number => {
       if (isNaN(prev[key] || 0)) {
         return 0 + Number(current[key]);
       }
@@ -88,7 +89,7 @@ export class CollectionUtil {
   }
 
   static sortNullToLastPosition = <T>(collection: T[], key: keyof T, sort: SortEnum = SortEnum.asc) => {
-    return collection.sort((a, b) => {
+    return collection.sort((a: any, b: any) => {
       if (a[key.toString()] === b[key.toString()]) {
         return 0;
       }

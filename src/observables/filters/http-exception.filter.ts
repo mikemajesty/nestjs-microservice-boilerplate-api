@@ -37,7 +37,7 @@ export class ExceptionFilter implements AppExceptionFilter {
   }
 
   private getMessage(exception: BaseException, status: string | number): string[] {
-    const defaultError = errorStatus[String(status)];
+    const defaultError = (errorStatus as { [key: string]: string })[String(status)];
     if (defaultError) {
       return [defaultError];
     }
