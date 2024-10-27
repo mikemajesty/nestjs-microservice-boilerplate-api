@@ -20,7 +20,7 @@ export class TextUtils {
       : text;
   };
 
-  static formatCapitalizeText = (text: string, matchLength = 4) => {
+  static capitalizeTextSpecifiedLength = (text: string, matchLength = 4) => {
     const textList = text.split(' ');
 
     const NO_SPACE = 1;
