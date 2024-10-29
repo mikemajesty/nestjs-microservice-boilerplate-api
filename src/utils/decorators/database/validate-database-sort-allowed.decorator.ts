@@ -7,7 +7,7 @@ import { SortEnum, SortSchema } from '@/utils/sort';
 
 export const ListSchema = z.intersection(PaginationSchema, SortSchema.merge(SearchSchema));
 
-type AllowedSort<T> = keyof T;
+type AllowedSort<T> = { name: keyof T; map?: string };
 
 export function ValidateDatabaseSortAllowed<T>(...allowedSortList: AllowedSort<T>[]) {
   return (target: unknown, propertyKey: string, descriptor: PropertyDescriptor) => {
@@ -17,18 +17,19 @@ export function ValidateDatabaseSortAllowed<T>(...allowedSortList: AllowedSort<T
 
       const sort: { [key: string]: SortEnum } = {};
 
-      const sortList = (allowedSortList || []) as unknown as string[];
+      const sortList = (allowedSortList || []) as AllowedSort<T>[];
 
       Object.keys(input.sort || {}).forEach((key) => {
-        const allowed = sortList.includes(key);
+        const allowed = sortList.find((s) => s.name === key);
+
         if (!allowed) throw new ApiBadRequestException(`allowed sorts are: ${sortList.join(', ')}`);
       });
 
       for (const allowedFilter of sortList) {
         if (!input.sort) continue;
-        const filter = input.sort[`${allowedFilter}`];
+        const filter = input.sort[`${allowedFilter.name.toString()}`];
         if (filter) {
-          sort[`${allowedFilter}`] = filter;
+          sort[`${allowedFilter?.map ?? allowedFilter.name.toString()}`] = filter;
         }
       }
 

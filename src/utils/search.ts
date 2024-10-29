@@ -36,13 +36,18 @@ export const SearchHttpSchema = z
     const search: { [key: string]: unknown } = {};
 
     searchString.split(',').forEach((s) => {
-      const propertyIndex = s.indexOf(':');
-      const value = s.slice(propertyIndex + 1, s.length);
-      const [field] = s.split(':');
+      const [field, value] = s.split(':');
+      const finalValue = value.split('|').map((v) => v.trim());
+      if (finalValue.length > 1) {
+        search[`${field}`] = value.split('|').map((v) => v.trim());
+        return;
+      }
       search[`${field}`] = value.trim();
     });
 
     return search;
   });
 
-export const SearchSchema = z.object({ search: z.record(z.string().trim(), z.number().or(z.string())).nullable() });
+export const SearchSchema = z.object({
+  search: z.record(z.string().trim(), z.number().or(z.string()).or(z.array(z.any()))).nullable()
+});

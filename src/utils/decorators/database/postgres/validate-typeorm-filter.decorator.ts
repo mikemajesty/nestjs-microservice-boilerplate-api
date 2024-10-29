@@ -7,11 +7,11 @@ import { AllowedFilter, SearchTypeEnum } from '../../types';
 export function ConvertTypeOrmFilter<T>(allowedFilterList: AllowedFilter<T>[] = []) {
   return (target: unknown, propertyKey: string, descriptor: PropertyDescriptor) => {
     const originalMethod = descriptor.value;
-    descriptor.value = function (...args: { search: { [key: string]: string } }[]) {
+    descriptor.value = function (...args: { search: { [key: string]: string | string[] } }[]) {
       const input = args[0];
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const where: { [key: string]: any } = {};
+      let where: any | [] = {};
 
       const filterNameList = allowedFilterList.map((f) => f.name as string);
 
@@ -28,13 +28,49 @@ export function ConvertTypeOrmFilter<T>(allowedFilterList: AllowedFilter<T>[] = 
         if (!filter) continue;
 
         if (allowedFilter.type === SearchTypeEnum.equal) {
-          where[`${allowedFilter.name.toString()}`] = filter;
+          if (typeof filter === 'object') {
+            const orEqual = filter.map((f) => {
+              return { [`${allowedFilter?.map ?? allowedFilter.name.toString()}`]: f };
+            });
+
+            where = orEqual;
+          }
+
+          if (typeof filter === 'string') {
+            where[`${allowedFilter?.map ?? allowedFilter.name.toString()}`] = filter;
+          }
         }
 
         if (allowedFilter.type === SearchTypeEnum.like) {
-          where[`${allowedFilter.name.toString()}`] = Raw((alias) => `unaccent(${alias}) ilike unaccent(:value)`, {
-            value: filter
-          });
+          if (typeof filter === 'object') {
+            const valueFilter: { [key: string]: unknown } = {};
+
+            for (const f of filter) {
+              valueFilter[`${f}`] = f;
+            }
+
+            const createManyLike = (alias: string) => {
+              return filter
+                .map((value) => {
+                  return `unaccent(${alias}) ilike unaccent(:${value})`;
+                })
+                .join(' or ');
+            };
+
+            where[`${allowedFilter?.map ?? allowedFilter.name.toString()}`] = Raw(
+              (alias) => createManyLike(alias),
+              valueFilter
+            );
+          }
+
+          if (typeof filter === 'string') {
+            where[`${allowedFilter?.map ?? allowedFilter.name.toString()}`] = Raw(
+              (alias) => `unaccent(${alias}) ilike unaccent(:value)`,
+              {
+                value: filter
+              }
+            );
+          }
         }
       }
 

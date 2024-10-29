@@ -18,7 +18,7 @@ export class RoleRepository extends TypeORMRepository<Model> implements IRoleRep
   }
 
   @ConvertTypeOrmFilter<RoleEntity>([{ name: 'name', type: SearchTypeEnum.like }])
-  @ValidateDatabaseSortAllowed<RoleEntity>('name', 'createdAt')
+  @ValidateDatabaseSortAllowed<RoleEntity>({ name: 'name' }, { name: 'createdAt' })
   async paginate(input: RoleListInput): Promise<RoleListOutput> {
     const skip = calculateSkip(input);
 

@@ -16,7 +16,7 @@ export class CatRepository extends MongoRepository<CatDocument> implements ICatR
     super(entity);
   }
 
-  @ValidateDatabaseSortAllowed<CatEntity>('createdAt', 'breed')
+  @ValidateDatabaseSortAllowed<CatEntity>({ name: 'createdAt' }, { name: 'breed' })
   @ConvertMongooseFilter<CatEntity>([
     { name: 'name', type: SearchTypeEnum.like },
     { name: 'breed', type: SearchTypeEnum.like },

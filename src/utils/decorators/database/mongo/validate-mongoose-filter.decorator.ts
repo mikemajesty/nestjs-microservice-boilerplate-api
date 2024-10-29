@@ -32,21 +32,45 @@ export function ConvertMongooseFilter<T>(allowedFilterList: AllowedFilter<T>[] =
 
         if (!filter) continue;
 
+        const regexFilter = MongoUtils.createMongoRegexText(filter);
+
         if (allowedFilter.type === SearchTypeEnum.equal) {
-          where[`${allowedFilter.name as string}`] = filter;
+          if (typeof regexFilter === 'object') {
+            where['$or'] = regexFilter.map((filter) => {
+              return {
+                [`${allowedFilter.map ?? (allowedFilter.name as string)}`]: filter
+              };
+            });
+          }
+          if (typeof regexFilter === 'string') {
+            where[`${allowedFilter.map ?? (allowedFilter.name as string)}`] = filter;
+          }
         }
 
         if (allowedFilter.type === SearchTypeEnum.like) {
-          where[`${allowedFilter.name as string}`] = {
-            $regex: MongoUtils.createMongoRegexText(filter),
-            $options: 'i'
-          };
-        }
-      }
+          if (typeof regexFilter === 'object') {
+            where['$or'] = regexFilter.map((filter) => {
+              return {
+                [`${allowedFilter.map ?? (allowedFilter.name as string)}`]: {
+                  $regex: filter,
+                  $options: 'i'
+                }
+              };
+            });
+          }
 
-      args[0].search = where;
-      const result = originalMethod.apply(this, args);
-      return result;
+          if (typeof regexFilter === 'string') {
+            where[`${allowedFilter.map ?? (allowedFilter.name as string)}`] = {
+              $regex: MongoUtils.createMongoRegexText(filter),
+              $options: 'i'
+            };
+          }
+        }
+
+        args[0].search = where;
+        const result = originalMethod.apply(this, args);
+        return result;
+      }
     };
   };
 }

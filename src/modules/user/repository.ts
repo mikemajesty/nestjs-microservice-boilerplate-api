@@ -44,7 +44,7 @@ export class UserRepository extends TypeORMRepository<Model> implements IUserRep
     { name: 'email', type: SearchTypeEnum.like },
     { name: 'name', type: SearchTypeEnum.like }
   ])
-  @ValidateDatabaseSortAllowed<UserEntity>('email', 'name', 'createdAt')
+  @ValidateDatabaseSortAllowed<UserEntity>({ name: 'email' }, { name: 'name' }, { name: 'createdAt' })
   async paginate(input: UserListInput): Promise<UserListOutput> {
     const skip = calculateSkip(input);
 

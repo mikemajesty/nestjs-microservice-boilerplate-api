@@ -22,7 +22,7 @@ export class PermissionRepository extends TypeORMRepository<Model> implements IP
   }
 
   @ConvertTypeOrmFilter<PermissionEntity>([{ name: 'name', type: SearchTypeEnum.like }])
-  @ValidateDatabaseSortAllowed<PermissionEntity>('name', 'createdAt')
+  @ValidateDatabaseSortAllowed<PermissionEntity>({ name: 'name' }, { name: 'createdAt' })
   async paginate(input: PermissionListInput): Promise<PermissionListOutput> {
     const skip = calculateSkip(input);
 

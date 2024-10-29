@@ -5,5 +5,6 @@ export enum SearchTypeEnum {
 
 export type AllowedFilter<T> = {
   type: SearchTypeEnum;
+  map?: string;
   name: keyof T;
 };
