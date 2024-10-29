@@ -95,7 +95,7 @@ describe(ResetPasswordSendEmailUsecase.name, () => {
     roles: [new RoleEntity({ name: RoleEnum.USER })]
   });
 
-  const resetPassword = new ResetPasswordEntity({ id: TestUtils.getMockUUID(), token: 'token', user: user });
+  const resetPassword = new ResetPasswordEntity({ id: TestUtils.getMockUUID(), token: 'token', user });
 
   test('when token was founded, should expect void', async () => {
     userRepository.findOne = jest.fn().mockResolvedValue(user);

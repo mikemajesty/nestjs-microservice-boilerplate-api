@@ -104,7 +104,7 @@ describe(ResetPasswordConfirmUsecase.name, () => {
 
     await expect(usecase.execute(input)).rejects.toThrow(ApiUnauthorizedException);
   });
-  const defaultResetPassword = new ResetPasswordEntity({ id: TestUtils.getMockUUID(), token: 'token', user: user });
+  const defaultResetPassword = new ResetPasswordEntity({ id: TestUtils.getMockUUID(), token: 'token', user });
 
   test('when confirm successfully, should expect a void', async () => {
     userRepository.findOneWithRelation = jest.fn().mockResolvedValue(user);

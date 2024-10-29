@@ -35,7 +35,7 @@ const metricReader = new PeriodicExportingMetricReader({
 const sdk = new NodeSDK({
   resource,
   traceExporter: tracerExporter,
-  metricReader: metricReader,
+  metricReader,
   instrumentations: [
     new HttpInstrumentation({
       responseHook: (span: Span | any, res: IncomingMessage | ServerResponse | any) => {

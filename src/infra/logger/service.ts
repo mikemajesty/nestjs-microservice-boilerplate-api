@@ -95,7 +95,7 @@ export class LoggerService implements ILoggerAdapter {
       {
         ...response,
         context: error?.context,
-        type: type,
+        type,
         traceid: this.getTraceId(error),
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         externalApiCurl: (error as any)['curl'],
@@ -191,14 +191,14 @@ export class LoggerService implements ILoggerAdapter {
         this.logger.logger.setBindings({
           traceid,
           application: this.app,
-          context: context,
+          context,
           createdAt: DateUtils.getISODateString()
         });
 
         return {
           traceid,
           application: this.app,
-          context: context,
+          context,
           path,
           createdAt: DateUtils.getISODateString()
         };

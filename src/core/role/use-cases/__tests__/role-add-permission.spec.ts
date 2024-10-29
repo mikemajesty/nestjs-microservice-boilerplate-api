@@ -67,7 +67,7 @@ describe(RoleAddPermissionUsecase.name, () => {
 
   const permissions = [new PermissionEntity({ name: 'user:create' }), new PermissionEntity({ name: 'user:update' })];
 
-  const role = new RoleEntity({ name: RoleEnum.USER, permissions: permissions });
+  const role = new RoleEntity({ name: RoleEnum.USER, permissions });
 
   test('when delete permission with associated permission successfully, should expect an update permission', async () => {
     repository.findOne = jest.fn().mockResolvedValue(role);

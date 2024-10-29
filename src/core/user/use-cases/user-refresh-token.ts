@@ -47,6 +47,6 @@ export class RefreshTokenUsecase implements IUsecase {
 
     const { token: refreshToken } = this.tokenService.sign({ userId: user.id });
 
-    return { accessToken: token, refreshToken: refreshToken };
+    return { accessToken: token, refreshToken };
   }
 }

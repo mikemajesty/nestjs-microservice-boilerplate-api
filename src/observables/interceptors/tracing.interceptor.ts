@@ -38,7 +38,7 @@ export class TracingInterceptor implements NestInterceptor {
 
     const createTracingInstance = (): TracingType => {
       return {
-        span: span,
+        span,
         tracer: this.tracer,
         tracerId: requestId,
         axios: (options: Omit<AxiosRequestConfig, 'headers'>): AxiosInstance => {

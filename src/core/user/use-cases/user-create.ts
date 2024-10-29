@@ -42,7 +42,7 @@ export class UserCreateUsecase implements IUsecase {
       throw new ApiNotFoundException('roleNotFound');
     }
 
-    const entity = new UserEntity({ name: input.name, email: input.email, roles: roles });
+    const entity = new UserEntity({ name: input.name, email: input.email, roles });
 
     const passwordEntity = new UserPasswordEntity({ password: input.password });
 

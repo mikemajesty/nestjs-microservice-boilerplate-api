@@ -68,7 +68,7 @@ describe(RoleDeletePermissionUsecase.name, () => {
 
   const permissions = [new PermissionEntity({ name: 'user:create' }), new PermissionEntity({ name: 'user:update' })];
 
-  const role = new RoleEntity({ name: RoleEnum.USER, permissions: permissions });
+  const role = new RoleEntity({ name: RoleEnum.USER, permissions });
 
   test('when some permisson, should expect an error', async () => {
     repository.findOne = jest.fn().mockResolvedValue(role);
