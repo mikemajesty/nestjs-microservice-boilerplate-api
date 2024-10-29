@@ -7,7 +7,7 @@ import { UserListInput, UserListOutput } from '@/core/user/use-cases/user-list';
 import { UserSchema } from '@/infra/database/postgres/schemas/user';
 import { TypeORMRepository } from '@/infra/repository/postgres/repository';
 import { ConvertTypeOrmFilter, SearchTypeEnum, ValidateDatabaseSortAllowed } from '@/utils/decorators';
-import { calculateSkip } from '@/utils/pagination';
+import { PaginationUtils } from '@/utils/pagination';
 
 type Model = UserSchema & UserEntity;
 
@@ -46,7 +46,7 @@ export class UserRepository extends TypeORMRepository<Model> implements IUserRep
   ])
   @ValidateDatabaseSortAllowed<UserEntity>({ name: 'email' }, { name: 'name' }, { name: 'createdAt' })
   async paginate(input: UserListInput): Promise<UserListOutput> {
-    const skip = calculateSkip(input);
+    const skip = PaginationUtils.calculateSkip(input);
 
     const [docs, total] = await this.repository.findAndCount({
       take: input.limit,
