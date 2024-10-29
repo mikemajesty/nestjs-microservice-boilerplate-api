@@ -11,11 +11,11 @@ const convertFilterValue = (input: Pick<AllowedFilter<unknown>, 'format'> & { va
   }
 
   if (input.format === 'Date') {
-    return DateUtils.getJSDate(new Date(`${input.value}`));
+    return DateUtils.createJSDate(`${input.value}`);
   }
 
   if (input.format === 'DateIso') {
-    return DateUtils.getJSDate(new Date(`${input.value}`)).toISOString();
+    return DateUtils.createISODate(`${input.value}`);
   }
 
   if (input.format === 'Boolean') {

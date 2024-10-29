@@ -22,10 +22,16 @@ export class DateUtils {
     return DateTime.fromJSDate(DateUtils.getJSDate(), { zone: 'utc' }).setZone(process.env.TZ).toJSON();
   }
 
-  static getJSDate(date?: Date): Date {
-    return DateTime.fromJSDate(date ?? DateTime.now().toJSDate(), { zone: 'utc' })
-      .setZone(process.env.TZ)
-      .toJSDate();
+  static getJSDate(): Date {
+    return DateTime.fromJSDate(DateTime.now().toJSDate(), { zone: 'utc' }).setZone(process.env.TZ).toJSDate();
+  }
+
+  static createJSDate(date: string): Date {
+    return DateTime.fromISO(date).setZone(process.env.TZ).toJSDate();
+  }
+
+  static createISODate(date: string): string {
+    return DateTime.fromISO(date, { zone: 'utc' }).setZone(process.env.TZ).toISO();
   }
 
   static calculateDiff(date: Date, compareDate: Date, compareType: DurationUnit): Date {
