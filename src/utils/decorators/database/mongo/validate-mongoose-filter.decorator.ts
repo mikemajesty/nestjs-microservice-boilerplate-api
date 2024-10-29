@@ -1,10 +1,41 @@
+import { Types } from 'mongoose';
+
+import { DateUtils } from '@/utils/date';
 import { ApiBadRequestException } from '@/utils/exception';
 import { MongoUtils } from '@/utils/mongoose';
 
 import { AllowedFilter, SearchTypeEnum } from '../../types';
 
+const convertFilterValue = (input: Pick<AllowedFilter<unknown>, 'format'> & { value: unknown }) => {
+  if (input.format === 'String') {
+    return `${input.value}`;
+  }
+
+  if (input.format === 'Date') {
+    return DateUtils.getJSDate(new Date(`${input.value}`));
+  }
+
+  if (input.format === 'DateIso') {
+    return DateUtils.getJSDate(new Date(`${input.value}`)).toISOString();
+  }
+
+  if (input.format === 'Boolean') {
+    return Boolean(input.value);
+  }
+
+  if (input.format === 'Number') {
+    return Number(input.value);
+  }
+
+  if (input.format === 'ObjectId') {
+    return new Types.ObjectId(`${input.value}`);
+  }
+
+  return input.value;
+};
+
 export function ConvertMongooseFilter<T>(allowedFilterList: AllowedFilter<T>[] = []) {
-  return (target: unknown, propertyKey: string, descriptor: PropertyDescriptor) => {
+  return function (target: unknown, propertyKey: string, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value;
     descriptor.value = function (...args: { search: { [key: string]: string } }[]) {
       const input = args[0];
@@ -27,7 +58,7 @@ export function ConvertMongooseFilter<T>(allowedFilterList: AllowedFilter<T>[] =
       });
 
       for (const allowedFilter of allowedFilterList) {
-        if (!input.search) continue;
+        if (!input?.search) continue;
         const filter = input.search[allowedFilter.name as string];
 
         if (!filter) continue;
@@ -38,12 +69,18 @@ export function ConvertMongooseFilter<T>(allowedFilterList: AllowedFilter<T>[] =
           if (typeof regexFilter === 'object') {
             where['$or'] = regexFilter.map((filter) => {
               return {
-                [`${allowedFilter.map ?? (allowedFilter.name as string)}`]: filter
+                [`${allowedFilter.map ?? (allowedFilter.name as string)}`]: convertFilterValue({
+                  value: filter,
+                  format: allowedFilter.format
+                })
               };
             });
           }
           if (typeof regexFilter === 'string') {
-            where[`${allowedFilter.map ?? (allowedFilter.name as string)}`] = filter;
+            where[`${allowedFilter.map ?? (allowedFilter.name as string)}`] = convertFilterValue({
+              value: filter,
+              format: allowedFilter.format
+            });
           }
         }
 
@@ -66,11 +103,10 @@ export function ConvertMongooseFilter<T>(allowedFilterList: AllowedFilter<T>[] =
             };
           }
         }
-
-        args[0].search = where;
-        const result = originalMethod.apply(this, args);
-        return result;
       }
+      args[0].search = where;
+      const result = originalMethod.apply(this, args);
+      return result;
     };
   };
 }

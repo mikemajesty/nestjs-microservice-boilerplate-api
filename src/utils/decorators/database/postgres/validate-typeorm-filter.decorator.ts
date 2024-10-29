@@ -1,8 +1,33 @@
 import { Raw } from 'typeorm';
 
+import { DateUtils } from '@/utils/date';
 import { ApiBadRequestException } from '@/utils/exception';
 
 import { AllowedFilter, SearchTypeEnum } from '../../types';
+
+const convertFilterValue = (input: Pick<AllowedFilter<unknown>, 'format'> & { value: unknown }) => {
+  if (input.format === 'String') {
+    return `${input.value}`;
+  }
+
+  if (input.format === 'Date') {
+    return DateUtils.getJSDate(new Date(`${input.value}`));
+  }
+
+  if (input.format === 'DateIso') {
+    return DateUtils.getJSDate(new Date(`${input.value}`)).toISOString();
+  }
+
+  if (input.format === 'Boolean') {
+    return Boolean(input.value);
+  }
+
+  if (input.format === 'Number') {
+    return Number(input.value);
+  }
+
+  return input.value;
+};
 
 export function ConvertTypeOrmFilter<T>(allowedFilterList: AllowedFilter<T>[] = []) {
   return (target: unknown, propertyKey: string, descriptor: PropertyDescriptor) => {
@@ -30,14 +55,22 @@ export function ConvertTypeOrmFilter<T>(allowedFilterList: AllowedFilter<T>[] = 
         if (allowedFilter.type === SearchTypeEnum.equal) {
           if (typeof filter === 'object') {
             const orEqual = filter.map((f) => {
-              return { [`${allowedFilter?.map ?? allowedFilter.name.toString()}`]: f };
+              return {
+                [`${allowedFilter?.map ?? allowedFilter.name.toString()}`]: convertFilterValue({
+                  value: f,
+                  format: allowedFilter.format
+                })
+              };
             });
 
             where = orEqual;
           }
 
           if (typeof filter === 'string') {
-            where[`${allowedFilter?.map ?? allowedFilter.name.toString()}`] = filter;
+            where[`${allowedFilter?.map ?? allowedFilter.name.toString()}`] = convertFilterValue({
+              value: filter,
+              format: allowedFilter.format
+            });
           }
         }
 
@@ -73,7 +106,6 @@ export function ConvertTypeOrmFilter<T>(allowedFilterList: AllowedFilter<T>[] = 
           }
         }
       }
-
       args[0].search = where;
       const result = originalMethod.apply(this, args);
       return result;

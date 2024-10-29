@@ -22,8 +22,10 @@ export class DateUtils {
     return DateTime.fromJSDate(DateUtils.getJSDate(), { zone: 'utc' }).setZone(process.env.TZ).toJSON();
   }
 
-  static getJSDate(): Date {
-    return DateTime.fromJSDate(DateTime.now().toJSDate(), { zone: 'utc' }).setZone(process.env.TZ).toJSDate();
+  static getJSDate(date?: Date): Date {
+    return DateTime.fromJSDate(date ?? DateTime.now().toJSDate(), { zone: 'utc' })
+      .setZone(process.env.TZ)
+      .toJSDate();
   }
 
   static calculateDiff(date: Date, compareDate: Date, compareType: DurationUnit): Date {
