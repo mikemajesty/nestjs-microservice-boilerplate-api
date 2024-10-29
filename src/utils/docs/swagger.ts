@@ -111,12 +111,12 @@ export const Swagger = {
       sort: Swagger.defaultApiQueryOptions({
         name: 'sort',
         required: false,
-        description: `<b>propertyName1:desc,propertyName2:asc`
+        description: `<b> multiples key sorts</b>: propertyName1:desc,propertyName2:asc`
       }),
       search: Swagger.defaultApiQueryOptions({
         name: 'search',
         required: false,
-        description: `<b>propertyName1:value,propertyName2:value`
+        description: `<b> multiples key search</b>: propertyName1:value,propertyName2:value <br> <b>multiples value search</b>: propertyName1:value1|value2`
       })
     };
   },
