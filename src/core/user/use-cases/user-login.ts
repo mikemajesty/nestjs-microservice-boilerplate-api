@@ -51,7 +51,7 @@ export class LoginUsecase implements IUsecase {
     const { token } = this.tokenService.sign({
       email: user.email,
       name: user.name,
-      roles: user.roles.map((r) => r.name)
+      id: user.id
     } as UserRequest);
 
     const { token: refreshToken } = this.tokenService.sign({ userId: user.id });

@@ -29,5 +29,5 @@ export const UsersResponse = {
   update: { ...fullEntity } as UserUpdateOutput,
   getById: fullEntity as UserGetByIdOutput,
   list: { docs: [fullEntity], limit: 10, page: 1, total: 1 } as UserListOutput,
-  me: { email: 'admin@admin.com', name: 'ADMIN', roles: [RoleEnum.USER] } as UserRequest
+  me: { email: 'admin@admin.com', name: 'ADMIN', id: TestUtils.getMockUUID() } as UserRequest
 };

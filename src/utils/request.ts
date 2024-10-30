@@ -15,7 +15,7 @@ export type TracingType = {
   finish: () => void;
 };
 
-export type UserRequest = Pick<UserEntity, 'email' | 'name'> & { roles: string[] };
+export type UserRequest = Pick<UserEntity, 'email' | 'name' | 'id'>;
 
 export interface ApiRequest {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

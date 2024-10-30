@@ -9,7 +9,7 @@ import { LogoutModule } from '@/modules/logout/module';
 import { UserModule } from '@/modules/user/module';
 import { AuthRoleGuard } from '@/observables/guards';
 
-import { IRoleRepository } from './core/role/repository/role';
+import { IUserRepository } from './core/user/repository/user';
 import { LibModule } from './libs/module';
 import { PermissionModule } from './modules/permission/module';
 import { ResetPasswordModule } from './modules/reset-password/module';
@@ -31,10 +31,10 @@ import { RoleModule } from './modules/role/module';
   providers: [
     {
       provide: APP_GUARD,
-      useFactory: (repository: IRoleRepository) => {
+      useFactory: (repository: IUserRepository) => {
         return new AuthRoleGuard(new Reflector(), repository);
       },
-      inject: [IRoleRepository]
+      inject: [IUserRepository]
     }
   ]
 })

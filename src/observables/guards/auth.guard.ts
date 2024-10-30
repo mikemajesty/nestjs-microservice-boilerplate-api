@@ -1,7 +1,7 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 
-import { IRoleRepository } from '@/core/role/repository/role';
+import { IUserRepository } from '@/core/user/repository/user';
 import { PERMISSION_KEY } from '@/utils/decorators';
 import { ApiUnauthorizedException } from '@/utils/exception';
 
@@ -9,7 +9,7 @@ import { ApiUnauthorizedException } from '@/utils/exception';
 export class AuthRoleGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
-    private readonly roleRepository: IRoleRepository
+    private readonly userRepository: IUserRepository
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -24,20 +24,24 @@ export class AuthRoleGuard implements CanActivate {
 
     const request = context.switchToHttp().getRequest();
 
-    const roles = request?.user?.roles;
+    const userId = request?.user?.id;
 
-    if (!roles?.length) {
-      throw new ApiUnauthorizedException('userRoleNotFound');
+    if (!userId) {
+      throw new ApiUnauthorizedException('userIdNotFoundInToken');
     }
 
-    const rolesData = await this.roleRepository.findIn({ name: roles });
+    const user = await this.userRepository.findOneWithRelation({ id: userId }, { roles: true });
+
+    if (!user) {
+      throw new ApiUnauthorizedException('userNotFound');
+    }
 
     const permissions = [];
 
-    for (const permission of new Set(rolesData.map((role) => role.permissions).flat())) {
-      permissions.push(permission.name);
+    for (const role of user.roles) {
+      permissions.push(...role.permissions.map((p) => p.name));
     }
 
-    return permissions.includes(requiredPermission);
+    return new Set(permissions).has(requiredPermission);
   }
 }

@@ -1,7 +1,6 @@
 import { Types } from 'mongoose';
 import { z } from 'zod';
 
-import { RoleEnum } from '@/core/role/entity/role';
 import { ApiTrancingInput, TracingType, UserRequest } from '@/utils/request';
 
 export class TestUtils {
@@ -38,6 +37,6 @@ export class TestUtils {
   };
 
   static getMockUser = (): UserRequest => {
-    return { email: 'test', name: 'test', roles: [RoleEnum.USER] } as UserRequest;
+    return { email: 'test', name: 'test', id: this.getMockUUID() } as UserRequest;
   };
 }
