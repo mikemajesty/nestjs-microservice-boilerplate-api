@@ -11,15 +11,22 @@ const convertFilterValue = (input: Pick<AllowedFilter<unknown>, 'format'> & { va
   }
 
   if (input.format === 'Date') {
-    return DateUtils.createJSDate(`${input.value}`);
+    return DateUtils.createJSDate(`${input.value}`, false);
   }
 
   if (input.format === 'DateIso') {
-    return DateUtils.createISODate(`${input.value}`);
+    return DateUtils.createISODate(`${input.value}`, false);
   }
 
   if (input.format === 'Boolean') {
-    return Boolean(input.value);
+    if (input.value === 'true') {
+      return true;
+    }
+
+    if (input.value === 'false') {
+      return false;
+    }
+    throw new ApiBadRequestException('invalid boolean');
   }
 
   if (input.format === 'Number') {

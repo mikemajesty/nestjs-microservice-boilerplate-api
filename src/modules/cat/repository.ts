@@ -20,7 +20,6 @@ export class CatRepository extends MongoRepository<CatDocument> implements ICatR
   @ConvertMongooseFilter<CatEntity>([
     { name: 'name', type: SearchTypeEnum.like },
     { name: 'breed', type: SearchTypeEnum.like },
-    { name: 'createdAt', type: SearchTypeEnum.equal, format: 'DateIso' },
     { name: 'age', type: SearchTypeEnum.equal, format: 'Number' }
   ])
   async paginate({ limit, page, search, sort }: CatListInput): Promise<CatListOutput> {

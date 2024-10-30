@@ -26,12 +26,18 @@ export class DateUtils {
     return DateTime.fromJSDate(DateTime.now().toJSDate(), { zone: 'utc' }).setZone(process.env.TZ).toJSDate();
   }
 
-  static createJSDate(date: string): Date {
+  static createJSDate(date: string, utc = true): Date {
+    if (utc) {
+      return DateTime.fromISO(date, { zone: 'utc' }).setZone(process.env.TZ).toJSDate();
+    }
     return DateTime.fromISO(date).setZone(process.env.TZ).toJSDate();
   }
 
-  static createISODate(date: string): string {
-    return DateTime.fromISO(date, { zone: 'utc' }).setZone(process.env.TZ).toISO();
+  static createISODate(date: string, utc = true): string {
+    if (utc) {
+      return DateTime.fromISO(date, { zone: 'utc' }).setZone(process.env.TZ).toISO();
+    }
+    return DateTime.fromISO(date).setZone(process.env.TZ).toISO();
   }
 
   static calculateDiff(date: Date, compareDate: Date, compareType: DurationUnit): Date {
