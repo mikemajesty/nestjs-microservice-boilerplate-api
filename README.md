@@ -409,11 +409,6 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │   │       ├── service.ts
 │   │       └── types.ts
 │   ├── libs
-│   │   ├── crypto
-│   │   │   ├── adapter.ts
-│   │   │   ├── index.ts
-│   │   │   ├── module.ts
-│   │   │   └── service.ts
 │   │   ├── event
 │   │   │   ├── adapter.ts
 │   │   │   ├── index.ts
@@ -504,8 +499,7 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │   └── utils
 │       ├── axios.ts
 │       ├── collection.ts
-│       ├── database
-│       │   └── mongoose.ts
+│       ├── crypto.ts
 │       ├── date.ts
 │       ├── decorators
 │       │   ├── database
@@ -514,6 +508,7 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │       │   │   │   └── validate-mongoose-filter.decorator.ts
 │       │   │   ├── postgres
 │       │   │   │   └── validate-typeorm-filter.decorator.ts
+│       │   │   ├── utils.ts
 │       │   │   └── validate-database-sort-allowed.decorator.ts
 │       │   ├── index.ts
 │       │   ├── request-timeout.decorator.ts
@@ -538,16 +533,17 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │       ├── entity.ts
 │       ├── excel.ts
 │       ├── exception.ts
+│       ├── http-status.ts
+│       ├── mongoose.ts
 │       ├── pagination.ts
 │       ├── request.ts
 │       ├── search.ts
 │       ├── sort.ts
-│       ├── static
-│       │   └── http-status.json
 │       ├── tests.ts
 │       ├── text.ts
 │       ├── tracing.ts
 │       ├── usecase.ts
+│       ├── uuid.ts
 │       └── zod.ts
 ├── test
 │   └── initialization.ts
