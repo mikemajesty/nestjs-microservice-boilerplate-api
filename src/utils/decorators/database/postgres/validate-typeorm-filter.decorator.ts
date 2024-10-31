@@ -1,40 +1,9 @@
-import { Raw } from 'typeorm';
+import { In, Raw } from 'typeorm';
 
-import { DateUtils } from '@/utils/date';
 import { ApiBadRequestException } from '@/utils/exception';
 
 import { AllowedFilter, SearchTypeEnum } from '../../types';
-
-const convertFilterValue = (input: Pick<AllowedFilter<unknown>, 'format'> & { value: unknown }) => {
-  if (input.format === 'String') {
-    return `${input.value}`;
-  }
-
-  if (input.format === 'Date') {
-    return DateUtils.createJSDate(`${input.value}`, false);
-  }
-
-  if (input.format === 'DateIso') {
-    return DateUtils.createISODate(`${input.value}`, false);
-  }
-
-  if (input.format === 'Boolean') {
-    if (input.value === 'true') {
-      return true;
-    }
-
-    if (input.value === 'false') {
-      return false;
-    }
-    throw new ApiBadRequestException('invalid boolean');
-  }
-
-  if (input.format === 'Number') {
-    return Number(input.value);
-  }
-
-  return input.value;
-};
+import { convertFilterValue } from '../utils';
 
 export function ConvertTypeOrmFilter<T>(allowedFilterList: AllowedFilter<T>[] = []) {
   return (target: unknown, propertyKey: string, descriptor: PropertyDescriptor) => {
@@ -43,7 +12,7 @@ export function ConvertTypeOrmFilter<T>(allowedFilterList: AllowedFilter<T>[] = 
       const input = args[0];
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let where: any | [] = {};
+      const where: any = {};
 
       const filterNameList = allowedFilterList.map((f) => f.name as string);
 
@@ -61,16 +30,14 @@ export function ConvertTypeOrmFilter<T>(allowedFilterList: AllowedFilter<T>[] = 
 
         if (allowedFilter.type === SearchTypeEnum.equal) {
           if (typeof filter === 'object') {
-            const orEqual = filter.map((f) => {
-              return {
-                [`${allowedFilter?.map ?? allowedFilter.name.toString()}`]: convertFilterValue({
-                  value: f,
-                  format: allowedFilter.format
-                })
-              };
+            const filterList = filter.map((f) => {
+              return convertFilterValue({
+                value: f,
+                format: allowedFilter.format
+              });
             });
 
-            where = orEqual;
+            where[`${allowedFilter?.map ?? allowedFilter.name.toString()}`] = In<unknown>(filterList);
           }
 
           if (typeof filter === 'string') {

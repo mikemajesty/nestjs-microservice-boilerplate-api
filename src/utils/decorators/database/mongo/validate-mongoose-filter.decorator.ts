@@ -1,50 +1,11 @@
-import { Types } from 'mongoose';
+import { RootFilterQuery } from 'mongoose';
 
-import { DateUtils } from '@/utils/date';
+import { IEntity } from '@/utils/entity';
 import { ApiBadRequestException } from '@/utils/exception';
 import { MongoUtils } from '@/utils/mongoose';
 
 import { AllowedFilter, SearchTypeEnum } from '../../types';
-
-const convertFilterValue = (input: Pick<AllowedFilter<unknown>, 'format'> & { value: unknown }) => {
-  if (input.format === 'String') {
-    return `${input.value}`;
-  }
-
-  if (input.format === 'Date') {
-    return DateUtils.createJSDate(`${input.value}`, false);
-  }
-
-  if (input.format === 'DateIso') {
-    return DateUtils.createISODate(`${input.value}`, false);
-  }
-
-  if (input.format === 'Boolean') {
-    if (input.value === 'true') {
-      return true;
-    }
-
-    if (input.value === 'false') {
-      return false;
-    }
-    throw new ApiBadRequestException('invalid boolean');
-  }
-
-  if (input.format === 'Number') {
-    return Number(input.value);
-  }
-
-  if (input.format === 'ObjectId') {
-    const isObjectId = MongoUtils.isObjectId(`${input.value}`);
-
-    if (!isObjectId) {
-      throw new ApiBadRequestException('invalid objectId');
-    }
-    return new Types.ObjectId(`${input.value} `);
-  }
-
-  return input.value;
-};
+import { convertFilterValue } from '../utils';
 
 export function ConvertMongooseFilter<T>(allowedFilterList: AllowedFilter<T>[] = []) {
   return function (target: unknown, propertyKey: string, descriptor: PropertyDescriptor) {
@@ -52,11 +13,10 @@ export function ConvertMongooseFilter<T>(allowedFilterList: AllowedFilter<T>[] =
     descriptor.value = function (...args: { search: { [key: string]: string | string[] } }[]) {
       const input = args[0];
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const where: any = {};
-
-      where['deletedAt'] = null;
-      where['$or'] = [];
+      const where: RootFilterQuery<IEntity> = {
+        $or: [],
+        deletedAt: null
+      };
 
       if (input?.search?.id) {
         where['_id'] = (input.search.id as string).trim();
@@ -80,7 +40,7 @@ export function ConvertMongooseFilter<T>(allowedFilterList: AllowedFilter<T>[] =
 
         if (allowedFilter.type === SearchTypeEnum.equal) {
           if (typeof regexFilter === 'object') {
-            (where['$or'] as unknown[]).push(
+            where.$or.push(
               ...(filter as string[]).map((filter) => {
                 return {
                   [`${allowedFilter.map ?? (allowedFilter.name as string)} `]: convertFilterValue({
@@ -92,7 +52,7 @@ export function ConvertMongooseFilter<T>(allowedFilterList: AllowedFilter<T>[] =
             );
           }
           if (typeof regexFilter === 'string') {
-            (where['$or'] as unknown[]).push({
+            where.$or.push({
               [`${allowedFilter.map ?? (allowedFilter.name as string)} `]: convertFilterValue({
                 value: filter,
                 format: allowedFilter.format
@@ -103,7 +63,7 @@ export function ConvertMongooseFilter<T>(allowedFilterList: AllowedFilter<T>[] =
 
         if (allowedFilter.type === SearchTypeEnum.like) {
           if (typeof regexFilter === 'object') {
-            (where['$or'] as unknown[]).push(
+            where.$or.push(
               ...regexFilter.map((filter) => {
                 return {
                   [`${allowedFilter.map ?? (allowedFilter.name as string)} `]: {
@@ -116,7 +76,7 @@ export function ConvertMongooseFilter<T>(allowedFilterList: AllowedFilter<T>[] =
           }
 
           if (typeof regexFilter === 'string') {
-            (where['$or'] as unknown[]).push({
+            where.$or.push({
               [`${allowedFilter.map ?? (allowedFilter.name as string)} `]: {
                 $regex: MongoUtils.createMongoRegexText(filter),
                 $options: 'i'
@@ -126,8 +86,8 @@ export function ConvertMongooseFilter<T>(allowedFilterList: AllowedFilter<T>[] =
         }
       }
 
-      if (!where['$or'].length) {
-        delete where['$or'];
+      if (!where.$or.length) {
+        delete where.$or;
       }
 
       args[0].search = where;
