@@ -41,7 +41,7 @@ export class UserRepository extends TypeORMRepository<Model> implements IUserRep
   }
 
   @ConvertTypeOrmFilter<UserEntity>([
-    { name: 'email', type: SearchTypeEnum.like },
+    { name: 'email', type: SearchTypeEnum.equal },
     { name: 'name', type: SearchTypeEnum.like }
   ])
   @ValidateDatabaseSortAllowed<UserEntity>({ name: 'email' }, { name: 'name' }, { name: 'createdAt' })
