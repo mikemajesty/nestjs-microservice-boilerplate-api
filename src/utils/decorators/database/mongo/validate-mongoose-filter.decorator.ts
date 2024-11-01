@@ -27,7 +27,7 @@ export function ConvertMongooseFilter<T>(allowedFilterList: AllowedFilter<T>[] =
 
       Object.keys(input.search || {}).forEach((key) => {
         const allowed = filterNameList.includes(key);
-        if (!allowed) throw new ApiBadRequestException(`allowed filters are: ${filterNameList.join(', ')} `);
+        if (!allowed) throw new ApiBadRequestException(`allowed filters are: ${filterNameList.join(', ')}`);
       });
 
       for (const allowedFilter of allowedFilterList) {
@@ -43,7 +43,7 @@ export function ConvertMongooseFilter<T>(allowedFilterList: AllowedFilter<T>[] =
             where.$or.push(
               ...(filter as string[]).map((filter) => {
                 return {
-                  [`${allowedFilter.map ?? (allowedFilter.name as string)} `]: convertFilterValue({
+                  [`${allowedFilter.map ?? (allowedFilter.name as string)}`]: convertFilterValue({
                     value: filter,
                     format: allowedFilter.format
                   })
@@ -53,7 +53,7 @@ export function ConvertMongooseFilter<T>(allowedFilterList: AllowedFilter<T>[] =
           }
           if (typeof regexFilter === 'string') {
             where.$or.push({
-              [`${allowedFilter.map ?? (allowedFilter.name as string)} `]: convertFilterValue({
+              [`${allowedFilter.map ?? (allowedFilter.name as string)}`]: convertFilterValue({
                 value: filter,
                 format: allowedFilter.format
               })
@@ -66,7 +66,7 @@ export function ConvertMongooseFilter<T>(allowedFilterList: AllowedFilter<T>[] =
             where.$or.push(
               ...regexFilter.map((filter) => {
                 return {
-                  [`${allowedFilter.map ?? (allowedFilter.name as string)} `]: {
+                  [`${allowedFilter.map ?? (allowedFilter.name as string)}`]: {
                     $regex: filter,
                     $options: 'i'
                   }
@@ -77,7 +77,7 @@ export function ConvertMongooseFilter<T>(allowedFilterList: AllowedFilter<T>[] =
 
           if (typeof regexFilter === 'string') {
             where.$or.push({
-              [`${allowedFilter.map ?? (allowedFilter.name as string)} `]: {
+              [`${allowedFilter.map ?? (allowedFilter.name as string)}`]: {
                 $regex: MongoUtils.createMongoRegexText(filter),
                 $options: 'i'
               }
