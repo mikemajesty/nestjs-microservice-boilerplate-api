@@ -30,7 +30,9 @@ export class RedisService implements Partial<ICacheAdapter<RedisClientType>> {
       this.logger.log('🎯 redis connected!\n');
       return this.client;
     } catch (error) {
-      throw new ApiInternalServerException(error.message, { context: `${RedisService.name}/connect` });
+      throw new ApiInternalServerException((error as { message: string }).message, {
+        context: `${RedisService.name}/connect`
+      });
     }
   }
 

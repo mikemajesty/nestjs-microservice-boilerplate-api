@@ -20,7 +20,7 @@ export interface IEntity {
 
 export const BaseEntity = <T>(schema: ZodSchema) => {
   abstract class Entity implements IEntity {
-    readonly id: string;
+    readonly id!: string;
 
     readonly createdAt?: Date | null | undefined;
 

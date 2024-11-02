@@ -16,11 +16,11 @@ type ParametersType = { [key: string]: unknown; context?: string; externalApi?: 
 type MessageType = string | string[];
 
 export class BaseException extends HttpException {
-  traceid: string;
-  readonly context: string;
+  traceid!: string;
+  readonly context!: string;
   readonly statusCode: number;
   readonly code?: string;
-  readonly parameters: ParametersType;
+  readonly parameters!: ParametersType;
 
   constructor(message: MessageType, status: HttpStatus, parameters?: ParametersType) {
     super(message, status);

@@ -41,7 +41,7 @@ export class TracingInterceptor implements NestInterceptor {
         span,
         tracer: this.tracer,
         tracerId: requestId,
-        axios: (options: Omit<AxiosRequestConfig, 'headers'>): AxiosInstance => {
+        axios: (options?: Omit<AxiosRequestConfig, 'headers'>): AxiosInstance => {
           request.headers.traceid = requestId;
 
           const http = axios.create({
@@ -75,7 +75,7 @@ export class TracingInterceptor implements NestInterceptor {
         finish: () => {
           span.end();
         },
-        createSpan: (name, parent: Context) => {
+        createSpan: (name, parent?: Context) => {
           return this.tracer.startSpan(name, { root: false }, parent);
         }
       };

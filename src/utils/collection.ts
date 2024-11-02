@@ -16,7 +16,7 @@ export class CollectionUtil {
   };
 
   static group = (collection: unknown[]) => {
-    return collection.reduce((rv: any, x: string | number) => {
+    return collection.reduce((rv: any, x: any) => {
       (rv[x] = rv[x] || []).push(x);
       return rv;
     }, {});

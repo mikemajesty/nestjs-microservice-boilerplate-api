@@ -11,7 +11,7 @@ import { IHttpAdapter } from './adapter';
 
 @Injectable()
 export class HttpService implements IHttpAdapter {
-  public tracing: Exclude<TracingType, 'axios'>;
+  public tracing!: Exclude<TracingType, 'axios'>;
 
   private axios: AxiosInstance;
 

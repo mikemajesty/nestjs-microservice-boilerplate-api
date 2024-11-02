@@ -3,7 +3,7 @@ import { RedisCacheKeyArgument, RedisCacheKeyValue, RedisCacheValueArgument } fr
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export abstract class ICacheAdapter<T = any> {
-  client: T;
+  client!: T;
 
   abstract isConnected(): Promise<void> | void;
 

@@ -43,8 +43,8 @@ export class ExceptionFilter implements AppExceptionFilter {
     }
 
     if (exception instanceof ZodError) {
-      return exception.issues.map((i: ZodIssue & { keys: string[] }) => {
-        const path = i.keys?.join('.') || i.path.join('.') || 'key';
+      return exception.issues.map((i: ZodIssue) => {
+        const path = (i as { keys: string[] })?.['keys']?.join('.') || i.path.join('.') || 'key';
 
         const idArrayError = new RegExp(/^\d./).exec(path);
         if (idArrayError?.length) {

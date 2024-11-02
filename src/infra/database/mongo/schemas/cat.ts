@@ -13,19 +13,19 @@ export type CatDocument = Document & CatEntity;
 })
 export class Cat {
   @Prop({ type: String })
-  _id: string;
+  _id!: string;
 
   @Prop({ min: 0, max: 200, required: true, type: String })
-  name: string;
+  name!: string;
 
   @Prop({ min: 0, max: 200, required: true, type: String })
-  breed: string;
+  breed!: string;
 
   @Prop({ min: 0, max: 200, required: true, type: Number })
-  age: string;
+  age!: string;
 
   @Prop({ type: Date, default: null })
-  deletedAt: Date;
+  deletedAt!: Date;
 }
 
 const CatSchema = SchemaFactory.createForClass(Cat);

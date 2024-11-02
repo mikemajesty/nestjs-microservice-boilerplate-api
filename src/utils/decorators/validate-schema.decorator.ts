@@ -14,7 +14,7 @@ export function ValidateSchema(...schema: Schema[]) {
           const model = value.parse(args[`${index}`]);
           args[`${index}`] = model;
         } catch (error) {
-          validatorError.error = error;
+          Object.assign(validatorError, { error });
           validatorError.issues.push(...(validatorError.error as ZodError).issues);
         }
       }

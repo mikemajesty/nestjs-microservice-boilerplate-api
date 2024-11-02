@@ -28,13 +28,13 @@ export const UserEntitySchema = z.object({
 type User = z.infer<typeof UserEntitySchema>;
 
 export class UserEntity extends BaseEntity<UserEntity>(UserEntitySchema) {
-  name: string;
+  name!: string;
 
-  email: string;
+  email!: string;
 
-  roles: RoleEntity[];
+  roles!: RoleEntity[];
 
-  password: UserPasswordEntity;
+  password!: UserPasswordEntity;
 
   constructor(entity: User) {
     super();

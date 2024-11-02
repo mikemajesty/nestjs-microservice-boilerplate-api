@@ -3,17 +3,17 @@ import { BaseEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, UpdateD
 @Entity({ name: 'permissions' })
 export class PermissionSchema extends BaseEntity {
   @Column({ type: 'uuid', primary: true })
-  id: string;
+  id!: string;
 
   @Column('text', { unique: true })
-  name: string;
+  name!: string;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 
   @DeleteDateColumn({ nullable: true })
-  deletedAt: Date;
+  deletedAt!: Date;
 }

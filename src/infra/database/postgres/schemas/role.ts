@@ -17,21 +17,21 @@ import { PermissionSchema } from './permission';
 @Entity({ name: 'roles' })
 export class RoleSchema extends BaseEntity {
   @Column({ type: 'uuid', primary: true })
-  id: string;
+  id!: string;
 
   @Column('text', { unique: true })
-  name: RoleEnum;
+  name!: RoleEnum;
 
   @ManyToMany(() => PermissionSchema, { eager: true, cascade: ['insert', 'recover', 'update'] })
   @JoinTable({ name: 'permissions_roles' })
-  permissions: Relation<PermissionSchema[]>;
+  permissions!: Relation<PermissionSchema[]>;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 
   @DeleteDateColumn({ nullable: true })
-  deletedAt: Date;
+  deletedAt!: Date;
 }

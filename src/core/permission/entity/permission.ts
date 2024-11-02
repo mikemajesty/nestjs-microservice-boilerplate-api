@@ -24,7 +24,7 @@ export const PermissionEntitySchema = z.object({
 type Permission = z.infer<typeof PermissionEntitySchema>;
 
 export class PermissionEntity extends BaseEntity<PermissionEntity>(PermissionEntitySchema) {
-  name: string;
+  name!: string;
 
   constructor(entity: Permission) {
     super();

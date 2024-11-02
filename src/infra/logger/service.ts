@@ -16,9 +16,9 @@ import { ErrorType, MessageType } from './types';
 
 @Injectable({ scope: Scope.REQUEST })
 export class LoggerService implements ILoggerAdapter {
-  private app: string;
+  private app!: string;
 
-  logger: HttpLogger;
+  logger!: HttpLogger;
 
   async connect<T = LevelWithSilent>(logLevel: T): Promise<void> {
     const pinoLogger = pino(
@@ -181,12 +181,13 @@ export class LoggerService implements ILoggerAdapter {
         },
         res: pino.stdSerializers.res
       },
-      customProps: (req: IncomingMessage & { context: string; protocol: string }): object => {
-        const context = req.context;
+      customProps: (req: IncomingMessage): object => {
+        const request = req as unknown as { context: string; protocol: string };
+        const context = request.context;
 
         const traceid = [req?.headers?.traceid, req.id].find(Boolean);
 
-        const path = `${req.protocol}://${req.headers.host}${req.url}`;
+        const path = `${request.protocol}://${req.headers.host}${req.url}`;
 
         this.logger.logger.setBindings({
           traceid,
@@ -203,7 +204,7 @@ export class LoggerService implements ILoggerAdapter {
           createdAt: DateUtils.getISODateString()
         };
       },
-      customLogLevel: (req: IncomingMessage, res: ServerResponse, error: Error) => {
+      customLogLevel: (req: IncomingMessage, res: ServerResponse, error?: Error): pino.LevelWithSilent => {
         if ([res.statusCode >= 400, error].some(Boolean)) {
           return 'error';
         }
