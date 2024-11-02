@@ -42,6 +42,18 @@ export const Swagger = {
       'sort exception': {
         description: 'sort field not allowed',
         value: [`sort key1 not allowed, allowed list: key2,key3`]
+      },
+      'invalid boolean filter': {
+        description: 'invalid boolean filter',
+        value: ['invalid boolean filter']
+      },
+      'invalid number filter': {
+        description: 'invalid number filter',
+        value: ['invalid number filter']
+      },
+      'invalid objectId filter': {
+        description: 'invalid objectId filter',
+        value: ['invalid objectId filter']
       }
     };
   },

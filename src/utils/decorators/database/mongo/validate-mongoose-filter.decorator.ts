@@ -31,6 +31,9 @@ export function ConvertMongooseFilter<T>(allowedFilterList: AllowedFilter<T>[] =
           throw new ApiBadRequestException(`filter ${key} not allowed, allowed list: ${filterNameList.join(', ')}`);
       });
 
+      const IS_ARRAY_FILTER = 'object';
+      const IS_SINGLE_FILTER = 'string';
+
       for (const allowedFilter of allowedFilterList) {
         if (!input?.search) continue;
         const filters = input.search[allowedFilter.name as string];
@@ -39,10 +42,10 @@ export function ConvertMongooseFilter<T>(allowedFilterList: AllowedFilter<T>[] =
 
         const regexFilter = MongoUtils.createMongoRegexText(filters);
 
-        const field = `${allowedFilter.map ?? (allowedFilter.name as string)}`;
+        const field = `${allowedFilter.map ?? allowedFilter.name.toString()}`;
 
         if (allowedFilter.type === SearchTypeEnum.equal) {
-          if (typeof regexFilter === 'object') {
+          if (typeof regexFilter === IS_ARRAY_FILTER) {
             where.$or.push(
               ...(filters as string[]).map((filter) => {
                 return {
@@ -55,7 +58,7 @@ export function ConvertMongooseFilter<T>(allowedFilterList: AllowedFilter<T>[] =
             );
           }
 
-          if (typeof regexFilter === 'string') {
+          if (typeof regexFilter === IS_SINGLE_FILTER) {
             where.$or.push({
               [field]: convertFilterValue({
                 value: filters,
@@ -66,9 +69,9 @@ export function ConvertMongooseFilter<T>(allowedFilterList: AllowedFilter<T>[] =
         }
 
         if (allowedFilter.type === SearchTypeEnum.like) {
-          if (typeof regexFilter === 'object') {
+          if (typeof regexFilter === IS_ARRAY_FILTER) {
             where.$or.push(
-              ...regexFilter.map((filter) => {
+              ...(regexFilter as string[]).map((filter) => {
                 return {
                   [field]: {
                     $regex: filter,
@@ -79,7 +82,7 @@ export function ConvertMongooseFilter<T>(allowedFilterList: AllowedFilter<T>[] =
             );
           }
 
-          if (typeof regexFilter === 'string') {
+          if (typeof regexFilter === IS_SINGLE_FILTER) {
             where.$or.push({
               [field]: {
                 $regex: MongoUtils.createMongoRegexText(filters),

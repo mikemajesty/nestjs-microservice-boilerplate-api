@@ -27,6 +27,9 @@ export function ConvertTypeOrmFilter<T>(allowedFilterList: AllowedFilter<T>[] = 
           throw new ApiBadRequestException(`filter ${key} not allowed, allowed list: ${filterNameList.join(', ')}`);
       });
 
+      const IS_ARRAY_FILTER = 'object';
+      const IS_SINGLE_FILTER = 'string';
+
       for (const allowedFilter of allowedFilterList) {
         if (!input.search) continue;
 
@@ -37,7 +40,7 @@ export function ConvertTypeOrmFilter<T>(allowedFilterList: AllowedFilter<T>[] = 
         const field = `${allowedFilter?.map ?? allowedFilter.name.toString()}`;
 
         if (allowedFilter.type === SearchTypeEnum.equal) {
-          if (typeof filters === 'object') {
+          if (typeof filters === IS_ARRAY_FILTER) {
             const filterList = (filters as string[]).map((filter) => {
               return convertFilterValue({
                 value: filter,
@@ -48,7 +51,7 @@ export function ConvertTypeOrmFilter<T>(allowedFilterList: AllowedFilter<T>[] = 
             where[`${field}`] = In<unknown>(filterList);
           }
 
-          if (typeof filters === 'string') {
+          if (typeof filters === IS_SINGLE_FILTER) {
             where[`${field}`] = convertFilterValue({
               value: filters,
               format: allowedFilter.format
@@ -57,7 +60,7 @@ export function ConvertTypeOrmFilter<T>(allowedFilterList: AllowedFilter<T>[] = 
         }
 
         if (allowedFilter.type === SearchTypeEnum.like) {
-          if (typeof filters === 'object') {
+          if (typeof filters === IS_ARRAY_FILTER) {
             const valueFilter: { [key: string]: unknown } = {};
 
             for (const filter of filters as string[]) {
@@ -75,7 +78,7 @@ export function ConvertTypeOrmFilter<T>(allowedFilterList: AllowedFilter<T>[] = 
             where[`${field}`] = Raw((alias: string) => createManyLike(alias), valueFilter);
           }
 
-          if (typeof filters === 'string') {
+          if (typeof filters === IS_SINGLE_FILTER) {
             where[`${field}`] = Raw((alias: string) => `unaccent(${alias}) ilike unaccent(:value)`, {
               value: filters
             });

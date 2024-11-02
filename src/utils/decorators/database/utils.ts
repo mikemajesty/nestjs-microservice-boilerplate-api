@@ -27,7 +27,7 @@ export const convertFilterValue = (input: Pick<AllowedFilter<unknown>, 'format'>
     if (input.value === 'false') {
       return false;
     }
-    throw new ApiBadRequestException('invalid boolean');
+    throw new ApiBadRequestException('invalid boolean filter');
   }
 
   if (input.format === 'Number') {
@@ -42,7 +42,7 @@ export const convertFilterValue = (input: Pick<AllowedFilter<unknown>, 'format'>
     const isObjectId = MongoUtils.isObjectId(`${input.value}`);
 
     if (!isObjectId) {
-      throw new ApiBadRequestException('invalid objectId');
+      throw new ApiBadRequestException('invalid objectId filter');
     }
     return new Types.ObjectId(`${input.value} `);
   }
