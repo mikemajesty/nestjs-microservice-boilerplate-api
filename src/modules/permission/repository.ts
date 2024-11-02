@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { FindOptionsWhere, Not, Repository } from 'typeorm';
+import { FindOptionsOrder, FindOptionsWhere, Not, Repository } from 'typeorm';
 
 import { PermissionEntity } from '@/core/permission/entity/permission';
 import { ExistsOnUpdateInput, IPermissionRepository } from '@/core/permission/repository/permission';
@@ -7,6 +7,7 @@ import { PermissionListInput, PermissionListOutput } from '@/core/permission/use
 import { PermissionSchema } from '@/infra/database/postgres/schemas/permission';
 import { TypeORMRepository } from '@/infra/repository/postgres/repository';
 import { ConvertTypeOrmFilter, SearchTypeEnum, ValidateDatabaseSortAllowed } from '@/utils/decorators';
+import { IEntity } from '@/utils/entity';
 import { PaginationUtils } from '@/utils/pagination';
 
 type Model = PermissionSchema & PermissionEntity;
@@ -29,7 +30,7 @@ export class PermissionRepository extends TypeORMRepository<Model> implements IP
     const [docs, total] = await this.repository.findAndCount({
       take: input.limit,
       skip,
-      order: input.sort,
+      order: input.sort as FindOptionsOrder<IEntity>,
       where: input.search as FindOptionsWhere<unknown>
     });
 

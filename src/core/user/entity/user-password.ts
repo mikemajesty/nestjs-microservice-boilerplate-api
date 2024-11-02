@@ -8,7 +8,7 @@ const ID = z.string().uuid();
 const Password = z.string();
 const CreatedAt = z.date().nullish();
 const UpdatedAt = z.date().nullish();
-const DeletedAt = z.date().default(null).nullish();
+const DeletedAt = z.date().nullish();
 
 export const UserPasswordEntitySchema = z.object({
   id: ID,

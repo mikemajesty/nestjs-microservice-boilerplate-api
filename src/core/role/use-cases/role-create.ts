@@ -4,6 +4,7 @@ import { ILoggerAdapter } from '@/infra/logger';
 import { CreatedModel } from '@/infra/repository';
 import { ValidateSchema } from '@/utils/decorators';
 import { IUsecase } from '@/utils/usecase';
+import { UUIDUtils } from '@/utils/uuid';
 
 import { IRoleRepository } from '../repository/role';
 import { RoleEntity, RoleEntitySchema } from './../entity/role';
@@ -23,7 +24,7 @@ export class RoleCreateUsecase implements IUsecase {
 
   @ValidateSchema(RoleCreateSchema)
   async execute(input: RoleCreateInput): Promise<RoleCreateOutput> {
-    const entity = new RoleEntity(input);
+    const entity = new RoleEntity({ id: UUIDUtils.create(), ...input });
 
     const role = await this.roleRepository.create(entity);
 

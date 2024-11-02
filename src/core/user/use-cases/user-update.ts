@@ -39,7 +39,7 @@ export class UserUpdateUsecase implements IUsecase {
 
     const roles = await this.roleRepository.findIn({ name: input.roles });
 
-    if (roles.length < input.roles.length) {
+    if (roles.length < (input.roles as RoleEnum[]).length) {
       throw new ApiNotFoundException('roleNotFound');
     }
 
@@ -57,7 +57,7 @@ export class UserUpdateUsecase implements IUsecase {
 
     const updated = await this.userRepository.findOne({ id: entity.id });
 
-    const entityUpdated = new UserEntity(updated);
+    const entityUpdated = new UserEntity(updated as UserEntity);
 
     tracing.logEvent('user-updated', `user: ${user.email} updated by: ${userData.email}`);
 

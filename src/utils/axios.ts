@@ -55,7 +55,7 @@ export class AxiosUtils {
           error.status = 408;
         }
 
-        const status = [error?.response?.status, error?.status, 500].find(Boolean);
+        const status = [error?.response?.status, error?.status, 500].find(Boolean) as number;
         return statusRetry.includes(status);
       }
     });

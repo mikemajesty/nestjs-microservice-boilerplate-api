@@ -13,7 +13,18 @@ const entity = {
   id: TestUtils.getMockUUID(),
   email: 'admin@admin.com',
   name: 'Admin',
-  roles: [new RoleEntity({ name: RoleEnum.USER, permissions: [new PermissionEntity({ name: 'permission:create' })] })]
+  roles: [
+    new RoleEntity({
+      id: TestUtils.getMockUUID(),
+      name: RoleEnum.USER,
+      permissions: [
+        new PermissionEntity({
+          id: TestUtils.getMockUUID(),
+          name: 'permission:create'
+        })
+      ]
+    })
+  ]
 } as UserEntity;
 
 const fullEntity = {

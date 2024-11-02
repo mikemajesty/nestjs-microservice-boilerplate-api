@@ -11,22 +11,22 @@ export const withID = (entity: { _id?: string; id?: string }) => {
 export interface IEntity {
   id: string;
 
-  createdAt: Date;
+  createdAt?: Date | null | undefined;
 
-  updatedAt: Date;
+  updatedAt?: Date | null | undefined;
 
-  deletedAt?: Date;
+  deletedAt?: Date | null | undefined;
 }
 
 export const BaseEntity = <T>(schema: ZodSchema) => {
   abstract class Entity implements IEntity {
     readonly id: string;
 
-    readonly createdAt: Date;
+    readonly createdAt?: Date | null | undefined;
 
-    readonly updatedAt: Date;
+    readonly updatedAt?: Date | null | undefined;
 
-    deletedAt?: Date;
+    deletedAt?: Date | null | undefined;
 
     static nameOf = <D = keyof T>(name: keyof T) => name as D;
 
@@ -35,11 +35,11 @@ export const BaseEntity = <T>(schema: ZodSchema) => {
     }
 
     activated() {
-      this.deletedAt = null;
+      Object.assign(this, { deletedAt: null });
     }
 
     validate<T>(entity: T): T {
-      Object.assign(entity, withID(entity));
+      Object.assign(entity as IEntity, withID(entity as IEntity));
       Object.assign(this, { id: (entity as Pick<IEntity, 'id'>).id });
       return schema.parse(entity) as T;
     }

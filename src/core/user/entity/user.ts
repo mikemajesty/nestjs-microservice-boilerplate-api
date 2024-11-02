@@ -12,7 +12,7 @@ const Password = UserPasswordEntitySchema;
 const Role = RoleEntitySchema;
 const CreatedAt = z.date().nullish();
 const UpdatedAt = z.date().nullish();
-const DeletedAt = z.date().default(null).nullish();
+const DeletedAt = z.date().nullish();
 
 export const UserEntitySchema = z.object({
   id: ID,

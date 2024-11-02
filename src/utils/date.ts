@@ -15,10 +15,12 @@ export class DateUtils {
       Object.assign(input, { format: process.env.DATE_FORMAT });
     }
 
-    return DateTime.fromJSDate(input.date, { zone: 'utc' }).setZone(process.env.TZ).toFormat(input.format);
+    return DateTime.fromJSDate(input.date as Date, { zone: 'utc' })
+      .setZone(process.env.TZ)
+      .toFormat(input?.format as string);
   }
 
-  static getISODateString(): string {
+  static getISODateString(): string | null {
     return DateTime.fromJSDate(DateUtils.getJSDate(), { zone: 'utc' }).setZone(process.env.TZ).toJSON();
   }
 
@@ -33,7 +35,7 @@ export class DateUtils {
     return DateTime.fromISO(date).setZone(process.env.TZ).toJSDate();
   }
 
-  static createISODate(date: string, utc = true): string {
+  static createISODate(date: string, utc = true): string | null {
     if (utc) {
       return DateTime.fromISO(date, { zone: 'utc' }).setZone(process.env.TZ).toISO();
     }

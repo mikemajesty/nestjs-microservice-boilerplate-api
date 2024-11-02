@@ -7,7 +7,7 @@ type GenerateExcelV2ConfigInput = {
   property: string;
   header: string;
   type: StringConstructor | DateConstructor | NumberConstructor | BooleanConstructor;
-  config?: Pick<Cell, 'format'>;
+  config?: Cell;
 };
 
 type GenerateExcelV2DataInput = { data: { [key: string]: string | number | Date | boolean }[]; sheetName?: string };
@@ -33,7 +33,7 @@ export class ExcelUtils {
         DATA_ROW.push({ value, format: row.config?.format, type: row.type });
       }
 
-      DATA_ROWS.push(DATA_ROW);
+      DATA_ROWS.push(DATA_ROW as Row);
     }
 
     const excelData = [HEADER_ROW, ...DATA_ROWS];

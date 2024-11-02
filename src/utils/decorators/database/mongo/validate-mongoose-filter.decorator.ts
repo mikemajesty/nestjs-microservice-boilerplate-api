@@ -46,7 +46,7 @@ export function ConvertMongooseFilter<T>(allowedFilterList: AllowedFilter<T>[] =
 
         if (allowedFilter.type === SearchTypeEnum.equal) {
           if (typeof regexFilter === IS_ARRAY_FILTER) {
-            where.$or.push(
+            where?.$or?.push(
               ...(filters as string[]).map((filter) => {
                 return {
                   [field]: convertFilterValue({
@@ -59,7 +59,7 @@ export function ConvertMongooseFilter<T>(allowedFilterList: AllowedFilter<T>[] =
           }
 
           if (typeof regexFilter === IS_SINGLE_FILTER) {
-            where.$or.push({
+            where?.$or?.push({
               [field]: convertFilterValue({
                 value: filters,
                 format: allowedFilter.format
@@ -70,7 +70,7 @@ export function ConvertMongooseFilter<T>(allowedFilterList: AllowedFilter<T>[] =
 
         if (allowedFilter.type === SearchTypeEnum.like) {
           if (typeof regexFilter === IS_ARRAY_FILTER) {
-            where.$or.push(
+            where?.$or?.push(
               ...(regexFilter as string[]).map((filter) => {
                 return {
                   [field]: {
@@ -83,7 +83,7 @@ export function ConvertMongooseFilter<T>(allowedFilterList: AllowedFilter<T>[] =
           }
 
           if (typeof regexFilter === IS_SINGLE_FILTER) {
-            where.$or.push({
+            where?.$or?.push({
               [field]: {
                 $regex: MongoUtils.createMongoRegexText(filters),
                 $options: 'i'
@@ -93,7 +93,7 @@ export function ConvertMongooseFilter<T>(allowedFilterList: AllowedFilter<T>[] =
         }
       }
 
-      if (!where.$or.length) {
+      if (!where?.$or?.length) {
         delete where.$or;
       }
 

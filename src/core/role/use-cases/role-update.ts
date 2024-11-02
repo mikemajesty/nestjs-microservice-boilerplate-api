@@ -39,6 +39,6 @@ export class RoleUpdateUsecase implements IUsecase {
 
     const updated = await this.roleRepository.findById(entity.id);
 
-    return new RoleEntity(updated);
+    return new RoleEntity(updated as RoleEntity);
   }
 }

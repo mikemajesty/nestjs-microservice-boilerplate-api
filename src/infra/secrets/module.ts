@@ -44,8 +44,8 @@ import { EnvEnum } from './types';
             .transform((p) => Number(p)),
           PROMETHUES_URL: z.string().url(),
           REDIS_URL: z.string().url(),
-          TOKEN_EXPIRATION: z.string(),
-          REFRESH_TOKEN_EXPIRATION: z.string(),
+          TOKEN_EXPIRATION: z.string().or(z.number()),
+          REFRESH_TOKEN_EXPIRATION: z.string().or(z.number()),
           ZIPKIN_URL: z.string().url(),
           EMAIL: z.object({
             HOST: z.string(),

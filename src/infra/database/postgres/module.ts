@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import path from 'path';
-import { DataSource } from 'typeorm';
+import { DataSource, DataSourceOptions } from 'typeorm';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 
 import { ISecretsAdapter, SecretsModule } from '@/infra/secrets';
@@ -27,7 +27,7 @@ import { PostgresService } from './service';
         };
       },
       async dataSourceFactory(options) {
-        const dataSource = new DataSource(options);
+        const dataSource = new DataSource(options as DataSourceOptions);
         return dataSource.initialize();
       },
       imports: [SecretsModule],

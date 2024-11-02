@@ -8,7 +8,7 @@ const Token = z.string().min(1).trim();
 const User = UserEntitySchema;
 const CreatedAt = z.date().nullish();
 const UpdatedAt = z.date().nullish();
-const DeletedAt = z.date().default(null).nullish();
+const DeletedAt = z.date().nullish();
 
 export const ResetPasswordEntitySchema = z.object({
   id: ID,

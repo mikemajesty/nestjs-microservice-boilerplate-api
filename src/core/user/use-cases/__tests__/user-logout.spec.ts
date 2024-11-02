@@ -7,7 +7,7 @@ import { TokenLibModule } from '@/libs/token';
 import { ILogoutAdapter } from '@/modules/logout/adapter';
 import { TestUtils } from '@/utils/tests';
 
-import { LogoutUsecase } from '../user-logout';
+import { LogoutInput, LogoutUsecase } from '../user-logout';
 
 describe(LogoutUsecase.name, () => {
   let usecase: ILogoutAdapter;
@@ -39,7 +39,7 @@ describe(LogoutUsecase.name, () => {
 
   test('when no input is specified, should expect an error', async () => {
     await TestUtils.expectZodError(
-      () => usecase.execute({}, TestUtils.getMockTracing()),
+      () => usecase.execute({} as LogoutInput, TestUtils.getMockTracing()),
       (issues: ZodIssue[]) => {
         expect(issues).toEqual([{ message: 'Required', path: 'token' }]);
       }

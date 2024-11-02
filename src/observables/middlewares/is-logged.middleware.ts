@@ -16,7 +16,11 @@ export class IsLoggedMiddleware implements NestMiddleware {
     private readonly loggerService: ILoggerAdapter,
     private readonly redisService: ICacheAdapter
   ) {}
-  async use(request: Request & { user: UserRequest }, response: Response, next: NextFunction): Promise<void> {
+  async use(
+    request: Request & { user: UserRequest; id: string },
+    response: Response,
+    next: NextFunction
+  ): Promise<void> {
     const tokenHeader = request.headers.authorization;
 
     if (!request.headers?.traceid) {
@@ -25,7 +29,7 @@ export class IsLoggedMiddleware implements NestMiddleware {
 
     if (!tokenHeader) {
       response.status(HttpStatus.UNAUTHORIZED);
-      request['id'] = request.headers.traceid;
+      request.id = request.headers.traceid as string;
       this.loggerService.logger(request, response);
       throw new ApiUnauthorizedException('no token provided');
     }
@@ -34,13 +38,13 @@ export class IsLoggedMiddleware implements NestMiddleware {
 
     const expiredToken = await this.redisService.get(token);
 
+    request.id = request.headers.traceid as string;
+
     if (expiredToken) {
-      request.id = request.headers.traceid;
       next(new ApiUnauthorizedException('you have been logged out'));
     }
 
     const userDecoded = (await this.tokenService.verify<UserRequest>(token).catch((error) => {
-      request.id = request.headers.traceid;
       error.status = HttpStatus.UNAUTHORIZED;
       this.loggerService.logger(request, response);
       next(error);

@@ -11,6 +11,7 @@ import { ValidateSchema } from '@/utils/decorators';
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception';
 import { ApiTrancingInput } from '@/utils/request';
 import { IUsecase } from '@/utils/usecase';
+import { UUIDUtils } from '@/utils/uuid';
 
 import { UserEntity, UserEntitySchema } from '../entity/user';
 import { UserPasswordEntity, UserPasswordEntitySchema } from '../entity/user-password';
@@ -42,9 +43,9 @@ export class UserCreateUsecase implements IUsecase {
       throw new ApiNotFoundException('roleNotFound');
     }
 
-    const entity = new UserEntity({ name: input.name, email: input.email, roles });
+    const entity = new UserEntity({ id: UUIDUtils.create(), name: input.name, email: input.email, roles });
 
-    const passwordEntity = new UserPasswordEntity({ password: input.password });
+    const passwordEntity = new UserPasswordEntity({ id: UUIDUtils.create(), password: input.password });
 
     passwordEntity.createPassword();
 

@@ -7,6 +7,7 @@ import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { IUserUpdateAdapter } from '@/modules/user/adapter';
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception';
 import { TestUtils } from '@/utils/tests';
+import { UUIDUtils } from '@/utils/uuid';
 
 import { UserEntity } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
@@ -62,7 +63,7 @@ describe(UserUpdateUsecase.name, () => {
     id: TestUtils.getMockUUID(),
     name: 'Admin',
     email: 'admin@admin.com',
-    roles: [new RoleEntity({ name: RoleEnum.USER })]
+    roles: [new RoleEntity({ id: TestUtils.getMockUUID(), name: RoleEnum.USER })]
   });
 
   const input: UserUpdateInput = {
@@ -78,7 +79,7 @@ describe(UserUpdateUsecase.name, () => {
     await expect(usecase.execute(input, TestUtils.getMockTracing())).rejects.toThrow(ApiNotFoundException);
   });
 
-  const role = new RoleEntity({ name: RoleEnum.USER });
+  const role = new RoleEntity({ id: UUIDUtils.create(), name: RoleEnum.USER });
 
   test('when user already exists, should expect an error', async () => {
     repository.findOne = jest.fn().mockResolvedValue(user);

@@ -29,13 +29,15 @@ export class PermissionUpdateUsecase implements IUsecase {
       throw new ApiNotFoundException('permissionNotFound');
     }
 
-    const permissionExists = await this.permissionRepository.existsOnUpdate({
-      idNotEquals: input.id,
-      nameEquals: input.name
-    });
+    if (input.name) {
+      const permissionExists = await this.permissionRepository.existsOnUpdate({
+        idNotEquals: input.id,
+        nameEquals: input.name
+      });
 
-    if (permissionExists) {
-      throw new ApiConflictException('permissionExists');
+      if (permissionExists) {
+        throw new ApiConflictException('permissionExists');
+      }
     }
 
     const entity = new PermissionEntity({ ...permission, ...input });

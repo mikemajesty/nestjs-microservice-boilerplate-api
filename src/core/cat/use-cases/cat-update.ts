@@ -40,6 +40,6 @@ export class CatUpdateUsecase implements IUsecase {
 
     tracing.logEvent('cat-updated', `cat updated by: ${user.email}`);
 
-    return new CatEntity(updated);
+    return new CatEntity(updated as CatEntity);
   }
 }

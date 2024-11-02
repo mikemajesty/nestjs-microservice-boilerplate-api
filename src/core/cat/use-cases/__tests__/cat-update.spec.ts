@@ -8,7 +8,7 @@ import { TestUtils } from '@/utils/tests';
 
 import { CatEntity } from '../../entity/cat';
 import { ICatRepository } from '../../repository/cat';
-import { CatUpdateUsecase } from '../cat-update';
+import { CatUpdateInput, CatUpdateUsecase } from '../cat-update';
 
 describe(CatUpdateUsecase.name, () => {
   let usecase: ICatUpdateAdapter;
@@ -38,7 +38,7 @@ describe(CatUpdateUsecase.name, () => {
 
   test('when no input is specified, should expect an error', async () => {
     await TestUtils.expectZodError(
-      () => usecase.execute({}, TestUtils.getMockTracing()),
+      () => usecase.execute({} as CatUpdateInput, TestUtils.getMockTracing()),
       (issues: ZodIssue[]) => {
         expect(issues).toEqual([{ message: 'Required', path: CatEntity.nameOf('id') }]);
       }

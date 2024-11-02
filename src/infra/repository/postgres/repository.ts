@@ -3,7 +3,6 @@ import {
   FindOneOptions,
   FindOptionsSelectByString,
   FindOptionsWhere,
-  In,
   Raw,
   Repository,
   SaveOptions
@@ -73,13 +72,18 @@ export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEn
   }
 
   async findIn(filter: { [key in keyof Partial<T>]: string[] }): Promise<T[]> {
-    const key = Object.keys(filter)[0];
+    const where: { [key: string]: unknown } = {
+      deletedAt: null
+    };
+    for (const key of Object.keys(filter)) {
+      where[`${key}`] = { $in: (filter as { [key: string]: unknown })[`${key}`] };
+    }
     return this.repository.find({
-      where: { [key]: In(filter[`${key}` as keyof Partial<T>]), deleted_at: null }
+      where
     } as FindOneOptions<T>);
   }
 
-  async findOneByCommands(filterList: DatabaseOperationCommand<T>[]): Promise<T> {
+  async findOneByCommands(filterList: DatabaseOperationCommand<T>[]): Promise<T | null> {
     const searchList: { [key: string]: unknown } = {};
 
     const postgresSearch = {
@@ -109,9 +113,15 @@ export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEn
       searchList[`${filter.property.toString()}`] = postgresSearch[filter.command].query(filter.value);
     }
 
-    return this.repository.findOne({
+    const reult = await this.repository.findOne({
       where: searchList
     } as FindOneOptions<T>);
+
+    if (!reult) {
+      return null;
+    }
+
+    return reult;
   }
 
   async findByCommands(filterList: DatabaseOperationCommand<T>[]): Promise<T[]> {

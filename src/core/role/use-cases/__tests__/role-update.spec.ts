@@ -43,7 +43,7 @@ describe(RoleUpdateUsecase.name, () => {
 
   test('when no input is specified, should expect an error', async () => {
     await TestUtils.expectZodError(
-      () => usecase.execute({}),
+      () => usecase.execute({} as RoleUpdateInput),
       (issues: ZodIssue[]) => {
         expect(issues).toEqual([{ message: 'Required', path: RoleEntity.nameOf('id') }]);
       }

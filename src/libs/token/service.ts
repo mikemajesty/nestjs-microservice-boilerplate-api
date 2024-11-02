@@ -23,7 +23,7 @@ export type SignOutput = {
 export class TokenService implements ITokenAdapter {
   constructor(private readonly secret: ISecretsAdapter) {}
 
-  sign(model: SignInput, options?: jwt.SignOptions): SignOutput {
+  sign<TOpt = jwt.SignOptions>(model: SignInput, options?: TOpt): SignOutput {
     const token = jwt.sign(
       model,
       this.secret.JWT_SECRET_KEY,

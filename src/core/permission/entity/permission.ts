@@ -9,9 +9,9 @@ const Name = z
   .refine((val) => val.includes(':'), {
     message: "permission must contains ':'"
   });
-const CreatedAt = z.date().nullish();
-const UpdatedAt = z.date().nullish();
-const DeletedAt = z.date().default(null).nullish();
+const CreatedAt = z.date().nullish().optional();
+const UpdatedAt = z.date().nullish().optional();
+const DeletedAt = z.date().nullish().optional();
 
 export const PermissionEntitySchema = z.object({
   id: ID,

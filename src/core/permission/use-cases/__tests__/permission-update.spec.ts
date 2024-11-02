@@ -43,7 +43,7 @@ describe(PermissionUpdateUsecase.name, () => {
 
   test('when no input is specified, should expect an error', async () => {
     await TestUtils.expectZodError(
-      () => usecase.execute({}),
+      () => usecase.execute({} as PermissionUpdateInput),
       (issues: ZodIssue[]) => {
         expect(issues).toEqual([{ message: 'Required', path: PermissionEntity.nameOf('id') }]);
       }
@@ -69,7 +69,7 @@ describe(PermissionUpdateUsecase.name, () => {
     repository.findById = jest.fn().mockResolvedValue(permission);
     repository.existsOnUpdate = jest.fn().mockResolvedValue(true);
 
-    await expect(usecase.execute(input)).rejects.toThrow(ApiConflictException);
+    await expect(usecase.execute({ ...input, name: 'permission:create' })).rejects.toThrow(ApiConflictException);
   });
 
   test('when permission updated successfully, should expect an permission that has been updated', async () => {

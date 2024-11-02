@@ -4,7 +4,7 @@ export function ValidateSchema(...schema: Schema[]) {
   return (target: unknown, propertyKey: string, descriptor: PropertyDescriptor) => {
     const originalMethod = descriptor.value;
     descriptor.value = function (...args: unknown[]) {
-      const validatorError: { error?: ZodError; issues: ZodIssue[] } = {
+      const validatorError: { error?: ZodError | null; issues: ZodIssue[] } = {
         issues: [],
         error: null
       };
@@ -15,7 +15,7 @@ export function ValidateSchema(...schema: Schema[]) {
           args[`${index}`] = model;
         } catch (error) {
           validatorError.error = error;
-          validatorError.issues.push(...validatorError.error.issues);
+          validatorError.issues.push(...(validatorError.error as ZodError).issues);
         }
       }
 

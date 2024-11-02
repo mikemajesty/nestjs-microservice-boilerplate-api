@@ -10,6 +10,7 @@ import { ITokenAdapter } from '@/libs/token';
 import { ValidateSchema } from '@/utils/decorators';
 import { ApiNotFoundException } from '@/utils/exception';
 import { IUsecase } from '@/utils/usecase';
+import { UUIDUtils } from '@/utils/uuid';
 
 import { ResetPasswordEntity } from '../entity/reset-password';
 import { IResetPasswordRepository } from '../repository/reset-password';
@@ -46,7 +47,7 @@ export class ResetPasswordSendEmailUsecase implements IUsecase {
     }
 
     const hash = this.token.sign({ id: user.id });
-    const entity = new ResetPasswordEntity({ token: hash.token, user });
+    const entity = new ResetPasswordEntity({ id: UUIDUtils.create(), token: hash.token, user });
 
     await this.resetPasswordRepository.create(entity);
     this.sendEmail(user, hash.token);

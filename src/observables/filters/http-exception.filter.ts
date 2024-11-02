@@ -22,7 +22,7 @@ export class ExceptionFilter implements AppExceptionFilter {
     exception.traceid = [exception.traceid, (request as any)['id']].find(Boolean);
 
     this.loggerService.error(exception, exception.message);
-    const message = this.getMessage(exception, status);
+    const message = this.getMessage(exception, status as number);
 
     response.status(status).json({
       error: {
@@ -48,7 +48,7 @@ export class ExceptionFilter implements AppExceptionFilter {
 
         const idArrayError = new RegExp(/^\d./).exec(path);
         if (idArrayError?.length) {
-          return `${path.replace(/^\d./, `array position: ${Number(new RegExp(/^\d/).exec(path)[0])}, property: `)}: ${i.message.toLowerCase()}`;
+          return `${path.replace(/^\d./, `array position: ${Number(new RegExp(/^\d/)?.exec(path)?.[0])}, property: `)}: ${i.message.toLowerCase()}`;
         }
         return `${path}: ${i.message.toLowerCase()}`;
       });

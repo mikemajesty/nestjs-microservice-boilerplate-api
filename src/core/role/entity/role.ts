@@ -13,7 +13,7 @@ const Name = z.string().transform((value) => value.trim().replace(/ /g, '_').toU
 const Permissions = z.array(PermissionEntitySchema).optional();
 const CreatedAt = z.date().nullish();
 const UpdatedAt = z.date().nullish();
-const DeletedAt = z.date().default(null).nullish();
+const DeletedAt = z.date().optional().nullish();
 
 export const RoleEntitySchema = z.object({
   id: ID,

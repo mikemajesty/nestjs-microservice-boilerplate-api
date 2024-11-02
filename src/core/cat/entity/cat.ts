@@ -8,7 +8,7 @@ const Breed = z.string().trim().min(1).max(200);
 const Age = z.number().min(0).max(30);
 const CreatedAt = z.date().nullish();
 const UpdatedAt = z.date().nullish();
-const DeletedAt = z.date().default(null).nullish();
+const DeletedAt = z.date().nullish();
 
 export const CatEntitySchema = z.object({
   id: ID,

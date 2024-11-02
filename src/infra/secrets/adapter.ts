@@ -12,22 +12,22 @@ export abstract class ISecretsAdapter {
   TZ: string;
 
   MONGO: {
-    MONGO_URL?: string;
-    MONGO_DATABASE?: string;
-    MONGO_EXPRESS_URL?: string;
+    MONGO_URL: string;
+    MONGO_DATABASE: string;
+    MONGO_EXPRESS_URL: string;
   };
 
   POSTGRES: {
-    POSTGRES_URL?: string;
-    POSTGRES_PGADMIN_URL?: string;
+    POSTGRES_URL: string;
+    POSTGRES_PGADMIN_URL: string;
   };
 
   EMAIL: {
-    HOST?: string;
-    PORT?: number;
-    USER?: string;
-    PASS?: string;
-    FROM?: string;
+    HOST: string;
+    PORT: number;
+    USER: string;
+    PASS: string;
+    FROM: string;
   };
 
   REDIS_URL: string;
@@ -46,10 +46,10 @@ export abstract class ISecretsAdapter {
   IS_PRODUCTION: boolean;
 
   AUTH: {
-    GOOGLE?: {
-      CLIENT_ID?: string;
-      CLIENT_SECRET?: string;
-      REDIRECT_URL?: string;
+    GOOGLE: {
+      CLIENT_ID: string;
+      CLIENT_SECRET: string;
+      REDIRECT_URL: string;
     };
   };
 }

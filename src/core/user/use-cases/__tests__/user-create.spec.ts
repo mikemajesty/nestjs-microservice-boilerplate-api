@@ -59,7 +59,7 @@ describe(UserCreateUsecase.name, () => {
 
   test('when no input is specified, should expect an error', async () => {
     await TestUtils.expectZodError(
-      () => usecase.execute({}, TestUtils.getMockTracing()),
+      () => usecase.execute({} as UserCreateInput, TestUtils.getMockTracing()),
       (issues: ZodIssue[]) => {
         expect(issues).toEqual([
           { message: 'Required', path: UserEntity.nameOf('email') },
@@ -83,14 +83,17 @@ describe(UserCreateUsecase.name, () => {
     await expect(usecase.execute(input, TestUtils.getMockTracing())).rejects.toThrow(ApiNotFoundException);
   });
 
-  const role = new RoleEntity({ name: RoleEnum.USER });
+  const role = new RoleEntity({ id: TestUtils.getMockUUID(), name: RoleEnum.USER });
 
   const user = new UserEntity({
     id: TestUtils.getMockUUID(),
     email: 'admin@admin.com',
     name: 'Admin',
-    roles: [new RoleEntity({ name: RoleEnum.USER })],
-    password: new UserPasswordEntity({ password: '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918' })
+    roles: [new RoleEntity({ id: TestUtils.getMockUUID(), name: RoleEnum.USER })],
+    password: new UserPasswordEntity({
+      id: TestUtils.getMockUUID(),
+      password: '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918'
+    })
   });
 
   test('when the user is created successfully, should expect an user that has been created', async () => {

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export type SearchInput<T> = { search?: T };
+export type SearchInput<T> = { search?: T | null };
 
 export const SearchHttpSchema = z
   .string()
@@ -47,6 +47,8 @@ export const SearchHttpSchema = z
 
     return search;
   });
+
+export type SearchHttpSchemaInput = z.infer<typeof SearchHttpSchema>;
 
 export const SearchSchema = z.object({
   search: z.record(z.string().trim(), z.number().or(z.string()).or(z.array(z.any()))).nullable()

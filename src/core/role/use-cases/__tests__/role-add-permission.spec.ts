@@ -6,6 +6,7 @@ import { IPermissionRepository } from '@/core/permission/repository/permission';
 import { IRoleAddPermissionAdapter } from '@/modules/role/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
 import { TestUtils } from '@/utils/tests';
+import { UUIDUtils } from '@/utils/uuid';
 
 import { RoleEntity, RoleEnum } from '../../entity/role';
 import { IRoleRepository } from '../../repository/role';
@@ -44,7 +45,7 @@ describe(RoleAddPermissionUsecase.name, () => {
 
   test('when no input is specified, should expect an error', async () => {
     await TestUtils.expectZodError(
-      () => usecase.execute({}),
+      () => usecase.execute({} as RoleAddPermissionInput),
       (issues: ZodIssue[]) => {
         expect(issues).toEqual([
           { message: 'Required', path: RoleEntity.nameOf('id') },
@@ -65,9 +66,12 @@ describe(RoleAddPermissionUsecase.name, () => {
     await expect(usecase.execute(input)).rejects.toThrow(ApiNotFoundException);
   });
 
-  const permissions = [new PermissionEntity({ name: 'user:create' }), new PermissionEntity({ name: 'user:update' })];
+  const permissions = [
+    new PermissionEntity({ id: UUIDUtils.create(), name: 'user:create' }),
+    new PermissionEntity({ id: UUIDUtils.create(), name: 'user:update' })
+  ];
 
-  const role = new RoleEntity({ name: RoleEnum.USER, permissions });
+  const role = new RoleEntity({ id: UUIDUtils.create(), name: RoleEnum.USER, permissions });
 
   test('when delete permission with associated permission successfully, should expect an update permission', async () => {
     repository.findOne = jest.fn().mockResolvedValue(role);

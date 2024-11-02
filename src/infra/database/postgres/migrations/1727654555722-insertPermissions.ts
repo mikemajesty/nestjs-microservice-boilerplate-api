@@ -1,4 +1,5 @@
 import { PermissionEntity } from '@/core/permission/entity/permission';
+import { UUIDUtils } from '@/utils/uuid';
 import { MigrationInterface, QueryRunner } from 'typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { PermissionSchema } from '../schemas/permission';
@@ -36,7 +37,7 @@ export class insertPermissions1727654555722 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const permissionsPromises = [];
     for (const permission of userPermissions.concat(backofficePermissions)) {
-      const entity = new PermissionEntity({ name: permission });
+      const entity = new PermissionEntity({ id: UUIDUtils.create(), name: permission });
       permissionsPromises.push(
         queryRunner.manager.insert(PermissionSchema, entity as QueryDeepPartialEntity<PermissionSchema>)
       );

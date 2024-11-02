@@ -17,7 +17,7 @@ export abstract class ICacheAdapter<T = any> {
 
   abstract del<TKey extends RedisCacheKeyArgument = RedisCacheKeyArgument>(key: TKey): Promise<void> | boolean;
 
-  abstract get<TKey extends RedisCacheKeyArgument = RedisCacheKeyArgument>(key: TKey): Promise<string> | string;
+  abstract get<TKey extends RedisCacheKeyArgument = RedisCacheKeyArgument>(key: TKey): Promise<string | null> | string;
 
   abstract setMulti(redisList?: RedisCacheKeyValue[]): Promise<void>;
 

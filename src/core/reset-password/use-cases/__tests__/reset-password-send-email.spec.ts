@@ -73,7 +73,7 @@ describe(ResetPasswordSendEmailUsecase.name, () => {
 
   test('when no input is specified, should expect an error', async () => {
     await TestUtils.expectZodError(
-      () => usecase.execute({}),
+      () => usecase.execute({} as ResetPasswordSendEmailInput),
       (issues: ZodIssue[]) => {
         expect(issues).toEqual([{ message: 'Required', path: 'email' }]);
       }
@@ -92,7 +92,7 @@ describe(ResetPasswordSendEmailUsecase.name, () => {
     id: TestUtils.getMockUUID(),
     email: 'admin@admin.com',
     name: 'Admin',
-    roles: [new RoleEntity({ name: RoleEnum.USER })]
+    roles: [new RoleEntity({ id: TestUtils.getMockUUID(), name: RoleEnum.USER })]
   });
 
   const resetPassword = new ResetPasswordEntity({ id: TestUtils.getMockUUID(), token: 'token', user });

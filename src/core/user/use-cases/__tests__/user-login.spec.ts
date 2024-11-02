@@ -39,7 +39,7 @@ describe(LoginUsecase.name, () => {
 
   test('when no input is specified, should expect an error', async () => {
     await TestUtils.expectZodError(
-      () => usecase.execute({}, TestUtils.getMockTracing()),
+      () => usecase.execute({} as LoginInput, TestUtils.getMockTracing()),
       (issues: ZodIssue[]) => {
         expect(issues).toEqual([
           { message: 'Required', path: UserEntity.nameOf('email') },
@@ -60,7 +60,7 @@ describe(LoginUsecase.name, () => {
     id: TestUtils.getMockUUID(),
     email: 'admin@admin.com',
     name: 'Admin',
-    roles: [new RoleEntity({ name: RoleEnum.USER })],
+    roles: [new RoleEntity({ id: TestUtils.getMockUUID(), name: RoleEnum.USER })],
     password: { id: TestUtils.getMockUUID(), password: '***' }
   });
 

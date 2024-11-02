@@ -1,14 +1,19 @@
 import {
   Document,
   FilterQuery,
+  InsertManyOptions,
   Model,
+  MongooseBaseQueryOptions,
+  MongooseUpdateQueryOptions,
   QueryOptions,
+  RootFilterQuery,
   SaveOptions,
   UpdateQuery,
   UpdateWithAggregationPipeline
 } from 'mongoose';
 
 import { ConvertMongoFilterToBaseRepository } from '@/utils/decorators';
+import { IEntity } from '@/utils/entity';
 import { ApiBadRequestException } from '@/utils/exception';
 
 import { IRepository } from '../adapter';
@@ -18,19 +23,19 @@ import { validateFindByCommandsFilter } from '../util';
 export class MongoRepository<T extends Document> implements IRepository<T> {
   constructor(private readonly model: Model<T>) {}
 
-  async insertMany<TOptions = unknown>(documents: T[], saveOptions?: TOptions): Promise<void> {
-    await this.model.insertMany(documents, saveOptions);
+  async insertMany<TOptions>(documents: T[], saveOptions?: TOptions): Promise<void> {
+    await this.model.insertMany(documents, saveOptions as InsertManyOptions);
   }
 
-  async create(document: T, saveOptions?: SaveOptions): Promise<CreatedModel> {
+  async create<TOptions>(document: T, saveOptions?: TOptions): Promise<CreatedModel> {
     const createdEntity = new this.model({ ...document, _id: document.id });
-    const savedResult = await createdEntity.save(saveOptions);
+    const savedResult = await createdEntity.save(saveOptions as SaveOptions);
 
     return { id: savedResult.id, created: !!savedResult.id };
   }
 
-  async createOrUpdate(
-    document: UpdateWithAggregationPipeline | UpdateQuery<T>,
+  async createOrUpdate<TDoc = UpdateWithAggregationPipeline | UpdateQuery<T>>(
+    document: TDoc,
     options?: unknown
   ): Promise<CreatedOrUpdateModel> {
     const doc = document as { id: string | number };
@@ -42,22 +47,28 @@ export class MongoRepository<T extends Document> implements IRepository<T> {
 
     if (!exists) {
       const createdEntity = new this.model({ ...document, _id: doc['id'] });
-      const savedResult = await createdEntity.save(options);
+      const savedResult = await createdEntity.save(options as SaveOptions);
 
       return { id: savedResult.id, created: true, updated: false };
     }
 
-    await this.model.updateOne({ _id: exists.id }, { $set: document }, options);
+    await this.model.updateOne(
+      { _id: exists.id },
+      { $set: document as unknown as T },
+      options as MongooseUpdateQueryOptions<IEntity>
+    );
 
     return { id: exists.id, created: false, updated: true };
   }
 
   @ConvertMongoFilterToBaseRepository()
-  async find(filter: FilterQuery<T>, options?: QueryOptions): Promise<T[]> {
-    return (await this.model.find(filter, undefined, options)).map((u) => u.toObject({ virtuals: true }));
+  async find<TFil = RootFilterQuery<T>, TOp = QueryOptions>(filter: TFil, options?: TOp): Promise<T[]> {
+    return (await this.model.find(filter as RootFilterQuery<T>, undefined, options as QueryOptions)).map((u) =>
+      u.toObject({ virtuals: true })
+    );
   }
 
-  async findById(id: string | number): Promise<T> {
+  async findById(id: string | number): Promise<T | null> {
     const model = await this.model.findById(id);
 
     if (!model) return null;
@@ -66,8 +77,8 @@ export class MongoRepository<T extends Document> implements IRepository<T> {
   }
 
   @ConvertMongoFilterToBaseRepository()
-  async findOne(filter: FilterQuery<T>, options?: QueryOptions): Promise<T | null> {
-    const data = await this.model.findOne(filter, undefined, options);
+  async findOne<TFil = RootFilterQuery<T>, TQue = QueryOptions>(filter: TFil, options?: TQue): Promise<T | null> {
+    const data = await this.model.findOne(filter as RootFilterQuery<T>, undefined, options as QueryOptions);
 
     if (!data) return null;
 
@@ -75,36 +86,47 @@ export class MongoRepository<T extends Document> implements IRepository<T> {
   }
 
   @ConvertMongoFilterToBaseRepository()
-  async findAll(filter?: FilterQuery<T>): Promise<T[]> {
-    const modelList = await this.model.find(filter);
+  async findAll<TFil = FilterQuery<T>, TOpt = QueryOptions<IEntity>>(filter?: TFil, options?: TOpt): Promise<T[]> {
+    const modelList = await this.model.find(filter as FilterQuery<T>, options || ({} as QueryOptions<IEntity>));
 
     return (modelList || []).map((u) => u.toObject({ virtuals: true }));
   }
 
   @ConvertMongoFilterToBaseRepository()
-  async remove(filter: FilterQuery<T>): Promise<RemovedModel> {
-    const { deletedCount } = await this.model.deleteOne(filter);
+  async remove<TQuery = FilterQuery<T>, TOpt = unknown>(filter: TQuery, options?: TOpt): Promise<RemovedModel> {
+    const { deletedCount } = await this.model.deleteOne(
+      filter as FilterQuery<T>,
+      (options || {}) as MongooseBaseQueryOptions
+    );
     return { deletedCount, deleted: !!deletedCount };
   }
 
   @ConvertMongoFilterToBaseRepository()
-  async updateOne(
-    filter: FilterQuery<T>,
-    updated: UpdateWithAggregationPipeline | UpdateQuery<T>,
-    options?: unknown
-  ): Promise<UpdatedModel> {
-    return await this.model.updateOne(filter, { $set: Object.assign({}, updated) }, options);
+  async updateOne<
+    TQuery = FilterQuery<T>,
+    TUpdate = UpdateWithAggregationPipeline | UpdateQuery<T>,
+    TOptions = MongooseUpdateQueryOptions
+  >(filter: TQuery, updated: TUpdate, options?: TOptions): Promise<UpdatedModel> {
+    return await this.model.updateOne(
+      filter as FilterQuery<T>,
+      { $set: Object.assign({}, updated) },
+      options as MongooseUpdateQueryOptions
+    );
   }
 
   @ConvertMongoFilterToBaseRepository()
-  async findOneAndUpdate(
-    filter: FilterQuery<T>,
-    updated: UpdateWithAggregationPipeline | UpdateQuery<T>,
-    options: QueryOptions = {}
-  ): Promise<T> {
-    Object.assign(options, { new: true });
+  async findOneAndUpdate<TQuery = FilterQuery<T>, TUpdate = UpdateWithAggregationPipeline | UpdateQuery<T>>(
+    filter: TQuery,
+    updated: TUpdate,
+    options: unknown = {}
+  ): Promise<T | null> {
+    Object.assign(options as QueryOptions, { new: true });
 
-    const model = await this.model.findOneAndUpdate(filter, { $set: updated }, options);
+    const model = await this.model.findOneAndUpdate(
+      filter as FilterQuery<T>,
+      { $set: updated as UpdateWithAggregationPipeline | UpdateQuery<T> },
+      options as QueryOptions
+    );
 
     if (!model) {
       return null;
@@ -114,38 +136,50 @@ export class MongoRepository<T extends Document> implements IRepository<T> {
   }
 
   @ConvertMongoFilterToBaseRepository()
-  async updateMany(
-    filter: FilterQuery<T>,
-    updated: UpdateWithAggregationPipeline | UpdateQuery<T>,
-    options?: unknown
-  ): Promise<UpdatedModel> {
-    return await this.model.updateMany(filter, { $set: updated }, options);
+  async updateMany<
+    TQuery = FilterQuery<T>,
+    TUpdate = UpdateWithAggregationPipeline | UpdateQuery<T>,
+    TOptions = MongooseUpdateQueryOptions
+  >(filter: TQuery, updated: TUpdate, options?: TOptions): Promise<UpdatedModel> {
+    return await this.model.updateMany(
+      filter as FilterQuery<T>,
+      { $set: updated as UpdateWithAggregationPipeline | UpdateQuery<T> },
+      options as MongooseUpdateQueryOptions
+    );
   }
 
-  async findIn(input: { [key in keyof T]: string[] }, options?: QueryOptions): Promise<T[]> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const where: any = {
+  async findIn<TOptions = QueryOptions>(input: { [key in keyof T]: string[] }, options?: TOptions): Promise<T[]> {
+    const where: RootFilterQuery<IEntity> = {
       deletedAt: null
     };
+
     for (const key of Object.keys(input)) {
       where[key === 'id' ? '_id' : key] = { $in: (input as { [key: string]: unknown })[`${key}`] };
     }
+
     const filter = where;
-    const data = await this.model.find(filter, null, options);
+    const data = await this.model.find(filter, null, options as QueryOptions);
 
     return data.map((d) => d.toObject({ virtuals: true }));
   }
 
-  async findOr(propertyList: (keyof T)[], value: string, options?: QueryOptions): Promise<T[]> {
+  async findOr<TOptions = QueryOptions>(propertyList: (keyof T)[], value: string, options?: TOptions): Promise<T[]> {
     const filter = propertyList.map((key) => {
       return { [key === 'id' ? '_id' : key]: value };
     });
-    const data = await this.model.find({ $or: filter as FilterQuery<T>[], deletedAt: null }, null, options);
+    const data = await this.model.find(
+      { $or: filter as FilterQuery<T>[], deletedAt: null },
+      null,
+      options as QueryOptions
+    );
 
     return data.map((d) => d.toObject({ virtuals: true }));
   }
 
-  async findOneByCommands(filterList: DatabaseOperationCommand<T>[], options?: QueryOptions): Promise<T> {
+  async findOneByCommands<TOptions = QueryOptions>(
+    filterList: DatabaseOperationCommand<T>[],
+    options?: TOptions
+  ): Promise<T | null> {
     const mongoSearch = {
       equal: { type: '$in', like: false },
       not_equal: { type: '$nin', like: false },
@@ -176,12 +210,15 @@ export class MongoRepository<T extends Document> implements IRepository<T> {
 
     Object.assign(searchList, { deletedAt: null });
 
-    const data = await this.model.findOne(searchList, null, options);
+    const data = await this.model.findOne(searchList, null, options as QueryOptions);
 
     return data ?? null;
   }
 
-  async findByCommands(filterList: DatabaseOperationCommand<T>[], options?: QueryOptions): Promise<T[]> {
+  async findByCommands<TOptions = QueryOptions>(
+    filterList: DatabaseOperationCommand<T>[],
+    options?: TOptions
+  ): Promise<T[]> {
     const mongoSearch = {
       equal: { type: '$in', like: false },
       not_equal: { type: '$nin', like: false },
@@ -212,65 +249,77 @@ export class MongoRepository<T extends Document> implements IRepository<T> {
 
     Object.assign(searchList, { deletedAt: null });
 
-    const data = await this.model.find(searchList, null, options);
+    const data = await this.model.find(searchList, null, options as QueryOptions);
 
     return data.map((d) => d.toObject({ virtuals: true }));
   }
 
   @ConvertMongoFilterToBaseRepository()
-  async findOneWithExcludeFields(
-    filter: FilterQuery<T>,
+  async findOneWithExcludeFields<TQuery = FilterQuery<T>, TOptions = QueryOptions>(
+    filter: TQuery,
     excludeProperties: Array<keyof T>,
-    options?: QueryOptions
-  ): Promise<T> {
+    options?: TOptions
+  ): Promise<T | null> {
     const exclude = excludeProperties.map((e) => `-${e.toString()}`);
 
-    const data = await this.model.findOne(filter, undefined, options).select(exclude.join(' '));
+    const data = await this.model
+      .findOne((filter || {}) as FilterQuery<T>, undefined, options as QueryOptions)
+      .select(exclude.join(' '));
 
     if (!data) return null;
 
     return data.toObject({ virtuals: true });
   }
 
-  async findAllWithExcludeFields(
+  async findAllWithExcludeFields<TQuery = FilterQuery<T>, TOptions = QueryOptions>(
     excludeProperties: Array<keyof T>,
-    filter?: FilterQuery<T>,
-    options?: QueryOptions
+    filter?: TQuery,
+    options?: TOptions
   ): Promise<T[]> {
     const exclude = excludeProperties.map((e) => `-${e.toString()}`);
 
-    filter = this.applyFilterWhenFilterParameterIsNotFirstOption(filter);
+    if (filter) {
+      (filter as FilterQuery<T>) = this.applyFilterWhenFilterParameterIsNotFirstOption(filter);
+    }
 
-    const data = await this.model.find(filter, undefined, options).select(exclude.join(' '));
+    const data = await this.model
+      .find((filter || {}) as FilterQuery<T>, undefined, options as QueryOptions)
+      .select(exclude.join(' '));
 
     return data.map((d) => d.toObject({ virtuals: true }));
   }
 
   @ConvertMongoFilterToBaseRepository()
-  async findOneWithSelectFields(
-    filter: FilterQuery<T>,
+  async findOneWithSelectFields<TQuery = FilterQuery<T>, TOptions = QueryOptions>(
+    filter: TQuery,
     includeProperties: Array<keyof T>,
-    options?: QueryOptions
-  ): Promise<T> {
+    options?: TOptions
+  ): Promise<T | null> {
     const exclude = includeProperties.map((e) => `${e.toString()}`);
 
-    const data = await this.model.findOne(filter, undefined, options).select(exclude.join(' '));
+    const data = await this.model
+      .findOne(filter as FilterQuery<T>, undefined, (options || {}) as QueryOptions)
+      .select(exclude.join(' '));
 
     if (!data) return null;
 
     return data.toObject({ virtuals: true });
   }
 
-  async findAllWithSelectFields(
+  async findAllWithSelectFields<TQuery = FilterQuery<T>, TOptions = QueryOptions>(
     includeProperties: Array<keyof T>,
-    filter?: FilterQuery<T>,
-    options?: QueryOptions
+    filter?: TQuery,
+    options?: TOptions
   ): Promise<T[]> {
     const exclude = includeProperties.map((e) => `${e.toString()}`);
 
-    filter = this.applyFilterWhenFilterParameterIsNotFirstOption(filter);
+    if (filter) {
+      (filter as FilterQuery<T>) = this.applyFilterWhenFilterParameterIsNotFirstOption(filter as FilterQuery<T>);
+    }
 
-    const data = await this.model.find(filter, undefined, options).select(exclude.join(' '));
+    const data = await this.model
+      .find(filter as FilterQuery<T>, undefined, (options || {}) as QueryOptions)
+      .select(exclude.join(' '));
 
     return data.map((d) => d.toObject({ virtuals: true }));
   }

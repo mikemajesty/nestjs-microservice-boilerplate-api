@@ -23,7 +23,7 @@ export class LoggerService implements ILoggerAdapter {
   async connect<T = LevelWithSilent>(logLevel: T): Promise<void> {
     const pinoLogger = pino(
       {
-        level: [logLevel, 'trace'].find(Boolean).toString()
+        level: [logLevel, 'trace']?.find(Boolean)?.toString()
       },
       multistream([
         {

@@ -12,9 +12,9 @@ export class SecretsService implements ISecretsAdapter {
 
   IS_PRODUCTION = this.config.get<EnvEnum>('NODE_ENV') === EnvEnum.PRD;
 
-  ENV = this.config.get<EnvEnum>('NODE_ENV');
+  ENV = this.config.get<EnvEnum>('NODE_ENV') as string;
 
-  PORT = this.config.get<number>('PORT');
+  PORT = this.config.get<number>('PORT') as number;
 
   HOST = this.config.get('HOST');
 
@@ -51,8 +51,8 @@ export class SecretsService implements ISecretsAdapter {
 
   PROMETHUES_URL = this.config.get('PROMETHUES_URL');
 
-  TOKEN_EXPIRATION = this.config.get<number | string>('TOKEN_EXPIRATION');
-  REFRESH_TOKEN_EXPIRATION = this.config.get<number | string>('REFRESH_TOKEN_EXPIRATION');
+  TOKEN_EXPIRATION = this.config.get<number | string>('TOKEN_EXPIRATION') as string;
+  REFRESH_TOKEN_EXPIRATION = this.config.get<number | string>('REFRESH_TOKEN_EXPIRATION') as string;
 
   JWT_SECRET_KEY = this.config.get('JWT_SECRET_KEY');
 

@@ -18,8 +18,8 @@ export class ResetPasswordRepository extends TypeORMRepository<Model> implements
 
   async findByIdUserId(id: string): Promise<ResetPasswordEntity> {
     const date = DateUtils.getDate().minus(1800000).toJSDate();
-    return await this.repository.findOne({
+    return (await this.repository.findOne({
       where: { user: { id }, createdAt: MoreThan(date) } as FindOptionsWhere<unknown>
-    });
+    })) as Model;
   }
 }

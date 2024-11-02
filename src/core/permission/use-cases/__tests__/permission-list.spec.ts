@@ -39,9 +39,12 @@ describe(PermissionListUsecase.name, () => {
 
   test('when sort input is specified, should expect an error', async () => {
     await TestUtils.expectZodError(
-      () => usecase.execute({ search: null, sort: null, limit: 10, page: 1 } as PermissionListInput),
+      () => usecase.execute({} as PermissionListInput),
       (issues: ZodIssue[]) => {
-        expect(issues).toEqual([{ message: 'Expected object, received null', path: 'sort' }]);
+        expect(issues).toEqual([
+          { message: 'Required', path: 'sort' },
+          { message: 'Required', path: 'search' }
+        ]);
       }
     );
   });

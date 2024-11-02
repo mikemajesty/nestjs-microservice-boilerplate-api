@@ -22,8 +22,8 @@ export class UserListUsecase implements IUsecase {
     const users = await this.userRepository.paginate(input);
 
     return {
-      docs: users.docs.map((u) => {
-        const entity = new UserEntity(u);
+      docs: users.docs.map((user) => {
+        const entity = new UserEntity(user);
         return entity;
       }),
       limit: users.limit,

@@ -5,6 +5,7 @@ import { IPermissionRepository } from '@/core/permission/repository/permission';
 import { ValidateSchema } from '@/utils/decorators';
 import { ApiNotFoundException } from '@/utils/exception';
 import { IUsecase } from '@/utils/usecase';
+import { UUIDUtils } from '@/utils/uuid';
 
 import { RoleEntity, RoleEntitySchema } from '../entity/role';
 import { IRoleRepository } from '../repository/role';
@@ -38,7 +39,7 @@ export class RoleAddPermissionUsecase implements IUsecase {
       const permissionAlreadyCreated = permissions.find((p) => p.name === permission);
 
       if (!permissionAlreadyCreated) {
-        const newPermission = new PermissionEntity({ name: permission });
+        const newPermission = new PermissionEntity({ id: UUIDUtils.create(), name: permission });
         entity.permissions.push(newPermission);
         continue;
       }

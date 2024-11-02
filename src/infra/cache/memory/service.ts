@@ -43,7 +43,7 @@ export class MemoryCacheService implements Partial<ICacheAdapter<NodeCache>> {
   }
 
   get<TKey = MemoryCacheKeyArgument>(key: TKey): string {
-    return this.client.get(key as MemoryCacheKeyArgument);
+    return this.client.get(key as MemoryCacheKeyArgument) as string;
   }
 
   pExpire<TCache = MemoryCacheKeyArgument>(key: TCache, ttl: number): boolean {

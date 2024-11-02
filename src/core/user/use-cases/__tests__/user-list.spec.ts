@@ -7,7 +7,7 @@ import { TestUtils } from '@/utils/tests';
 
 import { UserEntity } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
-import { UserListOutput, UserListUsecase } from '../user-list';
+import { UserListInput, UserListOutput, UserListUsecase } from '../user-list';
 
 describe(UserListUsecase.name, () => {
   let usecase: IUserListAdapter;
@@ -37,9 +37,12 @@ describe(UserListUsecase.name, () => {
 
   test('when no input is specified, should expect an error', async () => {
     await TestUtils.expectZodError(
-      () => usecase.execute({ search: null, sort: null, limit: 10, page: 1 }),
+      () => usecase.execute({} as UserListInput),
       (issues: ZodIssue[]) => {
-        expect(issues).toEqual([{ message: 'Expected object, received null', path: 'sort' }]);
+        expect(issues).toEqual([
+          { message: 'Required', path: 'sort' },
+          { message: 'Required', path: 'search' }
+        ]);
       }
     );
   });
@@ -48,7 +51,7 @@ describe(UserListUsecase.name, () => {
     id: TestUtils.getMockUUID(),
     email: 'admin@admin.com',
     name: 'Admin',
-    roles: [new RoleEntity({ name: RoleEnum.USER })]
+    roles: [new RoleEntity({ id: TestUtils.getMockUUID(), name: RoleEnum.USER })]
   });
 
   const users = [

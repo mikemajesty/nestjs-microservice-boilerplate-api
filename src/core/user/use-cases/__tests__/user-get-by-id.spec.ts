@@ -8,7 +8,7 @@ import { TestUtils } from '@/utils/tests';
 
 import { UserEntity } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
-import { UserGetByIdUsecase } from '../user-get-by-id';
+import { UserGetByIdInput, UserGetByIdUsecase } from '../user-get-by-id';
 
 describe(UserGetByIdUsecase.name, () => {
   let usecase: IUserGetByIdAdapter;
@@ -38,7 +38,7 @@ describe(UserGetByIdUsecase.name, () => {
 
   test('when no input is specified, should expect an error', async () => {
     await TestUtils.expectZodError(
-      () => usecase.execute({}),
+      () => usecase.execute({} as UserGetByIdInput),
       (issues: ZodIssue[]) => {
         expect(issues).toEqual([{ message: 'Required', path: UserEntity.nameOf('id') }]);
       }
@@ -55,7 +55,7 @@ describe(UserGetByIdUsecase.name, () => {
     id: TestUtils.getMockUUID(),
     email: 'admin@admin.com',
     name: 'Admin',
-    roles: [new RoleEntity({ name: RoleEnum.USER })]
+    roles: [new RoleEntity({ id: TestUtils.getMockUUID(), name: RoleEnum.USER })]
   });
 
   test('when user getById successfully, should expect a user', async () => {

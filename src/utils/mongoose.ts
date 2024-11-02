@@ -6,7 +6,10 @@ export class MongoUtils {
   };
 
   static isObjectId = (id?: string) => {
-    return Types.ObjectId.isValid(id);
+    if (id) {
+      return Types.ObjectId.isValid(id);
+    }
+    return false;
   };
 
   static skipParentheses = (filter: string | string[]): string | string[] => {
@@ -16,15 +19,17 @@ export class MongoUtils {
     if (typeof filter === 'object') {
       return filter.map((f) => f.replace('(', '\\(')?.replace(')', '\\)'));
     }
+
+    return filter;
   };
 
   static calculateMongoSkip = (page: number, limit: number): number => {
     return ((page || 1) - 1) * Number(limit || 10);
   };
 
-  static diacriticSensitiveRegex = (text: string | string[]): string | string[] => {
-    if (typeof text === 'string') {
-      return text
+  static diacriticSensitiveRegex = (filter: string | string[]): string | string[] => {
+    if (typeof filter === 'string') {
+      return filter
         .replace(/a/g, '[a,á,à,ä,â,ã]')
         .replace(/e/g, '[e,é,ë,è,ê]')
         .replace(/i/g, '[i,í,ï,ì,î]')
@@ -32,8 +37,8 @@ export class MongoUtils {
         .replace(/c/g, '[c,ç]')
         .replace(/u/g, '[u,ü,ú,ù]');
     }
-    if (typeof text === 'object') {
-      const regexText = text.map((f) => {
+    if (typeof filter === 'object') {
+      const regexText = filter.map((f) => {
         return f
           .replace(/a/g, '[a,á,à,ä,â,ã]')
           .replace(/e/g, '[e,é,ë,è,ê]')
@@ -44,6 +49,8 @@ export class MongoUtils {
       });
       return regexText;
     }
+
+    return filter;
   };
 
   static createMongoRegexText = (text: string | string[]): string | string[] => {

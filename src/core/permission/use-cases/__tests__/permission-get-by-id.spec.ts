@@ -36,7 +36,7 @@ describe(PermissionGetByIdUsecase.name, () => {
 
   test('when no input is specified, should expect an error', async () => {
     await TestUtils.expectZodError(
-      () => usecase.execute({}),
+      () => usecase.execute({} as PermissionGetByIdInput),
       (issues: ZodIssue[]) => {
         expect(issues).toEqual([{ message: 'Required', path: PermissionEntity.nameOf('id') }]);
       }
