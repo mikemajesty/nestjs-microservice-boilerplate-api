@@ -1,5 +1,6 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { SpanStatusCode } from '@opentelemetry/api';
+import { AxiosError } from 'axios';
 import { Observable } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { ZodError } from 'zod';
@@ -37,8 +38,9 @@ export class ExceptionInterceptor implements NestInterceptor {
     );
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private getStatusCode(error: any): number {
+  private getStatusCode(
+    error: ZodError | AxiosError<{ code: string | number; error: { code: string | number } }>
+  ): number {
     if (error instanceof ZodError) {
       return 400;
     }
@@ -53,7 +55,7 @@ export class ExceptionInterceptor implements NestInterceptor {
       error?.response?.data?.code,
       error?.response?.data?.error?.code,
       500
-    ].find(Boolean);
+    ].find(Boolean) as number;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

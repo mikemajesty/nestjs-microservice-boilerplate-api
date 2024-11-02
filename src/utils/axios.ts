@@ -1,13 +1,21 @@
-import { AxiosInstance } from 'axios';
+import { AxiosError, AxiosInstance } from 'axios';
 import axiosRetry from 'axios-retry';
 import { AxiosConverter } from 'nestjs-convert-to-curl';
 
 import { ILoggerAdapter } from '@/infra/logger';
 
+type AdditionalAxiosErrorInput = {
+  description: string;
+  error: {
+    message: string;
+    code: number | string;
+  };
+  code: number | string;
+};
+
 export class AxiosUtils {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static interceptAxiosResponseError = (error: any) => {
-    error.stack = error.stack.replace(
+  static interceptAxiosResponseError = (error: AxiosError<AdditionalAxiosErrorInput>) => {
+    error.stack = error?.stack?.replace(
       /AxiosError.*node:internal\/process\/task_queues:[0-9]+:[0-9]+\).*axiosBetterStacktrace.ts:[0-9]+:[0-9]+\)/g,
       ''
     );
@@ -23,26 +31,26 @@ export class AxiosUtils {
       'Internal Server Error'
     ].find(Boolean);
 
-    error.message = message;
-
-    error.status = status;
-    error.curl = AxiosConverter.getCurl(error, ['password', 'cpf']);
+    Object.assign(error, { message });
+    Object.assign(error, { status });
+    Object.assign(error, { curl: AxiosConverter.getCurl(error, ['password', 'cpf']) });
   };
 
   static requestRetry = ({ axios, logger, status: statusRetry = [503, 422, 408] }: RequestRetry) => {
     axiosRetry(axios, {
       shouldResetTimeout: true,
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       retryDelay: (retryCount, axiosError: any) => {
         logger.warn({
           message: `retry attempt: ${retryCount}`,
           obj: {
-            statusText: [axiosError.response?.data['message'], axiosError.message].find(Boolean),
+            statusText: [axiosError.response?.data?.['message'], axiosError.message].find(Boolean),
             status: [
               axiosError.response?.status,
               axiosError.status,
-              axiosError.response?.data['status'],
-              axiosError?.response?.data['code'],
+              axiosError.response?.data?.['status'],
+              axiosError?.response?.data?.['code'],
               axiosError.code
             ].find(Boolean),
             url: axiosError.config.url

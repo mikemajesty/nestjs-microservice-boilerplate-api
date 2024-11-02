@@ -22,8 +22,8 @@ export interface ApiRequest {
   readonly body: any;
   readonly tracing: TracingType;
   readonly user: UserRequest;
-  readonly params: { [key: string]: string };
-  readonly query: { [key: string]: string };
+  readonly params: { [key: string]: string | number };
+  readonly query: { [key: string]: string | number };
   readonly headers: Headers & { authorization: string };
   readonly url: string;
   readonly files: {

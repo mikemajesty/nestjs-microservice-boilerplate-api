@@ -3,7 +3,7 @@ import { IncomingMessage, ServerResponse } from 'node:http';
 import { Injectable, InternalServerErrorException, Scope } from '@nestjs/common';
 import { blue, gray, green, isColorSupported } from 'colorette';
 import { PinoRequestConverter } from 'convert-pino-request-to-curl';
-import { LevelWithSilent, Logger, multistream, pino } from 'pino';
+import { LevelWithSilent, LogDescriptor, Logger, multistream, pino } from 'pino';
 import { HttpLogger, Options, pinoHttp } from 'pino-http';
 import pinoPretty, { PrettyOptions } from 'pino-pretty';
 
@@ -137,8 +137,7 @@ export class LoggerService implements ILoggerAdapter {
       colorize: isColorSupported,
       levelFirst: true,
       ignore: 'pid,hostname',
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      messageFormat: (log: any, messageKey: string) => {
+      messageFormat: (log: LogDescriptor, messageKey: string) => {
         const message = log[String(messageKey)];
         if (this.app) {
           return `[${blue(this.app)}] ${message}`;
@@ -245,8 +244,7 @@ export class LoggerService implements ILoggerAdapter {
     ].find((c) => c.conditional);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private getTraceId(error: any): string {
+  private getTraceId(error: string | { traceid: string }): string {
     if (typeof error === 'string') return UUIDUtils.create();
     return [error.traceid, this.logger.logger.bindings()?.traceid].find(Boolean);
   }
