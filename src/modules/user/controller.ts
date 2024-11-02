@@ -63,6 +63,7 @@ export class UserController {
   @ApiQuery(SwaggerRequest.list.sort)
   @ApiQuery(SwaggerRequest.list.search)
   @ApiResponse(SwaggerResponse.list[200])
+  @ApiResponse(SwaggerResponse.list[400])
   @Version('1')
   @Permission('user:list')
   async list(@Req() { query }: ApiRequest): Promise<UserListOutput> {

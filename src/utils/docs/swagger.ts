@@ -5,6 +5,15 @@ import { ErrorModel } from '@/utils/exception';
 
 import { DefaultErrorMessage } from '../http-status';
 
+type MessagesInput = {
+  [key: string]: {
+    value: string[];
+    description: string;
+  };
+};
+
+type MultiplesExceptionResponse = Omit<SwaggerError, 'message'> & { messages: MessagesInput };
+
 export const Swagger = {
   defaultResponseError({ status, route, message, description }: SwaggerError): ApiResponseOptions {
     return {
@@ -24,15 +33,24 @@ export const Swagger = {
       status
     };
   },
-
+  defaultPaginateMessageExceptions(): MessagesInput {
+    return {
+      'filter exception': {
+        description: 'filter field not allowed',
+        value: [`filter key1 not allowed, allowed list: key2,key3`]
+      },
+      'sort exception': {
+        description: 'sort field not allowed',
+        value: [`sort key1 not allowed, allowed list: key2,key3`]
+      }
+    };
+  },
   defaultResponseWithMultiplesError({
     status,
     route,
     messages,
     description
-  }: Omit<SwaggerError, 'message'> & {
-    messages: { [key: string]: { value: string[]; description: string } };
-  }): ApiResponseOptions {
+  }: MultiplesExceptionResponse): ApiResponseOptions {
     const examples: { [key: string]: unknown } = {};
     for (const key in messages) {
       examples[`${key}`] = {

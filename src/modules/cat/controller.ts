@@ -68,6 +68,7 @@ export class CatController {
   @ApiQuery(SwaggerRequest.list.sort)
   @ApiQuery(SwaggerRequest.list.search)
   @ApiResponse(SwaggerResponse.list[200])
+  @ApiResponse(SwaggerResponse.list[400])
   @Version('1')
   @Permission('cat:list')
   async list(@Req() { query }: ApiRequest): Promise<CatListOutput> {

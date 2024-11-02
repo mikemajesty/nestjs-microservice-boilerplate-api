@@ -56,6 +56,12 @@ export const SwaggerResponse = {
       status: 200,
       json: RoleResponse.list,
       description: 'list role.'
+    }),
+    400: Swagger.defaultResponseWithMultiplesError({
+      messages: Swagger.defaultPaginateMessageExceptions(),
+      route: BASE_URL,
+      status: 400,
+      description: 'paginate filter and sort exceptions.'
     })
   },
   removePermissions: {

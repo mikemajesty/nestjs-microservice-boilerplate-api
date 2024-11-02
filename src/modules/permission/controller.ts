@@ -69,6 +69,7 @@ export class PermissionController {
   @ApiQuery(SwaggerRequest.list.sort)
   @ApiQuery(SwaggerRequest.list.search)
   @ApiResponse(SwaggerResponse.list[200])
+  @ApiResponse(SwaggerResponse.list[400])
   @Version('1')
   @Permission('permission:list')
   async list(@Req() { query }: ApiRequest): Promise<PermissionListOutput> {

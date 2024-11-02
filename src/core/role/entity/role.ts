@@ -9,7 +9,7 @@ export enum RoleEnum {
 }
 
 const ID = z.string().uuid();
-const Name = z.nativeEnum(RoleEnum).transform((value) => value.trim().replace(/ /g, '_').toUpperCase());
+const Name = z.string().transform((value) => value.trim().replace(/ /g, '_').toUpperCase());
 const Permissions = z.array(PermissionEntitySchema).optional();
 const CreatedAt = z.date().nullish();
 const UpdatedAt = z.date().nullish();
