@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, PaginateModel } from 'mongoose';
-import { FindOptionsOrder } from 'typeorm';
 
 import { CatEntity } from '@/core/cat/entity/cat';
 import { ICatRepository } from '@/core/cat/repository/cat';
@@ -28,7 +27,7 @@ export class CatRepository extends MongoRepository<CatDocument> implements ICatR
     const cats = await this.entity.paginate(search as FilterQuery<IEntity>, {
       page,
       limit,
-      sort: sort as FindOptionsOrder<IEntity>
+      sort: sort as object
     });
 
     return {
