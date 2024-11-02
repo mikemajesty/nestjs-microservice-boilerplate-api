@@ -1363,10 +1363,10 @@
   resolved "https://registry.npmjs.org/@microsoft/tsdoc/-/tsdoc-0.15.0.tgz"
   integrity sha512-HZpPoABogPvjeJOdzCOSJsXeL/SMCBgBZMVC3X3d7YYp2gf31MfxhUoYUNwf1ERPJOnQc0wkFn9trqI6ZEdZuA==
 
-"@mikemajesty/microservice-crud@^6.0.10":
-  version "6.0.10"
-  resolved "https://registry.yarnpkg.com/@mikemajesty/microservice-crud/-/microservice-crud-6.0.10.tgz#174d8ae7d409305d6164d5fb62b9576a03bc2a27"
-  integrity sha512-hdnMDsSHSdENyfJWEpjU4p/gXcDCuSDnFCPwS5KOmX60zHgQJyAyl7+orEhR39s3KnCz8IxzZdVpEZwIxPS9fA==
+"@mikemajesty/microservice-crud@^6.0.11":
+  version "6.0.11"
+  resolved "https://registry.npmjs.org/@mikemajesty/microservice-crud/-/microservice-crud-6.0.11.tgz"
+  integrity sha512-BXBSI47Qw5RB/XhPZa3kR5LCvKWeMkY3JAsNARje0XuH6bp2b+Hw9L9fKoj2YujnZTU+JRCknmUUJftyWWcn0w==
   dependencies:
     arg "^5.0.2"
     chmod "^0.2.1"
