@@ -5,6 +5,11 @@ type GetDateWithFormatFormatInput = {
   format?: string;
 };
 
+type CreateDateInput = {
+  date: string;
+  utc: boolean;
+};
+
 export class DateUtils {
   static getDateStringWithFormat(input: Partial<GetDateWithFormatFormatInput> = {}): string {
     if (!input?.date) {
@@ -28,14 +33,14 @@ export class DateUtils {
     return DateTime.fromJSDate(DateTime.now().toJSDate(), { zone: 'utc' }).setZone(process.env.TZ).toJSDate();
   }
 
-  static createJSDate(date: string, utc = true): Date {
+  static createJSDate({ date, utc = true }: CreateDateInput): Date {
     if (utc) {
       return DateTime.fromISO(date, { zone: 'utc' }).setZone(process.env.TZ).toJSDate();
     }
     return DateTime.fromISO(date).setZone(process.env.TZ).toJSDate();
   }
 
-  static createISODate(date: string, utc = true): string | null {
+  static createISODate({ date, utc = true }: CreateDateInput): string | null {
     if (utc) {
       return DateTime.fromISO(date, { zone: 'utc' }).setZone(process.env.TZ).toISO();
     }
