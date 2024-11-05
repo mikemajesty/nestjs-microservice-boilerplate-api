@@ -1,4 +1,4 @@
-import { RootFilterQuery } from 'mongoose';
+import { FilterQuery } from 'mongoose';
 
 import { IEntity } from '@/utils/entity';
 import { ApiBadRequestException } from '@/utils/exception';
@@ -13,8 +13,9 @@ export function ConvertMongooseFilter<T>(allowedFilterList: AllowedFilter<T>[] =
     descriptor.value = function (...args: { search: { [key: string]: string | string[] } }[]) {
       const input = args[0];
 
-      const where: RootFilterQuery<IEntity> = {
+      const where: FilterQuery<IEntity> = {
         $or: [],
+        $and: [],
         deletedAt: null
       };
 
@@ -27,8 +28,7 @@ export function ConvertMongooseFilter<T>(allowedFilterList: AllowedFilter<T>[] =
 
       Object.keys(input.search || {}).forEach((key) => {
         const allowed = filterNameList.includes(key);
-        if (!allowed)
-          throw new ApiBadRequestException(`filter ${key} not allowed, allowed list: ${filterNameList.join(', ')}`);
+        if (!allowed) throw new ApiBadRequestException(`allowed filters are: ${filterNameList.join(', ')}`);
       });
 
       const IS_ARRAY_FILTER = 'object';
@@ -59,7 +59,7 @@ export function ConvertMongooseFilter<T>(allowedFilterList: AllowedFilter<T>[] =
           }
 
           if (typeof regexFilter === IS_SINGLE_FILTER) {
-            where?.$or?.push({
+            where?.$and?.push({
               [field]: convertFilterValue({
                 value: filters,
                 format: allowedFilter.format
@@ -71,7 +71,7 @@ export function ConvertMongooseFilter<T>(allowedFilterList: AllowedFilter<T>[] =
         if (allowedFilter.type === SearchTypeEnum.like) {
           if (typeof regexFilter === IS_ARRAY_FILTER) {
             where?.$or?.push(
-              ...(regexFilter as string[]).map((filter) => {
+              ...(regexFilter as string[]).map((filter: string) => {
                 return {
                   [field]: {
                     $regex: filter,
@@ -83,7 +83,7 @@ export function ConvertMongooseFilter<T>(allowedFilterList: AllowedFilter<T>[] =
           }
 
           if (typeof regexFilter === IS_SINGLE_FILTER) {
-            where?.$or?.push({
+            where?.$and?.push({
               [field]: {
                 $regex: MongoUtils.createMongoRegexText(filters),
                 $options: 'i'
@@ -95,6 +95,10 @@ export function ConvertMongooseFilter<T>(allowedFilterList: AllowedFilter<T>[] =
 
       if (!where?.$or?.length) {
         delete where.$or;
+      }
+
+      if (!where?.$and?.length) {
+        delete where.$and;
       }
 
       args[0].search = where;
