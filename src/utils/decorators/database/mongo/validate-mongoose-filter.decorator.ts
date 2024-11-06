@@ -28,7 +28,8 @@ export function ConvertMongooseFilter<T>(allowedFilterList: AllowedFilter<T>[] =
 
       Object.keys(input.search || {}).forEach((key) => {
         const allowed = filterNameList.includes(key);
-        if (!allowed) throw new ApiBadRequestException(`allowed filters are: ${filterNameList.join(', ')}`);
+        if (!allowed)
+          throw new ApiBadRequestException(`filter ${key} not allowed, allowed list: ${filterNameList.join(', ')}`);
       });
 
       const IS_ARRAY_FILTER = 'object';
