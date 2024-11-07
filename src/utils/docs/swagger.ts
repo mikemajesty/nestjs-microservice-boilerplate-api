@@ -104,13 +104,13 @@ export const Swagger = {
     };
   },
 
-  defaultResponseJSON({ status, json, description }: SwaggerJSON): ApiResponseOptions {
+  defaultResponseJSON<T = never, AT extends T = T>({ status, json, description }: SwaggerJSON<AT>): ApiResponseOptions {
     return {
       content: json
         ? {
             'application/json': {
               schema: {
-                example: json
+                example: json as AT
               }
             }
           }
@@ -120,10 +120,10 @@ export const Swagger = {
     };
   },
 
-  defaultRequestJSON(json: unknown): ApiResponseOptions {
+  defaultRequestJSON<T = never, AT extends T = T>(json: AT): ApiResponseOptions {
     return {
       schema: {
-        example: json
+        example: json as AT
       }
     };
   },
@@ -176,8 +176,8 @@ type SwaggerText = {
   description?: string;
 };
 
-type SwaggerJSON = {
+type SwaggerJSON<T> = {
   status: number;
-  json?: unknown;
+  json?: T;
   description?: string;
 };

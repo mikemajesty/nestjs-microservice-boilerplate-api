@@ -1,3 +1,7 @@
+import { PermissionEntity } from '@/core/permission/entity/permission';
+import { PermissionCreateInput } from '@/core/permission/use-cases/permission-create';
+import { PermissionListOutput } from '@/core/permission/use-cases/permission-list';
+import { PermissionUpdateInput } from '@/core/permission/use-cases/permission-update';
 import { PermissionRequest } from '@/utils/docs/data/permission/request';
 import { PermissionResponse } from '@/utils/docs/data/permission/response';
 import { Swagger } from '@/utils/docs/swagger';
@@ -6,7 +10,7 @@ const BASE_URL = 'api/v1/permissions';
 
 export const SwaggerResponse = {
   create: {
-    200: Swagger.defaultResponseJSON({
+    200: Swagger.defaultResponseJSON<PermissionEntity>({
       status: 200,
       json: PermissionResponse.create,
       description: 'create permission.'
@@ -19,7 +23,7 @@ export const SwaggerResponse = {
     })
   },
   update: {
-    200: Swagger.defaultResponseJSON({
+    200: Swagger.defaultResponseJSON<PermissionEntity>({
       status: 200,
       json: PermissionResponse.update,
       description: 'update permission.'
@@ -32,7 +36,7 @@ export const SwaggerResponse = {
     })
   },
   getById: {
-    200: Swagger.defaultResponseJSON({
+    200: Swagger.defaultResponseJSON<PermissionEntity>({
       status: 200,
       json: PermissionResponse.getById,
       description: 'permission found.'
@@ -45,7 +49,7 @@ export const SwaggerResponse = {
     })
   },
   delete: {
-    200: Swagger.defaultResponseJSON({
+    200: Swagger.defaultResponseJSON<PermissionEntity>({
       status: 200,
       json: PermissionResponse.delete,
       description: 'delete permission.'
@@ -58,7 +62,7 @@ export const SwaggerResponse = {
     })
   },
   list: {
-    200: Swagger.defaultResponseJSON({
+    200: Swagger.defaultResponseJSON<PermissionListOutput>({
       status: 200,
       json: PermissionResponse.list,
       description: 'list permission.'
@@ -73,7 +77,7 @@ export const SwaggerResponse = {
 };
 
 export const SwaggerRequest = {
-  create: Swagger.defaultRequestJSON(PermissionRequest.create),
-  update: Swagger.defaultRequestJSON(PermissionRequest.update),
+  create: Swagger.defaultRequestJSON<PermissionCreateInput>(PermissionRequest.create),
+  update: Swagger.defaultRequestJSON<PermissionUpdateInput>(PermissionRequest.update),
   list: Swagger.defaultRequestListJSON()
 };

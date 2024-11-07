@@ -1,12 +1,19 @@
+import { UserEntity } from '@/core/user/entity/user';
+import { UserChangePasswordInput } from '@/core/user/use-cases/user-change-password';
+import { UserCreateInput } from '@/core/user/use-cases/user-create';
+import { UserListOutput } from '@/core/user/use-cases/user-list';
+import { UserUpdateInput } from '@/core/user/use-cases/user-update';
+import { CreatedModel } from '@/infra/repository';
 import { UsersRequest } from '@/utils/docs/data/user/request';
 import { UsersResponse } from '@/utils/docs/data/user/response';
 import { Swagger } from '@/utils/docs/swagger';
+import { UserRequest } from '@/utils/request';
 
 const BASE_URL = `api/v1/users`;
 
 export const SwaggerResponse = {
   create: {
-    200: Swagger.defaultResponseJSON({
+    200: Swagger.defaultResponseJSON<CreatedModel>({
       status: 200,
       json: UsersResponse.create,
       description: 'user created.'
@@ -19,7 +26,7 @@ export const SwaggerResponse = {
     })
   },
   update: {
-    200: Swagger.defaultResponseJSON({
+    200: Swagger.defaultResponseJSON<UserEntity>({
       status: 200,
       json: UsersResponse.update,
       description: 'user updated.'
@@ -38,7 +45,7 @@ export const SwaggerResponse = {
     })
   },
   getById: {
-    200: Swagger.defaultResponseJSON({
+    200: Swagger.defaultResponseJSON<UserEntity>({
       status: 200,
       json: UsersResponse.getById,
       description: 'user found.'
@@ -72,7 +79,7 @@ export const SwaggerResponse = {
     })
   },
   delete: {
-    200: Swagger.defaultResponseJSON({
+    200: Swagger.defaultResponseJSON<UserEntity>({
       status: 200,
       json: UsersResponse.delete,
       description: 'user found.'
@@ -85,14 +92,14 @@ export const SwaggerResponse = {
     })
   },
   me: {
-    200: Swagger.defaultResponseJSON({
+    200: Swagger.defaultResponseJSON<UserRequest>({
       status: 200,
       json: UsersResponse.me,
       description: 'user jwt data.'
     })
   },
   list: {
-    200: Swagger.defaultResponseJSON({
+    200: Swagger.defaultResponseJSON<UserListOutput>({
       status: 200,
       json: UsersResponse.list,
       description: 'user created.'
@@ -107,8 +114,8 @@ export const SwaggerResponse = {
 };
 
 export const SwaggerRequest = {
-  create: Swagger.defaultRequestJSON(UsersRequest.create),
-  update: Swagger.defaultRequestJSON(UsersRequest.update),
-  changePassword: Swagger.defaultRequestJSON(UsersRequest.changePassword),
+  create: Swagger.defaultRequestJSON<UserCreateInput>(UsersRequest.create),
+  update: Swagger.defaultRequestJSON<UserUpdateInput>(UsersRequest.update),
+  changePassword: Swagger.defaultRequestJSON<UserChangePasswordInput>(UsersRequest.changePassword),
   list: Swagger.defaultRequestListJSON()
 };

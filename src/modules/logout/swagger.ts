@@ -1,3 +1,4 @@
+import { LogoutInput } from '@/core/user/use-cases/user-logout';
 import { Swagger } from '@/utils/docs/swagger';
 
 export const SwaggerResponse = {
@@ -10,7 +11,7 @@ export const SwaggerResponse = {
 };
 
 export const SwaggerRequest = {
-  logout: Swagger.defaultRequestJSON({
+  logout: Swagger.defaultRequestJSON<LogoutInput>({
     token: '<token>'
   })
 };

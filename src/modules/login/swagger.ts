@@ -6,9 +6,9 @@ const BASE_URL = `api/v1`;
 
 export const SwaggerResponse = {
   login: {
-    200: Swagger.defaultResponseJSON({
+    200: Swagger.defaultResponseJSON<LoginOutput>({
       status: 200,
-      json: { accessToken: '<token>', refreshToken: '<token>' } as LoginOutput,
+      json: { accessToken: '<token>', refreshToken: '<token>' },
       description: 'user login.'
     }),
     404: Swagger.defaultResponseWithMultiplesError({
@@ -21,9 +21,9 @@ export const SwaggerResponse = {
     })
   },
   refresh: {
-    200: Swagger.defaultResponseJSON({
+    200: Swagger.defaultResponseJSON<RefreshTokenOutput>({
       status: 200,
-      json: { accessToken: '<token>', refreshToken: '<token>' } as RefreshTokenOutput,
+      json: { accessToken: '<token>', refreshToken: '<token>' },
       description: 'user refresh token.'
     }),
     404: Swagger.defaultResponseWithMultiplesError({
@@ -38,11 +38,11 @@ export const SwaggerResponse = {
 };
 
 export const SwaggerRequest = {
-  login: Swagger.defaultRequestJSON({
+  login: Swagger.defaultRequestJSON<LoginInput>({
     email: 'admin@admin.com',
     password: 'admin'
-  } as LoginInput),
-  refresh: Swagger.defaultRequestJSON({
+  }),
+  refresh: Swagger.defaultRequestJSON<RefreshTokenInput>({
     refreshToken: '<token>'
-  } as RefreshTokenInput)
+  })
 };

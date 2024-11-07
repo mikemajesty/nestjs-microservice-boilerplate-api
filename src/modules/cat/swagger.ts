@@ -1,3 +1,8 @@
+import { CatEntity } from '@/core/cat/entity/cat';
+import { CatCreateInput } from '@/core/cat/use-cases/cat-create';
+import { CatListOutput } from '@/core/cat/use-cases/cat-list';
+import { CatUpdateInput } from '@/core/cat/use-cases/cat-update';
+import { CreatedModel } from '@/infra/repository';
 import { CatRequest } from '@/utils/docs/data/cat/request';
 import { CatResponse } from '@/utils/docs/data/cat/response';
 import { Swagger } from '@/utils/docs/swagger';
@@ -7,14 +12,14 @@ const BASE_URL = `api/v1/cats`;
 
 export const SwaggerResponse = {
   create: {
-    200: Swagger.defaultResponseJSON({
+    200: Swagger.defaultResponseJSON<CreatedModel>({
       status: 200,
       json: CatResponse.create,
       description: 'create user.'
     })
   },
   update: {
-    200: Swagger.defaultResponseJSON({
+    200: Swagger.defaultResponseJSON<CatEntity>({
       status: 200,
       json: CatResponse.update,
       description: 'update user.'
@@ -27,7 +32,7 @@ export const SwaggerResponse = {
     })
   },
   getById: {
-    200: Swagger.defaultResponseJSON({
+    200: Swagger.defaultResponseJSON<CatEntity>({
       status: 200,
       json: CatResponse.getById,
       description: 'cat founded.'
@@ -40,7 +45,7 @@ export const SwaggerResponse = {
     })
   },
   delete: {
-    200: Swagger.defaultResponseJSON({
+    200: Swagger.defaultResponseJSON<CatEntity>({
       status: 200,
       json: CatResponse.delete,
       description: 'cat deleted.'
@@ -53,7 +58,7 @@ export const SwaggerResponse = {
     })
   },
   list: {
-    200: Swagger.defaultResponseJSON({
+    200: Swagger.defaultResponseJSON<CatListOutput>({
       status: 200,
       json: CatResponse.list,
       description: 'cat created.'
@@ -68,7 +73,7 @@ export const SwaggerResponse = {
 };
 
 export const SwaggerRequest = {
-  create: Swagger.defaultRequestJSON(CatRequest.create),
-  update: Swagger.defaultRequestJSON(CatRequest.update),
+  create: Swagger.defaultRequestJSON<CatCreateInput>(CatRequest.create),
+  update: Swagger.defaultRequestJSON<CatUpdateInput>(CatRequest.update),
   list: Swagger.defaultRequestListJSON()
 };

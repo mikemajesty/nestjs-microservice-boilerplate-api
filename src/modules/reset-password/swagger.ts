@@ -53,11 +53,12 @@ export const SwaggerResponse = {
 };
 
 export const SwaggerRequest = {
-  sendEmail: Swagger.defaultRequestJSON({
+  sendEmail: Swagger.defaultRequestJSON<ResetPasswordSendEmailInput>({
     email: 'admin@admin.com'
-  } as ResetPasswordSendEmailInput),
-  confirmResetPassword: Swagger.defaultRequestJSON({
+  }),
+  confirmResetPassword: Swagger.defaultRequestJSON<ResetPasswordConfirmInput>({
     confirmPassword: '*****',
-    password: '*****'
-  } as ResetPasswordConfirmInput)
+    password: '*****',
+    token: '*****'
+  })
 };
