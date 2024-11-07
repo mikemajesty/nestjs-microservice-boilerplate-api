@@ -104,7 +104,7 @@ export const Swagger = {
     };
   },
 
-  defaultResponseJSON<T = never, AT extends T = T>({ status, json, description }: SwaggerJSON<AT>): ApiResponseOptions {
+  defaultResponseJSON<T = never, AT extends T = T>({ status, json, description }: SwaggerJSON<T>): ApiResponseOptions {
     return {
       content: json
         ? {
@@ -120,7 +120,7 @@ export const Swagger = {
     };
   },
 
-  defaultRequestJSON<T = never, AT extends T = T>(json: AT): ApiResponseOptions {
+  defaultRequestJSON<T = never, AT extends T = T>(json: T): ApiResponseOptions {
     return {
       schema: {
         example: json as AT
