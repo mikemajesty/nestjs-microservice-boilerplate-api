@@ -16,7 +16,7 @@ import { RedisCacheModule } from '@/infra/cache/redis';
 import { RoleSchema } from '@/infra/database/postgres/schemas/role';
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { TokenLibModule } from '@/libs/token';
-import { IsLoggedMiddleware } from '@/observables/middlewares';
+import { AuthenticationMiddleware } from '@/observables/middlewares';
 
 import { PermissionModule } from '../permission/module';
 import {
@@ -84,6 +84,6 @@ import { RoleRepository } from './repository';
 })
 export class RoleModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(IsLoggedMiddleware).forRoutes(RoleController);
+    consumer.apply(AuthenticationMiddleware).forRoutes(RoleController);
   }
 }

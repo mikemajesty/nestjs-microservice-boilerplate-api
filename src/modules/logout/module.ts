@@ -5,7 +5,7 @@ import { ICacheAdapter } from '@/infra/cache';
 import { RedisCacheModule } from '@/infra/cache/redis';
 import { LoggerModule } from '@/infra/logger';
 import { ISecretsAdapter, SecretsModule } from '@/infra/secrets';
-import { IsLoggedMiddleware } from '@/observables/middlewares';
+import { AuthenticationMiddleware } from '@/observables/middlewares';
 
 import { TokenLibModule } from '../../libs/token/module';
 import { ILogoutAdapter } from './adapter';
@@ -27,6 +27,6 @@ import { LogoutController } from './controller';
 })
 export class LogoutModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(IsLoggedMiddleware).forRoutes(LogoutController);
+    consumer.apply(AuthenticationMiddleware).forRoutes(LogoutController);
   }
 }

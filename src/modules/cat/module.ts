@@ -14,7 +14,7 @@ import { Cat, CatDocument, CatSchema } from '@/infra/database/mongo/schemas/cat'
 import { PostgresDatabaseModule } from '@/infra/database/postgres/module';
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { TokenLibModule } from '@/libs/token';
-import { IsLoggedMiddleware } from '@/observables/middlewares';
+import { AuthenticationMiddleware } from '@/observables/middlewares';
 import { MongoRepositoryModelSessionType } from '@/utils/mongoose';
 
 import {
@@ -84,6 +84,6 @@ import { CatRepository } from './repository';
 })
 export class CatModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(IsLoggedMiddleware).forRoutes(CatController);
+    consumer.apply(AuthenticationMiddleware).forRoutes(CatController);
   }
 }

@@ -13,7 +13,7 @@ import { RedisCacheModule } from '@/infra/cache/redis';
 import { PermissionSchema } from '@/infra/database/postgres/schemas/permission';
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { TokenLibModule } from '@/libs/token';
-import { IsLoggedMiddleware } from '@/observables/middlewares';
+import { AuthenticationMiddleware } from '@/observables/middlewares';
 
 import {
   IPermissionCreateAdapter,
@@ -68,6 +68,6 @@ import { PermissionRepository } from './repository';
 })
 export class PermissionModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(IsLoggedMiddleware).forRoutes(PermissionController);
+    consumer.apply(AuthenticationMiddleware).forRoutes(PermissionController);
   }
 }

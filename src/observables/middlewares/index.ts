@@ -1,1 +1,1 @@
-export * from './is-logged.middleware';
+export * from './authetication.middleware';
