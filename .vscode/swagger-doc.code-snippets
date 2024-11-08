@@ -1,0 +1,31 @@
+{
+  "Create Multiples Docs": {
+    "scope": "javascript,typescript",
+    "prefix": "doc_error_multiples",
+    "body": [
+      "400: Swagger.defaultResponseWithMultiplesError({",
+      "  status: 400,",
+      "  route: `\\${BASE_URL}`.concat('/your-uri'),",
+      "  messages: {",
+      "    '': { description: '', value: [''] },",
+      "    '': { description: '', value: [''] }",
+      "  },",
+      "  description: 'your-message-description'",
+      "})"
+    ],
+    "description": "Create Swagger Multiples response to the same status code"
+  },
+  "Create Docs": {
+    "scope": "javascript,typescript",
+    "prefix": "doc_error_sigle",
+    "body": [
+      "404: Swagger.defaultResponseError({",
+      "  status: 404,",
+      "  route: `\\${BASE_URL}`.concat('/your-uri'),",
+      "  messages: 'your-message-error',",
+      "  description: 'your-message-description'",
+      "})"
+    ],
+    "description": "Create Swagger Sigle response error"
+  }
+}

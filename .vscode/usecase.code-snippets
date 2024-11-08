@@ -8,18 +8,18 @@
       "import { ValidateSchema } from '@/utils/decorators';",
       "import { IUsecase } from '@/utils/usecase';",
       "$2",
-      "export const Schema = SchemaValidator.pick({...});",
+      "export const RENAMESchema = z.object({ id: z.string() });",
       "$3",
-      "export type RENAMEUseCaseInput = z.infer<typeof Schema>;",
-      "export type RENAMEUseCaseOutput = void;",
-      "$4",
       "export class RENAMEUsecase implements IUsecase {",
-      "$5",
-      "  @ValidateSchema(Schema)",
+      "  @ValidateSchema(RENAMESchema)",
       "  async execute(input: RENAMEUseCaseInput): Promise<RENAMEUseCaseOutput> {",
       "    return input;",
       "  }",
-      "}"
+      "}",
+      "$5",
+      "export type RENAMEUseCaseInput = z.infer<typeof RENAMESchema>;",
+      "export type RENAMEUseCaseOutput = RENAMEUseCaseInput;",
+      "$4"
     ],
     "description": "Create usecase"
   }
