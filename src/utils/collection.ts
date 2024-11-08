@@ -51,14 +51,21 @@ export class CollectionUtil {
   };
 
   static sum = (collection: unknown[] = []) => {
+    if (!collection.length) {
+      return 0;
+    }
     return collection.reduce((prev, current): number => {
       return Number(prev) + Number(current);
-    });
+    }) as number;
   };
 
   static sumBy = (collection: unknown[] = [], key: string) => {
     if (!key.length) {
       throw new ApiBadRequestException('key is required');
+    }
+
+    if (!collection.length) {
+      return 0;
     }
 
     return collection.reduce((prev: any, current: any): number => {
@@ -71,7 +78,7 @@ export class CollectionUtil {
       }
 
       return Number(prev) + Number(current[key]);
-    });
+    }) as number;
   };
 
   static hasDuplicated = (collection: unknown[] = []) => {
