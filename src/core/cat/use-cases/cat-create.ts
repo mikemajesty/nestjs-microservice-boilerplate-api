@@ -15,9 +15,6 @@ export const CatCreateSchema = CatEntitySchema.pick({
   age: true
 });
 
-export type CatCreateInput = z.infer<typeof CatCreateSchema>;
-export type CatCreateOutput = CreatedModel;
-
 export class CatCreateUsecase implements IUsecase {
   constructor(private readonly catRepository: ICatRepository) {}
 
@@ -32,3 +29,6 @@ export class CatCreateUsecase implements IUsecase {
     return created;
   }
 }
+
+export type CatCreateInput = z.infer<typeof CatCreateSchema>;
+export type CatCreateOutput = CreatedModel;

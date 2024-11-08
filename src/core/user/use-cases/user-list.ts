@@ -11,9 +11,6 @@ import { IUserRepository } from '../repository/user';
 
 export const UserListSchema = z.intersection(PaginationSchema, SortSchema.merge(SearchSchema));
 
-export type UserListInput = PaginationInput<UserEntity>;
-export type UserListOutput = PaginationOutput<UserEntity>;
-
 export class UserListUsecase implements IUsecase {
   constructor(private readonly userRepository: IUserRepository) {}
 
@@ -32,3 +29,6 @@ export class UserListUsecase implements IUsecase {
     };
   }
 }
+
+export type UserListInput = PaginationInput<UserEntity>;
+export type UserListOutput = PaginationOutput<UserEntity>;

@@ -24,9 +24,6 @@ export const UserCreateSchema = UserEntitySchema.pick({
   .merge(UserPasswordEntitySchema.pick({ password: true }))
   .merge(z.object({ roles: z.array(z.nativeEnum(RoleEnum)).min(1) }));
 
-export type UserCreateInput = z.infer<typeof UserCreateSchema>;
-export type UserCreateOutput = CreatedModel;
-
 export class UserCreateUsecase implements IUsecase {
   constructor(
     private readonly userRepository: IUserRepository,
@@ -75,3 +72,6 @@ export class UserCreateUsecase implements IUsecase {
     return user;
   }
 }
+
+export type UserCreateInput = z.infer<typeof UserCreateSchema>;
+export type UserCreateOutput = CreatedModel;

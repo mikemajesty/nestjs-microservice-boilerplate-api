@@ -11,9 +11,6 @@ import { IRoleRepository } from '../repository/role';
 
 export const RoleListSchema = z.intersection(PaginationSchema, SortSchema.merge(SearchSchema));
 
-export type RoleListInput = PaginationInput<RoleEntity>;
-export type RoleListOutput = PaginationOutput<RoleEntity>;
-
 export class RoleListUsecase implements IUsecase {
   constructor(private readonly roleRepository: IRoleRepository) {}
 
@@ -22,3 +19,6 @@ export class RoleListUsecase implements IUsecase {
     return await this.roleRepository.paginate(input);
   }
 }
+
+export type RoleListInput = PaginationInput<RoleEntity>;
+export type RoleListOutput = PaginationOutput<RoleEntity>;

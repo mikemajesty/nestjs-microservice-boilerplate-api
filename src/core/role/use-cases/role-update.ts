@@ -14,9 +14,6 @@ export const RoleUpdateSchema = RoleEntitySchema.pick({
   .merge(RoleEntitySchema.pick({ name: true }).partial())
   .strict();
 
-export type RoleUpdateInput = z.infer<typeof RoleUpdateSchema>;
-export type RoleUpdateOutput = RoleEntity;
-
 export class RoleUpdateUsecase implements IUsecase {
   constructor(
     private readonly roleRepository: IRoleRepository,
@@ -42,3 +39,6 @@ export class RoleUpdateUsecase implements IUsecase {
     return new RoleEntity(updated as RoleEntity);
   }
 }
+
+export type RoleUpdateInput = z.infer<typeof RoleUpdateSchema>;
+export type RoleUpdateOutput = RoleEntity;

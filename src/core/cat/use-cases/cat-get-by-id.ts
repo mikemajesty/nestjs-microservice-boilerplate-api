@@ -12,9 +12,6 @@ export const CatGetByIdSchema = CatEntitySchema.pick({
   id: true
 });
 
-export type CatGetByIdInput = z.infer<typeof CatGetByIdSchema>;
-export type CatGetByIdOutput = CatEntity;
-
 export class CatGetByIdUsecase implements IUsecase {
   constructor(private readonly catRepository: ICatRepository) {}
 
@@ -29,3 +26,6 @@ export class CatGetByIdUsecase implements IUsecase {
     return new CatEntity(cat);
   }
 }
+
+export type CatGetByIdInput = z.infer<typeof CatGetByIdSchema>;
+export type CatGetByIdOutput = CatEntity;

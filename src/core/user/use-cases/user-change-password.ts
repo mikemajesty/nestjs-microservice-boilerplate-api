@@ -13,9 +13,6 @@ export const UserChangePasswordSchema = UserEntitySchema.pick({
   id: true
 }).merge(z.object({ password: z.string(), newPassword: z.string(), confirmPassword: z.string() }));
 
-export type UserChangePasswordInput = z.infer<typeof UserChangePasswordSchema>;
-export type UserChangePasswordOutput = void;
-
 export class UserChangePasswordUsecase implements IUsecase {
   constructor(private readonly repository: IUserRepository) {}
 
@@ -46,3 +43,6 @@ export class UserChangePasswordUsecase implements IUsecase {
     await this.repository.create(user);
   }
 }
+
+export type UserChangePasswordInput = z.infer<typeof UserChangePasswordSchema>;
+export type UserChangePasswordOutput = void;

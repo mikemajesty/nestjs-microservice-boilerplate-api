@@ -13,9 +13,6 @@ export const PermissionCreateSchema = PermissionEntitySchema.pick({
   name: true
 });
 
-export type PermissionCreateInput = z.infer<typeof PermissionCreateSchema>;
-export type PermissionCreateOutput = PermissionEntity;
-
 export class PermissionCreateUsecase implements IUsecase {
   constructor(
     private readonly permissionRepository: IPermissionRepository,
@@ -39,3 +36,6 @@ export class PermissionCreateUsecase implements IUsecase {
     return entity;
   }
 }
+
+export type PermissionCreateInput = z.infer<typeof PermissionCreateSchema>;
+export type PermissionCreateOutput = PermissionEntity;

@@ -15,9 +15,6 @@ export const LoginSchema = UserEntitySchema.pick({
   email: true
 }).merge(UserPasswordEntitySchema.pick({ password: true }));
 
-export type LoginInput = z.infer<typeof LoginSchema>;
-export type LoginOutput = { accessToken: string; refreshToken: string };
-
 export class LoginUsecase implements IUsecase {
   constructor(
     private readonly userRepository: IUserRepository,
@@ -60,3 +57,6 @@ export class LoginUsecase implements IUsecase {
     return { accessToken: token, refreshToken };
   }
 }
+
+export type LoginInput = z.infer<typeof LoginSchema>;
+export type LoginOutput = { accessToken: string; refreshToken: string };

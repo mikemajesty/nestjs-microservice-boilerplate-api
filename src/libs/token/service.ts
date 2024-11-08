@@ -8,16 +8,10 @@ import { ApiUnauthorizedException } from '@/utils/exception';
 
 import { ITokenAdapter } from './adapter';
 
-export const Schema = UserEntitySchema.pick({
+export const TokenGetSchema = UserEntitySchema.pick({
   email: true,
   roles: true
 }).merge(z.object({ password: z.string() }));
-
-export type SignInput = z.infer<typeof Schema>;
-
-export type SignOutput = {
-  token: string;
-};
 
 @Injectable()
 export class TokenService implements ITokenAdapter {
@@ -45,3 +39,9 @@ export class TokenService implements ITokenAdapter {
     });
   }
 }
+
+export type SignInput = z.infer<typeof TokenGetSchema>;
+
+export type SignOutput = {
+  token: string;
+};

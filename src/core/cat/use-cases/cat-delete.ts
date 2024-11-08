@@ -12,9 +12,6 @@ export const CatDeleteSchema = CatEntitySchema.pick({
   id: true
 });
 
-export type CatDeleteInput = z.infer<typeof CatDeleteSchema>;
-export type CatDeleteOutput = CatEntity;
-
 export class CatDeleteUsecase implements IUsecase {
   constructor(private readonly catRepository: ICatRepository) {}
 
@@ -36,3 +33,6 @@ export class CatDeleteUsecase implements IUsecase {
     return entity;
   }
 }
+
+export type CatDeleteInput = z.infer<typeof CatDeleteSchema>;
+export type CatDeleteOutput = CatEntity;

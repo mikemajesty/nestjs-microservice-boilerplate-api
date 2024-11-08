@@ -10,9 +10,6 @@ import { IUserRepository } from '../repository/user';
 
 export const RefreshTokenSchema = z.object({ refreshToken: z.string().trim().min(1) });
 
-export type RefreshTokenInput = z.infer<typeof RefreshTokenSchema>;
-export type RefreshTokenOutput = { accessToken: string; refreshToken: string };
-
 export class RefreshTokenUsecase implements IUsecase {
   constructor(
     private readonly userRepository: IUserRepository,
@@ -50,3 +47,6 @@ export class RefreshTokenUsecase implements IUsecase {
     return { accessToken: token, refreshToken };
   }
 }
+
+export type RefreshTokenInput = z.infer<typeof RefreshTokenSchema>;
+export type RefreshTokenOutput = { accessToken: string; refreshToken: string };

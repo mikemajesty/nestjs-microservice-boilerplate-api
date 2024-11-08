@@ -18,9 +18,6 @@ export const ResetPasswordConfirmSchema = z.object({
   confirmPassword: z.string().min(5).max(200)
 });
 
-export type ResetPasswordConfirmInput = z.infer<typeof ResetPasswordConfirmSchema>;
-export type ResetPasswordConfirmOutput = void;
-
 export class ResetPasswordConfirmUsecase implements IUsecase {
   constructor(
     private readonly resetPasswordTokenRepository: IResetPasswordRepository,
@@ -67,3 +64,6 @@ export class ResetPasswordConfirmUsecase implements IUsecase {
     await this.resetPasswordTokenRepository.remove({ userId: user.id });
   }
 }
+
+export type ResetPasswordConfirmInput = z.infer<typeof ResetPasswordConfirmSchema>;
+export type ResetPasswordConfirmOutput = void;

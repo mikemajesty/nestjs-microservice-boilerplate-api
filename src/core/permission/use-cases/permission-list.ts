@@ -11,9 +11,6 @@ import { IPermissionRepository } from '../repository/permission';
 
 export const PermissionListSchema = z.intersection(PaginationSchema, SortSchema.merge(SearchSchema));
 
-export type PermissionListInput = PaginationInput<PermissionEntity>;
-export type PermissionListOutput = PaginationOutput<PermissionEntity>;
-
 export class PermissionListUsecase implements IUsecase {
   constructor(private readonly permissionRepository: IPermissionRepository) {}
 
@@ -22,3 +19,6 @@ export class PermissionListUsecase implements IUsecase {
     return await this.permissionRepository.paginate(input);
   }
 }
+
+export type PermissionListInput = PaginationInput<PermissionEntity>;
+export type PermissionListOutput = PaginationOutput<PermissionEntity>;

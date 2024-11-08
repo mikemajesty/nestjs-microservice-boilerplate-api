@@ -11,9 +11,6 @@ export const UserGetByIdSchema = UserEntitySchema.pick({
   id: true
 });
 
-export type UserGetByIdInput = z.infer<typeof UserGetByIdSchema>;
-export type UserGetByIdOutput = UserEntity;
-
 export class UserGetByIdUsecase implements IUsecase {
   constructor(private readonly userRepository: IUserRepository) {}
 
@@ -30,3 +27,6 @@ export class UserGetByIdUsecase implements IUsecase {
     return entity;
   }
 }
+
+export type UserGetByIdInput = z.infer<typeof UserGetByIdSchema>;
+export type UserGetByIdOutput = UserEntity;

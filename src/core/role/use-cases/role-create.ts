@@ -13,9 +13,6 @@ export const RoleCreateSchema = RoleEntitySchema.pick({
   name: true
 }).strict();
 
-export type RoleCreateInput = z.infer<typeof RoleCreateSchema>;
-export type RoleCreateOutput = CreatedModel;
-
 export class RoleCreateUsecase implements IUsecase {
   constructor(
     private readonly roleRepository: IRoleRepository,
@@ -33,3 +30,6 @@ export class RoleCreateUsecase implements IUsecase {
     return role;
   }
 }
+
+export type RoleCreateInput = z.infer<typeof RoleCreateSchema>;
+export type RoleCreateOutput = CreatedModel;

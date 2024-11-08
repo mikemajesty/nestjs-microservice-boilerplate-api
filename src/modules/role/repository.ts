@@ -10,8 +10,6 @@ import { ConvertTypeOrmFilter, SearchTypeEnum, ValidateDatabaseSortAllowed } fro
 import { IEntity } from '@/utils/entity';
 import { PaginationUtils } from '@/utils/pagination';
 
-type Model = RoleSchema & RoleEntity;
-
 @Injectable()
 export class RoleRepository extends TypeORMRepository<Model> implements IRoleRepository {
   constructor(readonly repository: Repository<Model>) {
@@ -33,3 +31,5 @@ export class RoleRepository extends TypeORMRepository<Model> implements IRoleRep
     return { docs, total, page: input.page, limit: input.limit };
   }
 }
+
+type Model = RoleSchema & RoleEntity;

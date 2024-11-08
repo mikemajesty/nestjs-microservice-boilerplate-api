@@ -11,9 +11,6 @@ export const RoleDeleteSchema = RoleEntitySchema.pick({
   id: true
 });
 
-export type RoleDeleteInput = z.infer<typeof RoleDeleteSchema>;
-export type RoleDeleteOutput = RoleEntity;
-
 export class RoleDeleteUsecase implements IUsecase {
   constructor(private readonly roleRepository: IRoleRepository) {}
 
@@ -34,3 +31,6 @@ export class RoleDeleteUsecase implements IUsecase {
     return role;
   }
 }
+
+export type RoleDeleteInput = z.infer<typeof RoleDeleteSchema>;
+export type RoleDeleteOutput = RoleEntity;

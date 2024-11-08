@@ -8,8 +8,6 @@ import { DateUtils } from '@/utils/date';
 
 import { ResetPasswordSchema } from '../../infra/database/postgres/schemas/reset-password';
 
-type Model = ResetPasswordSchema & ResetPasswordEntity;
-
 @Injectable()
 export class ResetPasswordRepository extends TypeORMRepository<Model> implements IResetPasswordRepository {
   constructor(readonly repository: Repository<Model>) {
@@ -23,3 +21,5 @@ export class ResetPasswordRepository extends TypeORMRepository<Model> implements
     })) as Model;
   }
 }
+
+type Model = ResetPasswordSchema & ResetPasswordEntity;

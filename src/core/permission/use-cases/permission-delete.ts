@@ -11,9 +11,6 @@ export const PermissionDeleteSchema = PermissionEntitySchema.pick({
   id: true
 });
 
-export type PermissionDeleteInput = z.infer<typeof PermissionDeleteSchema>;
-export type PermissionDeleteOutput = PermissionEntity;
-
 export class PermissionDeleteUsecase implements IUsecase {
   constructor(private readonly permissionRepository: IPermissionRepository) {}
 
@@ -34,3 +31,6 @@ export class PermissionDeleteUsecase implements IUsecase {
     return permission;
   }
 }
+
+export type PermissionDeleteInput = z.infer<typeof PermissionDeleteSchema>;
+export type PermissionDeleteOutput = PermissionEntity;

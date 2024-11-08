@@ -12,9 +12,6 @@ export const RoleDeletePermissionSchema = RoleEntitySchema.pick({
   id: true
 }).merge(z.object({ permissions: z.array(z.string()) }));
 
-export type RoleDeletePermissionInput = z.infer<typeof RoleDeletePermissionSchema>;
-export type RoleDeletePermissionOutput = void;
-
 export class RoleDeletePermissionUsecase implements IUsecase {
   constructor(
     private readonly roleRepository: IRoleRepository,
@@ -50,3 +47,6 @@ export class RoleDeletePermissionUsecase implements IUsecase {
     await this.roleRepository.create(entity);
   }
 }
+
+export type RoleDeletePermissionInput = z.infer<typeof RoleDeletePermissionSchema>;
+export type RoleDeletePermissionOutput = void;

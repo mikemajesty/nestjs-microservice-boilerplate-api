@@ -10,10 +10,6 @@ import { IUsecase } from '@/utils/usecase';
 import { ICatRepository } from '../repository/cat';
 
 export const CatListSchema = z.intersection(PaginationSchema, SortSchema.merge(SearchSchema));
-
-export type CatListInput = PaginationInput<CatEntity>;
-export type CatListOutput = PaginationOutput<CatEntity>;
-
 export class CatListUsecase implements IUsecase {
   constructor(private readonly catRepository: ICatRepository) {}
 
@@ -22,3 +18,6 @@ export class CatListUsecase implements IUsecase {
     return await this.catRepository.paginate(input);
   }
 }
+
+export type CatListInput = PaginationInput<CatEntity>;
+export type CatListOutput = PaginationOutput<CatEntity>;

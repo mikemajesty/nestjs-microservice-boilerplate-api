@@ -13,9 +13,6 @@ export const CatUpdateSchema = CatEntitySchema.pick({
   id: true
 }).merge(CatEntitySchema.omit({ id: true }).partial());
 
-export type CatUpdateInput = z.infer<typeof CatUpdateSchema>;
-export type CatUpdateOutput = CatEntity;
-
 export class CatUpdateUsecase implements IUsecase {
   constructor(
     private readonly catRepository: ICatRepository,
@@ -43,3 +40,6 @@ export class CatUpdateUsecase implements IUsecase {
     return new CatEntity(updated as CatEntity);
   }
 }
+
+export type CatUpdateInput = z.infer<typeof CatUpdateSchema>;
+export type CatUpdateOutput = CatEntity;

@@ -19,9 +19,6 @@ export const ResetPasswordSendEmailSchema = UserEntitySchema.pick({
   email: true
 });
 
-export type ResetPasswordSendEmailInput = z.infer<typeof ResetPasswordSendEmailSchema>;
-export type ResetPasswordSendEmailOutput = void;
-
 export class ResetPasswordSendEmailUsecase implements IUsecase {
   constructor(
     private readonly resetPasswordRepository: IResetPasswordRepository,
@@ -62,3 +59,6 @@ export class ResetPasswordSendEmailUsecase implements IUsecase {
     });
   }
 }
+
+export type ResetPasswordSendEmailInput = z.infer<typeof ResetPasswordSendEmailSchema>;
+export type ResetPasswordSendEmailOutput = void;

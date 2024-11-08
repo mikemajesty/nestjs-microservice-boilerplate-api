@@ -10,8 +10,6 @@ import { ConvertTypeOrmFilter, SearchTypeEnum, ValidateDatabaseSortAllowed } fro
 import { IEntity } from '@/utils/entity';
 import { PaginationUtils } from '@/utils/pagination';
 
-type Model = PermissionSchema & PermissionEntity;
-
 @Injectable()
 export class PermissionRepository extends TypeORMRepository<Model> implements IPermissionRepository {
   constructor(readonly repository: Repository<Model>) {
@@ -37,3 +35,5 @@ export class PermissionRepository extends TypeORMRepository<Model> implements IP
     return { docs, total, page: input.page, limit: input.limit };
   }
 }
+
+type Model = PermissionSchema & PermissionEntity;

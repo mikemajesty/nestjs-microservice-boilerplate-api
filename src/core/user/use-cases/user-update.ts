@@ -19,9 +19,6 @@ export const UserUpdateSchema = UserEntitySchema.pick({
   .merge(z.object({ roles: z.array(z.nativeEnum(RoleEnum)) }))
   .strict();
 
-export type UserUpdateInput = Partial<z.infer<typeof UserUpdateSchema>>;
-export type UserUpdateOutput = UserEntity;
-
 export class UserUpdateUsecase implements IUsecase {
   constructor(
     private readonly userRepository: IUserRepository,
@@ -64,3 +61,6 @@ export class UserUpdateUsecase implements IUsecase {
     return entityUpdated;
   }
 }
+
+export type UserUpdateInput = Partial<z.infer<typeof UserUpdateSchema>>;
+export type UserUpdateOutput = UserEntity;

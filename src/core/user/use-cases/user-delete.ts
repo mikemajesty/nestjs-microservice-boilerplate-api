@@ -12,9 +12,6 @@ export const UserDeleteSchema = UserEntitySchema.pick({
   id: true
 });
 
-export type UserDeleteInput = z.infer<typeof UserDeleteSchema>;
-export type UserDeleteOutput = UserEntity;
-
 export class UserDeleteUsecase implements IUsecase {
   constructor(private readonly userRepository: IUserRepository) {}
 
@@ -35,3 +32,6 @@ export class UserDeleteUsecase implements IUsecase {
     return userEntity;
   }
 }
+
+export type UserDeleteInput = z.infer<typeof UserDeleteSchema>;
+export type UserDeleteOutput = UserEntity;

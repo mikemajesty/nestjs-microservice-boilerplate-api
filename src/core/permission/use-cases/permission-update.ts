@@ -12,9 +12,6 @@ export const PermissionUpdateSchema = PermissionEntitySchema.pick({
   id: true
 }).merge(PermissionEntitySchema.omit({ id: true }).partial());
 
-export type PermissionUpdateInput = z.infer<typeof PermissionUpdateSchema>;
-export type PermissionUpdateOutput = PermissionEntity;
-
 export class PermissionUpdateUsecase implements IUsecase {
   constructor(
     private readonly permissionRepository: IPermissionRepository,
@@ -49,3 +46,6 @@ export class PermissionUpdateUsecase implements IUsecase {
     return entity;
   }
 }
+
+export type PermissionUpdateInput = z.infer<typeof PermissionUpdateSchema>;
+export type PermissionUpdateOutput = PermissionEntity;
