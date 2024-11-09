@@ -5,17 +5,6 @@ import { ErrorModel } from '@/utils/exception';
 
 import { DefaultErrorMessage } from '../http-status';
 
-type MessagesInput = {
-  [key: string]: {
-    value: string[];
-    description: string;
-  };
-};
-
-type NoInfer<T> = [T][T extends unknown ? 0 : never];
-
-type MultiplesExceptionResponse = Omit<SwaggerError, 'message'> & { messages: MessagesInput };
-
 export const Swagger = {
   defaultResponseError({ status, route, message, description }: SwaggerError): ApiResponseOptions {
     return {
@@ -183,3 +172,14 @@ type SwaggerJSON<T> = {
   json?: T;
   description?: string;
 };
+
+type MessagesInput = {
+  [key: string]: {
+    value: string[];
+    description: string;
+  };
+};
+
+type NoInfer<T> = [T][T extends unknown ? 0 : never];
+
+type MultiplesExceptionResponse = Omit<SwaggerError, 'message'> & { messages: MessagesInput };
