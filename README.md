@@ -56,9 +56,9 @@ Creating a CRUD in Postgres and Mongo in seconds.
 - `( ) LIB`
 - `( ) INFRA`
 - `( ) MODULE`
+- `( ) Core`
 - type module name (use the singular name)
 - After generating the CRUD, follow the instructions on the generated link.
-- ✨Magic ✨
 
 #### CRUD features
 
@@ -494,8 +494,8 @@ Creating a CRUD in Postgres and Mongo in seconds.
 │   │   │   ├── request-timeout.interceptor.ts
 │   │   │   └── tracing.interceptor.ts
 │   │   └── middlewares
-│   │       ├── index.ts
-│   │       └── is-logged.middleware.ts
+│   │       ├── authetication.middleware.ts
+│   │       └── index.ts
 │   └── utils
 │       ├── axios.ts
 │       ├── collection.ts
