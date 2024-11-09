@@ -12,6 +12,8 @@ type MessagesInput = {
   };
 };
 
+export type NoInfer<T> = [T][T extends unknown ? 0 : never];
+
 type MultiplesExceptionResponse = Omit<SwaggerError, 'message'> & { messages: MessagesInput };
 
 export const Swagger = {
@@ -104,13 +106,13 @@ export const Swagger = {
     };
   },
 
-  defaultResponseJSON<T = never, AT extends T = T>({ status, json, description }: SwaggerJSON<T>): ApiResponseOptions {
+  defaultResponseJSON<T = void>({ status, json, description }: SwaggerJSON<NoInfer<T>>): ApiResponseOptions {
     return {
       content: json
         ? {
             'application/json': {
               schema: {
-                example: json as AT
+                example: json as NoInfer<T>
               }
             }
           }
@@ -120,10 +122,10 @@ export const Swagger = {
     };
   },
 
-  defaultRequestJSON<T = never, U extends T = T>(json: U): ApiResponseOptions {
+  defaultRequestJSON<T = void>(json: NoInfer<T>): ApiResponseOptions {
     return {
       schema: {
-        example: json as U
+        example: json as NoInfer<T>
       }
     };
   },

@@ -1,8 +1,7 @@
 import { CatEntity } from '@/core/cat/entity/cat';
-import { CatCreateInput } from '@/core/cat/use-cases/cat-create';
+import { CatCreateInput, CatCreateOutput } from '@/core/cat/use-cases/cat-create';
 import { CatListOutput } from '@/core/cat/use-cases/cat-list';
 import { CatUpdateInput } from '@/core/cat/use-cases/cat-update';
-import { CreatedModel } from '@/infra/repository';
 import { CatRequest } from '@/utils/docs/data/cat/request';
 import { CatResponse } from '@/utils/docs/data/cat/response';
 import { Swagger } from '@/utils/docs/swagger';
@@ -12,7 +11,7 @@ const BASE_URL = `api/v1/cats`;
 
 export const SwaggerResponse = {
   create: {
-    200: Swagger.defaultResponseJSON<CreatedModel>({
+    200: Swagger.defaultResponseJSON<CatCreateOutput>({
       status: 200,
       json: CatResponse.create,
       description: 'create user.'
