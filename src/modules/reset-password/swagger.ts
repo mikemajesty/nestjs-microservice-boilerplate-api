@@ -57,8 +57,8 @@ export const SwaggerRequest = {
     email: 'admin@admin.com'
   }),
   confirmResetPassword: Swagger.defaultRequestJSON<ResetPasswordConfirmInput>({
-    confirmPassword: '*****',
     password: '*****',
-    token: '*****'
+    token: '*****',
+    confirmPassword: '****'
   })
 };

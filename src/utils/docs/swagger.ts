@@ -120,10 +120,10 @@ export const Swagger = {
     };
   },
 
-  defaultRequestJSON<T = never, AT extends T = T>(json: T): ApiResponseOptions {
+  defaultRequestJSON<T = never, U extends T = T>(json: U): ApiResponseOptions {
     return {
       schema: {
-        example: json as AT
+        example: json as U
       }
     };
   },
