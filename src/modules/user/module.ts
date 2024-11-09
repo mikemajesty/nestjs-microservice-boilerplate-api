@@ -56,9 +56,9 @@ import { UserRepository } from './repository';
         userRepository: IUserRepository,
         loggerService: ILoggerAdapter,
         event: IEventAdapter,
-        roleRpository: IRoleRepository
+        roleRepository: IRoleRepository
       ) => {
-        return new UserCreateUsecase(userRepository, loggerService, event, roleRpository);
+        return new UserCreateUsecase(userRepository, loggerService, event, roleRepository);
       },
       inject: [IUserRepository, ILoggerAdapter, IEventAdapter, IRoleRepository]
     },
