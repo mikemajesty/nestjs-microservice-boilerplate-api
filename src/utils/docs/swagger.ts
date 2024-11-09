@@ -12,7 +12,7 @@ type MessagesInput = {
   };
 };
 
-export type NoInfer<T> = [T][T extends unknown ? 0 : never];
+type NoInfer<T> = [T][T extends unknown ? 0 : never];
 
 type MultiplesExceptionResponse = Omit<SwaggerError, 'message'> & { messages: MessagesInput };
 
