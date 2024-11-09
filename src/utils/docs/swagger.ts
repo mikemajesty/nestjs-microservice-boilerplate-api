@@ -22,7 +22,7 @@ export const Swagger = {
           error: {
             code: status,
             traceid: '<traceId>',
-            context: 'context',
+            context: '<context>',
             message: [[DefaultErrorMessage[String(status)], message].find(Boolean)],
             timestamp: '<timestamp>',
             path: route
