@@ -45,8 +45,8 @@ describe(UserChangePasswordUsecase.name, () => {
         expect(issues).toEqual([
           { message: 'Required', path: UserEntity.nameOf('id') },
           { message: 'Required', path: UserPasswordEntity.nameOf('password') },
-          { message: 'Required', path: 'newPassword' },
-          { message: 'Required', path: 'confirmPassword' }
+          { message: 'Required', path: TestUtils.propertyOf<UserChangePasswordInput>('newPassword') },
+          { message: 'Required', path: TestUtils.propertyOf<UserChangePasswordInput>('confirmPassword') }
         ]);
       }
     );

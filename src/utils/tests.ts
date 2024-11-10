@@ -16,6 +16,10 @@ export class TestUtils {
     }
   };
 
+  static propertyOf<T>(name: keyof T) {
+    return name;
+  }
+
   static getMockUUID = () => '9269248e-54cc-46f9-80c0-7029c989c0e3';
 
   static getMockObjectId = () => new Types.ObjectId('671d15ddd0bcb68467b767d0');

@@ -43,7 +43,7 @@ describe(LoginUsecase.name, () => {
       (issues: ZodIssue[]) => {
         expect(issues).toEqual([
           { message: 'Required', path: UserEntity.nameOf('email') },
-          { message: 'Required', path: 'password' }
+          { message: 'Required', path: TestUtils.propertyOf<LoginInput>('password') }
         ]);
       }
     );
