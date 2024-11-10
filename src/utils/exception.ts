@@ -1,20 +1,5 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
 
-export type ErrorModel = {
-  error: {
-    code: string | number;
-    traceid: string;
-    context: string;
-    message: string[];
-    timestamp: string;
-    path: string;
-  };
-};
-
-type ParametersType = { [key: string]: unknown; context?: string; externalApi?: string };
-
-type MessageType = string | string[];
-
 export class BaseException extends HttpException {
   traceid!: string;
   readonly context!: string;
@@ -77,3 +62,18 @@ export class ApiTimeoutException extends BaseException {
     super(message ?? ApiTimeoutException.name, 408, parameters);
   }
 }
+
+export type ApiErrorType = {
+  error: {
+    code: string | number;
+    traceid: string;
+    context: string;
+    message: string[];
+    timestamp: string;
+    path: string;
+  };
+};
+
+type ParametersType = { [key: string]: unknown; context?: string; externalApi?: string };
+
+type MessageType = string | string[];

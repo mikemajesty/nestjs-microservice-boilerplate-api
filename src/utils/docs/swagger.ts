@@ -1,12 +1,17 @@
 import { ApiQueryOptions, ApiResponseOptions } from '@nestjs/swagger';
 import { ExamplesObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
 
-import { ErrorModel } from '@/utils/exception';
+import { ApiErrorType } from '@/utils/exception';
 
 import { DefaultErrorMessage } from '../http-status';
 
 export const Swagger = {
-  defaultResponseError({ status, route, message, description }: SwaggerError): ApiResponseOptions {
+  defaultResponseError<T = ApiErrorType>({
+    status,
+    route,
+    message,
+    description
+  }: SwaggerErrorInput): ApiResponseOptions {
     return {
       schema: {
         example: {
@@ -18,13 +23,13 @@ export const Swagger = {
             timestamp: '<timestamp>',
             path: route
           }
-        } as ErrorModel
+        } as T
       },
       description,
       status
     };
   },
-  defaultPaginateMessageExceptions(): MessagesInput {
+  defaultPaginateMessageExceptions(): MessagesOutput {
     return {
       'filter exception': {
         description: 'filter field not allowed',
@@ -66,7 +71,7 @@ export const Swagger = {
             timestamp: '<timestamp>',
             path: route
           }
-        } as ErrorModel,
+        } as ApiErrorType,
         description: messages[`${key}`].description
       };
     }
@@ -153,7 +158,7 @@ export const Swagger = {
   }
 };
 
-type SwaggerError = {
+type SwaggerErrorInput = {
   status: number;
   route: string;
   message?: string | unknown;
@@ -172,7 +177,7 @@ type SwaggerJSON<T> = {
   description?: string;
 };
 
-type MessagesInput = {
+type MessagesOutput = {
   [key: string]: {
     value: string[];
     description: string;
@@ -181,4 +186,4 @@ type MessagesInput = {
 
 type NoInfer<T> = [T][T extends unknown ? 0 : never];
 
-type MultiplesExceptionResponse = Omit<SwaggerError, 'message'> & { messages: MessagesInput };
+type MultiplesExceptionResponse = Omit<SwaggerErrorInput, 'message'> & { messages: MessagesOutput };

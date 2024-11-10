@@ -49,7 +49,7 @@ export const SortHttpSchema = z
   });
 
 export const SortSchema = z.object({
-  sort: z.record(z.string().trim().min(1), z.nativeEnum(SortEnum)).nullable()
+  sort: z.record(z.string().trim().min(1), z.nativeEnum(SortEnum)).nullable().default({})
 });
 
 export type SortInput = z.infer<typeof SortSchema>;

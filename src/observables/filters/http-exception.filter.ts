@@ -4,7 +4,7 @@ import { ZodError, ZodIssue } from 'zod';
 
 import { ILoggerAdapter } from '@/infra/logger/adapter';
 import { DateUtils } from '@/utils/date';
-import { BaseException, ErrorModel } from '@/utils/exception';
+import { ApiErrorType, BaseException } from '@/utils/exception';
 import { DefaultErrorMessage } from '@/utils/http-status';
 
 @Catch()
@@ -33,7 +33,7 @@ export class ExceptionFilter implements AppExceptionFilter {
         timestamp: DateUtils.getDateStringWithFormat(),
         path: request.url
       }
-    } as ErrorModel);
+    } as ApiErrorType);
   }
 
   private getMessage(exception: BaseException, status: string | number): string[] {
