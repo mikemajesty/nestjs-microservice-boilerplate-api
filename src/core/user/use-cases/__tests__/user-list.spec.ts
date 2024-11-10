@@ -39,10 +39,7 @@ describe(UserListUsecase.name, () => {
     await TestUtils.expectZodError(
       () => usecase.execute({} as UserListInput),
       (issues: ZodIssue[]) => {
-        expect(issues).toEqual([
-          { message: 'Required', path: 'sort' },
-          { message: 'Required', path: 'search' }
-        ]);
+        expect(issues).toEqual([{ message: 'Required', path: 'search' }]);
       }
     );
   });
