@@ -40,7 +40,7 @@ describe(CatGetByIdUsecase.name, () => {
     await TestUtils.expectZodError(
       () => usecase.execute({} as CatGetByIdInput),
       (issues: ZodIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: CatEntity.nameOf('id') }]);
+        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<CatGetByIdInput>('id') }]);
       }
     );
   });

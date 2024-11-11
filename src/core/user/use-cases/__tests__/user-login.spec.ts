@@ -42,8 +42,8 @@ describe(LoginUsecase.name, () => {
       () => usecase.execute({} as LoginInput, TestUtils.getMockTracing()),
       (issues: ZodIssue[]) => {
         expect(issues).toEqual([
-          { message: 'Required', path: UserEntity.nameOf('email') },
-          { message: 'Required', path: TestUtils.propertyOf<LoginInput>('password') }
+          { message: 'Required', path: TestUtils.nameOf<LoginInput>('email') },
+          { message: 'Required', path: TestUtils.nameOf<LoginInput>('password') }
         ]);
       }
     );

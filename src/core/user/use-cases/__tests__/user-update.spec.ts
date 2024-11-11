@@ -47,13 +47,13 @@ describe(UserUpdateUsecase.name, () => {
 
   test('when no input is specified, should expect an error', async () => {
     await TestUtils.expectZodError(
-      () => usecase.execute({}, TestUtils.getMockTracing()),
+      () => usecase.execute({} as UserUpdateInput, TestUtils.getMockTracing()),
       (issues: ZodIssue[]) => {
         expect(issues).toEqual([
-          { message: 'Required', path: UserEntity.nameOf('id') },
-          { message: 'Required', path: UserEntity.nameOf('name') },
-          { message: 'Required', path: UserEntity.nameOf('email') },
-          { message: 'Required', path: UserEntity.nameOf('roles') }
+          { message: 'Required', path: TestUtils.nameOf<UserUpdateInput>('id') },
+          { message: 'Required', path: TestUtils.nameOf<UserUpdateInput>('name') },
+          { message: 'Required', path: TestUtils.nameOf<UserUpdateInput>('email') },
+          { message: 'Required', path: TestUtils.nameOf<UserUpdateInput>('roles') }
         ]);
       }
     );

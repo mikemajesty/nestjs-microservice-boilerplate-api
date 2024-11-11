@@ -47,9 +47,7 @@ describe(RefreshTokenUsecase.name, () => {
     await TestUtils.expectZodError(
       () => usecase.execute({} as RefreshTokenInput),
       (issues: ZodIssue[]) => {
-        expect(issues).toEqual([
-          { message: 'Required', path: TestUtils.propertyOf<RefreshTokenInput>('refreshToken') }
-        ]);
+        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<RefreshTokenInput>('refreshToken') }]);
       }
     );
   });

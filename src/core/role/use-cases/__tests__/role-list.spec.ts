@@ -37,7 +37,7 @@ describe(RoleListUsecase.name, () => {
     await TestUtils.expectZodError(
       () => usecase.execute({} as RoleListInput),
       (issues: ZodIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: TestUtils.propertyOf<RoleListInput>('search') }]);
+        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<RoleListInput>('search') }]);
       }
     );
   });

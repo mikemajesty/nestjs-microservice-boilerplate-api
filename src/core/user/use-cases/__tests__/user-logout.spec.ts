@@ -41,7 +41,7 @@ describe(LogoutUsecase.name, () => {
     await TestUtils.expectZodError(
       () => usecase.execute({} as LogoutInput, TestUtils.getMockTracing()),
       (issues: ZodIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: TestUtils.propertyOf<LogoutInput>('token') }]);
+        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<LogoutInput>('token') }]);
       }
     );
   });

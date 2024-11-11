@@ -38,7 +38,7 @@ describe(RoleDeleteUsecase.name, () => {
     await TestUtils.expectZodError(
       () => usecase.execute({} as RoleDeleteInput),
       (issues: ZodIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: RoleEntity.nameOf('id') }]);
+        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<RoleDeleteInput>('id') }]);
       }
     );
   });

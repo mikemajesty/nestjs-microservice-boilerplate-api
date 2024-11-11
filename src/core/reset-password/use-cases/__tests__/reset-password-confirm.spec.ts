@@ -68,9 +68,9 @@ describe(ResetPasswordConfirmUsecase.name, () => {
       () => usecase.execute({} as ResetPasswordConfirmInput),
       (issues: ZodIssue[]) => {
         expect(issues).toEqual([
-          { message: 'Required', path: 'token' },
-          { message: 'Required', path: 'password' },
-          { message: 'Required', path: 'confirmPassword' }
+          { message: 'Required', path: TestUtils.nameOf<ResetPasswordConfirmInput>('token') },
+          { message: 'Required', path: TestUtils.nameOf<ResetPasswordConfirmInput>('password') },
+          { message: 'Required', path: TestUtils.nameOf<ResetPasswordConfirmInput>('confirmPassword') }
         ]);
       }
     );

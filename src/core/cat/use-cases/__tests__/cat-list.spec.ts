@@ -39,7 +39,7 @@ describe(CatListUsecase.name, () => {
     await TestUtils.expectZodError(
       () => usecase.execute({} as CatListInput),
       (issues: ZodIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: TestUtils.propertyOf<CatListInput>('search') }]);
+        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<CatListInput>('search') }]);
       }
     );
   });

@@ -40,7 +40,7 @@ describe(UserGetByIdUsecase.name, () => {
     await TestUtils.expectZodError(
       () => usecase.execute({} as UserGetByIdInput),
       (issues: ZodIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: UserEntity.nameOf('id') }]);
+        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<UserGetByIdInput>('id') }]);
       }
     );
   });

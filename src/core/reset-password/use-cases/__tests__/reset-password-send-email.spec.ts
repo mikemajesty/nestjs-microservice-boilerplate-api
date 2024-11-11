@@ -75,7 +75,7 @@ describe(ResetPasswordSendEmailUsecase.name, () => {
     await TestUtils.expectZodError(
       () => usecase.execute({} as ResetPasswordSendEmailInput),
       (issues: ZodIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: 'email' }]);
+        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<ResetPasswordSendEmailInput>('email') }]);
       }
     );
   });

@@ -39,7 +39,7 @@ describe(UserListUsecase.name, () => {
     await TestUtils.expectZodError(
       () => usecase.execute({} as UserListInput),
       (issues: ZodIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: TestUtils.propertyOf<UserListInput>('search') }]);
+        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<UserListInput>('search') }]);
       }
     );
   });

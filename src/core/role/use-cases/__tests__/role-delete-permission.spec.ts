@@ -49,8 +49,8 @@ describe(RoleDeletePermissionUsecase.name, () => {
       () => usecase.execute({} as RoleDeletePermissionInput),
       (issues: ZodIssue[]) => {
         expect(issues).toEqual([
-          { message: 'Required', path: RoleEntity.nameOf('id') },
-          { message: 'Required', path: RoleEntity.nameOf('permissions') }
+          { message: 'Required', path: TestUtils.nameOf<RoleDeletePermissionInput>('id') },
+          { message: 'Required', path: TestUtils.nameOf<RoleDeletePermissionInput>('permissions') }
         ]);
       }
     );

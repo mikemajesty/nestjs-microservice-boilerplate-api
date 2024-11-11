@@ -38,7 +38,7 @@ describe(RoleGetByIdUsecase.name, () => {
     await TestUtils.expectZodError(
       () => usecase.execute({} as RoleGetByIdInput),
       (issues: ZodIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: RoleEntity.nameOf('id') }]);
+        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<RoleGetByIdInput>('id') }]);
       }
     );
   });

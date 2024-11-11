@@ -40,7 +40,7 @@ describe(CatUpdateUsecase.name, () => {
     await TestUtils.expectZodError(
       () => usecase.execute({} as CatUpdateInput, TestUtils.getMockTracing()),
       (issues: ZodIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: CatEntity.nameOf('id') }]);
+        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<CatUpdateInput>('id') }]);
       }
     );
   });

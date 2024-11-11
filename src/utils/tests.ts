@@ -16,7 +16,7 @@ export class TestUtils {
     }
   };
 
-  static propertyOf<T>(name: keyof T) {
+  static nameOf<T>(name: keyof T) {
     return name;
   }
 

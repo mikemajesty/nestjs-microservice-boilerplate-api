@@ -8,7 +8,7 @@ import { TestUtils } from '@/utils/tests';
 
 import { UserEntity } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
-import { UserDeleteUsecase } from '../user-delete';
+import { UserDeleteInput, UserDeleteUsecase } from '../user-delete';
 
 describe(UserDeleteUsecase.name, () => {
   let usecase: IUserDeleteAdapter;
@@ -38,9 +38,9 @@ describe(UserDeleteUsecase.name, () => {
 
   test('when no input is specified, should expect an error', async () => {
     await TestUtils.expectZodError(
-      () => usecase.execute({ id: 'uuid' }, TestUtils.getMockTracing()),
+      () => usecase.execute({ id: 'uuid' } as UserDeleteInput, TestUtils.getMockTracing()),
       (issues: ZodIssue[]) => {
-        expect(issues).toEqual([{ message: 'Invalid uuid', path: UserEntity.nameOf('id') }]);
+        expect(issues).toEqual([{ message: 'Invalid uuid', path: TestUtils.nameOf<UserDeleteInput>('id') }]);
       }
     );
   });

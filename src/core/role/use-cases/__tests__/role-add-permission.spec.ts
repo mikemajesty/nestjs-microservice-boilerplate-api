@@ -48,8 +48,8 @@ describe(RoleAddPermissionUsecase.name, () => {
       () => usecase.execute({} as RoleAddPermissionInput),
       (issues: ZodIssue[]) => {
         expect(issues).toEqual([
-          { message: 'Required', path: RoleEntity.nameOf('id') },
-          { message: 'Required', path: RoleEntity.nameOf('permissions') }
+          { message: 'Required', path: TestUtils.nameOf<RoleAddPermissionInput>('id') },
+          { message: 'Required', path: TestUtils.nameOf<RoleAddPermissionInput>('permissions') }
         ]);
       }
     );

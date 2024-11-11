@@ -62,10 +62,10 @@ describe(UserCreateUsecase.name, () => {
       () => usecase.execute({} as UserCreateInput, TestUtils.getMockTracing()),
       (issues: ZodIssue[]) => {
         expect(issues).toEqual([
-          { message: 'Required', path: UserEntity.nameOf('email') },
-          { message: 'Required', path: UserEntity.nameOf('name') },
-          { message: 'Required', path: UserPasswordEntity.nameOf('password') },
-          { message: 'Required', path: UserEntity.nameOf('roles') }
+          { message: 'Required', path: TestUtils.nameOf<UserCreateInput>('email') },
+          { message: 'Required', path: TestUtils.nameOf<UserCreateInput>('name') },
+          { message: 'Required', path: TestUtils.nameOf<UserCreateInput>('password') },
+          { message: 'Required', path: TestUtils.nameOf<UserCreateInput>('roles') }
         ]);
       }
     );

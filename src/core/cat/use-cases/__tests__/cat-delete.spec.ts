@@ -40,7 +40,7 @@ describe(CatDeleteUsecase.name, () => {
     await TestUtils.expectZodError(
       () => usecase.execute({} as CatDeleteInput, TestUtils.getMockTracing()),
       (issues: ZodIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: CatEntity.nameOf('id') }]);
+        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<CatDeleteInput>('id') }]);
       }
     );
   });

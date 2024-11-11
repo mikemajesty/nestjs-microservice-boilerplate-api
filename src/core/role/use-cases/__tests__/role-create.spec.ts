@@ -5,7 +5,7 @@ import { ILoggerAdapter } from '@/infra/logger';
 import { IRoleCreateAdapter } from '@/modules/role/adapter';
 import { TestUtils } from '@/utils/tests';
 
-import { RoleEntity, RoleEnum } from '../../entity/role';
+import { RoleEnum } from '../../entity/role';
 import { IRoleRepository } from '../../repository/role';
 import { RoleCreateInput, RoleCreateOutput, RoleCreateUsecase } from '../role-create';
 
@@ -44,7 +44,7 @@ describe(RoleCreateUsecase.name, () => {
     await TestUtils.expectZodError(
       () => usecase.execute({} as RoleCreateInput),
       (issues: ZodIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: RoleEntity.nameOf('name') }]);
+        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<RoleCreateInput>('name') }]);
       }
     );
   });

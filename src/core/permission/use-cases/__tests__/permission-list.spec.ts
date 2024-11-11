@@ -41,7 +41,7 @@ describe(PermissionListUsecase.name, () => {
     await TestUtils.expectZodError(
       () => usecase.execute({} as PermissionListInput),
       (issues: ZodIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: TestUtils.propertyOf<PermissionListInput>('search') }]);
+        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<PermissionListInput>('search') }]);
       }
     );
   });

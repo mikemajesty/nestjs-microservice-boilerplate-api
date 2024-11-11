@@ -38,7 +38,7 @@ describe(PermissionDeleteUsecase.name, () => {
     await TestUtils.expectZodError(
       () => usecase.execute({} as PermissionDeleteInput),
       (issues: ZodIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: PermissionEntity.nameOf('id') }]);
+        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<PermissionDeleteInput>('id') }]);
       }
     );
   });

@@ -45,7 +45,7 @@ describe(PermissionCreateUsecase.name, () => {
     await TestUtils.expectZodError(
       () => usecase.execute({} as PermissionCreateInput),
       (issues: ZodIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: PermissionEntity.nameOf('name') }]);
+        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<PermissionCreateInput>('name') }]);
       }
     );
   });

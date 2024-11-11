@@ -41,9 +41,9 @@ describe(CatCreateUsecase.name, () => {
       () => usecase.execute({} as CatCreateInput, TestUtils.getMockTracing()),
       (issues: ZodIssue[]) => {
         expect(issues).toEqual([
-          { message: 'Required', path: CatEntity.nameOf('name') },
-          { message: 'Required', path: CatEntity.nameOf('breed') },
-          { message: 'Required', path: CatEntity.nameOf('age') }
+          { message: 'Required', path: TestUtils.nameOf<CatCreateInput>('name') },
+          { message: 'Required', path: TestUtils.nameOf<CatCreateInput>('breed') },
+          { message: 'Required', path: TestUtils.nameOf<CatCreateInput>('age') }
         ]);
       }
     );

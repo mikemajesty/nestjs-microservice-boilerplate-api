@@ -43,10 +43,10 @@ describe(UserChangePasswordUsecase.name, () => {
       () => usecase.execute({} as UserChangePasswordInput),
       (issues: ZodIssue[]) => {
         expect(issues).toEqual([
-          { message: 'Required', path: UserEntity.nameOf('id') },
-          { message: 'Required', path: UserPasswordEntity.nameOf('password') },
-          { message: 'Required', path: TestUtils.propertyOf<UserChangePasswordInput>('newPassword') },
-          { message: 'Required', path: TestUtils.propertyOf<UserChangePasswordInput>('confirmPassword') }
+          { message: 'Required', path: TestUtils.nameOf<UserChangePasswordInput>('id') },
+          { message: 'Required', path: TestUtils.nameOf<UserChangePasswordInput>('password') },
+          { message: 'Required', path: TestUtils.nameOf<UserChangePasswordInput>('newPassword') },
+          { message: 'Required', path: TestUtils.nameOf<UserChangePasswordInput>('confirmPassword') }
         ]);
       }
     );
