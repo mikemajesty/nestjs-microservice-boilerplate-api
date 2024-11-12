@@ -2,6 +2,7 @@ import { Test } from '@nestjs/testing';
 import { ZodIssue } from 'zod';
 
 import { LoggerModule } from '@/infra/logger';
+import { CreatedModel } from '@/infra/repository';
 import { ICatCreateAdapter } from '@/modules/cat/adapter';
 import { ApiInternalServerException } from '@/utils/exception';
 import { TestUtils } from '@/utils/tests';
@@ -57,13 +58,13 @@ describe(CatCreateUsecase.name, () => {
   });
 
   test('when cat created successfully, should expect a cat that has been created', async () => {
-    repository.create = jest.fn().mockResolvedValue(cat);
+    repository.create = TestUtils.mockResolvedValue<CreatedModel>(cat);
 
     await expect(usecase.execute(cat, TestUtils.getMockTracing())).resolves.toEqual(cat);
   });
 
   test('when transaction throw an error, should expect an error', async () => {
-    repository.create = jest.fn().mockRejectedValue(new ApiInternalServerException());
+    repository.create = TestUtils.mockRejectedValue(new ApiInternalServerException());
 
     await expect(usecase.execute(cat, TestUtils.getMockTracing())).rejects.toThrow(ApiInternalServerException);
   });

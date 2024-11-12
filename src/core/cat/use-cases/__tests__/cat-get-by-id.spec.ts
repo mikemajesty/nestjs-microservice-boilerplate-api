@@ -46,7 +46,7 @@ describe(CatGetByIdUsecase.name, () => {
   });
 
   test('when cat not found, should expect an error', async () => {
-    repository.findById = jest.fn().mockResolvedValue(null);
+    repository.findById = TestUtils.mockResolvedValue<CatEntity>(null);
 
     await expect(usecase.execute({ id: TestUtils.getMockUUID() })).rejects.toThrow(ApiNotFoundException);
   });
@@ -59,7 +59,7 @@ describe(CatGetByIdUsecase.name, () => {
   });
 
   test('when cat found, should expect a cat that has been found', async () => {
-    repository.findById = jest.fn().mockResolvedValue(cat);
+    repository.findById = TestUtils.mockResolvedValue<CatEntity>(cat);
 
     await expect(usecase.execute({ id: TestUtils.getMockUUID() })).resolves.toEqual(cat);
   });

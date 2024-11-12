@@ -1,7 +1,7 @@
 import { Test } from '@nestjs/testing';
 import { ZodIssue } from 'zod';
 
-import { CatListInput, CatListUsecase } from '@/core/cat/use-cases/cat-list';
+import { CatListInput, CatListOutput, CatListUsecase } from '@/core/cat/use-cases/cat-list';
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { ICatListAdapter } from '@/modules/cat/adapter';
 import { TestUtils } from '@/utils/tests';
@@ -58,7 +58,7 @@ describe(CatListUsecase.name, () => {
 
   test('when cats are found, should expect an user list', async () => {
     const output = { docs: cats, page: 1, limit: 1, total: 1 };
-    repository.paginate = jest.fn().mockResolvedValue(output);
+    repository.paginate = TestUtils.mockResolvedValue<CatListOutput>(output);
 
     await expect(usecase.execute({ limit: 1, page: 1, search: {}, sort: { createdAt: -1 } })).resolves.toEqual({
       docs: cats,
@@ -69,8 +69,8 @@ describe(CatListUsecase.name, () => {
   });
 
   test('when cats not found, should expect an empty list', async () => {
-    const output = { docs: [{}], page: 1, limit: 1, total: 1 };
-    repository.paginate = jest.fn().mockResolvedValue(output);
+    const output = { docs: [{} as CatEntity], page: 1, limit: 1, total: 1 };
+    repository.paginate = TestUtils.mockResolvedValue<CatListOutput>(output);
 
     await expect(usecase.execute({ limit: 1, page: 1, search: {}, sort: { createdAt: -1 } })).resolves.toEqual(output);
   });

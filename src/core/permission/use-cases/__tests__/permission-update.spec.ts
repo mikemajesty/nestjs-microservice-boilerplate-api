@@ -2,6 +2,7 @@ import { Test } from '@nestjs/testing';
 import { ZodIssue } from 'zod';
 
 import { ILoggerAdapter } from '@/infra/logger';
+import { UpdatedModel } from '@/infra/repository';
 import { IPermissionUpdateAdapter } from '@/modules/permission/adapter';
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception';
 import { TestUtils } from '@/utils/tests';
@@ -55,7 +56,7 @@ describe(PermissionUpdateUsecase.name, () => {
   };
 
   test('when permission not found, should expect an error', async () => {
-    repository.findById = jest.fn().mockResolvedValue(null);
+    repository.findById = TestUtils.mockResolvedValue<PermissionEntity>(null);
 
     await expect(usecase.execute(input)).rejects.toThrow(ApiNotFoundException);
   });
@@ -66,16 +67,16 @@ describe(PermissionUpdateUsecase.name, () => {
   });
 
   test('when permission exists, should expect an error', async () => {
-    repository.findById = jest.fn().mockResolvedValue(permission);
-    repository.existsOnUpdate = jest.fn().mockResolvedValue(true);
+    repository.findById = TestUtils.mockResolvedValue<PermissionEntity>(permission);
+    repository.existsOnUpdate = TestUtils.mockResolvedValue<boolean>(true);
 
     await expect(usecase.execute({ ...input, name: 'permission:create' })).rejects.toThrow(ApiConflictException);
   });
 
   test('when permission updated successfully, should expect an permission that has been updated', async () => {
-    repository.findById = jest.fn().mockResolvedValue(permission);
-    repository.updateOne = jest.fn().mockResolvedValue(null);
-    repository.existsOnUpdate = jest.fn().mockResolvedValue(false);
+    repository.findById = TestUtils.mockResolvedValue<PermissionEntity>(permission);
+    repository.updateOne = TestUtils.mockResolvedValue<UpdatedModel>(null);
+    repository.existsOnUpdate = TestUtils.mockResolvedValue<boolean>(false);
 
     await expect(usecase.execute(input)).resolves.toEqual(permission);
   });

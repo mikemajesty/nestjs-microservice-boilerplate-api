@@ -48,7 +48,7 @@ describe(PermissionGetByIdUsecase.name, () => {
   };
 
   test('when permission not found, should expect an error', async () => {
-    repository.findById = jest.fn().mockResolvedValue(null);
+    repository.findById = TestUtils.mockResolvedValue<PermissionEntity>(null);
 
     await expect(usecase.execute(input)).rejects.toThrow(ApiNotFoundException);
   });
@@ -59,7 +59,7 @@ describe(PermissionGetByIdUsecase.name, () => {
   });
 
   test('when permission found, should expect a permission that has been found', async () => {
-    repository.findById = jest.fn().mockResolvedValue(permission);
+    repository.findById = TestUtils.mockResolvedValue<PermissionEntity>(permission);
 
     await expect(usecase.execute(input)).resolves.toEqual(permission);
   });

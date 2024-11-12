@@ -51,7 +51,7 @@ describe(LoginUsecase.name, () => {
 
   const input: LoginInput = { email: 'admin@admin.com', password: '****' };
   test('when user not found, should expect an error', async () => {
-    repository.findOneWithRelation = jest.fn().mockResolvedValue(null);
+    repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(null);
 
     await expect(usecase.execute(input, TestUtils.getMockTracing())).rejects.toThrow(ApiNotFoundException);
   });
@@ -65,20 +65,20 @@ describe(LoginUsecase.name, () => {
   });
 
   test('when user role not found, should expect an error', async () => {
-    repository.findOneWithRelation = jest.fn().mockResolvedValue({ ...user, roles: [] });
+    repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>({ ...user, roles: [] });
 
     await expect(usecase.execute(input, TestUtils.getMockTracing())).rejects.toThrow(ApiNotFoundException);
   });
 
   test('when password is incorrect, should expect an error', async () => {
-    repository.findOneWithRelation = jest.fn().mockResolvedValue(user);
+    repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(user);
 
     await expect(usecase.execute(input, TestUtils.getMockTracing())).rejects.toThrow(ApiBadRequestException);
   });
 
   test('when user login successfully, should expect a token', async () => {
     user.password.password = '69bf0bc46f51b33377c4f3d92caf876714f6bbbe99e7544487327920873f9820';
-    repository.findOneWithRelation = jest.fn().mockResolvedValue(user);
+    repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(user);
 
     await expect(usecase.execute(input, TestUtils.getMockTracing())).resolves.toEqual({
       accessToken: expect.any(String),

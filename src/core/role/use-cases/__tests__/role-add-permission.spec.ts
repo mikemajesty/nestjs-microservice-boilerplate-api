@@ -3,6 +3,7 @@ import { ZodIssue } from 'zod';
 
 import { PermissionEntity } from '@/core/permission/entity/permission';
 import { IPermissionRepository } from '@/core/permission/repository/permission';
+import { CreatedModel } from '@/infra/repository';
 import { IRoleAddPermissionAdapter } from '@/modules/role/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
 import { TestUtils } from '@/utils/tests';
@@ -61,7 +62,7 @@ describe(RoleAddPermissionUsecase.name, () => {
   };
 
   test('when role not exists, should expect an error', async () => {
-    repository.findOne = jest.fn().mockResolvedValue(null);
+    repository.findOne = TestUtils.mockResolvedValue<RoleEntity>(null);
 
     await expect(usecase.execute(input)).rejects.toThrow(ApiNotFoundException);
   });
@@ -74,21 +75,21 @@ describe(RoleAddPermissionUsecase.name, () => {
   const role = new RoleEntity({ id: UUIDUtils.create(), name: RoleEnum.USER, permissions });
 
   test('when delete permission with associated permission successfully, should expect an update permission', async () => {
-    repository.findOne = jest.fn().mockResolvedValue(role);
-    permissionRepository.findIn = jest.fn().mockResolvedValue(permissions);
-    repository.create = jest.fn();
+    repository.findOne = TestUtils.mockResolvedValue<RoleEntity>(role);
+    permissionRepository.findIn = TestUtils.mockResolvedValue<PermissionEntity[]>(permissions);
+    repository.create = TestUtils.mockResolvedValue<CreatedModel>();
 
     await expect(usecase.execute(input)).resolves.toBeUndefined();
     expect(repository.create).toHaveBeenCalled();
   });
 
   test('when delete permission without associated permission successfully, should expect an update permission', async () => {
-    repository.findOne = jest.fn().mockResolvedValue({
+    repository.findOne = TestUtils.mockResolvedValue<RoleEntity>({
       ...role,
       permissions: role.permissions.filter((p) => p.name !== 'user:create')
     });
-    permissionRepository.findIn = jest.fn().mockResolvedValue(permissions);
-    repository.create = jest.fn();
+    permissionRepository.findIn = TestUtils.mockResolvedValue<PermissionEntity[]>(permissions);
+    repository.create = TestUtils.mockResolvedValue<CreatedModel>();
 
     await expect(usecase.execute({ ...input, permissions: ['user:create'] })).resolves.toBeUndefined();
     expect(repository.create).toHaveBeenCalled();

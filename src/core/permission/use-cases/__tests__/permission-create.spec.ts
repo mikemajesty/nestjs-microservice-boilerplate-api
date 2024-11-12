@@ -2,6 +2,7 @@ import { Test } from '@nestjs/testing';
 import { ZodIssue } from 'zod';
 
 import { ILoggerAdapter } from '@/infra/logger';
+import { CreatedModel } from '@/infra/repository';
 import { IPermissionCreateAdapter } from '@/modules/permission/adapter';
 import { ApiConflictException } from '@/utils/exception';
 import { TestUtils } from '@/utils/tests';
@@ -57,14 +58,14 @@ describe(PermissionCreateUsecase.name, () => {
   const output: PermissionEntity = new PermissionEntity({ id: TestUtils.getMockUUID(), name: input.name });
 
   test('when permission exists, should expect an error', async () => {
-    repository.findOne = jest.fn().mockResolvedValue(output);
+    repository.findOne = TestUtils.mockResolvedValue<PermissionEntity>(output);
 
     await expect(usecase.execute(input)).rejects.toThrow(ApiConflictException);
   });
 
   test('when permission created successfully, should expect a permission that has been created', async () => {
-    repository.create = jest.fn().mockResolvedValue(true);
-    repository.findOne = jest.fn().mockResolvedValue(null);
+    repository.create = TestUtils.mockResolvedValue<CreatedModel>({ created: true, id: TestUtils.getMockUUID() });
+    repository.findOne = TestUtils.mockResolvedValue<PermissionEntity>(null);
 
     await expect(usecase.execute(input)).resolves.toBeInstanceOf(PermissionEntity);
   });

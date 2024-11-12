@@ -48,7 +48,7 @@ describe(RoleGetByIdUsecase.name, () => {
   };
 
   test('when role not found, should expect an error', async () => {
-    repository.findById = jest.fn().mockResolvedValue(null);
+    repository.findById = TestUtils.mockResolvedValue<RoleEntity>(null);
 
     await expect(usecase.execute(input)).rejects.toThrow(ApiNotFoundException);
   });
@@ -59,7 +59,7 @@ describe(RoleGetByIdUsecase.name, () => {
   });
 
   test('when role found, should expect a role that has been found', async () => {
-    repository.findById = jest.fn().mockResolvedValue(role);
+    repository.findById = TestUtils.mockResolvedValue<RoleEntity>(role);
 
     await expect(usecase.execute(input)).resolves.toEqual(role);
   });

@@ -3,6 +3,7 @@ import { ZodIssue } from 'zod';
 
 import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
 import { LoggerModule } from '@/infra/logger';
+import { CreatedModel } from '@/infra/repository';
 import { IUserChangePasswordAdapter } from '@/modules/user/adapter';
 import { ApiBadRequestException, ApiNotFoundException } from '@/utils/exception';
 import { TestUtils } from '@/utils/tests';
@@ -60,7 +61,7 @@ describe(UserChangePasswordUsecase.name, () => {
   };
 
   test('when user not found, should expect an error', async () => {
-    repository.findOneWithRelation = jest.fn().mockResolvedValue(null);
+    repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(null);
 
     await expect(usecase.execute(input)).rejects.toThrow(ApiNotFoundException);
   });
@@ -77,13 +78,13 @@ describe(UserChangePasswordUsecase.name, () => {
   });
 
   test('when user password is incorrect, should expect an error', async () => {
-    repository.findOneWithRelation = jest.fn().mockResolvedValue(user);
+    repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(user);
 
     await expect(usecase.execute({ ...input, password: 'wrongPassword' })).rejects.toThrow(ApiBadRequestException);
   });
 
   test('when user password are differents, should expect an error', async () => {
-    repository.findOneWithRelation = jest.fn().mockResolvedValue(user);
+    repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(user);
 
     await expect(usecase.execute({ ...input, confirmPassword: 'wrongPassword' })).rejects.toThrow(
       ApiBadRequestException
@@ -91,8 +92,8 @@ describe(UserChangePasswordUsecase.name, () => {
   });
 
   test('when change password successfully, should change password', async () => {
-    repository.findOneWithRelation = jest.fn().mockResolvedValue(user);
-    repository.create = jest.fn();
+    repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(user);
+    repository.create = TestUtils.mockResolvedValue<CreatedModel>();
 
     await expect(usecase.execute(input)).resolves.toBeUndefined();
     expect(repository.create).toHaveBeenCalled();

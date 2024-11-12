@@ -3,6 +3,7 @@ import { ZodIssue } from 'zod';
 
 import { PermissionEntity } from '@/core/permission/entity/permission';
 import { IPermissionRepository } from '@/core/permission/repository/permission';
+import { CreatedModel } from '@/infra/repository';
 import { IRoleDeletePermissionAdapter } from '@/modules/role/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
 import { TestUtils } from '@/utils/tests';
@@ -62,7 +63,7 @@ describe(RoleDeletePermissionUsecase.name, () => {
   };
 
   test('when role not exists, should expect an error', async () => {
-    repository.findOne = jest.fn().mockResolvedValue(null);
+    repository.findOne = TestUtils.mockResolvedValue<RoleEntity>(null);
 
     await expect(usecase.execute(input)).rejects.toThrow(ApiNotFoundException);
   });
@@ -75,9 +76,9 @@ describe(RoleDeletePermissionUsecase.name, () => {
   const role = new RoleEntity({ id: UUIDUtils.create(), name: RoleEnum.USER, permissions });
 
   test('when some permisson, should expect an error', async () => {
-    repository.findOne = jest.fn().mockResolvedValue(role);
-    permissionRepository.findIn = jest.fn().mockResolvedValue(permissions);
-    repository.create = jest.fn();
+    repository.findOne = TestUtils.mockResolvedValue<RoleEntity>(role);
+    permissionRepository.findIn = TestUtils.mockResolvedValue<PermissionEntity[]>(permissions);
+    repository.create = TestUtils.mockResolvedValue<CreatedModel>(null);
 
     await expect(
       usecase.execute({ ...input, permissions: input.permissions.concat('user:getbyid') })

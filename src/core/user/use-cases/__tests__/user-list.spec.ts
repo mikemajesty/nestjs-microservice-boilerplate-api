@@ -62,7 +62,7 @@ describe(UserListUsecase.name, () => {
 
   test('when users are found, should expect an user list', async () => {
     const output = { docs: users, page: 1, limit: 1, total: 1 };
-    repository.paginate = jest.fn().mockResolvedValue(output);
+    repository.paginate = TestUtils.mockResolvedValue<UserListOutput>(output);
 
     await expect(usecase.execute({ limit: 1, page: 1, search: {}, sort: { createdAt: -1 } })).resolves.toEqual({
       docs: users,
@@ -74,7 +74,7 @@ describe(UserListUsecase.name, () => {
 
   test('when users not found, should expect an empty list', async () => {
     const output: UserListOutput = { docs: [], page: 1, limit: 1, total: 1 };
-    repository.paginate = jest.fn().mockResolvedValue(output);
+    repository.paginate = TestUtils.mockResolvedValue<UserListOutput>(output);
 
     await expect(usecase.execute({ limit: 1, page: 1, search: {}, sort: { createdAt: -1 } })).resolves.toEqual(output);
   });

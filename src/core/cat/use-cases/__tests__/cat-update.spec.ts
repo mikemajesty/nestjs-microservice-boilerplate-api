@@ -2,6 +2,7 @@ import { Test } from '@nestjs/testing';
 import { ZodIssue } from 'zod';
 
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
+import { UpdatedModel } from '@/infra/repository';
 import { ICatUpdateAdapter } from '@/modules/cat/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
 import { TestUtils } from '@/utils/tests';
@@ -46,7 +47,7 @@ describe(CatUpdateUsecase.name, () => {
   });
 
   test('when cat not found, should expect an error', async () => {
-    repository.findById = jest.fn().mockResolvedValue(null);
+    repository.findById = TestUtils.mockResolvedValue<CatEntity>(null);
 
     await expect(usecase.execute({ id: TestUtils.getMockUUID() }, TestUtils.getMockTracing())).rejects.toThrow(
       ApiNotFoundException
@@ -61,8 +62,8 @@ describe(CatUpdateUsecase.name, () => {
   });
 
   test('when cat updated successfully, should expect a cat that has been updated', async () => {
-    repository.findById = jest.fn().mockResolvedValue(cat);
-    repository.updateOne = jest.fn().mockResolvedValue(null);
+    repository.findById = TestUtils.mockResolvedValue<CatEntity>(cat);
+    repository.updateOne = TestUtils.mockResolvedValue<UpdatedModel>();
 
     await expect(usecase.execute({ id: TestUtils.getMockUUID() }, TestUtils.getMockTracing())).resolves.toEqual(cat);
   });

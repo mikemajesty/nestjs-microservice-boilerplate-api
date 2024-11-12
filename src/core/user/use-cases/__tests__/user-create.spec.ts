@@ -4,6 +4,7 @@ import { ZodIssue } from 'zod';
 import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
 import { IRoleRepository } from '@/core/role/repository/role';
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
+import { CreatedModel } from '@/infra/repository';
 import { IEventAdapter } from '@/libs/event';
 import { IUserCreateAdapter } from '@/modules/user/adapter';
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception';
@@ -79,7 +80,8 @@ describe(UserCreateUsecase.name, () => {
   };
 
   test('when role not found, should expect an error', async () => {
-    roleRepository.findIn = jest.fn().mockResolvedValue([]);
+    roleRepository.findIn = TestUtils.mockResolvedValue<RoleEntity[]>([]);
+
     await expect(usecase.execute(input, TestUtils.getMockTracing())).rejects.toThrow(ApiNotFoundException);
   });
 
@@ -96,26 +98,19 @@ describe(UserCreateUsecase.name, () => {
     })
   });
 
-  test('when the user is created successfully, should expect an user that has been created', async () => {
-    roleRepository.findIn = jest.fn().mockResolvedValue([role]);
-    repository.findOne = jest.fn().mockResolvedValue(null);
-    repository.create = jest.fn().mockResolvedValue(user);
-
-    await expect(usecase.execute(input, TestUtils.getMockTracing())).resolves.toEqual(user);
-  });
-
   test('when user already exists, should expect an error', async () => {
-    roleRepository.findIn = jest.fn().mockResolvedValue([role]);
-    repository.findOne = jest.fn().mockResolvedValue(user);
+    roleRepository.findIn = TestUtils.mockResolvedValue<RoleEntity[]>([role]);
+    repository.findOne = TestUtils.mockResolvedValue<UserEntity>(user);
 
     await expect(usecase.execute(input, TestUtils.getMockTracing())).rejects.toThrow(ApiConflictException);
   });
 
   test('when user created successfully, should expect an user', async () => {
-    roleRepository.findIn = jest.fn().mockResolvedValue([role]);
-    repository.findOne = jest.fn().mockResolvedValue(null);
-    repository.create = jest.fn().mockResolvedValue(user);
+    roleRepository.findIn = TestUtils.mockResolvedValue<RoleEntity[]>([role]);
+    repository.findOne = TestUtils.mockResolvedValue<UserEntity>(null);
+    const createOutput = { created: true, id: TestUtils.getMockUUID() };
+    repository.create = TestUtils.mockResolvedValue<CreatedModel>(createOutput);
 
-    await expect(usecase.execute(input, TestUtils.getMockTracing())).resolves.toEqual(user);
+    await expect(usecase.execute(input, TestUtils.getMockTracing())).resolves.toEqual(createOutput);
   });
 });

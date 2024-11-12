@@ -4,6 +4,7 @@ import { ZodIssue } from 'zod';
 import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
 import { UserEntity } from '@/core/user/entity/user';
 import { IUserRepository } from '@/core/user/repository/user';
+import { CreatedModel, RemovedModel } from '@/infra/repository';
 import { IEventAdapter } from '@/libs/event';
 import { ITokenAdapter } from '@/libs/token';
 import { IConfirmResetPasswordAdapter } from '@/modules/reset-password/adapter';
@@ -93,24 +94,24 @@ describe(ResetPasswordConfirmUsecase.name, () => {
   });
 
   test('when user not found, should expect an error', async () => {
-    userRepository.findOneWithRelation = jest.fn().mockResolvedValue(null);
+    userRepository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(null);
 
     await expect(usecase.execute(input)).rejects.toThrow(ApiNotFoundException);
   });
 
   test('when token was expired, should expect an error', async () => {
-    userRepository.findOneWithRelation = jest.fn().mockResolvedValue(user);
-    repository.findByIdUserId = jest.fn().mockResolvedValue(null);
+    userRepository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(user);
+    repository.findByIdUserId = TestUtils.mockResolvedValue<ResetPasswordEntity>(null);
 
     await expect(usecase.execute(input)).rejects.toThrow(ApiUnauthorizedException);
   });
-  const defaultResetPassword = new ResetPasswordEntity({ id: TestUtils.getMockUUID(), token: 'token', user });
 
+  const defaultResetPassword = new ResetPasswordEntity({ id: TestUtils.getMockUUID(), token: 'token', user });
   test('when confirm successfully, should expect a void', async () => {
-    userRepository.findOneWithRelation = jest.fn().mockResolvedValue(user);
-    userRepository.create = jest.fn();
-    repository.findByIdUserId = jest.fn().mockResolvedValue(defaultResetPassword);
-    repository.remove = jest.fn();
+    userRepository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(user);
+    userRepository.create = TestUtils.mockResolvedValue<CreatedModel>();
+    repository.findByIdUserId = TestUtils.mockResolvedValue<ResetPasswordEntity>(defaultResetPassword);
+    repository.remove = TestUtils.mockResolvedValue<RemovedModel>();
 
     await expect(usecase.execute(input)).resolves.toBeUndefined();
     expect(userRepository.create).toHaveBeenCalled();

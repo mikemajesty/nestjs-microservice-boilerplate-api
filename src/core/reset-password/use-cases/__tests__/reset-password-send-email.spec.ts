@@ -4,6 +4,7 @@ import { ZodIssue } from 'zod';
 import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
 import { UserEntity } from '@/core/user/entity/user';
 import { IUserRepository } from '@/core/user/repository/user';
+import { CreatedModel } from '@/infra/repository';
 import { ISecretsAdapter } from '@/infra/secrets';
 import { IEventAdapter } from '@/libs/event';
 import { ITokenAdapter } from '@/libs/token';
@@ -83,7 +84,7 @@ describe(ResetPasswordSendEmailUsecase.name, () => {
   const input: ResetPasswordSendEmailInput = { email: 'admin@admin.com' };
 
   test('when user not found, should expect an error', async () => {
-    userRepository.findOne = jest.fn().mockResolvedValue(null);
+    userRepository.findOne = TestUtils.mockResolvedValue<UserEntity>(null);
 
     await expect(usecase.execute(input)).rejects.toThrow(ApiNotFoundException);
   });
@@ -98,16 +99,16 @@ describe(ResetPasswordSendEmailUsecase.name, () => {
   const resetPassword = new ResetPasswordEntity({ id: TestUtils.getMockUUID(), token: 'token', user });
 
   test('when token was founded, should expect void', async () => {
-    userRepository.findOne = jest.fn().mockResolvedValue(user);
-    repository.findByIdUserId = jest.fn().mockResolvedValue(resetPassword);
+    userRepository.findOne = TestUtils.mockResolvedValue<UserEntity>(user);
+    repository.findByIdUserId = TestUtils.mockResolvedValue<ResetPasswordEntity>(resetPassword);
 
     await expect(usecase.execute(input)).resolves.toBeUndefined();
   });
 
   test('when token was not founded, should expect void', async () => {
-    userRepository.findOne = jest.fn().mockResolvedValue(user);
-    repository.findByIdUserId = jest.fn().mockResolvedValue(null);
-    repository.create = jest.fn();
+    userRepository.findOne = TestUtils.mockResolvedValue<UserEntity>(user);
+    repository.findByIdUserId = TestUtils.mockResolvedValue<ResetPasswordEntity>(null);
+    repository.create = TestUtils.mockResolvedValue<CreatedModel>();
 
     await expect(usecase.execute(input)).resolves.toBeUndefined();
   });

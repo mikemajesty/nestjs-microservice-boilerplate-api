@@ -47,7 +47,7 @@ describe(LogoutUsecase.name, () => {
   });
 
   test('when user logout, should expect set token to blacklist', async () => {
-    cache.set = jest.fn();
+    cache.set = TestUtils.mockResolvedValue<void>();
 
     await expect(usecase.execute({ token: '12345678910' }, TestUtils.getMockTracing())).resolves.toBeUndefined();
   });

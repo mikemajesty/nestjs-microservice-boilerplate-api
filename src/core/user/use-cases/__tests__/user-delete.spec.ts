@@ -46,7 +46,7 @@ describe(UserDeleteUsecase.name, () => {
   });
 
   test('when user not found, should expect an error', async () => {
-    repository.findOneWithRelation = jest.fn().mockResolvedValue(null);
+    repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(null);
 
     await expect(usecase.execute({ id: TestUtils.getMockUUID() }, TestUtils.getMockTracing())).rejects.toThrow(
       ApiNotFoundException
@@ -62,8 +62,8 @@ describe(UserDeleteUsecase.name, () => {
   });
 
   test('when user deleted successfully, should expect an user that has been deleted.', async () => {
-    repository.findOneWithRelation = jest.fn().mockResolvedValue(user);
-    repository.softRemove = jest.fn();
+    repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(user);
+    repository.softRemove = TestUtils.mockResolvedValue<UserEntity>();
 
     await expect(usecase.execute({ id: TestUtils.getMockUUID() }, TestUtils.getMockTracing())).resolves.toEqual(
       expect.any(UserEntity)

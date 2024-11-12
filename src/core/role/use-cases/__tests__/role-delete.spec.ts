@@ -2,6 +2,7 @@ import { Test } from '@nestjs/testing';
 import { ZodIssue } from 'zod';
 
 import { RoleDeleteInput, RoleDeleteUsecase } from '@/core/role/use-cases/role-delete';
+import { UpdatedModel } from '@/infra/repository';
 import { IRoleDeleteAdapter } from '@/modules/role/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
 import { TestUtils } from '@/utils/tests';
@@ -48,7 +49,7 @@ describe(RoleDeleteUsecase.name, () => {
   };
 
   test('when role not found, should expect an error', async () => {
-    repository.findById = jest.fn().mockResolvedValue(null);
+    repository.findById = TestUtils.mockResolvedValue<RoleEntity>(null);
 
     await expect(usecase.execute(input)).rejects.toThrow(ApiNotFoundException);
   });
@@ -59,8 +60,8 @@ describe(RoleDeleteUsecase.name, () => {
   });
 
   test('when role deleted successfully, should expect a role that has been deleted', async () => {
-    repository.findById = jest.fn().mockResolvedValue(role);
-    repository.updateOne = jest.fn();
+    repository.findById = TestUtils.mockResolvedValue<RoleEntity>(role);
+    repository.updateOne = TestUtils.mockResolvedValue<UpdatedModel>();
 
     await expect(usecase.execute(input)).resolves.toEqual({
       ...role,

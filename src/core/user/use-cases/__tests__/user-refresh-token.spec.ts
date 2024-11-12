@@ -55,14 +55,14 @@ describe(RefreshTokenUsecase.name, () => {
   const input: RefreshTokenInput = { refreshToken: '<token>' };
   test('when token is incorrect, should expect an error', async () => {
     token.verify = jest.fn().mockResolvedValue({ userId: null });
-    repository.findOne = jest.fn().mockResolvedValue(null);
+    repository.findOne = TestUtils.mockResolvedValue<UserEntity>(null);
 
     await expect(usecase.execute(input)).rejects.toThrow(ApiBadRequestException);
   });
 
   test('when user not found, should expect an error', async () => {
     token.verify = jest.fn().mockResolvedValue({ userId: TestUtils.getMockUUID() });
-    repository.findOne = jest.fn().mockResolvedValue(null);
+    repository.findOne = TestUtils.mockResolvedValue<UserEntity>(null);
 
     await expect(usecase.execute(input)).rejects.toThrow(ApiNotFoundException);
   });
@@ -77,7 +77,7 @@ describe(RefreshTokenUsecase.name, () => {
 
   test('when user role not found, should expect an error', async () => {
     token.verify = jest.fn().mockResolvedValue({ userId: TestUtils.getMockUUID() });
-    repository.findOne = jest.fn().mockResolvedValue({ ...user, roles: [] });
+    repository.findOne = TestUtils.mockResolvedValue<UserEntity>({ ...user, roles: [] });
 
     await expect(usecase.execute(input)).rejects.toThrow(ApiNotFoundException);
   });
@@ -86,7 +86,7 @@ describe(RefreshTokenUsecase.name, () => {
     token.verify = jest.fn().mockResolvedValue({ userId: TestUtils.getMockUUID() });
     token.sign = jest.fn().mockReturnValue({ token: '<token>' });
     user.password.password = '69bf0bc46f51b33377c4f3d92caf876714f6bbbe99e7544487327920873f9820';
-    repository.findOne = jest.fn().mockResolvedValue(user);
+    repository.findOne = TestUtils.mockResolvedValue<UserEntity>(user);
 
     await expect(usecase.execute(input)).resolves.toEqual({
       accessToken: expect.any(String),
