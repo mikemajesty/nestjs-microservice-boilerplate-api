@@ -140,6 +140,20 @@ Creating a CRUD in Postgres and Mongo in seconds.
   $ yarn prettier
   ```
 
+### snippets
+
+```
+usecase
+```
+
+```
+apitest
+```
+
+```
+docs
+```
+
 ### Architecture diagram
 
 ## ![alt text](OnionGraph.jpg)
