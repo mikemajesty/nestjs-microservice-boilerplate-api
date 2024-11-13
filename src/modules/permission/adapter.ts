@@ -24,3 +24,7 @@ export abstract class IPermissionListAdapter implements IUsecase {
 export abstract class IPermissionDeleteAdapter implements IUsecase {
   abstract execute(input: PermissionDeleteInput): Promise<PermissionDeleteOutput>;
 }
+
+export abstract class IPermissionCreateCloneCascaDeBalaAdapter implements IUsecase {
+  abstract execute(input: PermissionDeleteInput): Promise<PermissionDeleteOutput>;
+}
