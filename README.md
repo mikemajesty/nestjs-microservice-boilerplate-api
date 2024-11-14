@@ -210,7 +210,6 @@ docs
 -- App Skeleton
 
 ```
-.
 ├── CHANGELOG.md
 ├── Dockerfile
 ├── OnionGraph.jpg
@@ -218,16 +217,6 @@ docs
 ├── TRACING.md
 ├── commitlint.config.js
 ├── diagram.png
-├── docker
-│   ├── collector
-│   │   └── collector-config.yaml
-│   ├── mongo
-│   │   ├── rs-init.sh
-│   │   └── start-replicaset.sh
-│   ├── postgres
-│   │   └── create-database.sql
-│   └── prometheus
-│       └── config.yml
 ├── docker-compose-infra.yml
 ├── docker-compose.yml
 ├── eslint.config.mjs
