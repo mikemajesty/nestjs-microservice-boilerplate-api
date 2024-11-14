@@ -2,14 +2,19 @@ import { Test } from '@nestjs/testing';
 import { ZodIssue } from 'zod';
 
 import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
-import { ITokenAdapter } from '@/libs/token';
+import { ITokenAdapter, SignOutput } from '@/libs/token';
 import { IRefreshTokenAdapter } from '@/modules/login/adapter';
 import { ApiBadRequestException, ApiNotFoundException } from '@/utils/exception';
 import { TestUtils } from '@/utils/tests';
 
 import { UserEntity } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
-import { RefreshTokenInput, RefreshTokenOutput, RefreshTokenUsecase } from '../user-refresh-token';
+import {
+  RefreshTokenInput,
+  RefreshTokenOutput,
+  RefreshTokenUsecase,
+  UserRefreshTokenVerifyInput
+} from '../user-refresh-token';
 
 describe(RefreshTokenUsecase.name, () => {
   let usecase: IRefreshTokenAdapter;
@@ -26,7 +31,9 @@ describe(RefreshTokenUsecase.name, () => {
         },
         {
           provide: ITokenAdapter,
-          useValue: {}
+          useValue: {
+            verify: TestUtils.mockResolvedValue<UserRefreshTokenVerifyInput>()
+          }
         },
         {
           provide: IRefreshTokenAdapter,
@@ -54,14 +61,20 @@ describe(RefreshTokenUsecase.name, () => {
 
   const input: RefreshTokenInput = { refreshToken: '<token>' };
   test('when token is incorrect, should expect an error', async () => {
-    token.verify = jest.fn().mockResolvedValue({ userId: null });
+    token.verify = TestUtils.mockImplementation<UserRefreshTokenVerifyInput>(() => ({
+      userId: null
+    }));
     repository.findOne = TestUtils.mockResolvedValue<UserEntity>(null);
 
     await expect(usecase.execute(input)).rejects.toThrow(ApiBadRequestException);
   });
 
   test('when user not found, should expect an error', async () => {
-    token.verify = jest.fn().mockResolvedValue({ userId: TestUtils.getMockUUID() });
+    token.verify = TestUtils.mockImplementation<UserRefreshTokenVerifyInput>(() => {
+      return {
+        userId: TestUtils.getMockUUID()
+      };
+    });
     repository.findOne = TestUtils.mockResolvedValue<UserEntity>(null);
 
     await expect(usecase.execute(input)).rejects.toThrow(ApiNotFoundException);
@@ -76,15 +89,21 @@ describe(RefreshTokenUsecase.name, () => {
   });
 
   test('when user role not found, should expect an error', async () => {
-    token.verify = jest.fn().mockResolvedValue({ userId: TestUtils.getMockUUID() });
+    token.verify = TestUtils.mockImplementation<UserRefreshTokenVerifyInput>(() => {
+      return {
+        userId: TestUtils.getMockUUID()
+      };
+    });
     repository.findOne = TestUtils.mockResolvedValue<UserEntity>({ ...user, roles: [] });
 
     await expect(usecase.execute(input)).rejects.toThrow(ApiNotFoundException);
   });
 
   test('when user refresh token successfully, should expect a token', async () => {
-    token.verify = jest.fn().mockResolvedValue({ userId: TestUtils.getMockUUID() });
-    token.sign = jest.fn().mockReturnValue({ token: '<token>' });
+    token.verify = TestUtils.mockImplementation<UserRefreshTokenVerifyInput>(() => ({
+      userId: TestUtils.getMockUUID()
+    }));
+    token.sign = TestUtils.mockReturnValue<SignOutput>({ token: '<token>' });
     user.password.password = '69bf0bc46f51b33377c4f3d92caf876714f6bbbe99e7544487327920873f9820';
     repository.findOne = TestUtils.mockResolvedValue<UserEntity>(user);
 

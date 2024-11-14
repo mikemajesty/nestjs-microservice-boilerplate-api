@@ -5,16 +5,29 @@ import { ApiTrancingInput, TracingType, UserRequest } from '@/utils/request';
 
 import { BaseException } from './exception';
 export class TestUtils {
-  static mockResolvedValue<T = void>(mock?: NoInfer<Partial<T>> | null): jest.Mock<Promise<NoInfer<T>>> {
-    return jest.fn().mockResolvedValue(mock as NoInfer<T>);
+  static mockResolvedValue<T = void>(mock?: Partial<NoInfer<Partial<T>>> | null): jest.Mock<Promise<NoInfer<T>>> {
+    return jest.fn().mockResolvedValue(mock as NoInfer<Partial<T>>);
+  }
+
+  static mockResolvedValueOnce<T = void>(mock?: Partial<NoInfer<Partial<T>>> | null): jest.Mock<Promise<NoInfer<T>>> {
+    return jest.fn().mockResolvedValueOnce(mock as NoInfer<Partial<T>>);
   }
 
   static mockRejectedValue(mock: BaseException): jest.Mock {
     return jest.fn().mockRejectedValue(mock);
   }
 
-  static mockReturnValue<T = void>(mock: Partial<NoInfer<T>> | null): jest.Mock<NoInfer<T>> {
+  static mockRejectedValueOnce(mock: BaseException): jest.Mock {
+    return jest.fn().mockRejectedValueOnce(mock);
+  }
+
+  static mockReturnValue<T = void>(mock?: Partial<NoInfer<T>> | null): jest.Mock<NoInfer<T>> {
     return jest.fn().mockReturnValue(mock as NoInfer<T> | null);
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static mockImplementation<T = void>(mock?: (...args: unknown[]) => NoInfer<T>): jest.Mock<any> {
+    return jest.fn().mockImplementation(mock);
   }
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   static expectZodError = async (callback: Function, expected: Function) => {

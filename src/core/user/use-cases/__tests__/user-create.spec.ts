@@ -5,7 +5,7 @@ import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
 import { IRoleRepository } from '@/core/role/repository/role';
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { CreatedModel } from '@/infra/repository';
-import { IEventAdapter } from '@/libs/event';
+import { EmitEventOutput, IEventAdapter } from '@/libs/event';
 import { IUserCreateAdapter } from '@/modules/user/adapter';
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception';
 import { TestUtils } from '@/utils/tests';
@@ -35,7 +35,7 @@ describe(UserCreateUsecase.name, () => {
         {
           provide: IEventAdapter,
           useValue: {
-            emit: jest.fn()
+            emit: TestUtils.mockResolvedValue<EmitEventOutput>()
           }
         },
         {

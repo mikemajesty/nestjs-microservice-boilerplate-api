@@ -20,7 +20,7 @@ describe(LogoutUsecase.name, () => {
         {
           provide: ICacheAdapter,
           useValue: {
-            set: jest.fn()
+            set: TestUtils.mockResolvedValue<void>()
           }
         },
         {

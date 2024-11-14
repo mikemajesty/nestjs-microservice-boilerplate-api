@@ -23,7 +23,7 @@ describe(RoleCreateUsecase.name, () => {
         {
           provide: ILoggerAdapter,
           useValue: {
-            info: jest.fn()
+            info: TestUtils.mockReturnValue<void>()
           }
         },
         {

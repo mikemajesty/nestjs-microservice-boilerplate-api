@@ -6,8 +6,8 @@ import { UserEntity } from '@/core/user/entity/user';
 import { IUserRepository } from '@/core/user/repository/user';
 import { CreatedModel } from '@/infra/repository';
 import { ISecretsAdapter } from '@/infra/secrets';
-import { IEventAdapter } from '@/libs/event';
-import { ITokenAdapter } from '@/libs/token';
+import { EmitEventOutput, IEventAdapter } from '@/libs/event';
+import { ITokenAdapter, SignOutput } from '@/libs/token';
 import { IConfirmResetPasswordAdapter, ISendEmailResetPasswordAdapter } from '@/modules/reset-password/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
 import { TestUtils } from '@/utils/tests';
@@ -42,13 +42,13 @@ describe(ResetPasswordSendEmailUsecase.name, () => {
         {
           provide: ITokenAdapter,
           useValue: {
-            sign: jest.fn().mockReturnValue({ token: 'token' })
+            sign: TestUtils.mockReturnValue<SignOutput>({ token: 'token' })
           }
         },
         {
           provide: IEventAdapter,
           useValue: {
-            emit: jest.fn()
+            emit: TestUtils.mockResolvedValue<EmitEventOutput>()
           }
         },
         {

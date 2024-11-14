@@ -5,7 +5,7 @@ import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
 import { UserEntity } from '@/core/user/entity/user';
 import { IUserRepository } from '@/core/user/repository/user';
 import { CreatedModel, RemovedModel } from '@/infra/repository';
-import { IEventAdapter } from '@/libs/event';
+import { EmitEventOutput, IEventAdapter } from '@/libs/event';
 import { ITokenAdapter } from '@/libs/token';
 import { IConfirmResetPasswordAdapter } from '@/modules/reset-password/adapter';
 import { ApiBadRequestException, ApiNotFoundException, ApiUnauthorizedException } from '@/utils/exception';
@@ -13,7 +13,11 @@ import { TestUtils } from '@/utils/tests';
 
 import { ResetPasswordEntity } from '../../entity/reset-password';
 import { IResetPasswordRepository } from '../../repository/reset-password';
-import { ResetPasswordConfirmInput, ResetPasswordConfirmUsecase } from '../reset-password-confirm';
+import {
+  ResetPasswordConfirmInput,
+  ResetPasswordConfirmUsecase,
+  ResetPasswordConfirmVerify
+} from '../reset-password-confirm';
 
 describe(ResetPasswordConfirmUsecase.name, () => {
   let usecase: IConfirmResetPasswordAdapter;
@@ -35,13 +39,13 @@ describe(ResetPasswordConfirmUsecase.name, () => {
         {
           provide: ITokenAdapter,
           useValue: {
-            verify: jest.fn().mockReturnValue({ id: TestUtils.getMockUUID() })
+            verify: TestUtils.mockReturnValue<ResetPasswordConfirmVerify>({ id: TestUtils.getMockUUID() })
           }
         },
         {
           provide: IEventAdapter,
           useValue: {
-            emit: jest.fn()
+            emit: TestUtils.mockResolvedValue<EmitEventOutput>()
           }
         },
         {

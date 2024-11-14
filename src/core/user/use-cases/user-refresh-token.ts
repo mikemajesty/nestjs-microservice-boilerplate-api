@@ -51,6 +51,6 @@ export class RefreshTokenUsecase implements IUsecase {
 export type RefreshTokenInput = z.infer<typeof RefreshTokenSchema>;
 export type RefreshTokenOutput = { accessToken: string; refreshToken: string };
 
-type UserRefreshTokenVerifyInput = {
-  userId: string;
+export type UserRefreshTokenVerifyInput = {
+  userId: string | null;
 };
