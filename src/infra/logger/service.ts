@@ -77,7 +77,7 @@ export class LoggerService implements ILoggerAdapter {
 
     const response =
       error instanceof BaseException
-        ? { statusCode: error['statusCode'], message: error?.message, ...error?.parameters }
+        ? { statusCode: error.statusCode, message: error?.message, ...error?.parameters }
         : errorResponse?.value();
 
     const type = {
@@ -97,8 +97,6 @@ export class LoggerService implements ILoggerAdapter {
         context: error?.context,
         type,
         traceid: this.getTraceId(error),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        externalApiCurl: (error as any)['curl'],
         createdAt: DateUtils.getISODateString(),
         application: this.app,
         stack: error.stack?.replace(/\n/g, ''),
