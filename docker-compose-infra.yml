@@ -4,16 +4,10 @@ services:
   nestjs-microservice-primary:
     container_name: nestjs-microservice-primary
     image: mongo:4.2.20
-    entrypoint:
-      [
-        '/usr/bin/mongod',
-        '--bind_ip_all',
-        '--replSet',
-        'app'
-      ]
+    entrypoint: ['/usr/bin/mongod', '--bind_ip_all', '--replSet', 'app']
     volumes:
       - mongo-primary-data:/data/db
-      - ./docker/mongo/rs-init.sh:/scripts/mongo/rs-init.sh
+      - .docker/mongo/rs-init.sh:/scripts/mongo/rs-init.sh
     ports:
       - 27081:27017
     networks:
@@ -23,13 +17,7 @@ services:
   nestjs-microservice-secondary:
     container_name: nestjs-microservice-secondary
     image: mongo:4.2.20
-    entrypoint:
-      [
-        '/usr/bin/mongod',
-        '--bind_ip_all',
-        '--replSet',
-        'app'
-      ]
+    entrypoint: ['/usr/bin/mongod', '--bind_ip_all', '--replSet', 'app']
     volumes:
       - mongo-secondary-data:/data/db
     ports:
@@ -41,13 +29,7 @@ services:
   nestjs-microservice-tertiary:
     container_name: nestjs-microservice-tertiary
     image: mongo:4.2.20
-    entrypoint:
-      [
-        '/usr/bin/mongod',
-        '--bind_ip_all',
-        '--replSet',
-        'app'
-      ]
+    entrypoint: ['/usr/bin/mongod', '--bind_ip_all', '--replSet', 'app']
     volumes:
       - mongo-tertiary-data:/data/db
     ports:
@@ -64,7 +46,7 @@ services:
       - '5432:5432'
     volumes:
       - nestjs-microservice-postgres:/data/postgres
-      - ./docker/postgres/create-database.sql:/docker-entrypoint-initdb.d/create-database.sql
+      - .docker/postgres/create-database.sql:/docker-entrypoint-initdb.d/create-database.sql
     restart: always
     networks:
       - postgres-network
@@ -79,7 +61,7 @@ services:
     container_name: nestjs-microservice-zipkin-all-in-one
     image: openzipkin/zipkin:latest
     ports:
-      - "9411:9411"
+      - '9411:9411'
     env_file:
       - .env
   prometheus:
@@ -94,17 +76,17 @@ services:
     ports:
       - '9090:9090'
     volumes:
-      - ./docker/prometheus/config.yml:/etc/prometheus/prometheus.yml
+      - .docker/prometheus/config.yml:/etc/prometheus/prometheus.yml
   collector:
     container_name: nestjs-microservice-collector
     image: otel/opentelemetry-collector-contrib:latest
-    command: [ "--config=/conf/collector-config.yaml" ]
+    command: ['--config=/conf/collector-config.yaml']
     volumes:
-      - ./docker/collector/collector-config.yaml:/conf/collector-config.yaml
+      - .docker/collector/collector-config.yaml:/conf/collector-config.yaml
     ports:
-      - "9464:9464"
-      - "4317:4317"
-      - "4318:4318"
+      - '9464:9464'
+      - '4317:4317'
+      - '4318:4318'
     depends_on:
       - zipkin-all-in-one
   mongo-express:
@@ -127,7 +109,7 @@ services:
     env_file:
       - .env
     ports:
-      - "16543:80"
+      - '16543:80'
     depends_on:
       - postgres
     networks:

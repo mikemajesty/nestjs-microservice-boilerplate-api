@@ -16,7 +16,7 @@
     "test": "jest --config=\"./jest.config.ts\" --detectOpenHandles",
     "test:cov": "jest --config=\"./jest-coverage.config.ts\" --coverage --detectOpenHandles && yarn make-badges",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "infra": "./docker/mongo/start-replicaset.sh",
+    "infra": ".docker/mongo/start-replicaset.sh",
     "scaffold": "./node_modules/@mikemajesty/microservice-crud/bin/microservice-crud",
     "typeorm": "ts-node -r tsconfig-paths/register \"./node_modules/typeorm/cli.js\"",
     "migration-postgres:create": "yarn typeorm migration:create \"./src/infra/database/postgres/migrations/rename\"",
