@@ -1,12 +1,4 @@
-import {
-  BaseEntity,
-  FindOneOptions,
-  FindOptionsSelectByString,
-  FindOptionsWhere,
-  Raw,
-  Repository,
-  SaveOptions
-} from 'typeorm';
+import { BaseEntity, FindOneOptions, FindOptionsWhere, In, Raw, Repository, SaveOptions } from 'typeorm';
 
 import { IEntity } from '@/utils/entity';
 
@@ -76,7 +68,8 @@ export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEn
       deletedAt: null
     };
     for (const key of Object.keys(filter)) {
-      where[`${key}`] = { $in: (filter as { [key: string]: unknown })[`${key}`] };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      where[`${key}`] = In((filter as { [key: string]: any })[`${key}`]);
     }
     return this.repository.find({
       where
@@ -113,15 +106,15 @@ export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEn
       searchList[`${filter.property.toString()}`] = postgresSearch[filter.command].query(filter.value);
     }
 
-    const reult = await this.repository.findOne({
+    const result = await this.repository.findOne({
       where: searchList
     } as FindOneOptions<T>);
 
-    if (!reult) {
+    if (!result) {
       return null;
     }
 
-    return reult;
+    return result;
   }
 
   async findByCommands(filterList: DatabaseOperationCommand<T>[]): Promise<T[]> {
@@ -205,18 +198,18 @@ export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEn
     filter: TQuery,
     includeProperties: (keyof T)[]
   ): Promise<T | null> {
-    const select = includeProperties.map((e) => `${e.toString()}`);
+    const select = includeProperties.map((e) => `${e.toString()}`) as (keyof T)[];
     return this.repository.findOne({
       where: filter as FindOptionsWhere<T>,
-      select: select as FindOptionsSelectByString<T>
+      select
     });
   }
 
   async findAllWithSelectFields<TQuery = Partial<T>>(includeProperties: (keyof T)[], filter?: TQuery): Promise<T[]> {
-    const select = includeProperties.map((e) => `${e.toString()}`);
+    const select = includeProperties.map((e) => `${e.toString()}`) as (keyof T)[];
     return this.repository.find({
       where: filter as FindOptionsWhere<T>,
-      select: select as FindOptionsSelectByString<T>
+      select
     });
   }
 
@@ -224,7 +217,7 @@ export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEn
     const select = excludeProperties.map((e) => `${e.toString()}`);
     return this.repository.findOne({
       where: filter as FindOptionsWhere<T>,
-      select: this.excludeColumns(select) as FindOptionsSelectByString<T>
+      select: this.excludeColumns(select) as (keyof T)[]
     });
   }
 
@@ -232,7 +225,7 @@ export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEn
     const select = excludeProperties.map((e) => `${e.toString()}`);
     return this.repository.find({
       where: filter as FindOptionsWhere<T>,
-      select: this.excludeColumns(select) as FindOptionsSelectByString<T>
+      select: this.excludeColumns(select) as (keyof T)[]
     });
   }
 

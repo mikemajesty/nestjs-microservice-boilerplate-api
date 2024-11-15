@@ -18,8 +18,14 @@ export interface IEntity {
   deletedAt?: Date | null | undefined;
 }
 
-export const BaseEntity = <T>(schema: ZodSchema) => {
+let schema: ZodSchema;
+
+export const BaseEntity = <T>() => {
   abstract class Entity implements IEntity {
+    constructor(zodSchema: ZodSchema) {
+      schema = zodSchema;
+    }
+
     readonly id!: string;
 
     readonly createdAt?: Date | null | undefined;
