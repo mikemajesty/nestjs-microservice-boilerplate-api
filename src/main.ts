@@ -11,9 +11,9 @@ import helmet from 'helmet';
 
 import { ILoggerAdapter } from '@/infra/logger/adapter';
 import { ISecretsAdapter } from '@/infra/secrets';
-import { ExceptionFilter } from '@/observables/filters';
+import { ExceptionHandlerFilter } from '@/observables/filters';
 import {
-  ExceptionInterceptor,
+  ExceptionHandlerInterceptor,
   HttpLoggerInterceptor,
   MetricsInterceptor,
   TracingInterceptor
@@ -35,11 +35,11 @@ async function bootstrap() {
   loggerService.setApplication(name);
   app.useLogger(loggerService);
 
-  app.useGlobalFilters(new ExceptionFilter(loggerService));
+  app.useGlobalFilters(new ExceptionHandlerFilter(loggerService));
 
   app.useGlobalInterceptors(
     new RequestTimeoutInterceptor(new Reflector(), loggerService),
-    new ExceptionInterceptor(),
+    new ExceptionHandlerInterceptor(),
     new HttpLoggerInterceptor(loggerService),
     new TracingInterceptor(loggerService),
     new MetricsInterceptor()

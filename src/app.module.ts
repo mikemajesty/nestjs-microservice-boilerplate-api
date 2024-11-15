@@ -7,7 +7,7 @@ import { HealthModule } from '@/modules/health/module';
 import { LoginModule } from '@/modules/login/module';
 import { LogoutModule } from '@/modules/logout/module';
 import { UserModule } from '@/modules/user/module';
-import { AuthRoleGuard } from '@/observables/guards';
+import { AuthorizationRoleGuard } from '@/observables/guards';
 
 import { IUserRepository } from './core/user/repository/user';
 import { LibModule } from './libs/module';
@@ -32,7 +32,7 @@ import { RoleModule } from './modules/role/module';
     {
       provide: APP_GUARD,
       useFactory: (repository: IUserRepository) => {
-        return new AuthRoleGuard(new Reflector(), repository);
+        return new AuthorizationRoleGuard(new Reflector(), repository);
       },
       inject: [IUserRepository]
     }

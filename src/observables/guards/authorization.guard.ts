@@ -6,7 +6,7 @@ import { PERMISSION_KEY } from '@/utils/decorators';
 import { ApiUnauthorizedException } from '@/utils/exception';
 
 @Injectable()
-export class AuthRoleGuard implements CanActivate {
+export class AuthorizationRoleGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
     private readonly userRepository: IUserRepository

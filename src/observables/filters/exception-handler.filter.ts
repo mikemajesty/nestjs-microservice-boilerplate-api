@@ -8,7 +8,7 @@ import { ApiErrorType, BaseException } from '@/utils/exception';
 import { DefaultErrorMessage } from '@/utils/http-status';
 
 @Catch()
-export class ExceptionFilter implements AppExceptionFilter {
+export class ExceptionHandlerFilter implements AppExceptionFilter {
   constructor(private readonly loggerService: ILoggerAdapter) {}
 
   catch(exception: BaseException, host: ArgumentsHost): void {

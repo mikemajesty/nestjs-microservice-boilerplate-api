@@ -6,7 +6,7 @@ import { catchError } from 'rxjs/operators';
 import { ZodError } from 'zod';
 
 @Injectable()
-export class ExceptionInterceptor implements NestInterceptor {
+export class ExceptionHandlerInterceptor implements NestInterceptor {
   intercept(executionContext: ExecutionContext, next: CallHandler): Observable<unknown> {
     return next.handle().pipe(
       catchError((error) => {
