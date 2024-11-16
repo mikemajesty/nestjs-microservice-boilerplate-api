@@ -52,7 +52,7 @@ export class CatController {
     return await this.updateUsecase.execute({ ...body, id: params.id } as CatUpdateInput, { user, tracing });
   }
 
-  @Get('/:id')
+  @Get(':id')
   @ApiParam({ name: 'id', required: true, allowEmptyValue: false })
   @ApiResponse(SwaggerResponse.getById[200])
   @ApiResponse(SwaggerResponse.getById[404])
@@ -82,7 +82,7 @@ export class CatController {
     return await this.listUsecase.execute(input);
   }
 
-  @Delete('/:id')
+  @Delete(':id')
   @ApiParam({ name: 'id', required: true, allowEmptyValue: false })
   @ApiResponse(SwaggerResponse.delete[200])
   @ApiResponse(SwaggerResponse.delete[404])

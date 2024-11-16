@@ -53,7 +53,7 @@ export class PermissionController {
     return await this.updateUsecase.execute({ ...body, id: params.id } as PermissionUpdateInput);
   }
 
-  @Get('/:id')
+  @Get(':id')
   @ApiParam({ name: 'id', required: true, allowEmptyValue: false })
   @ApiResponse(SwaggerResponse.getById[200])
   @ApiResponse(SwaggerResponse.getById[404])
@@ -83,7 +83,7 @@ export class PermissionController {
     return await this.listUsecase.execute(input);
   }
 
-  @Delete('/:id')
+  @Delete(':id')
   @ApiParam({ name: 'id', required: true, allowEmptyValue: false })
   @ApiResponse(SwaggerResponse.delete[200])
   @ApiResponse(SwaggerResponse.delete[404])

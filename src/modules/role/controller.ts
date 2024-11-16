@@ -57,7 +57,7 @@ export class RoleController {
     return await this.updateUsecase.execute({ ...body, id: params.id } as RoleUpdateInput);
   }
 
-  @Get('/:id')
+  @Get(':id')
   @ApiParam({ name: 'id', required: true, allowEmptyValue: false })
   @ApiResponse(SwaggerResponse.getById[200])
   @ApiResponse(SwaggerResponse.getById[404])
@@ -87,7 +87,7 @@ export class RoleController {
     return await this.listUsecase.execute(input);
   }
 
-  @Delete('/:id')
+  @Delete(':id')
   @ApiParam({ name: 'id', required: true, allowEmptyValue: false })
   @ApiResponse(SwaggerResponse.delete[200])
   @ApiResponse(SwaggerResponse.delete[404])
@@ -97,7 +97,7 @@ export class RoleController {
     return await this.deleteUsecase.execute(params as RoleDeleteInput);
   }
 
-  @Put('/add-permissions/:id')
+  @Put('/add-permissions:id')
   @ApiParam({ name: 'id', required: true, allowEmptyValue: false })
   @ApiBody(SwaggerRequest.addPermission)
   @ApiResponse(SwaggerResponse.addPermissions[200])
@@ -108,7 +108,7 @@ export class RoleController {
     return await this.addPermissionUsecase.execute({ ...body, id: params.id } as RoleAddPermissionInput);
   }
 
-  @Put('/remove-permissions/:id')
+  @Put('/remove-permissions:id')
   @ApiParam({ name: 'id', required: true, allowEmptyValue: false })
   @ApiBody(SwaggerRequest.deletePermission)
   @ApiResponse(SwaggerResponse.removePermissions[200])

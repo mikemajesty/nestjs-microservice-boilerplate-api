@@ -23,43 +23,43 @@ export class BaseException extends HttpException {
 
 export class ApiInternalServerException extends BaseException {
   constructor(message?: MessageType, parameters?: ParametersType) {
-    super(message ?? ApiInternalServerException.name, 500, parameters);
+    super(message ?? ApiInternalServerException.name, HttpStatus.INTERNAL_SERVER_ERROR, parameters);
   }
 }
 
 export class ApiNotFoundException extends BaseException {
   constructor(message?: MessageType, parameters?: ParametersType) {
-    super(message ?? ApiNotFoundException.name, 404, parameters);
+    super(message ?? ApiNotFoundException.name, HttpStatus.NOT_FOUND, parameters);
   }
 }
 
 export class ApiConflictException extends BaseException {
   constructor(message?: MessageType, parameters?: ParametersType) {
-    super(message ?? ApiConflictException.name, 409, parameters);
+    super(message ?? ApiConflictException.name, HttpStatus.CONFLICT, parameters);
   }
 }
 
 export class ApiUnauthorizedException extends BaseException {
   constructor(message?: MessageType, parameters?: ParametersType) {
-    super(message ?? ApiUnauthorizedException.name, 401, parameters);
+    super(message ?? ApiUnauthorizedException.name, HttpStatus.UNAUTHORIZED, parameters);
   }
 }
 
 export class ApiBadRequestException extends BaseException {
   constructor(message?: MessageType, parameters?: ParametersType) {
-    super(message ?? ApiBadRequestException.name, 400, parameters);
+    super(message ?? ApiBadRequestException.name, HttpStatus.BAD_GATEWAY, parameters);
   }
 }
 
 export class ApiForbiddenException extends BaseException {
   constructor(message?: MessageType, parameters?: ParametersType) {
-    super(message ?? ApiForbiddenException.name, 403, parameters);
+    super(message ?? ApiForbiddenException.name, HttpStatus.FORBIDDEN, parameters);
   }
 }
 
 export class ApiTimeoutException extends BaseException {
   constructor(message?: MessageType, parameters?: ParametersType) {
-    super(message ?? ApiTimeoutException.name, 408, parameters);
+    super(message ?? ApiTimeoutException.name, HttpStatus.REQUEST_TIMEOUT, parameters);
   }
 }
 
@@ -74,6 +74,6 @@ export type ApiErrorType = {
   };
 };
 
-type ParametersType = { [key: string]: unknown; context?: string; externalApi?: string };
+type ParametersType = { [key: string]: unknown; context?: string };
 
 type MessageType = string | string[];

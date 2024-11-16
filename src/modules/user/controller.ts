@@ -84,7 +84,7 @@ export class UserController {
     return user;
   }
 
-  @Get('/:id')
+  @Get(':id')
   @ApiParam({ name: 'id', required: true, allowEmptyValue: false })
   @ApiResponse(SwaggerResponse.getById[200])
   @ApiResponse(SwaggerResponse.getById[404])
@@ -94,7 +94,7 @@ export class UserController {
     return await this.getByIdUsecase.execute(params as UserGetByIdInput);
   }
 
-  @Put('change-password/:id')
+  @Put('change-password:id')
   @ApiParam({ name: 'id', required: true, allowEmptyValue: false })
   @ApiBody(SwaggerRequest.changePassword)
   @ApiResponse(SwaggerResponse.changePassword[200])
@@ -106,7 +106,7 @@ export class UserController {
     return await this.changePassUsecase.execute({ id: params.id, ...body } as UserChangePasswordInput);
   }
 
-  @Delete('/:id')
+  @Delete(':id')
   @ApiParam({ name: 'id', required: true, allowEmptyValue: false })
   @ApiResponse(SwaggerResponse.delete[200])
   @ApiResponse(SwaggerResponse.delete[404])
