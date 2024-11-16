@@ -50,7 +50,7 @@ export class AuthorizationRoleGuard implements CanActivate {
       const permission = this.reflector.get(PERMISSION_GUARD, context.getHandler());
       throw new ApiForbiddenException(DefaultErrorMessage[ApiForbiddenException.STATUS], {
         context: appContext,
-        permission
+        parameters: { permission }
       });
     }
 
