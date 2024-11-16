@@ -1,4 +1,4 @@
-import { HttpStatus, Injectable, NestMiddleware } from '@nestjs/common';
+import { Injectable, NestMiddleware } from '@nestjs/common';
 import { NextFunction, Request, Response } from 'express';
 
 import { ICacheAdapter } from '@/infra/cache';
@@ -28,7 +28,7 @@ export class AuthenticationMiddleware implements NestMiddleware {
     }
 
     if (!tokenHeader) {
-      response.status(HttpStatus.UNAUTHORIZED);
+      response.status(ApiUnauthorizedException.STATUS);
       request.id = request.headers.traceid as string;
       this.loggerService.logger(request, response);
       throw new ApiUnauthorizedException('no token provided');
@@ -45,7 +45,7 @@ export class AuthenticationMiddleware implements NestMiddleware {
     }
 
     const userDecoded = (await this.tokenService.verify<UserRequest>(token).catch((error) => {
-      error.status = HttpStatus.UNAUTHORIZED;
+      error.status = ApiUnauthorizedException.STATUS;
       this.loggerService.logger(request, response);
       next(error);
     })) as UserRequest;

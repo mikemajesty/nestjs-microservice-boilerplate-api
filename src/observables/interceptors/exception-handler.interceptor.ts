@@ -5,6 +5,8 @@ import { Observable } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { ZodError } from 'zod';
 
+import { ApiBadRequestException, ApiInternalServerException, ApiTimeoutException } from '@/utils/exception';
+
 @Injectable()
 export class ExceptionHandlerInterceptor implements NestInterceptor {
   intercept(executionContext: ExecutionContext, next: CallHandler): Observable<unknown> {
@@ -42,11 +44,11 @@ export class ExceptionHandlerInterceptor implements NestInterceptor {
     error: ZodError | AxiosError<{ code: string | number; error: { code: string | number } }>
   ): number {
     if (error instanceof ZodError) {
-      return 400;
+      return ApiBadRequestException.STATUS;
     }
 
     if (error?.code === 'ECONNABORTED' || error?.code === 'ECONNRESET') {
-      return 408;
+      return ApiTimeoutException.STATUS;
     }
 
     return [
@@ -54,7 +56,7 @@ export class ExceptionHandlerInterceptor implements NestInterceptor {
       error?.response?.status,
       error?.response?.data?.code,
       error?.response?.data?.error?.code,
-      500
+      ApiInternalServerException.STATUS
     ].find(Boolean) as number;
   }
 

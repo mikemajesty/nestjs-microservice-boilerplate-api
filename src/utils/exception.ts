@@ -22,44 +22,51 @@ export class BaseException extends HttpException {
 }
 
 export class ApiInternalServerException extends BaseException {
+  static STATUS = HttpStatus.INTERNAL_SERVER_ERROR;
   constructor(message?: MessageType, parameters?: ParametersType) {
-    super(message ?? ApiInternalServerException.name, HttpStatus.INTERNAL_SERVER_ERROR, parameters);
+    super(message ?? ApiInternalServerException.name, ApiInternalServerException.STATUS, parameters);
   }
 }
 
 export class ApiNotFoundException extends BaseException {
+  static STATUS = HttpStatus.NOT_FOUND;
   constructor(message?: MessageType, parameters?: ParametersType) {
-    super(message ?? ApiNotFoundException.name, HttpStatus.NOT_FOUND, parameters);
+    super(message ?? ApiNotFoundException.name, ApiNotFoundException.STATUS, parameters);
   }
 }
 
 export class ApiConflictException extends BaseException {
+  static STATUS = HttpStatus.CONFLICT;
   constructor(message?: MessageType, parameters?: ParametersType) {
-    super(message ?? ApiConflictException.name, HttpStatus.CONFLICT, parameters);
+    super(message ?? ApiConflictException.name, ApiConflictException.STATUS, parameters);
   }
 }
 
 export class ApiUnauthorizedException extends BaseException {
+  static STATUS = HttpStatus.UNAUTHORIZED;
   constructor(message?: MessageType, parameters?: ParametersType) {
-    super(message ?? ApiUnauthorizedException.name, HttpStatus.UNAUTHORIZED, parameters);
+    super(message ?? ApiUnauthorizedException.name, ApiUnauthorizedException.STATUS, parameters);
   }
 }
 
 export class ApiBadRequestException extends BaseException {
+  static STATUS = HttpStatus.BAD_REQUEST;
   constructor(message?: MessageType, parameters?: ParametersType) {
-    super(message ?? ApiBadRequestException.name, HttpStatus.BAD_REQUEST, parameters);
+    super(message ?? ApiBadRequestException.name, ApiBadRequestException.STATUS, parameters);
   }
 }
 
 export class ApiForbiddenException extends BaseException {
+  static STATUS = HttpStatus.FORBIDDEN;
   constructor(message?: MessageType, parameters?: ParametersType) {
-    super(message ?? ApiForbiddenException.name, HttpStatus.FORBIDDEN, parameters);
+    super(message ?? ApiForbiddenException.name, ApiForbiddenException.STATUS, parameters);
   }
 }
 
 export class ApiTimeoutException extends BaseException {
+  static STATUS = HttpStatus.REQUEST_TIMEOUT;
   constructor(message?: MessageType, parameters?: ParametersType) {
-    super(message ?? ApiTimeoutException.name, HttpStatus.REQUEST_TIMEOUT, parameters);
+    super(message ?? ApiTimeoutException.name, ApiTimeoutException.STATUS, parameters);
   }
 }
 

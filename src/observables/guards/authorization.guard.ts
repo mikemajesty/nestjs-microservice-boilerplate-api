@@ -1,4 +1,4 @@
-import { CanActivate, ExecutionContext, HttpStatus, Injectable } from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 
 import { IUserRepository } from '@/core/user/repository/user';
@@ -48,7 +48,7 @@ export class AuthorizationRoleGuard implements CanActivate {
     if (!hasPermission) {
       const appContext = `${context.getClass().name}/${context.getHandler().name}`;
       const permission = this.reflector.get(PERMISSION_GUARD, context.getHandler());
-      throw new ApiForbiddenException(DefaultErrorMessage[HttpStatus.FORBIDDEN], {
+      throw new ApiForbiddenException(DefaultErrorMessage[ApiForbiddenException.STATUS], {
         context: appContext,
         permission
       });

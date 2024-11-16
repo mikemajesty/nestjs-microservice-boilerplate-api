@@ -40,3 +40,7 @@ export type ApiTrancingInput = Pick<ApiRequest, 'user' | 'tracing'>;
 
 export const getPathWithoutUUID = (path: string) =>
   path.replace(/[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/, 'uuid');
+
+export class ApiOkResponse {
+  static STATUS: 200;
+}

@@ -104,12 +104,7 @@ export const SwaggerResponse = {
       json: UsersResponse.list,
       description: 'user created.'
     }),
-    400: Swagger.defaultResponseWithMultiplesError({
-      messages: Swagger.defaultPaginateMessageExceptions(),
-      route: BASE_URL,
-      status: 400,
-      description: 'paginate filter and sort exceptions.'
-    })
+    400: Swagger.defaultPaginateExceptions({ url: BASE_URL })
   }
 };
 

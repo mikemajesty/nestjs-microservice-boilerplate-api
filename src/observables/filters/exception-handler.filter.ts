@@ -1,10 +1,10 @@
-import { ArgumentsHost, Catch, ExceptionFilter as AppExceptionFilter, HttpException, HttpStatus } from '@nestjs/common';
+import { ArgumentsHost, Catch, ExceptionFilter as AppExceptionFilter, HttpException } from '@nestjs/common';
 import { AxiosError } from 'axios';
 import { ZodError, ZodIssue, ZodUnrecognizedKeysIssue } from 'zod';
 
 import { ILoggerAdapter } from '@/infra/logger/adapter';
 import { DateUtils } from '@/utils/date';
-import { ApiErrorType, BaseException } from '@/utils/exception';
+import { ApiBadRequestException, ApiErrorType, ApiInternalServerException, BaseException } from '@/utils/exception';
 import { DefaultErrorMessage } from '@/utils/http-status';
 
 @Catch()
@@ -70,11 +70,11 @@ export class ExceptionHandlerFilter implements AppExceptionFilter {
 
   private getStatus(exception: BaseException) {
     if (exception instanceof ZodError) {
-      return HttpStatus.BAD_REQUEST;
+      return ApiBadRequestException.STATUS;
     }
 
     return exception instanceof HttpException
       ? exception.getStatus()
-      : [exception['status'], HttpStatus.INTERNAL_SERVER_ERROR].find(Boolean);
+      : [exception['status'], ApiInternalServerException.STATUS].find(Boolean);
   }
 }

@@ -156,7 +156,7 @@ export class LoggerService implements ILoggerAdapter {
       logger: pinoLogger,
       quietReqLogger: true,
       customSuccessMessage: (req: IncomingMessage, res: ServerResponse) => {
-        return `request ${res.statusCode >= 400 ? 'error' : 'success'} with status code: ${res.statusCode}`;
+        return `request ${res.statusCode >= ApiBadRequestException.STATUS ? 'error' : 'success'} with status code: ${res.statusCode}`;
       },
       customErrorMessage: (req: IncomingMessage, res: ServerResponse, error: Error) => {
         return `request ${error.name} with status code: ${res.statusCode} `;

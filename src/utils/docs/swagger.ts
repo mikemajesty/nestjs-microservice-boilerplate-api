@@ -29,8 +29,8 @@ export const Swagger = {
       status
     };
   },
-  defaultPaginateMessageExceptions(): MessagesOutput {
-    return {
+  defaultPaginateExceptions(input: PaginateExceptionsInput): ApiResponseOptions {
+    const messages = {
       'filter exception': {
         description: 'filter field not allowed',
         value: [`filter key1 not allowed, allowed list: key2,key3`]
@@ -50,8 +50,16 @@ export const Swagger = {
       'invalid objectId filter': {
         description: 'invalid objectId filter',
         value: ['invalid objectId filter']
-      }
+      },
+      ...input?.additionalMessages
     };
+
+    return this.defaultResponseWithMultiplesError({
+      messages,
+      status: 400,
+      description: input?.message ?? 'paginate filter and sort exceptions.',
+      route: input.url
+    });
   },
   defaultResponseWithMultiplesError({
     status,
@@ -137,12 +145,12 @@ export const Swagger = {
       sort: Swagger.defaultApiQueryOptions({
         name: 'sort',
         required: false,
-        description: `<b> multiples key sorts</b>: propertyName1:desc,propertyName2:asc`
+        description: `<b> sort with multiples key</b>: propertyName1:desc,propertyName2:asc`
       }),
       search: Swagger.defaultApiQueryOptions({
         name: 'search',
         required: false,
-        description: `<b> multiples key search</b>: propertyName1:value,propertyName2:value <br> <b>multiples value search</b>: propertyName1:value1|value2`
+        description: `<b> search with multiples keys</b>: propertyName1:value,propertyName2:value <br> <b>search with multiples values</b>: propertyName1:value1|value2`
       })
     };
   },
@@ -162,6 +170,12 @@ export const Swagger = {
       type: 'string'
     };
   }
+};
+
+type PaginateExceptionsInput = {
+  url: string;
+  additionalMessages?: MessagesOutput;
+  message?: string;
 };
 
 type SwaggerErrorInput = {
