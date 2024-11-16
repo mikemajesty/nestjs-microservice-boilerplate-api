@@ -60,6 +60,11 @@ export class ExceptionHandlerFilter implements AppExceptionFilter {
       }
     }
 
+    const errorList = Array.isArray(exception.getResponse());
+
+    if (errorList) {
+      return exception.getResponse() as string[];
+    }
     return [exception.message];
   }
 

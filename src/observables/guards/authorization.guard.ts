@@ -1,9 +1,10 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import { CanActivate, ExecutionContext, HttpStatus, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 
 import { IUserRepository } from '@/core/user/repository/user';
-import { PERMISSION_KEY } from '@/utils/decorators';
-import { ApiUnauthorizedException } from '@/utils/exception';
+import { PERMISSION_GUARD } from '@/utils/decorators';
+import { ApiForbiddenException, ApiUnauthorizedException } from '@/utils/exception';
+import { DefaultErrorMessage } from '@/utils/http-status';
 
 @Injectable()
 export class AuthorizationRoleGuard implements CanActivate {
@@ -13,7 +14,7 @@ export class AuthorizationRoleGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const requiredPermission = this.reflector.getAllAndOverride<string>(PERMISSION_KEY, [
+    const requiredPermission = this.reflector.getAllAndOverride<string>(PERMISSION_GUARD, [
       context.getHandler(),
       context.getClass()
     ]);
@@ -42,6 +43,17 @@ export class AuthorizationRoleGuard implements CanActivate {
       permissions.push(...role.permissions.map((p) => p.name));
     }
 
-    return new Set(permissions).has(requiredPermission);
+    const hasPermission = new Set(permissions).has(requiredPermission);
+
+    if (!hasPermission) {
+      const appContext = `${context.getClass().name}/${context.getHandler().name}`;
+      const metaValue = this.reflector.get(PERMISSION_GUARD, context.getHandler());
+      throw new ApiForbiddenException(DefaultErrorMessage[HttpStatus.FORBIDDEN], {
+        context: appContext,
+        permission: metaValue
+      });
+    }
+
+    return true;
   }
 }
