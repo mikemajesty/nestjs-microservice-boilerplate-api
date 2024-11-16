@@ -32,23 +32,23 @@ export const Swagger = {
   defaultPaginateExceptions(input: PaginateExceptionsInput): ApiResponseOptions {
     const messages = {
       'filter exception': {
-        description: 'filter field not allowed',
+        description: 'when filter key not allowed',
         value: [`filter key1 not allowed, allowed list: key2,key3`]
       },
       'sort exception': {
-        description: 'sort field not allowed',
+        description: 'when sort key not allowed',
         value: [`sort key1 not allowed, allowed list: key2,key3`]
       },
       'invalid boolean filter': {
-        description: 'invalid boolean filter',
+        description: 'when boolean filter is invalid',
         value: ['invalid boolean filter']
       },
       'invalid number filter': {
-        description: 'invalid number filter',
+        description: 'when number filter is invalid',
         value: ['invalid number filter']
       },
       'invalid objectId filter': {
-        description: 'invalid objectId filter',
+        description: 'when objectId filter is invalid',
         value: ['invalid objectId filter']
       },
       ...input?.additionalMessages
