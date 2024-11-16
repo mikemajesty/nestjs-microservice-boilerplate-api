@@ -1,15 +1,5 @@
 import { DateTime, DurationUnit } from 'luxon';
 
-type GetDateWithFormatFormatInput = {
-  date?: Date;
-  format?: string;
-};
-
-type CreateDateInput = {
-  date: string;
-  utc: boolean;
-};
-
 export class DateUtils {
   static getDateStringWithFormat(input: Partial<GetDateWithFormatFormatInput> = {}): string {
     if (!input?.date) {
@@ -25,8 +15,8 @@ export class DateUtils {
       .toFormat(input?.format as string);
   }
 
-  static getISODateString(): string | null {
-    return DateTime.fromJSDate(DateUtils.getJSDate(), { zone: 'utc' }).setZone(process.env.TZ).toJSON();
+  static getISODateString(): string {
+    return DateTime.fromJSDate(DateUtils.getJSDate(), { zone: 'utc' }).setZone(process.env.TZ).toJSON() as string;
   }
 
   static getJSDate(): Date {
@@ -40,11 +30,11 @@ export class DateUtils {
     return DateTime.fromISO(date).setZone(process.env.TZ).toJSDate();
   }
 
-  static createISODate({ date, utc = true }: CreateDateInput): string | null {
+  static createISODate({ date, utc = true }: CreateDateInput): string {
     if (utc) {
-      return DateTime.fromISO(date, { zone: 'utc' }).setZone(process.env.TZ).toISO();
+      return DateTime.fromISO(date, { zone: 'utc' }).setZone(process.env.TZ).toISO() as string;
     }
-    return DateTime.fromISO(date).setZone(process.env.TZ).toISO();
+    return DateTime.fromISO(date).setZone(process.env.TZ).toISO() as string;
   }
 
   static calculateDiff(date: Date, compareDate: Date, compareType: DurationUnit): Date {
@@ -59,3 +49,13 @@ export class DateUtils {
     return DateTime.fromJSDate(DateUtils.getJSDate(), { zone: 'utc' }).setZone(process.env.TZ);
   }
 }
+
+type GetDateWithFormatFormatInput = {
+  date?: Date;
+  format?: string;
+};
+
+type CreateDateInput = {
+  date: string;
+  utc: boolean;
+};
