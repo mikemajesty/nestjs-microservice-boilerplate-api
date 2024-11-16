@@ -28,7 +28,7 @@ export class AuthorizationRoleGuard implements CanActivate {
     const userId = request?.user?.id;
 
     if (!userId) {
-      throw new ApiUnauthorizedException('userIdNotFoundInToken');
+      throw new ApiUnauthorizedException('invalidToken');
     }
 
     const user = await this.userRepository.findOneWithRelation({ id: userId }, { roles: true });
