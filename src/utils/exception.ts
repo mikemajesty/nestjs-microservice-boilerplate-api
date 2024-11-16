@@ -47,7 +47,7 @@ export class ApiUnauthorizedException extends BaseException {
 
 export class ApiBadRequestException extends BaseException {
   constructor(message?: MessageType, parameters?: ParametersType) {
-    super(message ?? ApiBadRequestException.name, HttpStatus.BAD_GATEWAY, parameters);
+    super(message ?? ApiBadRequestException.name, HttpStatus.BAD_REQUEST, parameters);
   }
 }
 

@@ -147,11 +147,17 @@ export const Swagger = {
     };
   },
 
-  defaultApiQueryOptions({ example, required, description }: ApiQueryOptions): ApiQueryOptions {
+  defaultApiQueryOptions({
+    example,
+    required,
+    description,
+    name
+  }: ApiQueryOptions & { name: string }): ApiQueryOptions {
     return {
       schema: { example },
       required,
       description,
+      name,
       explode: true,
       type: 'string'
     };
