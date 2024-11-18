@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import { IPermissionRepository } from '@/core/permission/repository/permission';
 import { ValidateSchema } from '@/utils/decorators';
-import { ApiNotFoundException } from '@/utils/exception';
+import { ApiConflictException, ApiNotFoundException } from '@/utils/exception';
 import { IUsecase } from '@/utils/usecase';
 
 import { PermissionEntity, PermissionEntitySchema } from '../entity/permission';
@@ -16,19 +16,25 @@ export class PermissionDeleteUsecase implements IUsecase {
 
   @ValidateSchema(PermissionDeleteSchema)
   async execute({ id }: PermissionDeleteInput): Promise<PermissionDeleteOutput> {
-    const model = await this.permissionRepository.findById(id);
+    const permission = await this.permissionRepository.findOneWithRelation({ id }, { roles: true });
 
-    if (!model) {
+    if (!permission) {
       throw new ApiNotFoundException('permissionNotFound');
     }
 
-    const permission = new PermissionEntity(model);
+    if (permission.roles?.length) {
+      throw new ApiConflictException(
+        `permissionHasAssociationWithRole: ${permission.roles.map((r) => r.name).join(', ')}`
+      );
+    }
 
-    permission.deactivated();
+    const entity = new PermissionEntity(permission);
 
-    await this.permissionRepository.updateOne({ id: permission.id }, permission);
+    entity.deactivated();
 
-    return permission;
+    await this.permissionRepository.updateOne({ id: entity.id }, entity);
+
+    return entity;
   }
 }
 

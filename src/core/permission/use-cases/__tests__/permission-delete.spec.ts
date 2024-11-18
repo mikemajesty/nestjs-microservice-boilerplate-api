@@ -2,9 +2,10 @@ import { Test } from '@nestjs/testing';
 import { ZodIssue } from 'zod';
 
 import { PermissionDeleteInput, PermissionDeleteUsecase } from '@/core/permission/use-cases/permission-delete';
+import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
 import { UpdatedModel } from '@/infra/repository';
 import { IPermissionDeleteAdapter } from '@/modules/permission/adapter';
-import { ApiNotFoundException } from '@/utils/exception';
+import { ApiConflictException, ApiNotFoundException } from '@/utils/exception';
 import { TestUtils } from '@/utils/tests';
 
 import { IPermissionRepository } from '../../repository/permission';
@@ -49,9 +50,17 @@ describe(PermissionDeleteUsecase.name, () => {
   };
 
   test('when permission not found, should expect an error', async () => {
-    repository.findById = TestUtils.mockResolvedValue<PermissionEntity>(null);
+    repository.findOneWithRelation = TestUtils.mockResolvedValue<PermissionEntity>(null);
 
     await expect(usecase.execute(input)).rejects.toThrow(ApiNotFoundException);
+  });
+
+  test('when permission has association with role, should expect an error', async () => {
+    repository.findOneWithRelation = TestUtils.mockResolvedValue<PermissionEntity>({
+      roles: [{ name: RoleEnum.BACKOFFICE } as RoleEntity]
+    });
+
+    await expect(usecase.execute(input)).rejects.toThrow(ApiConflictException);
   });
 
   const permission = new PermissionEntity({
@@ -60,7 +69,7 @@ describe(PermissionDeleteUsecase.name, () => {
   });
 
   test('when permission deleted successfully, should expect a permission that has been deleted', async () => {
-    repository.findById = TestUtils.mockResolvedValue<PermissionEntity>(permission);
+    repository.findOneWithRelation = TestUtils.mockResolvedValue<PermissionEntity>(permission);
     repository.updateOne = TestUtils.mockResolvedValue<UpdatedModel>();
 
     await expect(usecase.execute(input)).resolves.toEqual({

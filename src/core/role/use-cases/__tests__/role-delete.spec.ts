@@ -1,10 +1,11 @@
 import { Test } from '@nestjs/testing';
 import { ZodIssue } from 'zod';
 
+import { PermissionEntity } from '@/core/permission/entity/permission';
 import { RoleDeleteInput, RoleDeleteUsecase } from '@/core/role/use-cases/role-delete';
 import { UpdatedModel } from '@/infra/repository';
 import { IRoleDeleteAdapter } from '@/modules/role/adapter';
-import { ApiNotFoundException } from '@/utils/exception';
+import { ApiConflictException, ApiNotFoundException } from '@/utils/exception';
 import { TestUtils } from '@/utils/tests';
 
 import { IRoleRepository } from '../../repository/role';
@@ -52,6 +53,14 @@ describe(RoleDeleteUsecase.name, () => {
     repository.findById = TestUtils.mockResolvedValue<RoleEntity>(null);
 
     await expect(usecase.execute(input)).rejects.toThrow(ApiNotFoundException);
+  });
+
+  test('when role has association with permission, should expect an error', async () => {
+    repository.findById = TestUtils.mockResolvedValue<RoleEntity>({
+      permissions: [{ name: 'create:cat' } as PermissionEntity]
+    });
+
+    await expect(usecase.execute(input)).rejects.toThrow(ApiConflictException);
   });
 
   const role = new RoleEntity({

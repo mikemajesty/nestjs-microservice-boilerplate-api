@@ -1,4 +1,16 @@
-import { BaseEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, UpdateDateColumn } from 'typeorm';
+import {
+  BaseEntity,
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  Entity,
+  JoinTable,
+  ManyToMany,
+  Relation,
+  UpdateDateColumn
+} from 'typeorm';
+
+import { RoleSchema } from './role';
 
 @Entity({ name: 'permissions' })
 export class PermissionSchema extends BaseEntity {
@@ -7,6 +19,10 @@ export class PermissionSchema extends BaseEntity {
 
   @Column('text', { unique: true })
   name!: string;
+
+  @ManyToMany(() => RoleSchema)
+  @JoinTable({ name: 'permissions_roles' })
+  roles!: Relation<RoleSchema[]>;
 
   @CreateDateColumn()
   createdAt!: Date;

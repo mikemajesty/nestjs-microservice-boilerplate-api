@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import { IRoleRepository } from '@/core/role/repository/role';
 import { ValidateSchema } from '@/utils/decorators';
-import { ApiNotFoundException } from '@/utils/exception';
+import { ApiConflictException, ApiNotFoundException } from '@/utils/exception';
 import { IUsecase } from '@/utils/usecase';
 
 import { RoleEntity, RoleEntitySchema } from '../entity/role';
@@ -16,19 +16,23 @@ export class RoleDeleteUsecase implements IUsecase {
 
   @ValidateSchema(RoleDeleteSchema)
   async execute({ id }: RoleDeleteInput): Promise<RoleDeleteOutput> {
-    const model = await this.roleRepository.findById(id);
+    const role = await this.roleRepository.findById(id);
 
-    if (!model) {
+    if (!role) {
       throw new ApiNotFoundException('roleNotFound');
     }
 
-    const role = new RoleEntity(model);
+    if (role.permissions?.length) {
+      throw new ApiConflictException(`roleHasAssociationWithPermission: ${role.permissions.map((p) => p.name)}`);
+    }
 
-    role.deactivated();
+    const entity = new RoleEntity(role);
 
-    await this.roleRepository.updateOne({ id: role.id }, role);
+    entity.deactivated();
 
-    return role;
+    await this.roleRepository.updateOne({ id: entity.id }, entity);
+
+    return entity;
   }
 }
 

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { FindOptionsOrder, FindOptionsWhere, Not, Repository } from 'typeorm';
+import { FindOptionsOrder, FindOptionsRelations, FindOptionsWhere, Not, Repository } from 'typeorm';
 
 import { PermissionEntity } from '@/core/permission/entity/permission';
 import { ExistsOnUpdateInput, IPermissionRepository } from '@/core/permission/repository/permission';
@@ -14,6 +14,16 @@ import { PaginationUtils } from '@/utils/pagination';
 export class PermissionRepository extends TypeORMRepository<Model> implements IPermissionRepository {
   constructor(readonly repository: Repository<Model>) {
     super(repository);
+  }
+
+  async findOneWithRelation(
+    filter: Partial<PermissionEntity>,
+    relations: { [key in keyof Partial<PermissionEntity>]: boolean }
+  ): Promise<PermissionEntity> {
+    return (await this.repository.findOne({
+      where: filter as FindOptionsWhere<unknown>,
+      relations: relations as FindOptionsRelations<unknown>
+    })) as PermissionEntity;
   }
 
   async existsOnUpdate(input: ExistsOnUpdateInput): Promise<boolean> {
