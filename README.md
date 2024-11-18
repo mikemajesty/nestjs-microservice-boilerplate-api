@@ -56,7 +56,7 @@ Creating a CRUD in Postgres and Mongo in seconds.
 - `( ) LIB`
 - `( ) INFRA`
 - `( ) MODULE`
-- `( ) Core`
+- `( ) CORE`
 - type module name (use the singular name)
 - After generating the CRUD, follow the instructions on the generated link.
 - Then
