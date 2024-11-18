@@ -59,6 +59,12 @@ export const SwaggerResponse = {
       route: `${BASE_URL}/:id`,
       message: 'permissionNotFound',
       description: 'permission not found.'
+    }),
+    409: Swagger.defaultResponseError({
+      status: 409,
+      route: `${BASE_URL}/:id`,
+      message: 'permissionHasAssociationWithRole: [roleName]',
+      description: 'permission has association with role.'
     })
   },
   list: {

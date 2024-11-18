@@ -87,6 +87,7 @@ export class PermissionController {
   @ApiParam({ name: 'id', required: true, allowEmptyValue: false })
   @ApiResponse(SwaggerResponse.delete[200])
   @ApiResponse(SwaggerResponse.delete[404])
+  @ApiResponse(SwaggerResponse.delete[409])
   @Version('1')
   @Permission('permission:delete')
   async delete(@Req() { params }: ApiRequest): Promise<PermissionDeleteOutput> {
