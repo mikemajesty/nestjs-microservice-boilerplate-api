@@ -23,13 +23,13 @@ export class UserDeleteUsecase implements IUsecase {
       throw new ApiNotFoundException('userNotFound');
     }
 
-    const userEntity = new UserEntity(user);
+    const entity = new UserEntity(user);
 
-    await this.userRepository.softRemove(userEntity);
+    await this.userRepository.softRemove(entity);
 
     tracing.logEvent('user-deleted', `user: ${user.email} deleted by: ${userData.email}`);
 
-    return userEntity;
+    return entity;
   }
 }
 
