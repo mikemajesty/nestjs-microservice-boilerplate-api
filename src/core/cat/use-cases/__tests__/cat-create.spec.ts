@@ -50,7 +50,7 @@ describe(CatCreateUsecase.name, () => {
     );
   });
 
-  const cat = new CatEntity({
+  const input = new CatEntity({
     id: TestUtils.getMockUUID(),
     age: 10,
     breed: 'dummy',
@@ -58,14 +58,14 @@ describe(CatCreateUsecase.name, () => {
   });
 
   test('when cat created successfully, should expect a cat created', async () => {
-    repository.create = TestUtils.mockResolvedValue<CreatedModel>(cat);
+    repository.create = TestUtils.mockResolvedValue<CreatedModel>(input);
 
-    await expect(usecase.execute(cat, TestUtils.getMockTracing())).resolves.toEqual(cat);
+    await expect(usecase.execute(input, TestUtils.getMockTracing())).resolves.toEqual(input);
   });
 
   test('when transaction throw an error, should expect an error', async () => {
     repository.create = TestUtils.mockRejectedValue(new ApiInternalServerException());
 
-    await expect(usecase.execute(cat, TestUtils.getMockTracing())).rejects.toThrow(ApiInternalServerException);
+    await expect(usecase.execute(input, TestUtils.getMockTracing())).rejects.toThrow(ApiInternalServerException);
   });
 });
