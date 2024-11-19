@@ -1,7 +1,6 @@
 import { Test } from '@nestjs/testing';
 import { ZodIssue } from 'zod';
 
-import { LoggerModule } from '@/infra/logger';
 import { CreatedModel } from '@/infra/repository';
 import { ICatCreateAdapter } from '@/modules/cat/adapter';
 import { ApiInternalServerException } from '@/utils/exception';
@@ -17,7 +16,7 @@ describe(CatCreateUsecase.name, () => {
 
   beforeEach(async () => {
     const app = await Test.createTestingModule({
-      imports: [LoggerModule],
+      imports: [],
       providers: [
         {
           provide: ICatRepository,
