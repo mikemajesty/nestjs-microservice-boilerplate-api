@@ -68,9 +68,9 @@ import { EnvEnum } from './types';
           SecretsSchema.parse(secret);
         } catch (error) {
           const zodError = error as ZodError;
-          const message = zodError.issues.map(
-            (i: ZodIssue) => `${SecretsService.name}.${i.path.join('.')}: ${i.message}`
-          );
+          const message = zodError.issues
+            .map((i: ZodIssue) => `${SecretsService.name}.${i.path.join('.')}: ${i.message}`)
+            .join(',');
           throw new ApiInternalServerException(message);
         }
 
