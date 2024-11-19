@@ -58,7 +58,7 @@ describe(PermissionGetByIdUsecase.name, () => {
     name: 'name:permission'
   });
 
-  test('when permission found, should expect a permission that has been found', async () => {
+  test('when permission found, should expect a permission found', async () => {
     repository.findById = TestUtils.mockResolvedValue<PermissionEntity>(permission);
 
     await expect(usecase.execute(input)).resolves.toEqual(permission);

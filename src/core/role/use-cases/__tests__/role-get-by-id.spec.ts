@@ -58,7 +58,7 @@ describe(RoleGetByIdUsecase.name, () => {
     name: RoleEnum.USER
   });
 
-  test('when role found, should expect a role that has been found', async () => {
+  test('when role found, should expect a role found', async () => {
     repository.findById = TestUtils.mockResolvedValue<RoleEntity>(role);
 
     await expect(usecase.execute(input)).resolves.toEqual(role);

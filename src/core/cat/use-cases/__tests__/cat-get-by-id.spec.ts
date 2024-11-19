@@ -58,7 +58,7 @@ describe(CatGetByIdUsecase.name, () => {
     age: 10
   });
 
-  test('when cat found, should expect a cat that has been found', async () => {
+  test('when cat found, should expect a cat found', async () => {
     repository.findById = TestUtils.mockResolvedValue<CatEntity>(cat);
 
     await expect(usecase.execute({ id: TestUtils.getMockUUID() })).resolves.toEqual(cat);

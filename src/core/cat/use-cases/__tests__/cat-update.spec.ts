@@ -61,7 +61,7 @@ describe(CatUpdateUsecase.name, () => {
     name: 'dummy'
   });
 
-  test('when cat updated successfully, should expect a cat that has been updated', async () => {
+  test('when cat updated successfully, should expect a cat updated', async () => {
     repository.findById = TestUtils.mockResolvedValue<CatEntity>(cat);
     repository.updateOne = TestUtils.mockResolvedValue<UpdatedModel>();
 

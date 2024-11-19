@@ -61,7 +61,7 @@ describe(CatDeleteUsecase.name, () => {
     name: 'dummy'
   });
 
-  test('when cat deleted successfully, should expect a cat that has been deleted', async () => {
+  test('when cat deleted successfully, should expect a cat deleted', async () => {
     repository.findById = TestUtils.mockResolvedValue<CatEntity>(cat);
     repository.updateOne = TestUtils.mockResolvedValue<UpdatedModel>();
 

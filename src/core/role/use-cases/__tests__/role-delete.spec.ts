@@ -68,7 +68,7 @@ describe(RoleDeleteUsecase.name, () => {
     name: RoleEnum.USER
   });
 
-  test('when role deleted successfully, should expect a role that has been deleted', async () => {
+  test('when role deleted successfully, should expect a role deleted', async () => {
     repository.findById = TestUtils.mockResolvedValue<RoleEntity>(role);
     repository.updateOne = TestUtils.mockResolvedValue<UpdatedModel>();
 

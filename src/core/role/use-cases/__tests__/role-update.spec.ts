@@ -66,7 +66,7 @@ describe(RoleUpdateUsecase.name, () => {
     name: RoleEnum.USER
   });
 
-  test('when role updated successfully, should expect an role that has been updated', async () => {
+  test('when role updated successfully, should expect an role updated', async () => {
     repository.findById = TestUtils.mockResolvedValue<RoleEntity>(role);
     repository.updateOne = TestUtils.mockResolvedValue<UpdatedModel>(null);
 

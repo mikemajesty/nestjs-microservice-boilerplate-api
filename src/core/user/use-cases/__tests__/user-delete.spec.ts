@@ -61,7 +61,7 @@ describe(UserDeleteUsecase.name, () => {
     password: { id: TestUtils.getMockUUID(), password: '****' }
   });
 
-  test('when user deleted successfully, should expect an user that has been deleted.', async () => {
+  test('when user deleted successfully, should expect an user deleted.', async () => {
     repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(user);
     repository.softRemove = TestUtils.mockResolvedValue<UserEntity>();
 

@@ -68,7 +68,7 @@ describe(PermissionDeleteUsecase.name, () => {
     name: 'name:permission'
   });
 
-  test('when permission deleted successfully, should expect a permission that has been deleted', async () => {
+  test('when permission deleted successfully, should expect a permission deleted', async () => {
     repository.findOneWithRelation = TestUtils.mockResolvedValue<PermissionEntity>(permission);
     repository.updateOne = TestUtils.mockResolvedValue<UpdatedModel>();
 

@@ -73,7 +73,7 @@ describe(PermissionUpdateUsecase.name, () => {
     await expect(usecase.execute({ ...input, name: 'permission:create' })).rejects.toThrow(ApiConflictException);
   });
 
-  test('when permission updated successfully, should expect an permission that has been updated', async () => {
+  test('when permission updated successfully, should expect an permission updated', async () => {
     repository.findById = TestUtils.mockResolvedValue<PermissionEntity>(permission);
     repository.updateOne = TestUtils.mockResolvedValue<UpdatedModel>(null);
     repository.existsOnUpdate = TestUtils.mockResolvedValue<boolean>(false);

@@ -5,6 +5,7 @@ import { FlatCompat } from '@eslint/eslintrc';
 import js from '@eslint/js';
 import typescriptEslintEslintPlugin from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
+import pluginJest from 'eslint-plugin-jest';
 import simpleImportSort from 'eslint-plugin-simple-import-sort';
 import globals from 'globals';
 
@@ -37,13 +38,15 @@ export default [
     {
         plugins: {
             '@typescript-eslint': typescriptEslintEslintPlugin,
-            'simple-import-sort': simpleImportSort
+            'simple-import-sort': simpleImportSort,
+            jest: pluginJest
         },
 
         languageOptions: {
             globals: {
                 ...globals.node,
-                ...globals.jest
+                ...globals.jest,
+                ...pluginJest.environments.globals.globals
             },
 
             parser: tsParser,
@@ -74,7 +77,12 @@ export default [
             '@/no-throw-literal': 'error',
             'security/detect-non-literal-regexp': 'off',
             'security/detect-possible-timing-attacks': 'off',
-            '@typescript-eslint/no-unused-vars': 'error'
+            '@typescript-eslint/no-unused-vars': 'error',
+            'jest/no-disabled-tests': 'warn',
+            'jest/no-focused-tests': 'error',
+            'jest/no-identical-title': 'error',
+            'jest/prefer-to-have-length': 'warn',
+            'jest/valid-expect': 'error'
         }
     }
 ];

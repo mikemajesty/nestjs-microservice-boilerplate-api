@@ -63,7 +63,7 @@ describe(PermissionCreateUsecase.name, () => {
     await expect(usecase.execute(input)).rejects.toThrow(ApiConflictException);
   });
 
-  test('when permission created successfully, should expect a permission that has been created', async () => {
+  test('when permission created successfully, should expect a permission created', async () => {
     repository.create = TestUtils.mockResolvedValue<CreatedModel>({ created: true, id: TestUtils.getMockUUID() });
     repository.findOne = TestUtils.mockResolvedValue<PermissionEntity>(null);
 

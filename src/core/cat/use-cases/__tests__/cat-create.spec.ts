@@ -57,7 +57,7 @@ describe(CatCreateUsecase.name, () => {
     name: 'dummy'
   });
 
-  test('when cat created successfully, should expect a cat that has been created', async () => {
+  test('when cat created successfully, should expect a cat created', async () => {
     repository.create = TestUtils.mockResolvedValue<CreatedModel>(cat);
 
     await expect(usecase.execute(cat, TestUtils.getMockTracing())).resolves.toEqual(cat);

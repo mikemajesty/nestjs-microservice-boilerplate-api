@@ -97,7 +97,7 @@ describe(UserUpdateUsecase.name, () => {
     await expect(usecase.execute(input, TestUtils.getMockTracing())).rejects.toThrow(ApiNotFoundException);
   });
 
-  test('when user updated successfully, should expect an user that has been updated', async () => {
+  test('when user updated successfully, should expect an user updated', async () => {
     repository.findOne = TestUtils.mockResolvedValue<UserEntity>(user);
     repository.existsOnUpdate = TestUtils.mockResolvedValue<boolean>(false);
     roleRepository.findIn = TestUtils.mockResolvedValue<RoleEntity[]>([role]);

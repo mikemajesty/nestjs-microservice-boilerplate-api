@@ -53,7 +53,7 @@ describe(RoleCreateUsecase.name, () => {
     name: RoleEnum.USER
   };
 
-  test('when role created successfully, should expect a role that has been created', async () => {
+  test('when role created successfully, should expect a role created', async () => {
     const output: RoleCreateOutput = { created: true, id: TestUtils.getMockUUID() };
     repository.create = TestUtils.mockResolvedValue<RoleCreateOutput>(output);
 
