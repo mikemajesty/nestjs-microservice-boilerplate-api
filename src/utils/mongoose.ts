@@ -23,7 +23,7 @@ export class MongoUtils {
     return filter;
   };
 
-  static calculateMongoSkip = (page: number, limit: number): number => {
+  static calculateSkip = (page: number, limit: number): number => {
     return ((page || 1) - 1) * Number(limit || 10);
   };
 
@@ -53,7 +53,7 @@ export class MongoUtils {
     return filter;
   };
 
-  static createMongoRegexText = (text: string | string[]): string | string[] => {
+  static createRegexFilterText = (text: string | string[]): string | string[] => {
     return this.diacriticSensitiveRegex(this.skipParentheses(text));
   };
 }

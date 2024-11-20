@@ -41,7 +41,7 @@ export function ConvertMongooseFilter<T>(allowedFilterList: AllowedFilter<T>[] =
 
         if (!filters) continue;
 
-        const regexFilter = MongoUtils.createMongoRegexText(filters);
+        const regexFilter = MongoUtils.createRegexFilterText(filters);
 
         const field = `${allowedFilter.map ?? allowedFilter.name.toString()}`;
 
@@ -86,7 +86,7 @@ export function ConvertMongooseFilter<T>(allowedFilterList: AllowedFilter<T>[] =
           if (typeof regexFilter === IS_SINGLE_FILTER) {
             where?.$and?.push({
               [field]: {
-                $regex: MongoUtils.createMongoRegexText(filters),
+                $regex: MongoUtils.createRegexFilterText(filters),
                 $options: 'i'
               }
             });

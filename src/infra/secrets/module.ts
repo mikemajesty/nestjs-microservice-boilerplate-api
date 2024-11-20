@@ -3,7 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { z, ZodError, ZodIssue } from 'zod';
 
 import { ApiInternalServerException } from '@/utils/exception';
-import { ZodInferSchema } from '@/utils/zod';
+import { ZodInferSchema } from '@/utils/types';
 
 import { LogLevelEnum } from '../logger';
 import { ISecretsAdapter } from './adapter';
