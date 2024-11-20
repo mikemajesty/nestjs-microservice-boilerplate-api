@@ -1,4 +1,4 @@
-import { DateTime, DurationUnit } from 'luxon';
+import { DateTime } from 'luxon';
 
 export class DateUtils {
   static getDateStringWithFormat(input: Partial<GetDateWithFormatFormatInput> = {}): string {
@@ -35,14 +35,6 @@ export class DateUtils {
       return DateTime.fromISO(date, { zone: 'utc' }).setZone(process.env.TZ).toISO() as string;
     }
     return DateTime.fromISO(date).setZone(process.env.TZ).toISO() as string;
-  }
-
-  static calculateDiff(date: Date, compareDate: Date, compareType: DurationUnit): Date {
-    const date1 = DateTime.fromJSDate(date, { zone: 'utc' }).setZone(process.env.TZ);
-    const date2 = DateTime.fromJSDate(compareDate, { zone: 'utc' }).setZone(process.env.TZ);
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (date1.diff(date2, compareType) as any)[`${compareType}`];
   }
 
   static getDate(): DateTime {
