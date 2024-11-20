@@ -1,9 +1,11 @@
+import { AttributeValue, SpanStatus, TimeInput } from '@opentelemetry/api';
 import { Types } from 'mongoose';
 import { z } from 'zod';
 
 import { ApiTrancingInput, TracingType, UserRequest } from '@/utils/request';
 
 import { BaseException } from './exception';
+
 export class TestUtils {
   static mockResolvedValue<T = void>(mock?: Partial<NoInfer<Partial<T>>> | null): jest.Mock<Promise<NoInfer<T>>> {
     return jest.fn().mockResolvedValue(mock as NoInfer<Partial<T>>);
@@ -54,10 +56,10 @@ export class TestUtils {
   static getMockTracing = (): ApiTrancingInput => {
     return {
       tracing: {
-        logEvent(key, value) {
+        logEvent(key: string, value: AttributeValue | TimeInput) {
           return key + value;
         },
-        setStatus(event) {
+        setStatus(event: SpanStatus) {
           return event;
         }
       } as Partial<TracingType> as TracingType,

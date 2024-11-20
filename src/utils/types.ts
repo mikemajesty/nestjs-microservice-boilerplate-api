@@ -11,3 +11,7 @@ export type ZodInferSchema<T extends object> = {
         | z.ZodPipeline<z.ZodOptional<z.ZodType<unknown>>, z.ZodType<T[Key]>>
     : z.ZodType<T[Key]> | z.ZodPipeline<z.ZodType<unknown>, z.ZodType<T[Key]>>;
 };
+
+export type DeepPartial<T> = {
+  [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
+};
