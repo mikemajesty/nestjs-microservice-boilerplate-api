@@ -54,8 +54,7 @@ export default [
             sourceType: 'module',
 
             parserOptions: {
-                project: 'tsconfig.json',
-                tsconfigRootDir: '/home/mike/Documents/pessoal/nestjs-microservice-boilerplate-api'
+                project: 'tsconfig.json'
             }
         },
 
