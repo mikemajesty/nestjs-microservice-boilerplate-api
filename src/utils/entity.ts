@@ -1,5 +1,8 @@
 import { ZodSchema } from 'zod';
 
+import { IEventAdapter } from '@/libs/event';
+import { EventNameEnum } from '@/libs/event/types';
+
 import { DateUtils } from './date';
 import { UUIDUtils } from './uuid';
 
@@ -42,6 +45,10 @@ export const BaseEntity = <T>() => {
 
     activated() {
       Object.assign(this, { deletedAt: null });
+    }
+
+    notify<T = void>(event: IEventAdapter, eventName: EventNameEnum, data: NoInfer<T>) {
+      event.emit<T>(eventName, data);
     }
 
     validate<T>(entity: T): T {
