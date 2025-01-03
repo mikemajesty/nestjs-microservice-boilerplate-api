@@ -35,6 +35,7 @@ export abstract class ISecretsAdapter {
   ZIPKIN_URL!: string;
 
   PROMETHUES_URL!: string;
+  GRAFANA_URL!: string;
 
   TOKEN_EXPIRATION!: number | string;
   REFRESH_TOKEN_EXPIRATION!: number | string;

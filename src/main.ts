@@ -82,6 +82,7 @@ async function bootstrap() {
     HOST,
     ZIPKIN_URL,
     PROMETHUES_URL,
+    GRAFANA_URL,
     IS_PRODUCTION
   } = app.get(ISecretsAdapter);
 
@@ -120,6 +121,7 @@ async function bootstrap() {
   loggerService.log(`🔶 PgAdmin listening at ${bold(POSTGRES_PGADMIN_URL)}\n`);
   loggerService.log(`🔵 Mongo listening at ${bold(MONGO_URL)}`);
   loggerService.log(`🔶 Mongo express listening at ${bold(MONGO_EXPRESS_URL)}\n`);
+  loggerService.log(`⚪ Grafana[${bold('Graphs')}] listening at ${bold(GRAFANA_URL)}`);
   loggerService.log(`⚪ Zipkin[${bold('Tracing')}] listening at ${bold(ZIPKIN_URL)}`);
   loggerService.log(`⚪ Promethues[${bold('Metrics')}] listening at ${bold(PROMETHUES_URL)}\n`);
 }

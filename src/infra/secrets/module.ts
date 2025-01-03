@@ -43,6 +43,7 @@ import { EnvEnum } from './types';
             .or(z.string())
             .transform((p) => Number(p)),
           PROMETHUES_URL: z.string().url(),
+          GRAFANA_URL: z.string().url(),
           REDIS_URL: z.string().url(),
           TOKEN_EXPIRATION: z.string().or(z.number()),
           REFRESH_TOKEN_EXPIRATION: z.string().or(z.number()),

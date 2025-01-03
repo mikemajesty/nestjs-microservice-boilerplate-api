@@ -67,6 +67,8 @@ services:
   prometheus:
     container_name: nestjs-microservice-prometheus
     image: prom/prometheus:v2.47.0
+    networks:
+      - collector-network
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--enable-feature=otlp-write-receiver'
@@ -81,6 +83,8 @@ services:
     container_name: nestjs-microservice-collector
     image: otel/opentelemetry-collector-contrib:latest
     command: ['--config=/conf/collector-config.yaml']
+    networks:
+      - collector-network
     volumes:
       - .docker/collector/collector-config.yaml:/conf/collector-config.yaml
     ports:
@@ -114,14 +118,33 @@ services:
       - postgres
     networks:
       - postgres-network
+  grafana:
+    container_name: nestjs-microservice-grafana
+    image: grafana/grafana:latest
+    networks:
+      - collector-network
+      - postgres-network
+      - mongo-network
+    ports:
+      - '3000:3000'
+    volumes:
+      - grafana-storage:/var/lib/grafana
+    env_file:
+      - .env
+    depends_on:
+      - prometheus
+    restart: always
 
 volumes:
   nestjs-microservice-postgres:
   nestjs-microservice-redis:
   mongo-primary-data:
   mongo-secondary-data:
+  grafana-storage:
   mongo-tertiary-data:
 networks:
+  collector-network:
+    driver: bridge
   mongo-network:
     driver: bridge
     ipam:

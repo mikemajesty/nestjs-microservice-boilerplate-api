@@ -51,6 +51,8 @@ export class SecretsService implements ISecretsAdapter {
 
   PROMETHUES_URL = this.config.get('PROMETHUES_URL');
 
+  GRAFANA_URL = this.config.get('GRAFANA_URL');
+
   TOKEN_EXPIRATION = this.config.get<number | string>('TOKEN_EXPIRATION') as string;
   REFRESH_TOKEN_EXPIRATION = this.config.get<number | string>('REFRESH_TOKEN_EXPIRATION') as string;
 
