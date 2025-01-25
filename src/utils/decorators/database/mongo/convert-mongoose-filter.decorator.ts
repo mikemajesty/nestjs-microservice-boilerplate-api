@@ -30,7 +30,7 @@ export function ConvertMongoFilterToBaseRepository() {
 const convertObjectFilterToMongoFilter = (input: FilterQuery<IEntity>) => {
   const filterFormated: { [key: string]: unknown } = {};
   for (const key in input) {
-    if (input[key]) {
+    if (input[key] && typeof input[key] === 'object') {
       filterFormated[`${key}.${Object.keys(input[key])[0]}`] = Object.values(input[key])[0];
       continue;
     }
