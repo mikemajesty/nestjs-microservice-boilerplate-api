@@ -42,6 +42,13 @@ export class ApiConflictException extends BaseException {
   }
 }
 
+export class ApiUnprocessableEntityException extends BaseException {
+  static STATUS = HttpStatus.UNPROCESSABLE_ENTITY;
+  constructor(message?: MessageType, parameters?: ParametersType) {
+    super(message ?? ApiUnprocessableEntityException.name, ApiUnprocessableEntityException.STATUS, parameters);
+  }
+}
+
 export class ApiUnauthorizedException extends BaseException {
   static STATUS = HttpStatus.UNAUTHORIZED;
   constructor(message?: MessageType, parameters?: ParametersType) {

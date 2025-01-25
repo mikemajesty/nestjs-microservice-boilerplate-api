@@ -1,4 +1,4 @@
-import { RootFilterQuery } from 'mongoose';
+import { FilterQuery, RootFilterQuery } from 'mongoose';
 
 import { IEntity } from '@/utils/entity';
 
@@ -20,9 +20,21 @@ export function ConvertMongoFilterToBaseRepository() {
         delete input.id;
       }
 
-      args[0] = input;
+      args[0] = convertObjectFilterToMongoFilter(input);
       const result = originalMethod.apply(this, args);
       return result;
     };
   };
 }
+
+const convertObjectFilterToMongoFilter = (input: FilterQuery<IEntity>) => {
+  const filterFormated: { [key: string]: unknown } = {};
+  for (const key in input) {
+    if (input[key]) {
+      filterFormated[`${key}.${Object.keys(input[key])[0]}`] = Object.values(input[key])[0];
+      continue;
+    }
+    filterFormated[key] = input[key];
+  }
+  return filterFormated;
+};
