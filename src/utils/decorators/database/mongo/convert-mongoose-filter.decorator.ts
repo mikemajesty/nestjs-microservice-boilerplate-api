@@ -27,11 +27,15 @@ export function ConvertMongoFilterToBaseRepository() {
   };
 }
 
-const convertObjectFilterToMongoFilter = (input: FilterQuery<IEntity>) => {
-  const filterFormated: { [key: string]: unknown } = {};
+const convertObjectFilterToMongoFilter = (input: FilterQuery<IEntity>, recursiveInput: FilterQuery<IEntity> = {}) => {
+  const filterFormated: FilterQuery<IEntity> = recursiveInput;
+
   for (const key in input) {
     if (input[`${key}`] && typeof input[`${key}`] === 'object') {
-      filterFormated[`${key}.${Object.keys(input[`${key}`])[0]}`] = Object.values(input[`${key}`])[0];
+      for (const subKey of Object.keys(input[`${key}`])) {
+        convertObjectFilterToMongoFilter({ [`${key}.${subKey}`]: input[`${key}`][`${subKey}`] }, filterFormated);
+        continue;
+      }
       continue;
     }
     filterFormated[`${key}`] = input[`${key}`];
