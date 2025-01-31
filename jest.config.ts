@@ -4,7 +4,7 @@ import { compilerOptions } from './tsconfig.json';
 
 export default {
   moduleFileExtensions: ['js', 'json', 'ts'],
-  rootDir: 'src/core',
+  roots: ['src/core', 'src/modules'],
   testRegex: '.*\\.spec\\.ts$',
   transform: {
     '^.+\\.(t|j)s$': [
@@ -17,10 +17,10 @@ export default {
       }
     ]
   },
-  setupFilesAfterEnv: ['../../test/initialization.ts'],
+  setupFilesAfterEnv: ['./test/initialization.ts'],
   testEnvironment: 'node',
   collectCoverageFrom: ['**/*.ts'],
-  coverageDirectory: '../../coverage',
+  coverageDirectory: './coverage',
   coverageReporters: ['json-summary', 'lcov'],
-  moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, { prefix: '<rootDir>/../../' })
+  moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, { prefix: '<rootDir>/' })
 };

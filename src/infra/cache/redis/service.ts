@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { createClient, RedisClientOptions, RedisClientType, SetOptions } from 'redis';
+import { RedisClientType, SetOptions } from 'redis';
 
 import { ILoggerAdapter } from '@/infra/logger';
 import { ApiInternalServerException } from '@/utils/exception';
@@ -10,13 +10,13 @@ import { RedisCacheKeyArgument, RedisCacheValueArgument } from './types';
 
 @Injectable()
 export class RedisService implements Partial<ICacheAdapter<RedisClientType>> {
-  client: RedisClientType;
+  client!: RedisClientType;
 
   constructor(
-    private readonly config: RedisClientOptions,
-    private readonly logger: ILoggerAdapter
+    private readonly logger: ILoggerAdapter,
+    client: RedisClientType
   ) {
-    this.client = createClient(this.config) as RedisClientType;
+    this.client = client;
   }
 
   async isConnected(): Promise<void> {

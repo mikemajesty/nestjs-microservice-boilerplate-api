@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { createClient, RedisClientType } from 'redis';
 
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { ISecretsAdapter, SecretsModule } from '@/infra/secrets';
@@ -12,7 +13,8 @@ import { RedisService } from './service';
     {
       provide: ICacheAdapter,
       useFactory: async ({ REDIS_URL }: ISecretsAdapter, logger: ILoggerAdapter) => {
-        const cacheService = new RedisService({ url: REDIS_URL }, logger);
+        const client = createClient({ url: REDIS_URL }) as RedisClientType;
+        const cacheService = new RedisService(logger, client);
         await cacheService.connect();
         return cacheService;
       },

@@ -2,6 +2,6 @@
   "*.{js,ts,jsx}": [
     "yarn lint --fix",
     "yarn prettier",
-    "yarn test --findRelatedTests --passWithNoTests"
+    "yarn test --verbose --findRelatedTests --passWithNoTests --forceExit"
   ]
 }

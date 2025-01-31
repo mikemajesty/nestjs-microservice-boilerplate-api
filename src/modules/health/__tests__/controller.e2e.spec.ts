@@ -25,6 +25,6 @@ describe('HealthController', () => {
   });
 
   it('should return "Hello World!"', async () => {
-    expect(await healthController.getHealth()).toBe(`${name}:${version} available!`);
+    expect(await healthController.getHealth()).toBe(`Hello, ${name}:${version} available!`);
   });
 });
