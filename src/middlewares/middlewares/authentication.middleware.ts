@@ -27,7 +27,7 @@ export class AuthenticationMiddleware implements NestMiddleware {
       Object.assign(request.headers, { traceid: request['id'] ?? UUIDUtils.create() });
     }
 
-    if (!tokenHeader && process.env.NODE_ENV !== 'test') {
+    if (!tokenHeader) {
       response.status(ApiUnauthorizedException.STATUS);
       request.id = request.headers.traceid as string;
       this.loggerService.logger(request, response);
