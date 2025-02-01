@@ -17,7 +17,7 @@ import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { SecretsModule } from '@/infra/secrets';
 import { EventLibModule, IEventAdapter } from '@/libs/event';
 import { TokenLibModule } from '@/libs/token';
-import { AuthenticationMiddleware } from '@/observables/middlewares';
+import { AuthenticationMiddleware } from '@/middlewares/middlewares';
 
 import { RoleModule } from '../role/module';
 import {

@@ -16,7 +16,7 @@ import { RedisCacheModule } from '@/infra/cache/redis';
 import { RoleSchema } from '@/infra/database/postgres/schemas/role';
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { TokenLibModule } from '@/libs/token';
-import { AuthenticationMiddleware } from '@/observables/middlewares';
+import { AuthenticationMiddleware } from '@/middlewares/middlewares';
 
 import { PermissionModule } from '../permission/module';
 import {

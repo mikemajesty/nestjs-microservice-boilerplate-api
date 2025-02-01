@@ -2,12 +2,12 @@ import { Module } from '@nestjs/common';
 import { APP_GUARD, Reflector } from '@nestjs/core';
 
 import { InfraModule } from '@/infra/module';
+import { AuthorizationRoleGuard } from '@/middlewares/guards';
 import { CatModule } from '@/modules/cat/module';
 import { HealthModule } from '@/modules/health/module';
 import { LoginModule } from '@/modules/login/module';
 import { LogoutModule } from '@/modules/logout/module';
 import { UserModule } from '@/modules/user/module';
-import { AuthorizationRoleGuard } from '@/observables/guards';
 
 import { IUserRepository } from './core/user/repository/user';
 import { LibModule } from './libs/module';

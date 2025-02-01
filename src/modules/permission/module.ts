@@ -13,7 +13,7 @@ import { RedisCacheModule } from '@/infra/cache/redis';
 import { PermissionSchema } from '@/infra/database/postgres/schemas/permission';
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { TokenLibModule } from '@/libs/token';
-import { AuthenticationMiddleware } from '@/observables/middlewares';
+import { AuthenticationMiddleware } from '@/middlewares/middlewares';
 
 import {
   IPermissionCreateAdapter,

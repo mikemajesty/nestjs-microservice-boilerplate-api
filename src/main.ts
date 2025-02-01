@@ -11,18 +11,18 @@ import helmet from 'helmet';
 
 import { ILoggerAdapter } from '@/infra/logger/adapter';
 import { ISecretsAdapter } from '@/infra/secrets';
-import { ExceptionHandlerFilter } from '@/observables/filters';
+import { ExceptionHandlerFilter } from '@/middlewares/filters';
 import {
   ExceptionHandlerInterceptor,
   HttpLoggerInterceptor,
   MetricsInterceptor,
   TracingInterceptor
-} from '@/observables/interceptors';
+} from '@/middlewares/interceptors';
 
 import { description, name, version } from '../package.json';
 import { AppModule } from './app.module';
 import { ErrorType } from './infra/logger';
-import { RequestTimeoutInterceptor } from './observables/interceptors/request-timeout.interceptor';
+import { RequestTimeoutInterceptor } from './middlewares/interceptors/request-timeout.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {

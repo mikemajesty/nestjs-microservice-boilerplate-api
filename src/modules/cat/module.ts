@@ -13,7 +13,7 @@ import { ConnectionName } from '@/infra/database/enum';
 import { Cat, CatDocument, CatSchema } from '@/infra/database/mongo/schemas/cat';
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { TokenLibModule } from '@/libs/token';
-import { AuthenticationMiddleware } from '@/observables/middlewares';
+import { AuthenticationMiddleware } from '@/middlewares/middlewares';
 import { MongoRepositoryModelSessionType } from '@/utils/mongoose';
 
 import {

@@ -5,7 +5,7 @@ import { ICacheAdapter } from '@/infra/cache';
 import { RedisCacheModule } from '@/infra/cache/redis';
 import { LoggerModule } from '@/infra/logger';
 import { ISecretsAdapter, SecretsModule } from '@/infra/secrets';
-import { AuthenticationMiddleware } from '@/observables/middlewares';
+import { AuthenticationMiddleware } from '@/middlewares/middlewares';
 
 import { TokenLibModule } from '../../libs/token/module';
 import { ILogoutAdapter } from './adapter';
