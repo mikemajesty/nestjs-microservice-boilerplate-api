@@ -8,7 +8,7 @@ import { HttpLogger, Options, pinoHttp } from 'pino-http';
 import pinoPretty, { PrettyOptions } from 'pino-pretty';
 
 import { DateUtils } from '@/utils/date';
-import { ApiBadRequestException, BaseException } from '@/utils/exception';
+import { ApiBadRequestException, ApiInternalServerException, BaseException } from '@/utils/exception';
 import { UUIDUtils } from '@/utils/uuid';
 
 import { ILoggerAdapter } from './adapter';
@@ -67,9 +67,14 @@ export class LoggerService implements ILoggerAdapter {
     this.logger.logger.info([obj, message].find(Boolean), message);
   }
 
-  warn({ message, context, obj = {} }: MessageType): void {
-    Object.assign(obj, { context, createdAt: DateUtils.getISODateString() });
-    this.logger.logger.warn([obj, message].find(Boolean), message);
+  warn(input: MessageType): void {
+    const { message, context, obj = {} } = input;
+    Object.assign(obj, {
+      context: context ?? (obj as { context?: string })?.['context'],
+      createdAt: DateUtils.getISODateString()
+    });
+    const finalMessage = typeof input === 'string' ? input : message;
+    this.logger.logger.warn([obj, finalMessage].find(Boolean), finalMessage);
   }
 
   error(error: ErrorType, message?: string): void {
@@ -80,9 +85,10 @@ export class LoggerService implements ILoggerAdapter {
         ? { statusCode: error.statusCode, message: error?.message, ...error?.parameters }
         : errorResponse?.value();
 
-    const type = {
-      Error: BaseException.name
-    }[error?.name];
+    const type =
+      {
+        Error: BaseException.name
+      }[error?.name] || ApiInternalServerException.name;
 
     const messages = [message, response?.message, error.message].find(Boolean);
 
