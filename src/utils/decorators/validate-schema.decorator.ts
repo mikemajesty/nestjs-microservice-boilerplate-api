@@ -12,6 +12,13 @@ export function ValidateSchema(...schema: Schema[]) {
       for (const [index, value] of schema.entries()) {
         try {
           const model = value.parse(args[`${index}`]);
+
+          for (const key in model) {
+            if (model[key] === undefined) {
+              delete model[key];
+            }
+          }
+
           args[`${index}`] = model;
         } catch (error) {
           Object.assign(validatorError, { error });
