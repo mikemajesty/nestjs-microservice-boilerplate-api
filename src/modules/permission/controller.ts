@@ -1,5 +1,4 @@
-import { Controller, Delete, Get, Post, Put, Req, Version } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Controller, Delete, Get, HttpCode, Post, Put, Req, Version } from '@nestjs/common';
 
 import { PermissionCreateInput, PermissionCreateOutput } from '@/core/permission/use-cases/permission-create';
 import { PermissionDeleteInput, PermissionDeleteOutput } from '@/core/permission/use-cases/permission-delete';
@@ -18,11 +17,8 @@ import {
   IPermissionListAdapter,
   IPermissionUpdateAdapter
 } from './adapter';
-import { SwaggerRequest, SwaggerResponse } from './swagger';
 
 @Controller('permissions')
-@ApiTags('permissions')
-@ApiBearerAuth()
 export class PermissionController {
   constructor(
     private readonly createUsecase: IPermissionCreateAdapter,
@@ -33,20 +29,14 @@ export class PermissionController {
   ) {}
 
   @Post()
-  @ApiResponse(SwaggerResponse.create[200])
-  @ApiResponse(SwaggerResponse.create[409])
-  @ApiBody(SwaggerRequest.create)
   @Version('1')
   @Permission('permission:create')
+  @HttpCode(201)
   async create(@Req() { body }: ApiRequest): Promise<PermissionCreateOutput> {
     return await this.createUsecase.execute(body as PermissionCreateInput);
   }
 
   @Put(':id')
-  @ApiResponse(SwaggerResponse.update[200])
-  @ApiResponse(SwaggerResponse.update[404])
-  @ApiBody(SwaggerRequest.update)
-  @ApiParam({ name: 'id', required: true, allowEmptyValue: false })
   @Version('1')
   @Permission('permission:update')
   async update(@Req() { body, params }: ApiRequest): Promise<PermissionUpdateOutput> {
@@ -54,9 +44,6 @@ export class PermissionController {
   }
 
   @Get(':id')
-  @ApiParam({ name: 'id', required: true, allowEmptyValue: false })
-  @ApiResponse(SwaggerResponse.getById[200])
-  @ApiResponse(SwaggerResponse.getById[404])
   @Version('1')
   @Permission('permission:getbyid')
   async getById(@Req() { params }: ApiRequest): Promise<PermissionGetByIdOutput> {
@@ -64,12 +51,6 @@ export class PermissionController {
   }
 
   @Get()
-  @ApiQuery(SwaggerRequest.list.pagination.limit)
-  @ApiQuery(SwaggerRequest.list.pagination.page)
-  @ApiQuery(SwaggerRequest.list.sort)
-  @ApiQuery(SwaggerRequest.list.search)
-  @ApiResponse(SwaggerResponse.list[200])
-  @ApiResponse(SwaggerResponse.list[400])
   @Version('1')
   @Permission('permission:list')
   async list(@Req() { query }: ApiRequest): Promise<PermissionListOutput> {
@@ -84,10 +65,6 @@ export class PermissionController {
   }
 
   @Delete(':id')
-  @ApiParam({ name: 'id', required: true, allowEmptyValue: false })
-  @ApiResponse(SwaggerResponse.delete[200])
-  @ApiResponse(SwaggerResponse.delete[404])
-  @ApiResponse(SwaggerResponse.delete[409])
   @Version('1')
   @Permission('permission:delete')
   async delete(@Req() { params }: ApiRequest): Promise<PermissionDeleteOutput> {

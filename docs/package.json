@@ -1,0 +1,34 @@
+{
+  "name": "docs",
+  "version": "0.1.0",
+  "type": "commonjs",
+  "scripts": {
+    "doc:install": "npx tsp install",
+    "doc:init": "npx tsp init",
+    "doc:compiler": "npx tsp compile ./src --watch",
+    "doc:start": "browser-sync start --proxy 'localhost:8080' --files './tsp-output/@typespec/openapi3/openapi.api.yaml' ",
+    "start": "concurrently \"yarn doc:start\" \"yarn doc:compiler\"",
+    "infra": "docker-compose down --volumes && docker-compose up --build --remove-orphans"
+  },
+  "peerDependencies": {
+    "@typespec/compiler": "latest",
+    "@typespec/http": "latest",
+    "@typespec/openapi3": "latest",
+    "@typespec/rest": "latest",
+    "@typespec/versioning": "latest"
+  },
+  "devDependencies": {
+    "@typespec/compiler": "latest",
+    "@typespec/http": "latest",
+    "@typespec/openapi3": "latest",
+    "@typespec/rest": "latest",
+    "browser-sync": "^3.0.3",
+    "concurrently": "^9.1.2"
+  },
+  "private": true,
+  "exports": {
+    ".": {
+      "typespec": "./src/main.tsp"
+    }
+  }
+}

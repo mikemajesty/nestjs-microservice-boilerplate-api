@@ -2,7 +2,6 @@ import './utils/tracing';
 
 import { RequestMethod, VersioningType } from '@nestjs/common';
 import { NestFactory, Reflector } from '@nestjs/core';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import bodyParser from 'body-parser';
 import { bold } from 'colorette';
 import compression from 'compression';
@@ -19,7 +18,7 @@ import {
   TracingInterceptor
 } from '@/middlewares/interceptors';
 
-import { description, name, version } from '../package.json';
+import { name } from '../package.json';
 import { AppModule } from './app.module';
 import { ErrorType } from './infra/logger';
 import { RequestTimeoutInterceptor } from './middlewares/interceptors/request-timeout.interceptor';
@@ -97,20 +96,6 @@ async function bootstrap() {
   process.on('unhandledRejection', (error) => {
     loggerService.error(error as ErrorType);
   });
-
-  if (!IS_PRODUCTION) {
-    const config = new DocumentBuilder()
-      .setTitle(name)
-      .setDescription(description)
-      .addBearerAuth()
-      .setVersion(version)
-      .addServer(HOST)
-      .addTag('Swagger Documentation')
-      .build();
-
-    const document = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('docs', app, document);
-  }
 
   await app.listen(PORT, () => {
     loggerService.log(`🟢 ${name} listening at ${bold(PORT)} on ${bold(ENV?.toUpperCase())} 🟢`);

@@ -1,6 +1,8 @@
 # compiled output
 node_modules
+**/node_modules
 dist
+**/tsp-output/
 
 # Logs
 logs

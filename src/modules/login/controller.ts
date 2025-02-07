@@ -1,5 +1,4 @@
 import { Controller, Get, Post, Req, Res, Version } from '@nestjs/common';
-import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 
 import { IUserRepository } from '@/core/user/repository/user';
@@ -11,10 +10,8 @@ import { ITokenAdapter } from '@/libs/token';
 import { ApiRequest } from '@/utils/request';
 
 import { ILoginAdapter, IRefreshTokenAdapter } from './adapter';
-import { SwaggerRequest, SwaggerResponse } from './swagger';
 
 @Controller()
-@ApiTags('login')
 export class LoginController {
   constructor(
     private readonly loginUsecase: ILoginAdapter,
@@ -26,18 +23,12 @@ export class LoginController {
   ) {}
 
   @Post('login')
-  @ApiResponse(SwaggerResponse.login[200])
-  @ApiResponse(SwaggerResponse.login[404])
-  @ApiBody(SwaggerRequest.login)
   @Version('1')
   async login(@Req() { body, user, tracing }: ApiRequest): Promise<LoginOutput> {
     return this.loginUsecase.execute(body as LoginInput, { user, tracing });
   }
 
   @Post('refresh')
-  @ApiResponse(SwaggerResponse.refresh[200])
-  @ApiResponse(SwaggerResponse.refresh[404])
-  @ApiBody(SwaggerRequest.refresh)
   @Version('1')
   async refresh(@Req() { body }: ApiRequest): Promise<RefreshTokenOutput> {
     return this.refreshTokenUsecase.execute(body as RefreshTokenInput);

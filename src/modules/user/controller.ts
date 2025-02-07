@@ -1,5 +1,4 @@
-import { Controller, Delete, Get, Post, Put, Req, Version } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Controller, Delete, Get, HttpCode, Post, Put, Req, Version } from '@nestjs/common';
 
 import { UserChangePasswordInput, UserChangePasswordOutput } from '@/core/user/use-cases/user-change-password';
 import { UserCreateInput, UserCreateOutput } from '@/core/user/use-cases/user-create';
@@ -20,11 +19,8 @@ import {
   IUserListAdapter,
   IUserUpdateAdapter
 } from './adapter';
-import { SwaggerRequest, SwaggerResponse } from './swagger';
 
 @Controller('users')
-@ApiTags('users')
-@ApiBearerAuth()
 export class UserController {
   constructor(
     private readonly createUsecase: IUserCreateAdapter,
@@ -36,21 +32,14 @@ export class UserController {
   ) {}
 
   @Post()
-  @ApiResponse(SwaggerResponse.create[200])
-  @ApiResponse(SwaggerResponse.create[409])
-  @ApiBody(SwaggerRequest.create)
   @Version('1')
   @Permission('user:create')
+  @HttpCode(201)
   async create(@Req() { body, user, tracing }: ApiRequest): Promise<UserCreateOutput> {
     return this.createUsecase.execute(body as UserCreateInput, { user, tracing });
   }
 
   @Put(':id')
-  @ApiResponse(SwaggerResponse.update[200])
-  @ApiResponse(SwaggerResponse.update[404])
-  @ApiResponse(SwaggerResponse.update[409])
-  @ApiBody(SwaggerRequest.update)
-  @ApiParam({ name: 'id', required: true, allowEmptyValue: false })
   @Version('1')
   @Permission('user:update')
   async update(@Req() { body, user, tracing, params }: ApiRequest): Promise<UserUpdateOutput> {
@@ -58,12 +47,6 @@ export class UserController {
   }
 
   @Get()
-  @ApiQuery(SwaggerRequest.list.pagination.limit)
-  @ApiQuery(SwaggerRequest.list.pagination.page)
-  @ApiQuery(SwaggerRequest.list.sort)
-  @ApiQuery(SwaggerRequest.list.search)
-  @ApiResponse(SwaggerResponse.list[200])
-  @ApiResponse(SwaggerResponse.list[400])
   @Version('1')
   @Permission('user:list')
   async list(@Req() { query }: ApiRequest): Promise<UserListOutput> {
@@ -78,28 +61,19 @@ export class UserController {
   }
 
   @Get('/me')
-  @ApiResponse(SwaggerResponse.me[200])
   @Version('1')
   me(@Req() { user }: ApiRequest): UserRequest {
     return user;
   }
 
   @Get(':id')
-  @ApiParam({ name: 'id', required: true, allowEmptyValue: false })
-  @ApiResponse(SwaggerResponse.getById[200])
-  @ApiResponse(SwaggerResponse.getById[404])
   @Version('1')
   @Permission('user:getbyid')
   async getById(@Req() { params }: ApiRequest): Promise<UserGetByIdOutput> {
     return await this.getByIdUsecase.execute(params as UserGetByIdInput);
   }
 
-  @Put('change-password:id')
-  @ApiParam({ name: 'id', required: true, allowEmptyValue: false })
-  @ApiBody(SwaggerRequest.changePassword)
-  @ApiResponse(SwaggerResponse.changePassword[200])
-  @ApiResponse(SwaggerResponse.changePassword[404])
-  @ApiResponse(SwaggerResponse.changePassword[400])
+  @Put('change-password/:id')
   @Version('1')
   @Permission('user:changepassword')
   async changePassword(@Req() { params, body }: ApiRequest): Promise<UserChangePasswordOutput> {
@@ -107,9 +81,6 @@ export class UserController {
   }
 
   @Delete(':id')
-  @ApiParam({ name: 'id', required: true, allowEmptyValue: false })
-  @ApiResponse(SwaggerResponse.delete[200])
-  @ApiResponse(SwaggerResponse.delete[404])
   @Version('1')
   @Permission('user:delete')
   async delete(@Req() { params, user, tracing }: ApiRequest): Promise<UserDeleteOutput> {
