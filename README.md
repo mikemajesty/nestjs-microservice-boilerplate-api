@@ -42,6 +42,21 @@ In this microservice I used the best architecture concepts: Onion Architecture, 
   $ yarn build
   ```
 
+---
+
+# Login
+
+```
+curl -X 'POST' \
+'http://localhost:4000/api/v1/login' \
+-H 'accept: application/json' \
+-H 'Content-Type: application/json' \
+-d '{
+  "email": "admin@admin.com",
+  "password": "admin"
+}'
+```
+
 ### CRUD Scaffolding
 
 Creating a CRUD in Postgres and Mongo in seconds.
@@ -62,6 +77,10 @@ Creating a CRUD in Postgres and Mongo in seconds.
 - Then
 
     <img loading="lazy" src="ohmy.gif" width="150" height="150"/>
+
+### Documentation(Swagger)
+
+## docs/README.md
 
 #### CRUD features
 
