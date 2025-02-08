@@ -2,15 +2,18 @@ import "@typespec/http";
 
 using TypeSpec.Http;
 
-namespace api.Utils.Versions;
+namespace api.Utils.Versioning;
 
-enum Versions {
+enum ApiVersion {
   v1,
-  v2,
+}
+
+enum DocVersionVersion {
+  v1: "1.0",
 }
 
 model VersionParams {
   @doc("route version")
   @path
-  version: Versions;
+  version: ApiVersion;
 }

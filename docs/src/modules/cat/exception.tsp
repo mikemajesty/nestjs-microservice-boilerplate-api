@@ -6,7 +6,7 @@ using TypeSpec.Http;
 using TypeSpec.Versioning;
 using Utils.Model;
 using Utils.Exception;
-using Utils.Versions;
+using Utils.Versioning;
 
 namespace api.Cat;
 

@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: Cat
-  version: v2
+  version: '1.0'
 tags:
   - name: Cat
 paths:
@@ -10,7 +10,7 @@ paths:
       operationId: CatController_create
       description: create cat
       parameters:
-        - $ref: '#/components/parameters/api.Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/api.Utils.Versioning.VersionParams'
       responses:
         '200':
           description: cat created successfully
@@ -38,11 +38,7 @@ paths:
       operationId: CatController_list
       description: list cat
       parameters:
-        - name: version
-          in: path
-          required: true
-          schema:
-            $ref: '#/components/schemas/api.Utils.Versions.Versions'
+        - $ref: '#/components/parameters/api.Utils.Versioning.VersionParams'
         - $ref: '#/components/parameters/api.Utils.Model.ApiPaginationInput.page'
         - $ref: '#/components/parameters/api.Utils.Model.ApiPaginationInput.limit'
         - $ref: '#/components/parameters/api.Utils.Model.ApiPaginationInput.sort'
@@ -63,7 +59,7 @@ paths:
       operationId: CatController_update
       description: create update
       parameters:
-        - $ref: '#/components/parameters/api.Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/api.Utils.Versioning.VersionParams'
         - $ref: '#/components/parameters/UpdateParamInput'
       responses:
         '200':
@@ -98,7 +94,7 @@ paths:
       operationId: CatController_getById
       description: get cat by id
       parameters:
-        - $ref: '#/components/parameters/api.Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/api.Utils.Versioning.VersionParams'
         - $ref: '#/components/parameters/GetByIdParamInput'
       responses:
         '200':
@@ -127,7 +123,7 @@ paths:
       operationId: CatController_delete
       description: delete cat
       parameters:
-        - $ref: '#/components/parameters/api.Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/api.Utils.Versioning.VersionParams'
         - $ref: '#/components/parameters/DeleteParamInput'
       responses:
         '200':
@@ -212,13 +208,13 @@ components:
         type: string
         default: createdAt:desc
       explode: false
-    api.Utils.Versions.VersionParams:
+    api.Utils.Versioning.VersionParams:
       name: version
       in: path
       required: true
       description: route version
       schema:
-        $ref: '#/components/schemas/api.Utils.Versions.Versions'
+        $ref: '#/components/schemas/api.Utils.Versioning.ApiVersion'
   schemas:
     CatEntity:
       type: object
@@ -714,11 +710,10 @@ components:
         search:
           type: string
           description: search by property **property1:value1|value2**
-    api.Utils.Versions.Versions:
+    api.Utils.Versioning.ApiVersion:
       type: string
       enum:
         - v1
-        - v2
   securitySchemes:
     BearerAuth:
       type: http

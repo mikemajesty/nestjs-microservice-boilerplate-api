@@ -1,31 +1,31 @@
 openapi: 3.0.0
 info:
-  title: Cat
-  version: v1
+  title: Role
+  version: '1.0'
 tags:
-  - name: Cat
+  - name: Role
 paths:
-  /api/{version}/cats:
+  /api/{version}/roles:
     post:
-      operationId: CatController_create
-      description: create cat
+      operationId: RoleController_create
+      description: create role
       parameters:
-        - $ref: '#/components/parameters/api.Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/api.Utils.Versioning.VersionParams'
       responses:
-        '200':
-          description: cat created successfully
+        '201':
+          description: role created successfully
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/CreateOutput'
         '400':
-          description: When input is invalid
+          description: When input body is invalid
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CreateValidationError'
+                $ref: '#/components/schemas/CreateBodyValidationError'
       tags:
-        - Cat
+        - Role
       requestBody:
         required: true
         content:
@@ -35,57 +35,113 @@ paths:
       security:
         - BearerAuth: []
     get:
-      operationId: CatController_list
-      description: list cat
+      operationId: RoleController_list
+      description: list role
       parameters:
-        - name: version
-          in: path
-          required: true
-          schema:
-            $ref: '#/components/schemas/api.Utils.Versions.Versions'
+        - $ref: '#/components/parameters/api.Utils.Versioning.VersionParams'
         - $ref: '#/components/parameters/api.Utils.Model.ApiPaginationInput.page'
         - $ref: '#/components/parameters/api.Utils.Model.ApiPaginationInput.limit'
         - $ref: '#/components/parameters/api.Utils.Model.ApiPaginationInput.sort'
         - $ref: '#/components/parameters/api.Utils.Model.ApiPaginationInput.search'
       responses:
         '200':
-          description: list cat successfully
+          description: list role successfully
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ListOutput'
       tags:
-        - Cat
+        - Role
       security:
         - BearerAuth: []
-  /api/{version}/cats/{id}:
+  /api/{version}/roles/add-permissions/{id}:
     put:
-      operationId: CatController_update
-      description: create update
+      operationId: RoleController_addPermission
+      description: add permission from role
       parameters:
-        - $ref: '#/components/parameters/api.Utils.Versions.VersionParams'
-        - $ref: '#/components/parameters/UpdateParamInput'
+        - $ref: '#/components/parameters/api.Utils.Versioning.VersionParams'
+        - $ref: '#/components/parameters/AddPermissionParamsInput'
       responses:
         '200':
-          description: cat updated successfully
+          description: permission added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddPermissionOutput'
+        '404':
+          description: When role not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddPermissionRoleNotFoundError'
+      tags:
+        - Role
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddPermissionInput'
+      security:
+        - BearerAuth: []
+  /api/{version}/roles/remove-permissions/{id}:
+    put:
+      operationId: RoleController_removePermission
+      description: remove permission from role
+      parameters:
+        - $ref: '#/components/parameters/api.Utils.Versioning.VersionParams'
+        - $ref: '#/components/parameters/RemovePermissionParamsInput'
+      responses:
+        '200':
+          description: permission removed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RemovePermissionOuput'
+        '404':
+          description: When role not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RemovePermissionRoleNotFoundError'
+      tags:
+        - Role
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RemovePermissionInput'
+      security:
+        - BearerAuth: []
+  /api/{version}/roles/{id}:
+    put:
+      operationId: RoleController_update
+      description: create role
+      parameters:
+        - $ref: '#/components/parameters/api.Utils.Versioning.VersionParams'
+        - $ref: '#/components/parameters/UpdateParamsInput'
+      responses:
+        '200':
+          description: role created successfully
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/UpdateOutput'
         '400':
-          description: When input is invalid
+          description: When input params is invalid
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UpdateValidationError'
+                $ref: '#/components/schemas/UpdateParamsValidationError'
         '404':
-          description: When cat not found
+          description: When role not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UpdateCatNotFoundError'
+                $ref: '#/components/schemas/UpdateRoleNotFoundError'
       tags:
-        - Cat
+        - Role
       requestBody:
         required: true
         content:
@@ -95,84 +151,98 @@ paths:
       security:
         - BearerAuth: []
     get:
-      operationId: CatController_getById
-      description: get cat by id
+      operationId: RoleController_getById
+      description: get role by id
       parameters:
-        - $ref: '#/components/parameters/api.Utils.Versions.VersionParams'
-        - $ref: '#/components/parameters/GetByIdParamInput'
+        - $ref: '#/components/parameters/api.Utils.Versioning.VersionParams'
+        - $ref: '#/components/parameters/GetByIdParamsInput'
       responses:
         '200':
-          description: get cat by id successfully
+          description: role found successfully
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/GetByIdOutput'
         '400':
-          description: When input is invalid
+          description: When input params is invalid
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GetByIdValidationError'
+                $ref: '#/components/schemas/GetByIdParamsValidationError'
         '404':
-          description: When cat not found
+          description: When role not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GetByIdCatNotFoundError'
+                $ref: '#/components/schemas/GetByIdRoleNotFoundError'
       tags:
-        - Cat
+        - Role
       security:
         - BearerAuth: []
     delete:
-      operationId: CatController_delete
-      description: delete cat
+      operationId: RoleController_delete
+      description: delete role
       parameters:
-        - $ref: '#/components/parameters/api.Utils.Versions.VersionParams'
-        - $ref: '#/components/parameters/DeleteParamInput'
+        - $ref: '#/components/parameters/api.Utils.Versioning.VersionParams'
+        - $ref: '#/components/parameters/DeleteParamsInput'
       responses:
         '200':
-          description: cat deleted successfully
+          description: role deleted successfully
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/DeleteOutput'
-        '400':
-          description: When input is invalid
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DeleteValidationError'
         '404':
-          description: When cat not found
+          description: When role not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DeleteCatNotFoundError'
+                $ref: '#/components/schemas/DeleteRoleNotFoundError'
+        '409':
+          description: When roles has association with permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteHasAssociationError'
       tags:
-        - Cat
+        - Role
       security:
         - BearerAuth: []
 components:
   parameters:
-    DeleteParamInput:
+    AddPermissionParamsInput:
       name: id
       in: path
       required: true
-      description: cat id
+      description: role id
       schema:
         type: string
-    GetByIdParamInput:
+    DeleteParamsInput:
       name: id
       in: path
       required: true
-      description: cat id
+      description: role id
       schema:
         type: string
-    UpdateParamInput:
+    GetByIdParamsInput:
       name: id
       in: path
       required: true
-      description: cat id
+      description: role id
+      schema:
+        type: string
+    RemovePermissionParamsInput:
+      name: id
+      in: path
+      required: true
+      description: role id
+      schema:
+        type: string
+    UpdateParamsInput:
+      name: id
+      in: path
+      required: true
+      description: role id
       schema:
         type: string
     api.Utils.Model.ApiPaginationInput.limit:
@@ -212,108 +282,30 @@ components:
         type: string
         default: createdAt:desc
       explode: false
-    api.Utils.Versions.VersionParams:
+    api.Utils.Versioning.VersionParams:
       name: version
       in: path
       required: true
       description: route version
       schema:
-        $ref: '#/components/schemas/api.Utils.Versions.Versions'
+        $ref: '#/components/schemas/api.Utils.Versioning.ApiVersion'
   schemas:
-    CatEntity:
+    AddPermissionInput:
       type: object
       required:
-        - name
-        - breed
-        - age
-        - createdAt
-        - updatedAt
-        - deletedAt
+        - permissions
       properties:
-        name:
-          type: string
-        breed:
-          type: string
-        age:
-          type: integer
-          format: int16
-        createdAt:
-          type: string
-        updatedAt:
-          type: string
-        deletedAt:
-          type: string
-          nullable: true
-          default: null
-      description: cat base entity
-    CreateInput:
+        permissions:
+          type: array
+          items:
+            type: string
+      description: role add permission input
+    AddPermissionOutput:
       type: object
       allOf:
-        - type: object
-          required:
-            - name
-            - breed
-            - age
-          properties:
-            name:
-              type: string
-            breed:
-              type: string
-            age:
-              type: integer
-              format: int16
-          description: The template for picking properties.
-      description: cat create input
-    CreateOutput:
-      type: object
-      allOf:
-        - $ref: '#/components/schemas/CatEntity'
-      description: cat create output
-    CreateValidationError:
-      type: object
-      allOf:
-        - type: object
-          required:
-            - error
-          properties:
-            error:
-              type: object
-              required:
-                - code
-                - traceid
-                - context
-                - message
-                - timestamp
-                - path
-              properties:
-                code:
-                  type: number
-                  enum:
-                    - 400
-                  description: status code
-                traceid:
-                  type: string
-                  description: request traceid
-                context:
-                  type: string
-                  description: class that error occur
-                message:
-                  type: array
-                  items:
-                    type: string
-                    enum:
-                      - 'name: Required, breed: Required, age: Required'
-                  description: error message
-                timestamp:
-                  type: string
-                  description: timestamp that error occur
-                path:
-                  type: string
-                  description: path error
-              description: default error model
-          description: When input is invalid.
-      description: When input is invalid
-    DeleteCatNotFoundError:
+        - $ref: '#/components/schemas/RoleEntity'
+      description: role add permission output
+    AddPermissionRoleNotFoundError:
       type: object
       allOf:
         - type: object
@@ -346,7 +338,7 @@ components:
                   items:
                     type: string
                     enum:
-                      - catNotFound
+                      - roleNotFound
                   description: error message
                 timestamp:
                   type: string
@@ -356,7 +348,111 @@ components:
                   description: path error
               description: default error model
           description: When resource not found.
-      description: When cat not found
+      description: When role not found
+    CreateBodyValidationError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 400
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - 'name: Required'
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When input is invalid.
+      description: When input body is invalid
+    CreateInput:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - name
+          properties:
+            name:
+              type: string
+          description: The template for picking properties.
+      description: role create input
+    CreateOutput:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/RoleEntity'
+      description: role create output
+    DeleteHasAssociationError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 409
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - 'roleHasAssociationWithPermission: [permission]'
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When conflict occour.
+      description: When roles has association with permission
     DeleteOutput:
       type: object
       required:
@@ -368,70 +464,22 @@ components:
       allOf:
         - type: object
           required:
+            - id
             - name
-            - breed
-            - age
             - createdAt
             - updatedAt
           properties:
+            id:
+              type: string
             name:
               type: string
-            breed:
-              type: string
-            age:
-              type: integer
-              format: int16
             createdAt:
               type: string
             updatedAt:
               type: string
           description: The template for omitting properties.
-      description: cat delete output
-    DeleteValidationError:
-      type: object
-      allOf:
-        - type: object
-          required:
-            - error
-          properties:
-            error:
-              type: object
-              required:
-                - code
-                - traceid
-                - context
-                - message
-                - timestamp
-                - path
-              properties:
-                code:
-                  type: number
-                  enum:
-                    - 400
-                  description: status code
-                traceid:
-                  type: string
-                  description: request traceid
-                context:
-                  type: string
-                  description: class that error occur
-                message:
-                  type: array
-                  items:
-                    type: string
-                    enum:
-                      - 'id: Required'
-                  description: error message
-                timestamp:
-                  type: string
-                  description: timestamp that error occur
-                path:
-                  type: string
-                  description: path error
-              description: default error model
-          description: When input is invalid.
-      description: When input is invalid
-    GetByIdCatNotFoundError:
+      description: role delete output
+    DeleteRoleNotFoundError:
       type: object
       allOf:
         - type: object
@@ -464,7 +512,7 @@ components:
                   items:
                     type: string
                     enum:
-                      - catNotFound
+                      - roleNotFound
                   description: error message
                 timestamp:
                   type: string
@@ -474,13 +522,13 @@ components:
                   description: path error
               description: default error model
           description: When resource not found.
-      description: When cat not found
+      description: When role not found
     GetByIdOutput:
       type: object
       allOf:
-        - $ref: '#/components/schemas/CatEntity'
-      description: cat get by id input
-    GetByIdValidationError:
+        - $ref: '#/components/schemas/RoleEntity'
+      description: role get by id
+    GetByIdParamsValidationError:
       type: object
       allOf:
         - type: object
@@ -523,7 +571,51 @@ components:
                   description: path error
               description: default error model
           description: When input is invalid.
-      description: When input is invalid
+      description: When input params is invalid
+    GetByIdRoleNotFoundError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 404
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - roleNotFound
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When resource not found.
+      description: When role not found
     ListOutput:
       type: object
       allOf:
@@ -537,7 +629,7 @@ components:
             docs:
               type: array
               items:
-                $ref: '#/components/schemas/CatEntity'
+                $ref: '#/components/schemas/RoleEntity'
               description: documents
             page:
               type: integer
@@ -560,12 +652,28 @@ components:
               description: total pages
               default: 1
           description: pagination default response
-      description: cat list output
+      description: list output
     ListQueryInput:
       type: object
       allOf:
         - $ref: '#/components/schemas/api.Utils.Model.ApiPaginationInput'
-    UpdateCatNotFoundError:
+      description: list query input
+    RemovePermissionInput:
+      type: object
+      required:
+        - permissions
+      properties:
+        permissions:
+          type: array
+          items:
+            type: string
+      description: role remove permission input
+    RemovePermissionOuput:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/RoleEntity'
+      description: role remove permission output
+    RemovePermissionRoleNotFoundError:
       type: object
       allOf:
         - type: object
@@ -598,7 +706,7 @@ components:
                   items:
                     type: string
                     enum:
-                      - catNotFound
+                      - roleNotFound
                   description: error message
                 timestamp:
                   type: string
@@ -608,31 +716,46 @@ components:
                   description: path error
               description: default error model
           description: When resource not found.
-      description: When cat not found
+      description: When role not found
+    RoleEntity:
+      type: object
+      required:
+        - id
+        - name
+        - createdAt
+        - updatedAt
+        - deletedAt
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        deletedAt:
+          type: string
+          nullable: true
+          default: null
+      description: role base entity
     UpdateInput:
       type: object
       allOf:
         - type: object
           required:
             - name
-            - breed
-            - age
           properties:
             name:
               type: string
-            breed:
-              type: string
-            age:
-              type: integer
-              format: int16
           description: The template for picking properties.
-      description: cat update input
+      description: role update input
     UpdateOutput:
       type: object
       allOf:
-        - $ref: '#/components/schemas/CatEntity'
-      description: cat update output
-    UpdateValidationError:
+        - $ref: '#/components/schemas/RoleEntity'
+      description: role update output
+    UpdateParamsValidationError:
       type: object
       allOf:
         - type: object
@@ -675,17 +798,60 @@ components:
                   description: path error
               description: default error model
           description: When input is invalid.
-      description: When input is invalid
+      description: When input params is invalid
+    UpdateRoleNotFoundError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 404
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - roleNotFound
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When resource not found.
+      description: When role not found
+    api.Cat.ListQueryInput:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/api.Utils.Model.ApiPaginationInput'
     api.Permission.ListQueryInput:
       type: object
       allOf:
         - $ref: '#/components/schemas/api.Utils.Model.ApiPaginationInput'
       description: permission list input
-    api.Role.ListQueryInput:
-      type: object
-      allOf:
-        - $ref: '#/components/schemas/api.Utils.Model.ApiPaginationInput'
-      description: list query input
     api.User.ListQueryInput:
       type: object
       allOf:
@@ -714,11 +880,10 @@ components:
         search:
           type: string
           description: search by property **property1:value1|value2**
-    api.Utils.Versions.Versions:
+    api.Utils.Versioning.ApiVersion:
       type: string
       enum:
         - v1
-        - v2
   securitySchemes:
     BearerAuth:
       type: http

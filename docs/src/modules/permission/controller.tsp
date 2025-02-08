@@ -9,7 +9,7 @@ import "./model.tsp";
 import "./exception.tsp";
 
 using Utils.Model;
-using Utils.Versions;
+using Utils.Versioning;
 using TypeSpec.Http;
 using TypeSpec.Versioning;
 using OpenAPI;

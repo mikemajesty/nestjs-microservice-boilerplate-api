@@ -11,7 +11,7 @@ import "./exception.tsp";
 using TypeSpec.Http;
 using TypeSpec.Versioning;
 using OpenAPI;
-using Utils.Versions;
+using Utils.Versioning;
 using Utils.Exception;
 using Utils.Model;
 

@@ -2,7 +2,7 @@ import { Test } from '@nestjs/testing';
 import { ZodIssue } from 'zod';
 
 import { ILoggerAdapter } from '@/infra/logger';
-import { UpdatedModel } from '@/infra/repository';
+import { CreatedModel } from '@/infra/repository';
 import { IRoleUpdateAdapter } from '@/modules/role/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
 import { TestUtils } from '@/utils/tests';
@@ -68,7 +68,7 @@ describe(RoleUpdateUsecase.name, () => {
 
   test('when role updated successfully, should expect an role updated', async () => {
     repository.findById = TestUtils.mockResolvedValue<RoleEntity>(role);
-    repository.updateOne = TestUtils.mockResolvedValue<UpdatedModel>(null);
+    repository.create = TestUtils.mockResolvedValue<CreatedModel>(null);
 
     await expect(usecase.execute(input)).resolves.toEqual(role);
   });

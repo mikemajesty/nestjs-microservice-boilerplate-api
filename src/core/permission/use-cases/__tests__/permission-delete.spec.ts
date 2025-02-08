@@ -3,7 +3,7 @@ import { ZodIssue } from 'zod';
 
 import { PermissionDeleteInput, PermissionDeleteUsecase } from '@/core/permission/use-cases/permission-delete';
 import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
-import { UpdatedModel } from '@/infra/repository';
+import { CreatedModel } from '@/infra/repository';
 import { IPermissionDeleteAdapter } from '@/modules/permission/adapter';
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception';
 import { TestUtils } from '@/utils/tests';
@@ -70,7 +70,7 @@ describe(PermissionDeleteUsecase.name, () => {
 
   test('when permission deleted successfully, should expect a permission deleted', async () => {
     repository.findOneWithRelation = TestUtils.mockResolvedValue<PermissionEntity>(permission);
-    repository.updateOne = TestUtils.mockResolvedValue<UpdatedModel>();
+    repository.create = TestUtils.mockResolvedValue<CreatedModel>();
 
     await expect(usecase.execute(input)).resolves.toEqual({
       ...permission,

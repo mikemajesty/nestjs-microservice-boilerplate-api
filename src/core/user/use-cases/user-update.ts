@@ -12,11 +12,9 @@ import { UserEntity, UserEntitySchema } from '../entity/user';
 import { IUserRepository } from '../repository/user';
 
 export const UserUpdateSchema = UserEntitySchema.pick({
-  id: true,
-  name: true,
-  email: true
-})
-  .merge(z.object({ roles: z.array(z.nativeEnum(RoleEnum)) }))
+  id: true
+}).merge(UserEntitySchema.pick({ name: true, email: true, roles: true }).partial())
+  .merge(z.object({ roles: z.array(z.nativeEnum(RoleEnum)).optional() }))
   .strict();
 
 export class UserUpdateUsecase implements IUsecase {
@@ -34,13 +32,9 @@ export class UserUpdateUsecase implements IUsecase {
       throw new ApiNotFoundException('userNotFound');
     }
 
-    const roles = await this.roleRepository.findIn({ name: input.roles });
+    const roles = await this.getRoles(input);
 
-    if (roles.length < (input.roles as RoleEnum[]).length) {
-      throw new ApiNotFoundException('roleNotFound');
-    }
-
-    const entity = new UserEntity({ ...user, ...input, roles });
+    const entity = new UserEntity({ ...user, ...input, roles: roles ?? user.roles });
 
     const userExists = await this.userRepository.existsOnUpdate({ email: entity.email }, { id: entity.id });
 
@@ -59,6 +53,18 @@ export class UserUpdateUsecase implements IUsecase {
     tracing.logEvent('user-updated', `user: ${user.email} updated by: ${userData.email}`);
 
     return entityUpdated;
+  }
+
+  private async getRoles(input: UserUpdateInput) {
+    if (input.roles) {
+      const roles = await this.roleRepository.findIn({ name: input.roles });
+
+      if (roles.length < (input.roles as RoleEnum[]).length) {
+        throw new ApiNotFoundException('roleNotFound');
+      }
+
+      return roles;
+    }
   }
 }
 

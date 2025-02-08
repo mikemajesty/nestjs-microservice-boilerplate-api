@@ -1,31 +1,37 @@
 openapi: 3.0.0
 info:
-  title: Role
-  version: v2
+  title: Permission
+  version: '1.0'
 tags:
-  - name: Role
+  - name: Permission
 paths:
-  /api/{version}/roles:
+  /api/{version}/permissions:
     post:
-      operationId: RoleController_create
-      description: create role
+      operationId: PermissionController_create
+      description: create permission
       parameters:
-        - $ref: '#/components/parameters/api.Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/api.Utils.Versioning.VersionParams'
       responses:
-        '201':
-          description: role created successfully
+        '200':
+          description: permission created successfully
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/CreateOutput'
         '400':
-          description: When input body is invalid
+          description: When input is invalid
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CreateBodyValidationError'
+                $ref: '#/components/schemas/CreateValidationError'
+        '409':
+          description: When input is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConflictPermissionExistsError'
       tags:
-        - Role
+        - Permission
       requestBody:
         required: true
         content:
@@ -35,113 +41,55 @@ paths:
       security:
         - BearerAuth: []
     get:
-      operationId: RoleController_list
-      description: list role
+      operationId: PermissionController_list
+      description: list permission
       parameters:
-        - $ref: '#/components/parameters/api.Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/api.Utils.Versioning.VersionParams'
         - $ref: '#/components/parameters/api.Utils.Model.ApiPaginationInput.page'
         - $ref: '#/components/parameters/api.Utils.Model.ApiPaginationInput.limit'
         - $ref: '#/components/parameters/api.Utils.Model.ApiPaginationInput.sort'
         - $ref: '#/components/parameters/api.Utils.Model.ApiPaginationInput.search'
       responses:
         '200':
-          description: list role successfully
+          description: list permission successfully
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ListOutput'
       tags:
-        - Role
+        - Permission
       security:
         - BearerAuth: []
-  /api/{version}/roles/add-permissions/{id}:
+  /api/{version}/permissions/{id}:
     put:
-      operationId: RoleController_addPermission
-      description: add permission from role
+      operationId: PermissionController_update
+      description: update permission
       parameters:
-        - $ref: '#/components/parameters/api.Utils.Versions.VersionParams'
-        - $ref: '#/components/parameters/AddPermissionParamsInput'
-      responses:
-        '200':
-          description: permission added successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AddPermissionOutput'
-        '404':
-          description: When role not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AddPermissionRoleNotFoundError'
-      tags:
-        - Role
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AddPermissionInput'
-      security:
-        - BearerAuth: []
-  /api/{version}/roles/remove-permissions/{id}:
-    put:
-      operationId: RoleController_removePermission
-      description: remove permission from role
-      parameters:
-        - $ref: '#/components/parameters/api.Utils.Versions.VersionParams'
-        - $ref: '#/components/parameters/RemovePermissionParamsInput'
-      responses:
-        '200':
-          description: permission removed successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RemovePermissionOuput'
-        '404':
-          description: When role not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RemovePermissionRoleNotFoundError'
-      tags:
-        - Role
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RemovePermissionInput'
-      security:
-        - BearerAuth: []
-  /api/{version}/roles/{id}:
-    put:
-      operationId: RoleController_update
-      description: create role
-      parameters:
-        - $ref: '#/components/parameters/api.Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/api.Utils.Versioning.VersionParams'
         - $ref: '#/components/parameters/UpdateParamsInput'
       responses:
         '200':
-          description: role created successfully
+          description: permission updated successfully
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/UpdateOutput'
         '400':
-          description: When input params is invalid
+          description: When input is invalid
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UpdateParamsValidationError'
+                $ref: '#/components/schemas/UpdateValidationError'
         '404':
-          description: When role not found
+          description: When permission not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UpdateRoleNotFoundError'
+                anyOf:
+                  - $ref: '#/components/schemas/UpdatePermissionNotFoundError'
+                  - $ref: '#/components/schemas/UpdatePermissionAlreadyExistsError'
       tags:
-        - Role
+        - Permission
       requestBody:
         required: true
         content:
@@ -151,98 +99,84 @@ paths:
       security:
         - BearerAuth: []
     get:
-      operationId: RoleController_getById
-      description: get role by id
+      operationId: PermissionController_getById
+      description: get permission
       parameters:
-        - $ref: '#/components/parameters/api.Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/api.Utils.Versioning.VersionParams'
         - $ref: '#/components/parameters/GetByIdParamsInput'
       responses:
         '200':
-          description: role found successfully
+          description: get permission successfully
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/GetByIdOutput'
         '400':
-          description: When input params is invalid
+          description: When input is invalid
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GetByIdParamsValidationError'
+                $ref: '#/components/schemas/GetByIdValidationError'
         '404':
-          description: When role not found
+          description: When permission not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GetByIdRoleNotFoundError'
+                $ref: '#/components/schemas/GeyByIdPermissionNotFoundError'
       tags:
-        - Role
+        - Permission
       security:
         - BearerAuth: []
     delete:
-      operationId: RoleController_delete
-      description: delete role
+      operationId: PermissionController_delete
+      description: delete permission
       parameters:
-        - $ref: '#/components/parameters/api.Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/api.Utils.Versioning.VersionParams'
         - $ref: '#/components/parameters/DeleteParamsInput'
       responses:
         '200':
-          description: role deleted successfully
+          description: delete permission successfully
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/DeleteOutput'
+        '400':
+          description: When input is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteValidationError'
         '404':
-          description: When role not found
+          description: When permission not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DeleteRoleNotFoundError'
-        '409':
-          description: When roles has association with permission
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DeleteHasAssociationError'
+                $ref: '#/components/schemas/DeletePermissionNotFoundError'
       tags:
-        - Role
+        - Permission
       security:
         - BearerAuth: []
 components:
   parameters:
-    AddPermissionParamsInput:
-      name: id
-      in: path
-      required: true
-      description: role id
-      schema:
-        type: string
     DeleteParamsInput:
       name: id
       in: path
       required: true
-      description: role id
+      description: permission id
       schema:
         type: string
     GetByIdParamsInput:
       name: id
       in: path
       required: true
-      description: role id
-      schema:
-        type: string
-    RemovePermissionParamsInput:
-      name: id
-      in: path
-      required: true
-      description: role id
+      description: permission id
       schema:
         type: string
     UpdateParamsInput:
       name: id
       in: path
       required: true
-      description: role id
+      description: permission id
       schema:
         type: string
     api.Utils.Model.ApiPaginationInput.limit:
@@ -282,30 +216,15 @@ components:
         type: string
         default: createdAt:desc
       explode: false
-    api.Utils.Versions.VersionParams:
+    api.Utils.Versioning.VersionParams:
       name: version
       in: path
       required: true
       description: route version
       schema:
-        $ref: '#/components/schemas/api.Utils.Versions.Versions'
+        $ref: '#/components/schemas/api.Utils.Versioning.ApiVersion'
   schemas:
-    AddPermissionInput:
-      type: object
-      required:
-        - permissions
-      properties:
-        permissions:
-          type: array
-          items:
-            type: string
-      description: role add permission input
-    AddPermissionOutput:
-      type: object
-      allOf:
-        - $ref: '#/components/schemas/RoleEntity'
-      description: role add permission output
-    AddPermissionRoleNotFoundError:
+    ConflictPermissionExistsError:
       type: object
       allOf:
         - type: object
@@ -325,7 +244,7 @@ components:
                 code:
                   type: number
                   enum:
-                    - 404
+                    - 409
                   description: status code
                 traceid:
                   type: string
@@ -338,7 +257,7 @@ components:
                   items:
                     type: string
                     enum:
-                      - roleNotFound
+                      - permissionExists
                   description: error message
                 timestamp:
                   type: string
@@ -347,9 +266,25 @@ components:
                   type: string
                   description: path error
               description: default error model
-          description: When resource not found.
-      description: When role not found
-    CreateBodyValidationError:
+          description: When conflict occour.
+      description: When input is invalid
+    CreateInput:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - name
+          properties:
+            name:
+              type: string
+          description: The template for picking properties.
+      description: permission create input
+    CreateOutput:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/PermisisonEntity'
+      description: permission create output
+    CreateValidationError:
       type: object
       allOf:
         - type: object
@@ -392,67 +327,7 @@ components:
                   description: path error
               description: default error model
           description: When input is invalid.
-      description: When input body is invalid
-    CreateInput:
-      type: object
-      allOf:
-        - type: object
-          required:
-            - name
-          properties:
-            name:
-              type: string
-          description: The template for picking properties.
-      description: role create input
-    CreateOutput:
-      type: object
-      allOf:
-        - $ref: '#/components/schemas/RoleEntity'
-      description: role create output
-    DeleteHasAssociationError:
-      type: object
-      allOf:
-        - type: object
-          required:
-            - error
-          properties:
-            error:
-              type: object
-              required:
-                - code
-                - traceid
-                - context
-                - message
-                - timestamp
-                - path
-              properties:
-                code:
-                  type: number
-                  enum:
-                    - 409
-                  description: status code
-                traceid:
-                  type: string
-                  description: request traceid
-                context:
-                  type: string
-                  description: class that error occur
-                message:
-                  type: array
-                  items:
-                    type: string
-                    enum:
-                      - 'roleHasAssociationWithPermission: [permission]'
-                  description: error message
-                timestamp:
-                  type: string
-                  description: timestamp that error occur
-                path:
-                  type: string
-                  description: path error
-              description: default error model
-          description: When conflict occour.
-      description: When roles has association with permission
+      description: When input is invalid
     DeleteOutput:
       type: object
       required:
@@ -478,8 +353,8 @@ components:
             updatedAt:
               type: string
           description: The template for omitting properties.
-      description: role delete output
-    DeleteRoleNotFoundError:
+      description: permission depete output
+    DeletePermissionNotFoundError:
       type: object
       allOf:
         - type: object
@@ -512,7 +387,7 @@ components:
                   items:
                     type: string
                     enum:
-                      - roleNotFound
+                      - permissionNotFound
                   description: error message
                 timestamp:
                   type: string
@@ -522,13 +397,8 @@ components:
                   description: path error
               description: default error model
           description: When resource not found.
-      description: When role not found
-    GetByIdOutput:
-      type: object
-      allOf:
-        - $ref: '#/components/schemas/RoleEntity'
-      description: role get by id
-    GetByIdParamsValidationError:
+      description: When permission not found
+    DeleteValidationError:
       type: object
       allOf:
         - type: object
@@ -571,8 +441,78 @@ components:
                   description: path error
               description: default error model
           description: When input is invalid.
-      description: When input params is invalid
-    GetByIdRoleNotFoundError:
+      description: When input is invalid
+    GetByIdOutput:
+      type: object
+      required:
+        - deletedAt
+      properties:
+        deletedAt:
+          type: string
+          format: date-time
+      allOf:
+        - type: object
+          required:
+            - id
+            - name
+            - createdAt
+            - updatedAt
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+            createdAt:
+              type: string
+            updatedAt:
+              type: string
+          description: The template for omitting properties.
+      description: permission get by id output
+    GetByIdValidationError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 400
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - 'id: Required'
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When input is invalid.
+      description: When input is invalid
+    GeyByIdPermissionNotFoundError:
       type: object
       allOf:
         - type: object
@@ -605,7 +545,7 @@ components:
                   items:
                     type: string
                     enum:
-                      - roleNotFound
+                      - permissionNotFound
                   description: error message
                 timestamp:
                   type: string
@@ -615,7 +555,7 @@ components:
                   description: path error
               description: default error model
           description: When resource not found.
-      description: When role not found
+      description: When permission not found
     ListOutput:
       type: object
       allOf:
@@ -629,7 +569,7 @@ components:
             docs:
               type: array
               items:
-                $ref: '#/components/schemas/RoleEntity'
+                $ref: '#/components/schemas/PermisisonEntity'
               description: documents
             page:
               type: integer
@@ -652,28 +592,51 @@ components:
               description: total pages
               default: 1
           description: pagination default response
-      description: list output
+      description: permission list output
     ListQueryInput:
       type: object
       allOf:
         - $ref: '#/components/schemas/api.Utils.Model.ApiPaginationInput'
-      description: list query input
-    RemovePermissionInput:
+      description: permission list input
+    PermisisonEntity:
       type: object
       required:
-        - permissions
+        - id
+        - name
+        - createdAt
+        - updatedAt
+        - deletedAt
       properties:
-        permissions:
-          type: array
-          items:
-            type: string
-      description: role remove permission input
-    RemovePermissionOuput:
+        id:
+          type: string
+        name:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        deletedAt:
+          type: string
+          nullable: true
+          default: null
+      description: permission base entity
+    UpdateInput:
       type: object
       allOf:
-        - $ref: '#/components/schemas/RoleEntity'
-      description: role remove permission output
-    RemovePermissionRoleNotFoundError:
+        - type: object
+          required:
+            - name
+          properties:
+            name:
+              type: string
+          description: The template for picking properties.
+      description: permission update input
+    UpdateOutput:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/PermisisonEntity'
+      description: permission update output
+    UpdatePermissionAlreadyExistsError:
       type: object
       allOf:
         - type: object
@@ -706,7 +669,7 @@ components:
                   items:
                     type: string
                     enum:
-                      - roleNotFound
+                      - permissionExists
                   description: error message
                 timestamp:
                   type: string
@@ -716,46 +679,52 @@ components:
                   description: path error
               description: default error model
           description: When resource not found.
-      description: When role not found
-    RoleEntity:
-      type: object
-      required:
-        - id
-        - name
-        - createdAt
-        - updatedAt
-        - deletedAt
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-        createdAt:
-          type: string
-        updatedAt:
-          type: string
-        deletedAt:
-          type: string
-          nullable: true
-          default: null
-      description: role base entity
-    UpdateInput:
+      description: When permission already exists
+    UpdatePermissionNotFoundError:
       type: object
       allOf:
         - type: object
           required:
-            - name
+            - error
           properties:
-            name:
-              type: string
-          description: The template for picking properties.
-      description: role update input
-    UpdateOutput:
-      type: object
-      allOf:
-        - $ref: '#/components/schemas/RoleEntity'
-      description: role update output
-    UpdateParamsValidationError:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 404
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - permissionNotFound
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When resource not found.
+      description: When permission not found
+    UpdateValidationError:
       type: object
       allOf:
         - type: object
@@ -798,60 +767,16 @@ components:
                   description: path error
               description: default error model
           description: When input is invalid.
-      description: When input params is invalid
-    UpdateRoleNotFoundError:
-      type: object
-      allOf:
-        - type: object
-          required:
-            - error
-          properties:
-            error:
-              type: object
-              required:
-                - code
-                - traceid
-                - context
-                - message
-                - timestamp
-                - path
-              properties:
-                code:
-                  type: number
-                  enum:
-                    - 404
-                  description: status code
-                traceid:
-                  type: string
-                  description: request traceid
-                context:
-                  type: string
-                  description: class that error occur
-                message:
-                  type: array
-                  items:
-                    type: string
-                    enum:
-                      - roleNotFound
-                  description: error message
-                timestamp:
-                  type: string
-                  description: timestamp that error occur
-                path:
-                  type: string
-                  description: path error
-              description: default error model
-          description: When resource not found.
-      description: When role not found
+      description: When input is invalid
     api.Cat.ListQueryInput:
       type: object
       allOf:
         - $ref: '#/components/schemas/api.Utils.Model.ApiPaginationInput'
-    api.Permission.ListQueryInput:
+    api.Role.ListQueryInput:
       type: object
       allOf:
         - $ref: '#/components/schemas/api.Utils.Model.ApiPaginationInput'
-      description: permission list input
+      description: list query input
     api.User.ListQueryInput:
       type: object
       allOf:
@@ -880,11 +805,10 @@ components:
         search:
           type: string
           description: search by property **property1:value1|value2**
-    api.Utils.Versions.Versions:
+    api.Utils.Versioning.ApiVersion:
       type: string
       enum:
         - v1
-        - v2
   securitySchemes:
     BearerAuth:
       type: http

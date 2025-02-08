@@ -101,7 +101,7 @@ async function bootstrap() {
   });
 
   if (!IS_PRODUCTION) {
-    const swaggerDocument = yaml.load(fs.readFileSync(path.join(__dirname, "../docs/tsp-output/@typespec/openapi3/openapi.api.v1.yaml"), 'utf8'));
+    const swaggerDocument = yaml.load(fs.readFileSync(path.join(__dirname, "../docs/tsp-output/@typespec/openapi3/openapi.api.1.0.yaml"), 'utf8'));
     app.use('/api-docs', swagger.serve, swagger.setup(swaggerDocument as swagger.SwaggerOptions));
   }
 

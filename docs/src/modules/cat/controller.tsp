@@ -10,7 +10,7 @@ using TypeSpec.Http;
 using TypeSpec.Versioning;
 using OpenAPI;
 using Utils.Model;
-using Utils.Versions;
+using Utils.Versioning;
 
 @service({
   title: "Cat",
@@ -46,7 +46,7 @@ interface CatController {
   @get
   @doc("list cat")
   @returnsDoc("list cat successfully")
-  list(@path version: Versions, ...ListQueryInput): ListOutput;
+  list(...VersionParams, ...ListQueryInput): ListOutput;
 
   @delete
   @doc("delete cat")

@@ -12,7 +12,7 @@ using api.Utils.Model;
 using TypeSpec.Http;
 using TypeSpec.Versioning;
 using OpenAPI;
-using Utils.Versions;
+using Utils.Versioning;
 using Utils.Exception;
 
 @service({

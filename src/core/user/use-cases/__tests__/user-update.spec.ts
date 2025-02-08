@@ -51,10 +51,7 @@ describe(UserUpdateUsecase.name, () => {
       () => usecase.execute({} as UserUpdateInput, TestUtils.getMockTracing()),
       (issues: ZodIssue[]) => {
         expect(issues).toEqual([
-          { message: 'Required', path: TestUtils.nameOf<UserUpdateInput>('id') },
-          { message: 'Required', path: TestUtils.nameOf<UserUpdateInput>('name') },
-          { message: 'Required', path: TestUtils.nameOf<UserUpdateInput>('email') },
-          { message: 'Required', path: TestUtils.nameOf<UserUpdateInput>('roles') }
+          { message: 'Required', path: TestUtils.nameOf<UserUpdateInput>('id') }
         ]);
       }
     );
@@ -104,5 +101,14 @@ describe(UserUpdateUsecase.name, () => {
     repository.create = TestUtils.mockResolvedValue<CreatedModel>();
 
     await expect(usecase.execute(input, TestUtils.getMockTracing())).resolves.toEqual(user);
+  });
+
+  test('when user role not provided, should use user role, then should expect an user updated', async () => {
+    repository.findOne = TestUtils.mockResolvedValue<UserEntity>(user);
+    repository.existsOnUpdate = TestUtils.mockResolvedValue<boolean>(false);
+    roleRepository.findIn = TestUtils.mockResolvedValue<RoleEntity[]>([role]);
+    repository.create = TestUtils.mockResolvedValue<CreatedModel>();
+
+    await expect(usecase.execute({ id: user.id }, TestUtils.getMockTracing())).resolves.toEqual(user);
   });
 });

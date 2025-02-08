@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: User
-  version: v1
+  version: '1.0'
 tags:
   - name: User
 paths:
@@ -10,7 +10,7 @@ paths:
       operationId: UserController_create
       description: create user
       parameters:
-        - $ref: '#/components/parameters/api.Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/api.Utils.Versioning.VersionParams'
       responses:
         '201':
           description: user created successfully
@@ -50,7 +50,7 @@ paths:
       operationId: UserController_list
       description: list user
       parameters:
-        - $ref: '#/components/parameters/api.Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/api.Utils.Versioning.VersionParams'
         - $ref: '#/components/parameters/api.Utils.Model.ApiPaginationInput.page'
         - $ref: '#/components/parameters/api.Utils.Model.ApiPaginationInput.limit'
         - $ref: '#/components/parameters/api.Utils.Model.ApiPaginationInput.sort'
@@ -71,7 +71,7 @@ paths:
       operationId: UserController_changePassword
       description: change password
       parameters:
-        - $ref: '#/components/parameters/api.Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/api.Utils.Versioning.VersionParams'
         - $ref: '#/components/parameters/ChangePasswordParamsInput'
       responses:
         '200':
@@ -113,7 +113,7 @@ paths:
       operationId: UserController_me
       description: list user
       parameters:
-        - $ref: '#/components/parameters/api.Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/api.Utils.Versioning.VersionParams'
       responses:
         '200':
           description: get user logged successfully
@@ -130,7 +130,7 @@ paths:
       operationId: UserController_update
       description: update user
       parameters:
-        - $ref: '#/components/parameters/api.Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/api.Utils.Versioning.VersionParams'
         - $ref: '#/components/parameters/UpdateParamsInput'
       responses:
         '200':
@@ -173,7 +173,7 @@ paths:
       operationId: UserController_getById
       description: get user by id
       parameters:
-        - $ref: '#/components/parameters/api.Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/api.Utils.Versioning.VersionParams'
         - $ref: '#/components/parameters/GetByIdParamsInput'
       responses:
         '200':
@@ -202,7 +202,7 @@ paths:
       operationId: UserController_delete
       description: delete user
       parameters:
-        - $ref: '#/components/parameters/api.Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/api.Utils.Versioning.VersionParams'
         - $ref: '#/components/parameters/DeleteParamsInput'
       responses:
         '200':
@@ -294,13 +294,13 @@ components:
         type: string
         default: createdAt:desc
       explode: false
-    api.Utils.Versions.VersionParams:
+    api.Utils.Versioning.VersionParams:
       name: version
       in: path
       required: true
       description: route version
       schema:
-        $ref: '#/components/schemas/api.Utils.Versions.Versions'
+        $ref: '#/components/schemas/api.Utils.Versioning.ApiVersion'
   schemas:
     ChangePasswordBodyValidationError:
       type: object
@@ -637,7 +637,6 @@ components:
             - name
             - email
             - roles
-            - deveriaAparecerV2
           properties:
             name:
               type: string
@@ -647,8 +646,6 @@ components:
               type: array
               items:
                 type: string
-            deveriaAparecerV2:
-              type: string
           description: The template for omitting properties.
       description: user create input
     CreateNotFoundError:
@@ -716,7 +713,6 @@ components:
             - email
             - roles
             - createdAt
-            - deveriaAparecerV2
             - updateAt
           properties:
             id:
@@ -730,8 +726,6 @@ components:
               items:
                 type: string
             createdAt:
-              type: string
-            deveriaAparecerV2:
               type: string
             updateAt:
               type: string
@@ -1029,7 +1023,6 @@ components:
             - name
             - email
             - roles
-            - deveriaAparecerV2
           properties:
             name:
               type: string
@@ -1039,8 +1032,6 @@ components:
               type: array
               items:
                 type: string
-            deveriaAparecerV2:
-              type: string
           description: The template for omitting properties.
       description: user update input
     UpdateOutput:
@@ -1188,7 +1179,6 @@ components:
         - email
         - roles
         - createdAt
-        - deveriaAparecerV2
         - updateAt
       properties:
         id:
@@ -1202,8 +1192,6 @@ components:
           items:
             type: string
         createdAt:
-          type: string
-        deveriaAparecerV2:
           type: string
         updateAt:
           type: string
@@ -1262,11 +1250,10 @@ components:
         search:
           type: string
           description: search by property **property1:value1|value2**
-    api.Utils.Versions.Versions:
+    api.Utils.Versioning.ApiVersion:
       type: string
       enum:
         - v1
-        - v2
   securitySchemes:
     BearerAuth:
       type: http

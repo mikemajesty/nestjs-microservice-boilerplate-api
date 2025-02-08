@@ -12,7 +12,7 @@ import "./modules/health/controller.tsp";
 import "./modules/cat/controller.tsp";
 
 using TypeSpec.Http;
-using Utils.Versions;
+using Utils.Versioning;
 using TypeSpec.Versioning;
 
 @service({
@@ -27,5 +27,5 @@ using TypeSpec.Versioning;
   },
 })
 @server("http://localhost:4000/")
-@versioned(Versions)
+@versioned(DocVersionVersion)
 namespace api;

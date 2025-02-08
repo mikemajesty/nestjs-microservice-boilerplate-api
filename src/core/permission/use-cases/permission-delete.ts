@@ -32,7 +32,7 @@ export class PermissionDeleteUsecase implements IUsecase {
 
     entity.deactivated();
 
-    await this.permissionRepository.updateOne({ id: entity.id }, entity);
+    await this.permissionRepository.create(entity);
 
     return entity;
   }

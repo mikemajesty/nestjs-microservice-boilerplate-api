@@ -30,7 +30,7 @@ export class RoleUpdateUsecase implements IUsecase {
 
     const entity = new RoleEntity({ ...role, ...input });
 
-    await this.roleRepository.updateOne({ id: entity.id }, entity);
+    await this.roleRepository.create(entity);
 
     this.loggerService.info({ message: 'role updated.', obj: { roles: input } });
 

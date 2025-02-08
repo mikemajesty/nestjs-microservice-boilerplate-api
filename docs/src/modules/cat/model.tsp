@@ -5,7 +5,7 @@ import "@typespec/versioning";
 using TypeSpec.Http;
 using TypeSpec.Versioning;
 using Utils.Model;
-using Utils.Versions;
+using Utils.Versioning;
 
 namespace api.Cat;
 

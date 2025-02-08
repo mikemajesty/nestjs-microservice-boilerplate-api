@@ -2,7 +2,7 @@ import "@typespec/http";
 import "@typespec/versioning";
 
 using TypeSpec.Versioning;
-using Utils.Versions;
+using Utils.Versioning;
 
 namespace api.Utils.Model;
 

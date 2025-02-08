@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: Microservice API
-  version: v2
+  version: '1.0'
 tags:
   - name: Login
   - name: User
@@ -31,7 +31,7 @@ paths:
       operationId: CatController_create
       description: create cat
       parameters:
-        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/Utils.Versioning.VersionParams'
       responses:
         '200':
           description: cat created successfully
@@ -59,11 +59,7 @@ paths:
       operationId: CatController_list
       description: list cat
       parameters:
-        - name: version
-          in: path
-          required: true
-          schema:
-            $ref: '#/components/schemas/Utils.Versions.Versions'
+        - $ref: '#/components/parameters/Utils.Versioning.VersionParams'
         - $ref: '#/components/parameters/Utils.Model.ApiPaginationInput.page'
         - $ref: '#/components/parameters/Utils.Model.ApiPaginationInput.limit'
         - $ref: '#/components/parameters/Utils.Model.ApiPaginationInput.sort'
@@ -84,7 +80,7 @@ paths:
       operationId: CatController_update
       description: create update
       parameters:
-        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/Utils.Versioning.VersionParams'
         - $ref: '#/components/parameters/Cat.UpdateParamInput'
       responses:
         '200':
@@ -119,7 +115,7 @@ paths:
       operationId: CatController_getById
       description: get cat by id
       parameters:
-        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/Utils.Versioning.VersionParams'
         - $ref: '#/components/parameters/Cat.GetByIdParamInput'
       responses:
         '200':
@@ -148,7 +144,7 @@ paths:
       operationId: CatController_delete
       description: delete cat
       parameters:
-        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/Utils.Versioning.VersionParams'
         - $ref: '#/components/parameters/Cat.DeleteParamInput'
       responses:
         '200':
@@ -178,7 +174,7 @@ paths:
       operationId: LoginController_login
       description: user login
       parameters:
-        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/Utils.Versioning.VersionParams'
       responses:
         '200':
           description: login successfully
@@ -214,7 +210,7 @@ paths:
     get:
       operationId: LoginController_loginGoogle
       parameters:
-        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/Utils.Versioning.VersionParams'
       responses:
         '204':
           description: 'There is no content to send for this request, but the headers may be useful. '
@@ -224,7 +220,7 @@ paths:
     get:
       operationId: LoginController_loginGoogleCallback
       parameters:
-        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/Utils.Versioning.VersionParams'
       responses:
         '204':
           description: 'There is no content to send for this request, but the headers may be useful. '
@@ -235,7 +231,7 @@ paths:
       operationId: LogoutController_logout
       description: user logout
       parameters:
-        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/Utils.Versioning.VersionParams'
       responses:
         '200':
           description: user logout successfully
@@ -260,7 +256,7 @@ paths:
       operationId: PermissionController_create
       description: create permission
       parameters:
-        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/Utils.Versioning.VersionParams'
       responses:
         '200':
           description: permission created successfully
@@ -294,7 +290,7 @@ paths:
       operationId: PermissionController_list
       description: list permission
       parameters:
-        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/Utils.Versioning.VersionParams'
         - $ref: '#/components/parameters/Utils.Model.ApiPaginationInput.page'
         - $ref: '#/components/parameters/Utils.Model.ApiPaginationInput.limit'
         - $ref: '#/components/parameters/Utils.Model.ApiPaginationInput.sort'
@@ -315,7 +311,7 @@ paths:
       operationId: PermissionController_update
       description: update permission
       parameters:
-        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/Utils.Versioning.VersionParams'
         - $ref: '#/components/parameters/Permission.UpdateParamsInput'
       responses:
         '200':
@@ -352,7 +348,7 @@ paths:
       operationId: PermissionController_getById
       description: get permission
       parameters:
-        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/Utils.Versioning.VersionParams'
         - $ref: '#/components/parameters/Permission.GetByIdParamsInput'
       responses:
         '200':
@@ -381,7 +377,7 @@ paths:
       operationId: PermissionController_delete
       description: delete permission
       parameters:
-        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/Utils.Versioning.VersionParams'
         - $ref: '#/components/parameters/Permission.DeleteParamsInput'
       responses:
         '200':
@@ -411,7 +407,7 @@ paths:
       operationId: LoginController_refresh
       description: get user refresh token
       parameters:
-        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/Utils.Versioning.VersionParams'
       responses:
         '200':
           description: login refresh token successfully
@@ -432,7 +428,7 @@ paths:
       operationId: ResetPasswordController_sendEmail
       description: send email
       parameters:
-        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/Utils.Versioning.VersionParams'
       responses:
         '200':
           description: email sended successfully
@@ -457,7 +453,7 @@ paths:
       operationId: ResetPasswordController_confirmResetPassword
       description: reset password
       parameters:
-        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/Utils.Versioning.VersionParams'
         - $ref: '#/components/parameters/ResetPassword.ConfirmResetPasswordParamsInput'
       responses:
         '200':
@@ -495,7 +491,7 @@ paths:
       operationId: RoleController_create
       description: create role
       parameters:
-        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/Utils.Versioning.VersionParams'
       responses:
         '201':
           description: role created successfully
@@ -523,7 +519,7 @@ paths:
       operationId: RoleController_list
       description: list role
       parameters:
-        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/Utils.Versioning.VersionParams'
         - $ref: '#/components/parameters/Utils.Model.ApiPaginationInput.page'
         - $ref: '#/components/parameters/Utils.Model.ApiPaginationInput.limit'
         - $ref: '#/components/parameters/Utils.Model.ApiPaginationInput.sort'
@@ -544,7 +540,7 @@ paths:
       operationId: RoleController_addPermission
       description: add permission from role
       parameters:
-        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/Utils.Versioning.VersionParams'
         - $ref: '#/components/parameters/Role.AddPermissionParamsInput'
       responses:
         '200':
@@ -574,7 +570,7 @@ paths:
       operationId: RoleController_removePermission
       description: remove permission from role
       parameters:
-        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/Utils.Versioning.VersionParams'
         - $ref: '#/components/parameters/Role.RemovePermissionParamsInput'
       responses:
         '200':
@@ -604,7 +600,7 @@ paths:
       operationId: RoleController_update
       description: create role
       parameters:
-        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/Utils.Versioning.VersionParams'
         - $ref: '#/components/parameters/Role.UpdateParamsInput'
       responses:
         '200':
@@ -639,7 +635,7 @@ paths:
       operationId: RoleController_getById
       description: get role by id
       parameters:
-        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/Utils.Versioning.VersionParams'
         - $ref: '#/components/parameters/Role.GetByIdParamsInput'
       responses:
         '200':
@@ -668,7 +664,7 @@ paths:
       operationId: RoleController_delete
       description: delete role
       parameters:
-        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/Utils.Versioning.VersionParams'
         - $ref: '#/components/parameters/Role.DeleteParamsInput'
       responses:
         '200':
@@ -698,7 +694,7 @@ paths:
       operationId: UserController_create
       description: create user
       parameters:
-        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/Utils.Versioning.VersionParams'
       responses:
         '201':
           description: user created successfully
@@ -738,7 +734,7 @@ paths:
       operationId: UserController_list
       description: list user
       parameters:
-        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/Utils.Versioning.VersionParams'
         - $ref: '#/components/parameters/Utils.Model.ApiPaginationInput.page'
         - $ref: '#/components/parameters/Utils.Model.ApiPaginationInput.limit'
         - $ref: '#/components/parameters/Utils.Model.ApiPaginationInput.sort'
@@ -759,7 +755,7 @@ paths:
       operationId: UserController_changePassword
       description: change password
       parameters:
-        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/Utils.Versioning.VersionParams'
         - $ref: '#/components/parameters/User.ChangePasswordParamsInput'
       responses:
         '200':
@@ -801,7 +797,7 @@ paths:
       operationId: UserController_me
       description: list user
       parameters:
-        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/Utils.Versioning.VersionParams'
       responses:
         '200':
           description: get user logged successfully
@@ -818,7 +814,7 @@ paths:
       operationId: UserController_update
       description: update user
       parameters:
-        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/Utils.Versioning.VersionParams'
         - $ref: '#/components/parameters/User.UpdateParamsInput'
       responses:
         '200':
@@ -861,7 +857,7 @@ paths:
       operationId: UserController_getById
       description: get user by id
       parameters:
-        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/Utils.Versioning.VersionParams'
         - $ref: '#/components/parameters/User.GetByIdParamsInput'
       responses:
         '200':
@@ -890,7 +886,7 @@ paths:
       operationId: UserController_delete
       description: delete user
       parameters:
-        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/Utils.Versioning.VersionParams'
         - $ref: '#/components/parameters/User.DeleteParamsInput'
       responses:
         '200':
@@ -1080,13 +1076,13 @@ components:
         type: string
         default: createdAt:desc
       explode: false
-    Utils.Versions.VersionParams:
+    Utils.Versioning.VersionParams:
       name: version
       in: path
       required: true
       description: route version
       schema:
-        $ref: '#/components/schemas/Utils.Versions.Versions'
+        $ref: '#/components/schemas/Utils.Versioning.ApiVersion'
   schemas:
     Cat.CatEntity:
       type: object
@@ -3452,7 +3448,6 @@ components:
             - name
             - email
             - roles
-            - deveriaAparecerV2
           properties:
             name:
               type: string
@@ -3462,8 +3457,6 @@ components:
               type: array
               items:
                 type: string
-            deveriaAparecerV2:
-              type: string
           description: The template for omitting properties.
       description: user create input
     User.CreateNotFoundError:
@@ -3531,7 +3524,6 @@ components:
             - email
             - roles
             - createdAt
-            - deveriaAparecerV2
             - updateAt
           properties:
             id:
@@ -3545,8 +3537,6 @@ components:
               items:
                 type: string
             createdAt:
-              type: string
-            deveriaAparecerV2:
               type: string
             updateAt:
               type: string
@@ -3844,7 +3834,6 @@ components:
             - name
             - email
             - roles
-            - deveriaAparecerV2
           properties:
             name:
               type: string
@@ -3854,8 +3843,6 @@ components:
               type: array
               items:
                 type: string
-            deveriaAparecerV2:
-              type: string
           description: The template for omitting properties.
       description: user update input
     User.UpdateOutput:
@@ -4003,7 +3990,6 @@ components:
         - email
         - roles
         - createdAt
-        - deveriaAparecerV2
         - updateAt
       properties:
         id:
@@ -4017,8 +4003,6 @@ components:
           items:
             type: string
         createdAt:
-          type: string
-        deveriaAparecerV2:
           type: string
         updateAt:
           type: string
@@ -4063,11 +4047,14 @@ components:
         search:
           type: string
           description: search by property **property1:value1|value2**
-    Utils.Versions.Versions:
+    Utils.Versioning.ApiVersion:
       type: string
       enum:
         - v1
-        - v2
+    Utils.Versioning.DocVersionVersion:
+      type: string
+      enum:
+        - '1.0'
   securitySchemes:
     BearerAuth:
       type: http
