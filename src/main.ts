@@ -67,10 +67,6 @@ async function bootstrap() {
     })
   );
 
-  const swaggerDocument = yaml.load(fs.readFileSync(path.join(__dirname, "../docs/tsp-output/@typespec/openapi3/openapi.api.yaml"), 'utf8'));
-
-  app.use('/api-docs', swagger.serve, swagger.setup(swaggerDocument as swagger.SwaggerOptions));
-
   app.use((req: Request, res: Response, next: NextFunction) => {
     if (req.originalUrl && req.originalUrl.split('/').pop() === 'favicon.ico') {
       return res.sendStatus(204);
@@ -104,9 +100,14 @@ async function bootstrap() {
     loggerService.error(error as ErrorType);
   });
 
+  if (!IS_PRODUCTION) {
+    const swaggerDocument = yaml.load(fs.readFileSync(path.join(__dirname, "../docs/tsp-output/@typespec/openapi3/openapi.api.v1.yaml"), 'utf8'));
+    app.use('/api-docs', swagger.serve, swagger.setup(swaggerDocument as swagger.SwaggerOptions));
+  }
+
   await app.listen(PORT, () => {
     loggerService.log(`🟢 ${name} listening at ${bold(PORT)} on ${bold(ENV?.toUpperCase())} 🟢`);
-    if (!IS_PRODUCTION) loggerService.log(`🟢 Swagger listening at ${bold(`${HOST}/docs`)} 🟢`);
+    if (!IS_PRODUCTION) loggerService.log(`🟢 Swagger listening at ${bold(`${HOST}/api-docs`)} 🟢`);
   });
 
   loggerService.log(`🔵 Postgres listening at ${bold(POSTGRES_URL)}`);

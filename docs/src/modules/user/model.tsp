@@ -20,7 +20,6 @@ model UserEntity {
   email: string;
   roles: string[];
   createdAt: string;
-  deveriaAparecerV2: string;
   updateAt: string;
   deletedAt?: string | null = null;
 }
