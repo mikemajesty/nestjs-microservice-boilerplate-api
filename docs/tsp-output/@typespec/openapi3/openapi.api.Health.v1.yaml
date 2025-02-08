@@ -1,0 +1,36 @@
+openapi: 3.0.0
+info:
+  title: Health
+  version: v1
+tags:
+  - name: Health
+paths:
+  /:
+    get:
+      operationId: HealthController_health1
+      description: app health
+      parameters: []
+      responses:
+        '200':
+          description: health output
+          content:
+            text/plain:
+              schema:
+                type: string
+      tags:
+        - Health
+  /health:
+    get:
+      operationId: HealthController_health
+      description: app health
+      parameters: []
+      responses:
+        '200':
+          description: health output
+          content:
+            text/plain:
+              schema:
+                type: string
+      tags:
+        - Health
+components: {}

@@ -1,0 +1,816 @@
+openapi: 3.0.0
+info:
+  title: Permission
+  version: v2
+tags:
+  - name: Permission
+paths:
+  /api/{version}/permissions:
+    post:
+      operationId: PermissionController_create
+      description: create permission
+      parameters:
+        - $ref: '#/components/parameters/api.Utils.Versions.VersionParams'
+      responses:
+        '200':
+          description: permission created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateOutput'
+        '400':
+          description: When input is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateValidationError'
+        '409':
+          description: When input is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConflictPermissionExistsError'
+      tags:
+        - Permission
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateInput'
+      security:
+        - BearerAuth: []
+    get:
+      operationId: PermissionController_list
+      description: list permission
+      parameters:
+        - $ref: '#/components/parameters/api.Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/api.Utils.Model.ApiPaginationInput.page'
+        - $ref: '#/components/parameters/api.Utils.Model.ApiPaginationInput.limit'
+        - $ref: '#/components/parameters/api.Utils.Model.ApiPaginationInput.sort'
+        - $ref: '#/components/parameters/api.Utils.Model.ApiPaginationInput.search'
+      responses:
+        '200':
+          description: list permission successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListOutput'
+      tags:
+        - Permission
+      security:
+        - BearerAuth: []
+  /api/{version}/permissions/{id}:
+    put:
+      operationId: PermissionController_update
+      description: update permission
+      parameters:
+        - $ref: '#/components/parameters/api.Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/UpdateParamsInput'
+      responses:
+        '200':
+          description: permission updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateOutput'
+        '400':
+          description: When input is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateValidationError'
+        '404':
+          description: When permission not found
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/UpdatePermissionNotFoundError'
+                  - $ref: '#/components/schemas/UpdatePermissionAlreadyExistsError'
+      tags:
+        - Permission
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateInput'
+      security:
+        - BearerAuth: []
+    get:
+      operationId: PermissionController_getById
+      description: get permission
+      parameters:
+        - $ref: '#/components/parameters/api.Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/GetByIdParamsInput'
+      responses:
+        '200':
+          description: get permission successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetByIdOutput'
+        '400':
+          description: When input is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetByIdValidationError'
+        '404':
+          description: When permission not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeyByIdPermissionNotFoundError'
+      tags:
+        - Permission
+      security:
+        - BearerAuth: []
+    delete:
+      operationId: PermissionController_delete
+      description: delete permission
+      parameters:
+        - $ref: '#/components/parameters/api.Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/DeleteParamsInput'
+      responses:
+        '200':
+          description: delete permission successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteOutput'
+        '400':
+          description: When input is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteValidationError'
+        '404':
+          description: When permission not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeletePermissionNotFoundError'
+      tags:
+        - Permission
+      security:
+        - BearerAuth: []
+components:
+  parameters:
+    DeleteParamsInput:
+      name: id
+      in: path
+      required: true
+      description: permission id
+      schema:
+        type: string
+    GetByIdParamsInput:
+      name: id
+      in: path
+      required: true
+      description: permission id
+      schema:
+        type: string
+    UpdateParamsInput:
+      name: id
+      in: path
+      required: true
+      description: permission id
+      schema:
+        type: string
+    api.Utils.Model.ApiPaginationInput.limit:
+      name: limit
+      in: query
+      required: true
+      description: pagination limit per page
+      schema:
+        type: integer
+        format: int32
+        default: 10
+      explode: false
+    api.Utils.Model.ApiPaginationInput.page:
+      name: page
+      in: query
+      required: true
+      description: pagination current page
+      schema:
+        type: integer
+        format: int32
+        default: 1
+      explode: false
+    api.Utils.Model.ApiPaginationInput.search:
+      name: search
+      in: query
+      required: false
+      description: search by property **property1:value1|value2**
+      schema:
+        type: string
+      explode: false
+    api.Utils.Model.ApiPaginationInput.sort:
+      name: sort
+      in: query
+      required: false
+      description: sort by property **property1:desc,property2:asc**
+      schema:
+        type: string
+        default: createdAt:desc
+      explode: false
+    api.Utils.Versions.VersionParams:
+      name: version
+      in: path
+      required: true
+      description: route version
+      schema:
+        $ref: '#/components/schemas/api.Utils.Versions.Versions'
+  schemas:
+    ConflictPermissionExistsError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 409
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - permissionExists
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When conflict occour.
+      description: When input is invalid
+    CreateInput:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - name
+          properties:
+            name:
+              type: string
+          description: The template for picking properties.
+      description: permission create input
+    CreateOutput:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/PermisisonEntity'
+      description: permission create output
+    CreateValidationError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 400
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - 'name: Required'
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When input is invalid.
+      description: When input is invalid
+    DeleteOutput:
+      type: object
+      required:
+        - deletedAt
+      properties:
+        deletedAt:
+          type: string
+          format: date-time
+      allOf:
+        - type: object
+          required:
+            - id
+            - name
+            - createdAt
+            - updatedAt
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+            createdAt:
+              type: string
+            updatedAt:
+              type: string
+          description: The template for omitting properties.
+      description: permission depete output
+    DeletePermissionNotFoundError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 404
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - permissionNotFound
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When resource not found.
+      description: When permission not found
+    DeleteValidationError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 400
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - 'id: Required'
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When input is invalid.
+      description: When input is invalid
+    GetByIdOutput:
+      type: object
+      required:
+        - deletedAt
+      properties:
+        deletedAt:
+          type: string
+          format: date-time
+      allOf:
+        - type: object
+          required:
+            - id
+            - name
+            - createdAt
+            - updatedAt
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+            createdAt:
+              type: string
+            updatedAt:
+              type: string
+          description: The template for omitting properties.
+      description: permission get by id output
+    GetByIdValidationError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 400
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - 'id: Required'
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When input is invalid.
+      description: When input is invalid
+    GeyByIdPermissionNotFoundError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 404
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - permissionNotFound
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When resource not found.
+      description: When permission not found
+    ListOutput:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - docs
+            - page
+            - limit
+            - total
+          properties:
+            docs:
+              type: array
+              items:
+                $ref: '#/components/schemas/PermisisonEntity'
+              description: documents
+            page:
+              type: integer
+              format: int32
+              description: current page
+              default: 1
+            limit:
+              type: integer
+              format: int32
+              description: limit per page
+              default: 10
+            total:
+              type: integer
+              format: int64
+              description: total items
+              default: 1
+            totalPages:
+              type: integer
+              format: int32
+              description: total pages
+              default: 1
+          description: pagination default response
+      description: permission list output
+    ListQueryInput:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/api.Utils.Model.ApiPaginationInput'
+      description: permission list input
+    PermisisonEntity:
+      type: object
+      required:
+        - id
+        - name
+        - createdAt
+        - updatedAt
+        - deletedAt
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        deletedAt:
+          type: string
+          nullable: true
+          default: null
+      description: permission base entity
+    UpdateInput:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - name
+          properties:
+            name:
+              type: string
+          description: The template for picking properties.
+      description: permission update input
+    UpdateOutput:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/PermisisonEntity'
+      description: permission update output
+    UpdatePermissionAlreadyExistsError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 404
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - permissionExists
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When resource not found.
+      description: When permission already exists
+    UpdatePermissionNotFoundError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 404
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - permissionNotFound
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When resource not found.
+      description: When permission not found
+    UpdateValidationError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 400
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - 'id: Required'
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When input is invalid.
+      description: When input is invalid
+    api.Cat.ListQueryInput:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/api.Utils.Model.ApiPaginationInput'
+    api.Role.ListQueryInput:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/api.Utils.Model.ApiPaginationInput'
+      description: list query input
+    api.User.ListQueryInput:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/api.Utils.Model.ApiPaginationInput'
+      description: user list query input
+    api.Utils.Model.ApiPaginationInput:
+      type: object
+      required:
+        - page
+        - limit
+      properties:
+        page:
+          type: integer
+          format: int32
+          description: pagination current page
+          default: 1
+        limit:
+          type: integer
+          format: int32
+          description: pagination limit per page
+          default: 10
+        sort:
+          type: string
+          description: sort by property **property1:desc,property2:asc**
+          default: createdAt:desc
+        search:
+          type: string
+          description: search by property **property1:value1|value2**
+    api.Utils.Versions.Versions:
+      type: string
+      enum:
+        - v1
+        - v2
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer

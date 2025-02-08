@@ -7,7 +7,6 @@ using TypeSpec.Versioning;
 using Utils.Model;
 using Utils.Versions;
 
-@versioned(ApiVersions)
 namespace api.Cat;
 
 @doc("cat base entity")

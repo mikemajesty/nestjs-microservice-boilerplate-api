@@ -1,0 +1,891 @@
+openapi: 3.0.0
+info:
+  title: Role
+  version: v2
+tags:
+  - name: Role
+paths:
+  /api/{version}/roles:
+    post:
+      operationId: RoleController_create
+      description: create role
+      parameters:
+        - $ref: '#/components/parameters/api.Utils.Versions.VersionParams'
+      responses:
+        '201':
+          description: role created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateOutput'
+        '400':
+          description: When input body is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateBodyValidationError'
+      tags:
+        - Role
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateInput'
+      security:
+        - BearerAuth: []
+    get:
+      operationId: RoleController_list
+      description: list role
+      parameters:
+        - $ref: '#/components/parameters/api.Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/api.Utils.Model.ApiPaginationInput.page'
+        - $ref: '#/components/parameters/api.Utils.Model.ApiPaginationInput.limit'
+        - $ref: '#/components/parameters/api.Utils.Model.ApiPaginationInput.sort'
+        - $ref: '#/components/parameters/api.Utils.Model.ApiPaginationInput.search'
+      responses:
+        '200':
+          description: list role successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListOutput'
+      tags:
+        - Role
+      security:
+        - BearerAuth: []
+  /api/{version}/roles/add-permissions/{id}:
+    put:
+      operationId: RoleController_addPermission
+      description: add permission from role
+      parameters:
+        - $ref: '#/components/parameters/api.Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/AddPermissionParamsInput'
+      responses:
+        '200':
+          description: permission added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddPermissionOutput'
+        '404':
+          description: When role not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddPermissionRoleNotFoundError'
+      tags:
+        - Role
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddPermissionInput'
+      security:
+        - BearerAuth: []
+  /api/{version}/roles/remove-permissions/{id}:
+    put:
+      operationId: RoleController_removePermission
+      description: remove permission from role
+      parameters:
+        - $ref: '#/components/parameters/api.Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/RemovePermissionParamsInput'
+      responses:
+        '200':
+          description: permission removed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RemovePermissionOuput'
+        '404':
+          description: When role not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RemovePermissionRoleNotFoundError'
+      tags:
+        - Role
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RemovePermissionInput'
+      security:
+        - BearerAuth: []
+  /api/{version}/roles/{id}:
+    put:
+      operationId: RoleController_update
+      description: create role
+      parameters:
+        - $ref: '#/components/parameters/api.Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/UpdateParamsInput'
+      responses:
+        '200':
+          description: role created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateOutput'
+        '400':
+          description: When input params is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateParamsValidationError'
+        '404':
+          description: When role not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateRoleNotFoundError'
+      tags:
+        - Role
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateInput'
+      security:
+        - BearerAuth: []
+    get:
+      operationId: RoleController_getById
+      description: get role by id
+      parameters:
+        - $ref: '#/components/parameters/api.Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/GetByIdParamsInput'
+      responses:
+        '200':
+          description: role found successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetByIdOutput'
+        '400':
+          description: When input params is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetByIdParamsValidationError'
+        '404':
+          description: When role not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetByIdRoleNotFoundError'
+      tags:
+        - Role
+      security:
+        - BearerAuth: []
+    delete:
+      operationId: RoleController_delete
+      description: delete role
+      parameters:
+        - $ref: '#/components/parameters/api.Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/DeleteParamsInput'
+      responses:
+        '200':
+          description: role deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteOutput'
+        '404':
+          description: When role not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteRoleNotFoundError'
+        '409':
+          description: When roles has association with permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteHasAssociationError'
+      tags:
+        - Role
+      security:
+        - BearerAuth: []
+components:
+  parameters:
+    AddPermissionParamsInput:
+      name: id
+      in: path
+      required: true
+      description: role id
+      schema:
+        type: string
+    DeleteParamsInput:
+      name: id
+      in: path
+      required: true
+      description: role id
+      schema:
+        type: string
+    GetByIdParamsInput:
+      name: id
+      in: path
+      required: true
+      description: role id
+      schema:
+        type: string
+    RemovePermissionParamsInput:
+      name: id
+      in: path
+      required: true
+      description: role id
+      schema:
+        type: string
+    UpdateParamsInput:
+      name: id
+      in: path
+      required: true
+      description: role id
+      schema:
+        type: string
+    api.Utils.Model.ApiPaginationInput.limit:
+      name: limit
+      in: query
+      required: true
+      description: pagination limit per page
+      schema:
+        type: integer
+        format: int32
+        default: 10
+      explode: false
+    api.Utils.Model.ApiPaginationInput.page:
+      name: page
+      in: query
+      required: true
+      description: pagination current page
+      schema:
+        type: integer
+        format: int32
+        default: 1
+      explode: false
+    api.Utils.Model.ApiPaginationInput.search:
+      name: search
+      in: query
+      required: false
+      description: search by property **property1:value1|value2**
+      schema:
+        type: string
+      explode: false
+    api.Utils.Model.ApiPaginationInput.sort:
+      name: sort
+      in: query
+      required: false
+      description: sort by property **property1:desc,property2:asc**
+      schema:
+        type: string
+        default: createdAt:desc
+      explode: false
+    api.Utils.Versions.VersionParams:
+      name: version
+      in: path
+      required: true
+      description: route version
+      schema:
+        $ref: '#/components/schemas/api.Utils.Versions.Versions'
+  schemas:
+    AddPermissionInput:
+      type: object
+      required:
+        - permissions
+      properties:
+        permissions:
+          type: array
+          items:
+            type: string
+      description: role add permission input
+    AddPermissionOutput:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/RoleEntity'
+      description: role add permission output
+    AddPermissionRoleNotFoundError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 404
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - roleNotFound
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When resource not found.
+      description: When role not found
+    CreateBodyValidationError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 400
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - 'name: Required'
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When input is invalid.
+      description: When input body is invalid
+    CreateInput:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - name
+          properties:
+            name:
+              type: string
+          description: The template for picking properties.
+      description: role create input
+    CreateOutput:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/RoleEntity'
+      description: role create output
+    DeleteHasAssociationError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 409
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - 'roleHasAssociationWithPermission: [permission]'
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When conflict occour.
+      description: When roles has association with permission
+    DeleteOutput:
+      type: object
+      required:
+        - deletedAt
+      properties:
+        deletedAt:
+          type: string
+          format: date-time
+      allOf:
+        - type: object
+          required:
+            - id
+            - name
+            - createdAt
+            - updatedAt
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+            createdAt:
+              type: string
+            updatedAt:
+              type: string
+          description: The template for omitting properties.
+      description: role delete output
+    DeleteRoleNotFoundError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 404
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - roleNotFound
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When resource not found.
+      description: When role not found
+    GetByIdOutput:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/RoleEntity'
+      description: role get by id
+    GetByIdParamsValidationError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 400
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - 'id: Required'
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When input is invalid.
+      description: When input params is invalid
+    GetByIdRoleNotFoundError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 404
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - roleNotFound
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When resource not found.
+      description: When role not found
+    ListOutput:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - docs
+            - page
+            - limit
+            - total
+          properties:
+            docs:
+              type: array
+              items:
+                $ref: '#/components/schemas/RoleEntity'
+              description: documents
+            page:
+              type: integer
+              format: int32
+              description: current page
+              default: 1
+            limit:
+              type: integer
+              format: int32
+              description: limit per page
+              default: 10
+            total:
+              type: integer
+              format: int64
+              description: total items
+              default: 1
+            totalPages:
+              type: integer
+              format: int32
+              description: total pages
+              default: 1
+          description: pagination default response
+      description: list output
+    ListQueryInput:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/api.Utils.Model.ApiPaginationInput'
+      description: list query input
+    RemovePermissionInput:
+      type: object
+      required:
+        - permissions
+      properties:
+        permissions:
+          type: array
+          items:
+            type: string
+      description: role remove permission input
+    RemovePermissionOuput:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/RoleEntity'
+      description: role remove permission output
+    RemovePermissionRoleNotFoundError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 404
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - roleNotFound
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When resource not found.
+      description: When role not found
+    RoleEntity:
+      type: object
+      required:
+        - id
+        - name
+        - createdAt
+        - updatedAt
+        - deletedAt
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        deletedAt:
+          type: string
+          nullable: true
+          default: null
+      description: role base entity
+    UpdateInput:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - name
+          properties:
+            name:
+              type: string
+          description: The template for picking properties.
+      description: role update input
+    UpdateOutput:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/RoleEntity'
+      description: role update output
+    UpdateParamsValidationError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 400
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - 'id: Required'
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When input is invalid.
+      description: When input params is invalid
+    UpdateRoleNotFoundError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 404
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - roleNotFound
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When resource not found.
+      description: When role not found
+    api.Cat.ListQueryInput:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/api.Utils.Model.ApiPaginationInput'
+    api.Permission.ListQueryInput:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/api.Utils.Model.ApiPaginationInput'
+      description: permission list input
+    api.User.ListQueryInput:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/api.Utils.Model.ApiPaginationInput'
+      description: user list query input
+    api.Utils.Model.ApiPaginationInput:
+      type: object
+      required:
+        - page
+        - limit
+      properties:
+        page:
+          type: integer
+          format: int32
+          description: pagination current page
+          default: 1
+        limit:
+          type: integer
+          format: int32
+          description: pagination limit per page
+          default: 10
+        sort:
+          type: string
+          description: sort by property **property1:desc,property2:asc**
+          default: createdAt:desc
+        search:
+          type: string
+          description: search by property **property1:value1|value2**
+    api.Utils.Versions.Versions:
+      type: string
+      enum:
+        - v1
+        - v2
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer

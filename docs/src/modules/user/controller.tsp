@@ -21,12 +21,13 @@ using Utils.Exception;
 namespace api.User;
 
 @tag("User")
-@route("/api/users")
+@route("/api/{version}/users")
+@useAuth(BearerAuth)
 interface UserController {
   @post
   @doc("create user")
   @returnsDoc("user created successfully")
-  create(@body input: CreateInput):
+  create(...VersionParams, @body input: CreateInput):
     | DefaultSuccessResponse<CreateOutput, 201>
     | CreateNotFoundError
     | CreateConflictException
@@ -35,7 +36,7 @@ interface UserController {
   @put
   @doc("update user")
   @returnsDoc("user updated successfully")
-  update(...UpdateParamsInput, @body input: UpdateInput):
+  update(...VersionParams, ...UpdateParamsInput, @body input: UpdateInput):
     | DefaultSuccessResponse<UpdateOutput, 200>
     | UpdateNotFoundException
     | UpdateConflictException
@@ -44,18 +45,18 @@ interface UserController {
   @get
   @doc("list user")
   @returnsDoc("user listed successfully")
-  list(...ListQueryInput): DefaultSuccessResponse<ListOutput, 200>;
+  list(...VersionParams, ...ListQueryInput): DefaultSuccessResponse<ListOutput, 200>;
 
   @get
   @doc("list user")
   @returnsDoc("get user logged successfully")
   @route("me")
-  me(): DefaultSuccessResponse<MeOutput, 200>;
+  me(...VersionParams): DefaultSuccessResponse<MeOutput, 200>;
 
   @get
   @doc("get user by id")
   @returnsDoc("get user by id successfully")
-  getById(...GetByIdParamsInput): DefaultSuccessResponse<
+  getById(...VersionParams, ...GetByIdParamsInput): DefaultSuccessResponse<
     GetByIdOutput,
     200
   > | GetByIdUserNotFoundException | GetByIdValidationException;
@@ -64,7 +65,7 @@ interface UserController {
   @doc("change password")
   @route("change-password")
   @returnsDoc("password updated successfully")
-  changePassword(...ChangePasswordParamsInput, @body body: ChangePasswordInput):
+  changePassword(...VersionParams, ...ChangePasswordParamsInput, @body body: ChangePasswordInput):
     | DefaultSuccessResponse<void, 200>
     | ChangePasswordNotFoundException
     | ChangePasswordUserExistConflictError
@@ -73,7 +74,7 @@ interface UserController {
   @delete
   @doc("delete user")
   @returnsDoc("delete user successfully")
-  delete(...DeleteParamsInput): DefaultSuccessResponse<
+  delete(...VersionParams, ...DeleteParamsInput): DefaultSuccessResponse<
     DeleteOutput,
     200
   > | DeleteNotFoundException | DeleteValidationException;

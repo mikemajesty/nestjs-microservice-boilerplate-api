@@ -1,6 +1,16 @@
+import "@typespec/http";
+
+using TypeSpec.Http;
+
 namespace api.Utils.Versions;
 
-enum ApiVersions {
-  v1: "1.0",
-  v2: "2.0",
+enum Versions {
+  v1,
+  v2,
+}
+
+model VersionParams {
+  @doc("route version")
+  @path
+  version: Versions;
 }

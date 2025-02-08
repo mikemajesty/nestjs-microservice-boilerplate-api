@@ -8,7 +8,6 @@ using Utils.Model;
 using Utils.Exception;
 using Utils.Versions;
 
-@versioned(ApiVersions)
 namespace api.Cat;
 
 // ## CREATE ## //

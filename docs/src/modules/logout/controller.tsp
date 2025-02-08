@@ -21,9 +21,10 @@ using Utils.Model;
 namespace api.Logout;
 
 @tag("Logout")
-@route("/api/logout")
+@route("/api/{version}/logout")
+@useAuth(BearerAuth)
 interface LogoutController {
   @doc("user logout")
   @returnsDoc("user logout successfully")
-  logout(@body body: LogoutInput): DefaultSuccessResponse<void, 200> | LogoutValidationException;
+  logout(...VersionParams, @body body: LogoutInput): DefaultSuccessResponse<void, 200> | LogoutValidationException;
 }

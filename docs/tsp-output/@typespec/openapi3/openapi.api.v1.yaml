@@ -1,0 +1,4077 @@
+openapi: 3.0.0
+info:
+  title: Microservice API
+  version: v1
+tags:
+  - name: Login
+  - name: User
+  - name: Role
+  - name: Reset password
+  - name: Permission
+  - name: Logout
+  - name: Health
+  - name: Cat
+paths:
+  /:
+    get:
+      operationId: HealthController_health1
+      description: app health
+      parameters: []
+      responses:
+        '200':
+          description: health output
+          content:
+            text/plain:
+              schema:
+                type: string
+      tags:
+        - Health
+  /api/{version}/cats:
+    post:
+      operationId: CatController_create
+      description: create cat
+      parameters:
+        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+      responses:
+        '200':
+          description: cat created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cat.CreateOutput'
+        '400':
+          description: When input is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cat.CreateValidationError'
+      tags:
+        - Cat
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Cat.CreateInput'
+      security:
+        - BearerAuth: []
+    get:
+      operationId: CatController_list
+      description: list cat
+      parameters:
+        - name: version
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Utils.Versions.Versions'
+        - $ref: '#/components/parameters/Utils.Model.ApiPaginationInput.page'
+        - $ref: '#/components/parameters/Utils.Model.ApiPaginationInput.limit'
+        - $ref: '#/components/parameters/Utils.Model.ApiPaginationInput.sort'
+        - $ref: '#/components/parameters/Utils.Model.ApiPaginationInput.search'
+      responses:
+        '200':
+          description: list cat successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cat.ListOutput'
+      tags:
+        - Cat
+      security:
+        - BearerAuth: []
+  /api/{version}/cats/{id}:
+    put:
+      operationId: CatController_update
+      description: create update
+      parameters:
+        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/Cat.UpdateParamInput'
+      responses:
+        '200':
+          description: cat updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cat.UpdateOutput'
+        '400':
+          description: When input is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cat.UpdateValidationError'
+        '404':
+          description: When cat not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cat.UpdateCatNotFoundError'
+      tags:
+        - Cat
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Cat.UpdateInput'
+      security:
+        - BearerAuth: []
+    get:
+      operationId: CatController_getById
+      description: get cat by id
+      parameters:
+        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/Cat.GetByIdParamInput'
+      responses:
+        '200':
+          description: get cat by id successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cat.GetByIdOutput'
+        '400':
+          description: When input is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cat.GetByIdValidationError'
+        '404':
+          description: When cat not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cat.GetByIdCatNotFoundError'
+      tags:
+        - Cat
+      security:
+        - BearerAuth: []
+    delete:
+      operationId: CatController_delete
+      description: delete cat
+      parameters:
+        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/Cat.DeleteParamInput'
+      responses:
+        '200':
+          description: cat deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cat.DeleteOutput'
+        '400':
+          description: When input is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cat.DeleteValidationError'
+        '404':
+          description: When cat not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cat.DeleteCatNotFoundError'
+      tags:
+        - Cat
+      security:
+        - BearerAuth: []
+  /api/{version}/login:
+    post:
+      operationId: LoginController_login
+      description: user login
+      parameters:
+        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+      responses:
+        '200':
+          description: login successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Login.LoginOutput'
+        '400':
+          description: When login input is invalid
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/Login.LoginValidationError'
+                  - $ref: '#/components/schemas/Login.LoginWrongPasswordError'
+        '404':
+          description: When user not found
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/Login.LoginUserNotFoundError'
+                  - $ref: '#/components/schemas/Login.LoginRoleNotFoundError'
+      tags:
+        - Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Login.LoginInput'
+  /api/{version}/login/google:
+    get:
+      operationId: LoginController_loginGoogle
+      parameters:
+        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+      tags:
+        - Login
+  /api/{version}/login/google/callback:
+    get:
+      operationId: LoginController_loginGoogleCallback
+      parameters:
+        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+      tags:
+        - Login
+  /api/{version}/logout:
+    post:
+      operationId: LogoutController_logout
+      description: user logout
+      parameters:
+        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+      responses:
+        '200':
+          description: user logout successfully
+        '400':
+          description: When input is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Logout.LogoutValidationError'
+      tags:
+        - Logout
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Logout.LogoutInput'
+      security:
+        - BearerAuth: []
+  /api/{version}/permissions:
+    post:
+      operationId: PermissionController_create
+      description: create permission
+      parameters:
+        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+      responses:
+        '200':
+          description: permission created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Permission.CreateOutput'
+        '400':
+          description: When input is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Permission.CreateValidationError'
+        '409':
+          description: When input is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Permission.ConflictPermissionExistsError'
+      tags:
+        - Permission
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Permission.CreateInput'
+      security:
+        - BearerAuth: []
+    get:
+      operationId: PermissionController_list
+      description: list permission
+      parameters:
+        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/Utils.Model.ApiPaginationInput.page'
+        - $ref: '#/components/parameters/Utils.Model.ApiPaginationInput.limit'
+        - $ref: '#/components/parameters/Utils.Model.ApiPaginationInput.sort'
+        - $ref: '#/components/parameters/Utils.Model.ApiPaginationInput.search'
+      responses:
+        '200':
+          description: list permission successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Permission.ListOutput'
+      tags:
+        - Permission
+      security:
+        - BearerAuth: []
+  /api/{version}/permissions/{id}:
+    put:
+      operationId: PermissionController_update
+      description: update permission
+      parameters:
+        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/Permission.UpdateParamsInput'
+      responses:
+        '200':
+          description: permission updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Permission.UpdateOutput'
+        '400':
+          description: When input is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Permission.UpdateValidationError'
+        '404':
+          description: When permission not found
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/Permission.UpdatePermissionNotFoundError'
+                  - $ref: '#/components/schemas/Permission.UpdatePermissionAlreadyExistsError'
+      tags:
+        - Permission
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Permission.UpdateInput'
+      security:
+        - BearerAuth: []
+    get:
+      operationId: PermissionController_getById
+      description: get permission
+      parameters:
+        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/Permission.GetByIdParamsInput'
+      responses:
+        '200':
+          description: get permission successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Permission.GetByIdOutput'
+        '400':
+          description: When input is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Permission.GetByIdValidationError'
+        '404':
+          description: When permission not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Permission.GeyByIdPermissionNotFoundError'
+      tags:
+        - Permission
+      security:
+        - BearerAuth: []
+    delete:
+      operationId: PermissionController_delete
+      description: delete permission
+      parameters:
+        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/Permission.DeleteParamsInput'
+      responses:
+        '200':
+          description: delete permission successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Permission.DeleteOutput'
+        '400':
+          description: When input is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Permission.DeleteValidationError'
+        '404':
+          description: When permission not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Permission.DeletePermissionNotFoundError'
+      tags:
+        - Permission
+      security:
+        - BearerAuth: []
+  /api/{version}/refresh:
+    post:
+      operationId: LoginController_refresh
+      description: get user refresh token
+      parameters:
+        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+      responses:
+        '200':
+          description: login refresh token successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Login.RefreshTokenOutput'
+      tags:
+        - Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Login.RefreshTokenInput'
+  /api/{version}/reset-password/send-email:
+    post:
+      operationId: ResetPasswordController_sendEmail
+      description: send email
+      parameters:
+        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+      responses:
+        '200':
+          description: email sended successfully
+        '404':
+          description: When user not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResetPassword.SendEmailUserNotFoundError'
+      tags:
+        - Reset password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPassword.SendEmailInput'
+      security:
+        - BearerAuth: []
+  /api/{version}/reset-password/{token}:
+    put:
+      operationId: ResetPasswordController_confirmResetPassword
+      description: reset password
+      parameters:
+        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/ResetPassword.ConfirmResetPasswordParamsInput'
+      responses:
+        '200':
+          description: password changed successfully
+        '400':
+          description: When password are differents
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResetPassword.ConfirmResetPasswordPasswordAreDifferentError'
+        '401':
+          description: When password are differents
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResetPassword.ConfirmResetPasswordTokenWasExpiredError'
+        '404':
+          description: When user not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResetPassword.ConfirmResetPasswordUserNotFoundError'
+      tags:
+        - Reset password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPassword.ConfirmResetPasswordInput'
+      security:
+        - BearerAuth: []
+  /api/{version}/roles:
+    post:
+      operationId: RoleController_create
+      description: create role
+      parameters:
+        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+      responses:
+        '201':
+          description: role created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role.CreateOutput'
+        '400':
+          description: When input body is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role.CreateBodyValidationError'
+      tags:
+        - Role
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Role.CreateInput'
+      security:
+        - BearerAuth: []
+    get:
+      operationId: RoleController_list
+      description: list role
+      parameters:
+        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/Utils.Model.ApiPaginationInput.page'
+        - $ref: '#/components/parameters/Utils.Model.ApiPaginationInput.limit'
+        - $ref: '#/components/parameters/Utils.Model.ApiPaginationInput.sort'
+        - $ref: '#/components/parameters/Utils.Model.ApiPaginationInput.search'
+      responses:
+        '200':
+          description: list role successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role.ListOutput'
+      tags:
+        - Role
+      security:
+        - BearerAuth: []
+  /api/{version}/roles/add-permissions/{id}:
+    put:
+      operationId: RoleController_addPermission
+      description: add permission from role
+      parameters:
+        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/Role.AddPermissionParamsInput'
+      responses:
+        '200':
+          description: permission added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role.AddPermissionOutput'
+        '404':
+          description: When role not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role.AddPermissionRoleNotFoundError'
+      tags:
+        - Role
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Role.AddPermissionInput'
+      security:
+        - BearerAuth: []
+  /api/{version}/roles/remove-permissions/{id}:
+    put:
+      operationId: RoleController_removePermission
+      description: remove permission from role
+      parameters:
+        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/Role.RemovePermissionParamsInput'
+      responses:
+        '200':
+          description: permission removed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role.RemovePermissionOuput'
+        '404':
+          description: When role not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role.RemovePermissionRoleNotFoundError'
+      tags:
+        - Role
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Role.RemovePermissionInput'
+      security:
+        - BearerAuth: []
+  /api/{version}/roles/{id}:
+    put:
+      operationId: RoleController_update
+      description: create role
+      parameters:
+        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/Role.UpdateParamsInput'
+      responses:
+        '200':
+          description: role created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role.UpdateOutput'
+        '400':
+          description: When input params is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role.UpdateParamsValidationError'
+        '404':
+          description: When role not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role.UpdateRoleNotFoundError'
+      tags:
+        - Role
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Role.UpdateInput'
+      security:
+        - BearerAuth: []
+    get:
+      operationId: RoleController_getById
+      description: get role by id
+      parameters:
+        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/Role.GetByIdParamsInput'
+      responses:
+        '200':
+          description: role found successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role.GetByIdOutput'
+        '400':
+          description: When input params is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role.GetByIdParamsValidationError'
+        '404':
+          description: When role not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role.GetByIdRoleNotFoundError'
+      tags:
+        - Role
+      security:
+        - BearerAuth: []
+    delete:
+      operationId: RoleController_delete
+      description: delete role
+      parameters:
+        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/Role.DeleteParamsInput'
+      responses:
+        '200':
+          description: role deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role.DeleteOutput'
+        '404':
+          description: When role not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role.DeleteRoleNotFoundError'
+        '409':
+          description: When roles has association with permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role.DeleteHasAssociationError'
+      tags:
+        - Role
+      security:
+        - BearerAuth: []
+  /api/{version}/users:
+    post:
+      operationId: UserController_create
+      description: create user
+      parameters:
+        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+      responses:
+        '201':
+          description: user created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User.CreateOutput'
+        '400':
+          description: When input body is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User.CreateBodyValidationError'
+        '404':
+          description: When user role not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User.CreateNotFoundError'
+        '409':
+          description: When user already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User.CreateExistConflictError'
+      tags:
+        - User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User.CreateInput'
+      security:
+        - BearerAuth: []
+    get:
+      operationId: UserController_list
+      description: list user
+      parameters:
+        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/Utils.Model.ApiPaginationInput.page'
+        - $ref: '#/components/parameters/Utils.Model.ApiPaginationInput.limit'
+        - $ref: '#/components/parameters/Utils.Model.ApiPaginationInput.sort'
+        - $ref: '#/components/parameters/Utils.Model.ApiPaginationInput.search'
+      responses:
+        '200':
+          description: user listed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User.ListOutput'
+      tags:
+        - User
+      security:
+        - BearerAuth: []
+  /api/{version}/users/change-password/{id}:
+    put:
+      operationId: UserController_changePassword
+      description: change password
+      parameters:
+        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/User.ChangePasswordParamsInput'
+      responses:
+        '200':
+          description: password updated successfully
+        '400':
+          description: When input params is invalid
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/User.ChangePasswordParamsValidationError'
+                  - $ref: '#/components/schemas/User.ChangePasswordBodyValidationError'
+        '404':
+          description: When user not found
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/User.ChangePasswordUserNotFoundError'
+                  - $ref: '#/components/schemas/User.ChangePasswordRoleNotFoundError'
+        '409':
+          description: When user already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User.ChangePasswordUserExistConflictError'
+      tags:
+        - User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User.ChangePasswordInput'
+      security:
+        - BearerAuth: []
+  /api/{version}/users/me:
+    get:
+      operationId: UserController_me
+      description: list user
+      parameters:
+        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+      responses:
+        '200':
+          description: get user logged successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User.MeOutput'
+      tags:
+        - User
+      security:
+        - BearerAuth: []
+  /api/{version}/users/{id}:
+    put:
+      operationId: UserController_update
+      description: update user
+      parameters:
+        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/User.UpdateParamsInput'
+      responses:
+        '200':
+          description: user updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User.UpdateOutput'
+        '400':
+          description: When input params is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User.UpdateParamsValidationError'
+        '404':
+          description: When user role not found
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/User.UpdateRoleNotFoundError'
+                  - $ref: '#/components/schemas/User.UpdateUserNotFoundError'
+        '409':
+          description: When user already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User.UpdateExistConflictError'
+      tags:
+        - User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User.UpdateInput'
+      security:
+        - BearerAuth: []
+    get:
+      operationId: UserController_getById
+      description: get user by id
+      parameters:
+        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/User.GetByIdParamsInput'
+      responses:
+        '200':
+          description: get user by id successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User.GetByIdOutput'
+        '400':
+          description: When input params is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User.GetByIdParamsValidationError'
+        '404':
+          description: When user not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User.GetByIdUserNotFoundError'
+      tags:
+        - User
+      security:
+        - BearerAuth: []
+    delete:
+      operationId: UserController_delete
+      description: delete user
+      parameters:
+        - $ref: '#/components/parameters/Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/User.DeleteParamsInput'
+      responses:
+        '200':
+          description: delete user successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User.DeleteOutput'
+        '400':
+          description: When input params is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User.DeleteParamsValidationError'
+        '404':
+          description: When user not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User.DeleteUserNotFoundError'
+      tags:
+        - User
+      security:
+        - BearerAuth: []
+  /health:
+    get:
+      operationId: HealthController_health
+      description: app health
+      parameters: []
+      responses:
+        '200':
+          description: health output
+          content:
+            text/plain:
+              schema:
+                type: string
+      tags:
+        - Health
+components:
+  parameters:
+    Cat.DeleteParamInput:
+      name: id
+      in: path
+      required: true
+      description: cat id
+      schema:
+        type: string
+    Cat.GetByIdParamInput:
+      name: id
+      in: path
+      required: true
+      description: cat id
+      schema:
+        type: string
+    Cat.UpdateParamInput:
+      name: id
+      in: path
+      required: true
+      description: cat id
+      schema:
+        type: string
+    Permission.DeleteParamsInput:
+      name: id
+      in: path
+      required: true
+      description: permission id
+      schema:
+        type: string
+    Permission.GetByIdParamsInput:
+      name: id
+      in: path
+      required: true
+      description: permission id
+      schema:
+        type: string
+    Permission.UpdateParamsInput:
+      name: id
+      in: path
+      required: true
+      description: permission id
+      schema:
+        type: string
+    ResetPassword.ConfirmResetPasswordParamsInput:
+      name: token
+      in: path
+      required: true
+      description: user token
+      schema:
+        type: string
+    Role.AddPermissionParamsInput:
+      name: id
+      in: path
+      required: true
+      description: role id
+      schema:
+        type: string
+    Role.DeleteParamsInput:
+      name: id
+      in: path
+      required: true
+      description: role id
+      schema:
+        type: string
+    Role.GetByIdParamsInput:
+      name: id
+      in: path
+      required: true
+      description: role id
+      schema:
+        type: string
+    Role.RemovePermissionParamsInput:
+      name: id
+      in: path
+      required: true
+      description: role id
+      schema:
+        type: string
+    Role.UpdateParamsInput:
+      name: id
+      in: path
+      required: true
+      description: role id
+      schema:
+        type: string
+    User.ChangePasswordParamsInput:
+      name: id
+      in: path
+      required: true
+      description: user id
+      schema:
+        type: string
+    User.DeleteParamsInput:
+      name: id
+      in: path
+      required: true
+      description: user id
+      schema:
+        type: string
+    User.GetByIdParamsInput:
+      name: id
+      in: path
+      required: true
+      description: user id
+      schema:
+        type: string
+    User.UpdateParamsInput:
+      name: id
+      in: path
+      required: true
+      description: user id
+      schema:
+        type: string
+    Utils.Model.ApiPaginationInput.limit:
+      name: limit
+      in: query
+      required: true
+      description: pagination limit per page
+      schema:
+        type: integer
+        format: int32
+        default: 10
+      explode: false
+    Utils.Model.ApiPaginationInput.page:
+      name: page
+      in: query
+      required: true
+      description: pagination current page
+      schema:
+        type: integer
+        format: int32
+        default: 1
+      explode: false
+    Utils.Model.ApiPaginationInput.search:
+      name: search
+      in: query
+      required: false
+      description: search by property **property1:value1|value2**
+      schema:
+        type: string
+      explode: false
+    Utils.Model.ApiPaginationInput.sort:
+      name: sort
+      in: query
+      required: false
+      description: sort by property **property1:desc,property2:asc**
+      schema:
+        type: string
+        default: createdAt:desc
+      explode: false
+    Utils.Versions.VersionParams:
+      name: version
+      in: path
+      required: true
+      description: route version
+      schema:
+        $ref: '#/components/schemas/Utils.Versions.Versions'
+  schemas:
+    Cat.CatEntity:
+      type: object
+      required:
+        - name
+        - breed
+        - age
+        - createdAt
+        - updatedAt
+        - deletedAt
+      properties:
+        name:
+          type: string
+        breed:
+          type: string
+        age:
+          type: integer
+          format: int16
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        deletedAt:
+          type: string
+          nullable: true
+          default: null
+      description: cat base entity
+    Cat.CreateInput:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - name
+            - breed
+            - age
+          properties:
+            name:
+              type: string
+            breed:
+              type: string
+            age:
+              type: integer
+              format: int16
+          description: The template for picking properties.
+      description: cat create input
+    Cat.CreateOutput:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/Cat.CatEntity'
+      description: cat create output
+    Cat.CreateValidationError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 400
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - 'name: Required, breed: Required, age: Required'
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When input is invalid.
+      description: When input is invalid
+    Cat.DeleteCatNotFoundError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 404
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - catNotFound
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When resource not found.
+      description: When cat not found
+    Cat.DeleteOutput:
+      type: object
+      required:
+        - deletedAt
+      properties:
+        deletedAt:
+          type: string
+          format: date-time
+      allOf:
+        - type: object
+          required:
+            - name
+            - breed
+            - age
+            - createdAt
+            - updatedAt
+          properties:
+            name:
+              type: string
+            breed:
+              type: string
+            age:
+              type: integer
+              format: int16
+            createdAt:
+              type: string
+            updatedAt:
+              type: string
+          description: The template for omitting properties.
+      description: cat delete output
+    Cat.DeleteValidationError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 400
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - 'id: Required'
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When input is invalid.
+      description: When input is invalid
+    Cat.GetByIdCatNotFoundError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 404
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - catNotFound
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When resource not found.
+      description: When cat not found
+    Cat.GetByIdOutput:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/Cat.CatEntity'
+      description: cat get by id input
+    Cat.GetByIdValidationError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 400
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - 'id: Required'
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When input is invalid.
+      description: When input is invalid
+    Cat.ListOutput:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - docs
+            - page
+            - limit
+            - total
+          properties:
+            docs:
+              type: array
+              items:
+                $ref: '#/components/schemas/Cat.CatEntity'
+              description: documents
+            page:
+              type: integer
+              format: int32
+              description: current page
+              default: 1
+            limit:
+              type: integer
+              format: int32
+              description: limit per page
+              default: 10
+            total:
+              type: integer
+              format: int64
+              description: total items
+              default: 1
+            totalPages:
+              type: integer
+              format: int32
+              description: total pages
+              default: 1
+          description: pagination default response
+      description: cat list output
+    Cat.ListQueryInput:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/Utils.Model.ApiPaginationInput'
+    Cat.UpdateCatNotFoundError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 404
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - catNotFound
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When resource not found.
+      description: When cat not found
+    Cat.UpdateInput:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - name
+            - breed
+            - age
+          properties:
+            name:
+              type: string
+            breed:
+              type: string
+            age:
+              type: integer
+              format: int16
+          description: The template for picking properties.
+      description: cat update input
+    Cat.UpdateOutput:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/Cat.CatEntity'
+      description: cat update output
+    Cat.UpdateValidationError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 400
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - 'id: Required'
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When input is invalid.
+      description: When input is invalid
+    Login.LoginInput:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+      description: login input
+    Login.LoginOutput:
+      type: object
+      required:
+        - accessToken
+        - refreshToken
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+      description: login ouput
+    Login.LoginRoleNotFoundError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 404
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - roleNotFound
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When resource not found.
+      description: When user role not found
+    Login.LoginUserNotFoundError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 404
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - userNotFound
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When resource not found.
+      description: When user not found
+    Login.LoginValidationError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 400
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - 'email: Required'
+                      - 'password: Required'
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When input is invalid.
+      description: When login input is invalid
+    Login.LoginWrongPasswordError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 400
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - incorrectPassword
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When input is invalid.
+      description: When user password is wrong
+    Login.RefreshTokenInput:
+      type: object
+      required:
+        - refreshToken
+      properties:
+        refreshToken:
+          type: string
+      description: login refresh token input
+    Login.RefreshTokenOutput:
+      type: object
+      required:
+        - accessToken
+        - refreshToken
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+      description: login refresh token output
+    Logout.LogoutInput:
+      type: object
+      required:
+        - token
+      properties:
+        token:
+          type: string
+      description: logout input
+    Logout.LogoutValidationError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 400
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - 'token: Required'
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When input is invalid.
+      description: When input is invalid
+    Permission.ConflictPermissionExistsError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 409
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - permissionExists
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When conflict occour.
+      description: When input is invalid
+    Permission.CreateInput:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - name
+          properties:
+            name:
+              type: string
+          description: The template for picking properties.
+      description: permission create input
+    Permission.CreateOutput:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/Permission.PermisisonEntity'
+      description: permission create output
+    Permission.CreateValidationError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 400
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - 'name: Required'
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When input is invalid.
+      description: When input is invalid
+    Permission.DeleteOutput:
+      type: object
+      required:
+        - deletedAt
+      properties:
+        deletedAt:
+          type: string
+          format: date-time
+      allOf:
+        - type: object
+          required:
+            - id
+            - name
+            - createdAt
+            - updatedAt
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+            createdAt:
+              type: string
+            updatedAt:
+              type: string
+          description: The template for omitting properties.
+      description: permission depete output
+    Permission.DeletePermissionNotFoundError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 404
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - permissionNotFound
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When resource not found.
+      description: When permission not found
+    Permission.DeleteValidationError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 400
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - 'id: Required'
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When input is invalid.
+      description: When input is invalid
+    Permission.GetByIdOutput:
+      type: object
+      required:
+        - deletedAt
+      properties:
+        deletedAt:
+          type: string
+          format: date-time
+      allOf:
+        - type: object
+          required:
+            - id
+            - name
+            - createdAt
+            - updatedAt
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+            createdAt:
+              type: string
+            updatedAt:
+              type: string
+          description: The template for omitting properties.
+      description: permission get by id output
+    Permission.GetByIdValidationError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 400
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - 'id: Required'
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When input is invalid.
+      description: When input is invalid
+    Permission.GeyByIdPermissionNotFoundError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 404
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - permissionNotFound
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When resource not found.
+      description: When permission not found
+    Permission.ListOutput:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - docs
+            - page
+            - limit
+            - total
+          properties:
+            docs:
+              type: array
+              items:
+                $ref: '#/components/schemas/Permission.PermisisonEntity'
+              description: documents
+            page:
+              type: integer
+              format: int32
+              description: current page
+              default: 1
+            limit:
+              type: integer
+              format: int32
+              description: limit per page
+              default: 10
+            total:
+              type: integer
+              format: int64
+              description: total items
+              default: 1
+            totalPages:
+              type: integer
+              format: int32
+              description: total pages
+              default: 1
+          description: pagination default response
+      description: permission list output
+    Permission.ListQueryInput:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/Utils.Model.ApiPaginationInput'
+      description: permission list input
+    Permission.PermisisonEntity:
+      type: object
+      required:
+        - id
+        - name
+        - createdAt
+        - updatedAt
+        - deletedAt
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        deletedAt:
+          type: string
+          nullable: true
+          default: null
+      description: permission base entity
+    Permission.UpdateInput:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - name
+          properties:
+            name:
+              type: string
+          description: The template for picking properties.
+      description: permission update input
+    Permission.UpdateOutput:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/Permission.PermisisonEntity'
+      description: permission update output
+    Permission.UpdatePermissionAlreadyExistsError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 404
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - permissionExists
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When resource not found.
+      description: When permission already exists
+    Permission.UpdatePermissionNotFoundError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 404
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - permissionNotFound
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When resource not found.
+      description: When permission not found
+    Permission.UpdateValidationError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 400
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - 'id: Required'
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When input is invalid.
+      description: When input is invalid
+    ResetPassword.ConfirmResetPasswordInput:
+      type: object
+      required:
+        - password
+        - token
+        - confirmPassword
+      properties:
+        password:
+          type: string
+        token:
+          type: string
+        confirmPassword:
+          type: string
+      description: confirm reset password input
+    ResetPassword.ConfirmResetPasswordPasswordAreDifferentError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 400
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - passwords are different
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When input is invalid.
+      description: When password are differents
+    ResetPassword.ConfirmResetPasswordTokenWasExpiredError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 401
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - token was expired
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When unauthorized occour.
+      description: When password are differents
+    ResetPassword.ConfirmResetPasswordUserNotFoundError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 404
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - user not found
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When resource not found.
+      description: When user not found
+    ResetPassword.ResetPasswordEntity:
+      type: object
+      required:
+        - token
+      properties:
+        token:
+          type: string
+      description: reset password entity base
+    ResetPassword.SendEmailInput:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+      description: reset password send email input
+    ResetPassword.SendEmailUserNotFoundError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 404
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - user not found
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When resource not found.
+      description: When user not found
+    Role.AddPermissionInput:
+      type: object
+      required:
+        - permissions
+      properties:
+        permissions:
+          type: array
+          items:
+            type: string
+      description: role add permission input
+    Role.AddPermissionOutput:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/Role.RoleEntity'
+      description: role add permission output
+    Role.AddPermissionRoleNotFoundError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 404
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - roleNotFound
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When resource not found.
+      description: When role not found
+    Role.CreateBodyValidationError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 400
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - 'name: Required'
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When input is invalid.
+      description: When input body is invalid
+    Role.CreateInput:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - name
+          properties:
+            name:
+              type: string
+          description: The template for picking properties.
+      description: role create input
+    Role.CreateOutput:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/Role.RoleEntity'
+      description: role create output
+    Role.DeleteHasAssociationError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 409
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - 'roleHasAssociationWithPermission: [permission]'
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When conflict occour.
+      description: When roles has association with permission
+    Role.DeleteOutput:
+      type: object
+      required:
+        - deletedAt
+      properties:
+        deletedAt:
+          type: string
+          format: date-time
+      allOf:
+        - type: object
+          required:
+            - id
+            - name
+            - createdAt
+            - updatedAt
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+            createdAt:
+              type: string
+            updatedAt:
+              type: string
+          description: The template for omitting properties.
+      description: role delete output
+    Role.DeleteRoleNotFoundError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 404
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - roleNotFound
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When resource not found.
+      description: When role not found
+    Role.GetByIdOutput:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/Role.RoleEntity'
+      description: role get by id
+    Role.GetByIdParamsValidationError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 400
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - 'id: Required'
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When input is invalid.
+      description: When input params is invalid
+    Role.GetByIdRoleNotFoundError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 404
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - roleNotFound
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When resource not found.
+      description: When role not found
+    Role.ListOutput:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - docs
+            - page
+            - limit
+            - total
+          properties:
+            docs:
+              type: array
+              items:
+                $ref: '#/components/schemas/Role.RoleEntity'
+              description: documents
+            page:
+              type: integer
+              format: int32
+              description: current page
+              default: 1
+            limit:
+              type: integer
+              format: int32
+              description: limit per page
+              default: 10
+            total:
+              type: integer
+              format: int64
+              description: total items
+              default: 1
+            totalPages:
+              type: integer
+              format: int32
+              description: total pages
+              default: 1
+          description: pagination default response
+      description: list output
+    Role.ListQueryInput:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/Utils.Model.ApiPaginationInput'
+      description: list query input
+    Role.RemovePermissionInput:
+      type: object
+      required:
+        - permissions
+      properties:
+        permissions:
+          type: array
+          items:
+            type: string
+      description: role remove permission input
+    Role.RemovePermissionOuput:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/Role.RoleEntity'
+      description: role remove permission output
+    Role.RemovePermissionRoleNotFoundError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 404
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - roleNotFound
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When resource not found.
+      description: When role not found
+    Role.RoleEntity:
+      type: object
+      required:
+        - id
+        - name
+        - createdAt
+        - updatedAt
+        - deletedAt
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        deletedAt:
+          type: string
+          nullable: true
+          default: null
+      description: role base entity
+    Role.UpdateInput:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - name
+          properties:
+            name:
+              type: string
+          description: The template for picking properties.
+      description: role update input
+    Role.UpdateOutput:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/Role.RoleEntity'
+      description: role update output
+    Role.UpdateParamsValidationError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 400
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - 'id: Required'
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When input is invalid.
+      description: When input params is invalid
+    Role.UpdateRoleNotFoundError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 404
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - roleNotFound
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When resource not found.
+      description: When role not found
+    User.ChangePasswordBodyValidationError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 400
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - 'password: Required, confirmPassword: Required, newPassword'
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When input is invalid.
+      description: When input body is invalid
+    User.ChangePasswordInput:
+      type: object
+      required:
+        - password
+        - newPassword
+        - confirmPassword
+      properties:
+        password:
+          type: string
+        newPassword:
+          type: string
+        confirmPassword:
+          type: string
+      description: user change password input
+    User.ChangePasswordParamsValidationError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 400
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - 'id: Required'
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When input is invalid.
+      description: When input params is invalid
+    User.ChangePasswordRoleNotFoundError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 404
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - roleNotFound
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When resource not found.
+      description: When user role not found
+    User.ChangePasswordUserExistConflictError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 409
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - userExists
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When conflict occour.
+      description: When user already exists
+    User.ChangePasswordUserNotFoundError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 404
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - userNotFound
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When resource not found.
+      description: When user not found
+    User.CreateBodyValidationError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 400
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - 'email: Required, name: Required, password: Required, roles: Required'
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When input is invalid.
+      description: When input body is invalid
+    User.CreateExistConflictError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 409
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - userExists
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When conflict occour.
+      description: When user already exists
+    User.CreateInput:
+      type: object
+      required:
+        - password
+      properties:
+        password:
+          type: string
+      allOf:
+        - type: object
+          required:
+            - name
+            - email
+            - roles
+            - deveriaAparecerV2
+          properties:
+            name:
+              type: string
+            email:
+              type: string
+            roles:
+              type: array
+              items:
+                type: string
+            deveriaAparecerV2:
+              type: string
+          description: The template for omitting properties.
+      description: user create input
+    User.CreateNotFoundError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 404
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - roleNotFound
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When resource not found.
+      description: When user role not found
+    User.CreateOutput:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/Utils.Model.ApiCreatedOutput'
+      description: user created input
+    User.DeleteOutput:
+      type: object
+      required:
+        - deletedAt
+      properties:
+        deletedAt:
+          type: string
+          format: date-time
+      allOf:
+        - type: object
+          required:
+            - id
+            - name
+            - email
+            - roles
+            - createdAt
+            - deveriaAparecerV2
+            - updateAt
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+            email:
+              type: string
+            roles:
+              type: array
+              items:
+                type: string
+            createdAt:
+              type: string
+            deveriaAparecerV2:
+              type: string
+            updateAt:
+              type: string
+          description: The template for omitting properties.
+      description: user delete output
+    User.DeleteParamsValidationError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 400
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - 'id: Required'
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When input is invalid.
+      description: When input params is invalid
+    User.DeleteUserNotFoundError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 404
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - userNotFound
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When resource not found.
+      description: When user not found
+    User.GetByIdOutput:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/User.UserEntity'
+      description: get user by id output
+    User.GetByIdParamsValidationError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 400
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - 'id: Required'
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When input is invalid.
+      description: When input params is invalid
+    User.GetByIdUserNotFoundError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 404
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - userNotFound
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When resource not found.
+      description: When user not found
+    User.ListOutput:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - docs
+            - page
+            - limit
+            - total
+          properties:
+            docs:
+              type: array
+              items:
+                $ref: '#/components/schemas/User.UserEntity'
+              description: documents
+            page:
+              type: integer
+              format: int32
+              description: current page
+              default: 1
+            limit:
+              type: integer
+              format: int32
+              description: limit per page
+              default: 10
+            total:
+              type: integer
+              format: int64
+              description: total items
+              default: 1
+            totalPages:
+              type: integer
+              format: int32
+              description: total pages
+              default: 1
+          description: pagination default response
+      description: user list output
+    User.ListQueryInput:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/Utils.Model.ApiPaginationInput'
+      description: user list query input
+    User.MeOutput:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - id
+            - name
+            - email
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+            email:
+              type: string
+          description: The template for picking properties.
+      description: user logged output
+    User.UpdateExistConflictError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 409
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - userExists
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When conflict occour.
+      description: When user already exists
+    User.UpdateInput:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - name
+            - email
+            - roles
+            - deveriaAparecerV2
+          properties:
+            name:
+              type: string
+            email:
+              type: string
+            roles:
+              type: array
+              items:
+                type: string
+            deveriaAparecerV2:
+              type: string
+          description: The template for omitting properties.
+      description: user update input
+    User.UpdateOutput:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/User.UserEntity'
+      description: user update output
+    User.UpdateParamsValidationError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 400
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - 'id: Required'
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When input is invalid.
+      description: When input params is invalid
+    User.UpdateRoleNotFoundError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 404
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - roleNotFound
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When resource not found.
+      description: When user role not found
+    User.UpdateUserNotFoundError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 404
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - userNotFound
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When resource not found.
+      description: When user not found
+    User.UserEntity:
+      type: object
+      required:
+        - id
+        - name
+        - email
+        - roles
+        - createdAt
+        - deveriaAparecerV2
+        - updateAt
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        roles:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+        deveriaAparecerV2:
+          type: string
+        updateAt:
+          type: string
+        deletedAt:
+          type: string
+          nullable: true
+          default: null
+      description: user base entity
+    Utils.Model.ApiCreatedOutput:
+      type: object
+      required:
+        - id
+        - created
+      properties:
+        id:
+          type: string
+          description: document id
+        created:
+          type: boolean
+          description: conditional if document was created
+      description: document created successfully
+    Utils.Model.ApiPaginationInput:
+      type: object
+      required:
+        - page
+        - limit
+      properties:
+        page:
+          type: integer
+          format: int32
+          description: pagination current page
+          default: 1
+        limit:
+          type: integer
+          format: int32
+          description: pagination limit per page
+          default: 10
+        sort:
+          type: string
+          description: sort by property **property1:desc,property2:asc**
+          default: createdAt:desc
+        search:
+          type: string
+          description: search by property **property1:value1|value2**
+    Utils.Versions.Versions:
+      type: string
+      enum:
+        - v1
+        - v2
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+servers:
+  - url: http://localhost:4000/
+    variables: {}

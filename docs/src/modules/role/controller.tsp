@@ -21,17 +21,21 @@ using Utils.Exception;
 namespace api.Role;
 
 @tag("Role")
-@route("/api/roles")
+@route("/api/{version}/roles")
+@useAuth(BearerAuth)
 interface RoleController {
   @post
   @doc("create role")
   @returnsDoc("role created successfully")
-  create(@body body: CreateInput): DefaultSuccessResponse<CreateOutput, 201> | CreateValidationException;
+  create(...VersionParams, @body body: CreateInput): DefaultSuccessResponse<
+    CreateOutput,
+    201
+  > | CreateValidationException;
 
   @put
   @doc("create role")
   @returnsDoc("role created successfully")
-  update(...UpdateParamsInput, @body body: UpdateInput): DefaultSuccessResponse<
+  update(...VersionParams, ...UpdateParamsInput, @body body: UpdateInput): DefaultSuccessResponse<
     UpdateOutput,
     200
   > | UpdateParamsValidationError | UpdateNotFoundException;
@@ -39,7 +43,7 @@ interface RoleController {
   @get
   @doc("get role by id")
   @returnsDoc("role found successfully")
-  getById(...GetByIdParamsInput): DefaultSuccessResponse<
+  getById(...VersionParams, ...GetByIdParamsInput): DefaultSuccessResponse<
     GetByIdOutput,
     200
   > | GetByIdValidationException | GetByIdNotFoundException;
@@ -47,12 +51,12 @@ interface RoleController {
   @get
   @doc("list role")
   @returnsDoc("list role successfully")
-  list(...ListQueryInput): DefaultSuccessResponse<ListOutput, 200>;
+  list(...VersionParams, ...ListQueryInput): DefaultSuccessResponse<ListOutput, 200>;
 
   @delete
   @doc("delete role")
   @returnsDoc("role deleted successfully")
-  delete(...DeleteParamsInput): DefaultSuccessResponse<
+  delete(...VersionParams, ...DeleteParamsInput): DefaultSuccessResponse<
     DeleteOutput,
     200
   > | DeleteConflictException | DeleteNotFoundException;
@@ -61,7 +65,7 @@ interface RoleController {
   @route("/add-permissions")
   @doc("add permission from role")
   @returnsDoc("permission added successfully")
-  addPermission(...AddPermissionParamsInput, @body body: AddPermissionInput): DefaultSuccessResponse<
+  addPermission(...VersionParams, ...AddPermissionParamsInput, @body body: AddPermissionInput): DefaultSuccessResponse<
     AddPermissionOutput,
     200
   > | AddPermissionNotFoundException;
@@ -70,8 +74,9 @@ interface RoleController {
   @route("/remove-permissions")
   @doc("remove permission from role")
   @returnsDoc("permission removed successfully")
-  removePermission(...RemovePermissionParamsInput, @body body: RemovePermissionInput): DefaultSuccessResponse<
-    RemovePermissionOuput,
-    200
-  > | RemovePermissionNotFoundException;
+  removePermission(
+    ...VersionParams,
+    ...RemovePermissionParamsInput,
+    @body body: RemovePermissionInput,
+  ): DefaultSuccessResponse<RemovePermissionOuput, 200> | RemovePermissionNotFoundException;
 }

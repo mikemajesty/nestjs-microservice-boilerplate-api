@@ -1,0 +1,1273 @@
+openapi: 3.0.0
+info:
+  title: User
+  version: v1
+tags:
+  - name: User
+paths:
+  /api/{version}/users:
+    post:
+      operationId: UserController_create
+      description: create user
+      parameters:
+        - $ref: '#/components/parameters/api.Utils.Versions.VersionParams'
+      responses:
+        '201':
+          description: user created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateOutput'
+        '400':
+          description: When input body is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateBodyValidationError'
+        '404':
+          description: When user role not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateNotFoundError'
+        '409':
+          description: When user already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateExistConflictError'
+      tags:
+        - User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateInput'
+      security:
+        - BearerAuth: []
+    get:
+      operationId: UserController_list
+      description: list user
+      parameters:
+        - $ref: '#/components/parameters/api.Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/api.Utils.Model.ApiPaginationInput.page'
+        - $ref: '#/components/parameters/api.Utils.Model.ApiPaginationInput.limit'
+        - $ref: '#/components/parameters/api.Utils.Model.ApiPaginationInput.sort'
+        - $ref: '#/components/parameters/api.Utils.Model.ApiPaginationInput.search'
+      responses:
+        '200':
+          description: user listed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListOutput'
+      tags:
+        - User
+      security:
+        - BearerAuth: []
+  /api/{version}/users/change-password/{id}:
+    put:
+      operationId: UserController_changePassword
+      description: change password
+      parameters:
+        - $ref: '#/components/parameters/api.Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/ChangePasswordParamsInput'
+      responses:
+        '200':
+          description: password updated successfully
+        '400':
+          description: When input params is invalid
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ChangePasswordParamsValidationError'
+                  - $ref: '#/components/schemas/ChangePasswordBodyValidationError'
+        '404':
+          description: When user not found
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ChangePasswordUserNotFoundError'
+                  - $ref: '#/components/schemas/ChangePasswordRoleNotFoundError'
+        '409':
+          description: When user already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangePasswordUserExistConflictError'
+      tags:
+        - User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordInput'
+      security:
+        - BearerAuth: []
+  /api/{version}/users/me:
+    get:
+      operationId: UserController_me
+      description: list user
+      parameters:
+        - $ref: '#/components/parameters/api.Utils.Versions.VersionParams'
+      responses:
+        '200':
+          description: get user logged successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeOutput'
+      tags:
+        - User
+      security:
+        - BearerAuth: []
+  /api/{version}/users/{id}:
+    put:
+      operationId: UserController_update
+      description: update user
+      parameters:
+        - $ref: '#/components/parameters/api.Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/UpdateParamsInput'
+      responses:
+        '200':
+          description: user updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateOutput'
+        '400':
+          description: When input params is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateParamsValidationError'
+        '404':
+          description: When user role not found
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/UpdateRoleNotFoundError'
+                  - $ref: '#/components/schemas/UpdateUserNotFoundError'
+        '409':
+          description: When user already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateExistConflictError'
+      tags:
+        - User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateInput'
+      security:
+        - BearerAuth: []
+    get:
+      operationId: UserController_getById
+      description: get user by id
+      parameters:
+        - $ref: '#/components/parameters/api.Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/GetByIdParamsInput'
+      responses:
+        '200':
+          description: get user by id successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetByIdOutput'
+        '400':
+          description: When input params is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetByIdParamsValidationError'
+        '404':
+          description: When user not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetByIdUserNotFoundError'
+      tags:
+        - User
+      security:
+        - BearerAuth: []
+    delete:
+      operationId: UserController_delete
+      description: delete user
+      parameters:
+        - $ref: '#/components/parameters/api.Utils.Versions.VersionParams'
+        - $ref: '#/components/parameters/DeleteParamsInput'
+      responses:
+        '200':
+          description: delete user successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteOutput'
+        '400':
+          description: When input params is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteParamsValidationError'
+        '404':
+          description: When user not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteUserNotFoundError'
+      tags:
+        - User
+      security:
+        - BearerAuth: []
+components:
+  parameters:
+    ChangePasswordParamsInput:
+      name: id
+      in: path
+      required: true
+      description: user id
+      schema:
+        type: string
+    DeleteParamsInput:
+      name: id
+      in: path
+      required: true
+      description: user id
+      schema:
+        type: string
+    GetByIdParamsInput:
+      name: id
+      in: path
+      required: true
+      description: user id
+      schema:
+        type: string
+    UpdateParamsInput:
+      name: id
+      in: path
+      required: true
+      description: user id
+      schema:
+        type: string
+    api.Utils.Model.ApiPaginationInput.limit:
+      name: limit
+      in: query
+      required: true
+      description: pagination limit per page
+      schema:
+        type: integer
+        format: int32
+        default: 10
+      explode: false
+    api.Utils.Model.ApiPaginationInput.page:
+      name: page
+      in: query
+      required: true
+      description: pagination current page
+      schema:
+        type: integer
+        format: int32
+        default: 1
+      explode: false
+    api.Utils.Model.ApiPaginationInput.search:
+      name: search
+      in: query
+      required: false
+      description: search by property **property1:value1|value2**
+      schema:
+        type: string
+      explode: false
+    api.Utils.Model.ApiPaginationInput.sort:
+      name: sort
+      in: query
+      required: false
+      description: sort by property **property1:desc,property2:asc**
+      schema:
+        type: string
+        default: createdAt:desc
+      explode: false
+    api.Utils.Versions.VersionParams:
+      name: version
+      in: path
+      required: true
+      description: route version
+      schema:
+        $ref: '#/components/schemas/api.Utils.Versions.Versions'
+  schemas:
+    ChangePasswordBodyValidationError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 400
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - 'password: Required, confirmPassword: Required, newPassword'
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When input is invalid.
+      description: When input body is invalid
+    ChangePasswordInput:
+      type: object
+      required:
+        - password
+        - newPassword
+        - confirmPassword
+      properties:
+        password:
+          type: string
+        newPassword:
+          type: string
+        confirmPassword:
+          type: string
+      description: user change password input
+    ChangePasswordParamsValidationError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 400
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - 'id: Required'
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When input is invalid.
+      description: When input params is invalid
+    ChangePasswordRoleNotFoundError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 404
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - roleNotFound
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When resource not found.
+      description: When user role not found
+    ChangePasswordUserExistConflictError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 409
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - userExists
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When conflict occour.
+      description: When user already exists
+    ChangePasswordUserNotFoundError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 404
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - userNotFound
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When resource not found.
+      description: When user not found
+    CreateBodyValidationError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 400
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - 'email: Required, name: Required, password: Required, roles: Required'
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When input is invalid.
+      description: When input body is invalid
+    CreateExistConflictError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 409
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - userExists
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When conflict occour.
+      description: When user already exists
+    CreateInput:
+      type: object
+      required:
+        - password
+      properties:
+        password:
+          type: string
+      allOf:
+        - type: object
+          required:
+            - name
+            - email
+            - roles
+            - deveriaAparecerV2
+          properties:
+            name:
+              type: string
+            email:
+              type: string
+            roles:
+              type: array
+              items:
+                type: string
+            deveriaAparecerV2:
+              type: string
+          description: The template for omitting properties.
+      description: user create input
+    CreateNotFoundError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 404
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - roleNotFound
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When resource not found.
+      description: When user role not found
+    CreateOutput:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/api.Utils.Model.ApiCreatedOutput'
+      description: user created input
+    DeleteOutput:
+      type: object
+      required:
+        - deletedAt
+      properties:
+        deletedAt:
+          type: string
+          format: date-time
+      allOf:
+        - type: object
+          required:
+            - id
+            - name
+            - email
+            - roles
+            - createdAt
+            - deveriaAparecerV2
+            - updateAt
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+            email:
+              type: string
+            roles:
+              type: array
+              items:
+                type: string
+            createdAt:
+              type: string
+            deveriaAparecerV2:
+              type: string
+            updateAt:
+              type: string
+          description: The template for omitting properties.
+      description: user delete output
+    DeleteParamsValidationError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 400
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - 'id: Required'
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When input is invalid.
+      description: When input params is invalid
+    DeleteUserNotFoundError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 404
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - userNotFound
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When resource not found.
+      description: When user not found
+    GetByIdOutput:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/UserEntity'
+      description: get user by id output
+    GetByIdParamsValidationError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 400
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - 'id: Required'
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When input is invalid.
+      description: When input params is invalid
+    GetByIdUserNotFoundError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 404
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - userNotFound
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When resource not found.
+      description: When user not found
+    ListOutput:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - docs
+            - page
+            - limit
+            - total
+          properties:
+            docs:
+              type: array
+              items:
+                $ref: '#/components/schemas/UserEntity'
+              description: documents
+            page:
+              type: integer
+              format: int32
+              description: current page
+              default: 1
+            limit:
+              type: integer
+              format: int32
+              description: limit per page
+              default: 10
+            total:
+              type: integer
+              format: int64
+              description: total items
+              default: 1
+            totalPages:
+              type: integer
+              format: int32
+              description: total pages
+              default: 1
+          description: pagination default response
+      description: user list output
+    ListQueryInput:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/api.Utils.Model.ApiPaginationInput'
+      description: user list query input
+    MeOutput:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - id
+            - name
+            - email
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+            email:
+              type: string
+          description: The template for picking properties.
+      description: user logged output
+    UpdateExistConflictError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 409
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - userExists
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When conflict occour.
+      description: When user already exists
+    UpdateInput:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - name
+            - email
+            - roles
+            - deveriaAparecerV2
+          properties:
+            name:
+              type: string
+            email:
+              type: string
+            roles:
+              type: array
+              items:
+                type: string
+            deveriaAparecerV2:
+              type: string
+          description: The template for omitting properties.
+      description: user update input
+    UpdateOutput:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/UserEntity'
+      description: user update output
+    UpdateParamsValidationError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 400
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - 'id: Required'
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When input is invalid.
+      description: When input params is invalid
+    UpdateRoleNotFoundError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 404
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - roleNotFound
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When resource not found.
+      description: When user role not found
+    UpdateUserNotFoundError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 404
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - userNotFound
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When resource not found.
+      description: When user not found
+    UserEntity:
+      type: object
+      required:
+        - id
+        - name
+        - email
+        - roles
+        - createdAt
+        - deveriaAparecerV2
+        - updateAt
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        roles:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+        deveriaAparecerV2:
+          type: string
+        updateAt:
+          type: string
+        deletedAt:
+          type: string
+          nullable: true
+          default: null
+      description: user base entity
+    api.Cat.ListQueryInput:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/api.Utils.Model.ApiPaginationInput'
+    api.Permission.ListQueryInput:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/api.Utils.Model.ApiPaginationInput'
+      description: permission list input
+    api.Role.ListQueryInput:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/api.Utils.Model.ApiPaginationInput'
+      description: list query input
+    api.Utils.Model.ApiCreatedOutput:
+      type: object
+      required:
+        - id
+        - created
+      properties:
+        id:
+          type: string
+          description: document id
+        created:
+          type: boolean
+          description: conditional if document was created
+      description: document created successfully
+    api.Utils.Model.ApiPaginationInput:
+      type: object
+      required:
+        - page
+        - limit
+      properties:
+        page:
+          type: integer
+          format: int32
+          description: pagination current page
+          default: 1
+        limit:
+          type: integer
+          format: int32
+          description: pagination limit per page
+          default: 10
+        sort:
+          type: string
+          description: sort by property **property1:desc,property2:asc**
+          default: createdAt:desc
+        search:
+          type: string
+          description: search by property **property1:value1|value2**
+    api.Utils.Versions.Versions:
+      type: string
+      enum:
+        - v1
+        - v2
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer

@@ -18,11 +18,14 @@ import {
   TracingInterceptor
 } from '@/middlewares/interceptors';
 
+import fs from 'fs';
+import yaml from 'js-yaml';
+import path from 'path';
+import swagger from 'swagger-ui-express';
 import { name } from '../package.json';
 import { AppModule } from './app.module';
 import { ErrorType } from './infra/logger';
 import { RequestTimeoutInterceptor } from './middlewares/interceptors/request-timeout.interceptor';
-
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true,
@@ -63,6 +66,10 @@ async function bootstrap() {
       }
     })
   );
+
+  const swaggerDocument = yaml.load(fs.readFileSync(path.join(__dirname, "../docs/tsp-output/@typespec/openapi3/openapi.api.yaml"), 'utf8'));
+
+  app.use('/api-docs', swagger.serve, swagger.setup(swaggerDocument as swagger.SwaggerOptions));
 
   app.use((req: Request, res: Response, next: NextFunction) => {
     if (req.originalUrl && req.originalUrl.split('/').pop() === 'favicon.ico') {

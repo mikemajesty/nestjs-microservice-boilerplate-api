@@ -8,7 +8,8 @@ import "../../utils/model.tsp";
 import "./model.tsp";
 import "./exception.tsp";
 
-using api.Utils.Model;
+using Utils.Model;
+using Utils.Versions;
 using TypeSpec.Http;
 using TypeSpec.Versioning;
 using OpenAPI;
@@ -19,17 +20,18 @@ using OpenAPI;
 namespace api.Permission;
 
 @tag("Permission")
-@route("/api/permissions")
+@route("/api/{version}/permissions")
+@useAuth(BearerAuth)
 interface PermissionController {
   @post
   @doc("create permission")
   @returnsDoc("permission created successfully")
-  create(@body body: CreateInput): CreateOutput | CreateValidationException | CreateConflictException;
+  create(...VersionParams, @body body: CreateInput): CreateOutput | CreateValidationException | CreateConflictException;
 
   @put
   @doc("update permission")
   @returnsDoc("permission updated successfully")
-  update(...UpdateParamsInput, @body body: UpdateInput):
+  update(...VersionParams, ...UpdateParamsInput, @body body: UpdateInput):
     | UpdateOutput
     | UpdateValidationException
     | UpdateNotFoundException
@@ -38,15 +40,18 @@ interface PermissionController {
   @get
   @doc("get permission")
   @returnsDoc("get permission successfully")
-  getById(...GetByIdParamsInput): GetByIdOutput | GetByIdValidationException | GeyByIdNotFoundException;
+  getById(
+    ...VersionParams,
+    ...GetByIdParamsInput,
+  ): GetByIdOutput | GetByIdValidationException | GeyByIdNotFoundException;
 
   @get
   @doc("list permission")
   @returnsDoc("list permission successfully")
-  list(...ListQueryInput): ListOutput;
+  list(...VersionParams, ...ListQueryInput): ListOutput;
 
   @delete
   @doc("delete permission")
   @returnsDoc("delete permission successfully")
-  delete(...DeleteParamsInput): DeleteOutput | DeleteValidationException | DeleteNotFoundException;
+  delete(...VersionParams, ...DeleteParamsInput): DeleteOutput | DeleteValidationException | DeleteNotFoundException;
 }

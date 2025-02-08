@@ -1,10 +1,15 @@
 import "@typespec/http";
+import "@typespec/versioning";
+import "@typespec/openapi3";
 import "../../utils/exceptions.tsp";
 import "../../utils/model.tsp";
+import "../../utils/versioning.tsp";
 
 using TypeSpec.Http;
+using TypeSpec.Versioning;
 
-using api.Utils.Model;
+using Utils.Model;
+using Utils.Versions;
 
 namespace api.User;
 
@@ -15,6 +20,7 @@ model UserEntity {
   email: string;
   roles: string[];
   createdAt: string;
+  deveriaAparecerV2: string;
   updateAt: string;
   deletedAt?: string | null = null;
 }

@@ -22,25 +22,25 @@ namespace api.Login;
 @tag("Login")
 interface LoginController {
   @post
-  @route("/api/login")
+  @route("/api/{version}/login")
   @doc("user login")
   @returnsDoc("login successfully")
-  login(@body login: LoginInput): DefaultSuccessResponse<
+  login(...VersionParams, @body login: LoginInput): DefaultSuccessResponse<
     LoginOutput,
     200
   > | LoginNotFoundException | LoginInputException;
 
   @post
-  @route("/api/refresh")
+  @route("/api/{version}/refresh")
   @doc("get user refresh token")
   @returnsDoc("login refresh token successfully")
-  refresh(@body login: RefreshTokenInput): RefreshTokenOutput;
+  refresh(...VersionParams, @body login: RefreshTokenInput): RefreshTokenOutput;
 
   @get
-  @route("/api/login/google")
-  loginGoogle(): void;
+  @route("/api/{version}/login/google")
+  loginGoogle(...VersionParams): void;
 
   @get
-  @route("/api/login/google/callback")
-  loginGoogleCallback(): void;
+  @route("/api/{version}/login/google/callback")
+  loginGoogleCallback(...VersionParams): void;
 }

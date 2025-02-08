@@ -6,7 +6,7 @@
     "doc:install": "npx tsp install",
     "doc:init": "npx tsp init",
     "doc:compiler": "npx tsp compile ./src --watch",
-    "doc:start": "browser-sync start --proxy 'localhost:8080' --files './tsp-output/@typespec/openapi3/openapi.api.yaml' ",
+    "doc:start": "browser-sync start --proxy 'localhost:8080' --files './tsp-output/@typespec/openapi3/openapi.api.v1.yaml' ",
     "start": "concurrently \"yarn doc:start\" \"yarn doc:compiler\"",
     "infra": "docker-compose down --volumes && docker-compose up --build --remove-orphans"
   },

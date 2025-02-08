@@ -4,7 +4,7 @@ services:
     image: swaggerapi/swagger-editor
     container_name: microservice-api-swagger-editor
     environment:
-      - SWAGGER_FILE=/tmp/tsp-output/@typespec/openapi3/*.yaml
+      - SWAGGER_FILE=/tmp/tsp-output/@typespec/openapi3/openapi.api.v1.yaml
     ports:
       - "8080:8080"
     volumes:

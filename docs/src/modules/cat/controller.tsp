@@ -15,22 +15,22 @@ using Utils.Versions;
 @service({
   title: "Cat",
 })
-@versioned(ApiVersions)
 namespace api.Cat;
 
 @tag("Cat")
 @route("api/{version}/cats")
+@useAuth(BearerAuth)
 interface CatController {
   @post
   @doc("create cat")
   @returnsDoc("cat created successfully")
-  create(@path version: ApiVersions, @body body: CreateInput): CreateOutput | CreateValidationException;
+  create(...VersionParams, @body body: CreateInput): CreateOutput | CreateValidationException;
 
   @put
   @doc("create update")
   @returnsDoc("cat updated successfully")
   update(
-    @path version: ApiVersions,
+    ...VersionParams,
     ...UpdateParamInput,
     @body body: UpdateInput,
   ): UpdateOutput | UpdateValidationException | UpdateNotFoundException;
@@ -39,20 +39,17 @@ interface CatController {
   @doc("get cat by id")
   @returnsDoc("get cat by id successfully")
   getById(
-    @path version: ApiVersions,
+    ...VersionParams,
     ...GetByIdParamInput,
   ): GetByIdOutput | GetByIdValidationException | GetByIdNotFoundException;
 
   @get
   @doc("list cat")
   @returnsDoc("list cat successfully")
-  list(@path version: ApiVersions, ...ListQueryInput): ListOutput;
+  list(@path version: Versions, ...ListQueryInput): ListOutput;
 
   @delete
   @doc("delete cat")
   @returnsDoc("cat deleted successfully")
-  delete(
-    @path version: ApiVersions,
-    ...DeleteParamInput,
-  ): DeleteOutput | DeleteValidationException | DeleteNotFoundException;
+  delete(...VersionParams, ...DeleteParamInput): DeleteOutput | DeleteValidationException | DeleteNotFoundException;
 }

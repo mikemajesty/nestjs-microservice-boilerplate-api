@@ -1,0 +1,318 @@
+openapi: 3.0.0
+info:
+  title: Login
+  version: v2
+tags:
+  - name: Login
+paths:
+  /api/{version}/login:
+    post:
+      operationId: LoginController_login
+      description: user login
+      parameters:
+        - $ref: '#/components/parameters/api.Utils.Versions.VersionParams'
+      responses:
+        '200':
+          description: login successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginOutput'
+        '400':
+          description: When login input is invalid
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/LoginValidationError'
+                  - $ref: '#/components/schemas/LoginWrongPasswordError'
+        '404':
+          description: When user not found
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/LoginUserNotFoundError'
+                  - $ref: '#/components/schemas/LoginRoleNotFoundError'
+      tags:
+        - Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginInput'
+  /api/{version}/login/google:
+    get:
+      operationId: LoginController_loginGoogle
+      parameters:
+        - $ref: '#/components/parameters/api.Utils.Versions.VersionParams'
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+      tags:
+        - Login
+  /api/{version}/login/google/callback:
+    get:
+      operationId: LoginController_loginGoogleCallback
+      parameters:
+        - $ref: '#/components/parameters/api.Utils.Versions.VersionParams'
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+      tags:
+        - Login
+  /api/{version}/refresh:
+    post:
+      operationId: LoginController_refresh
+      description: get user refresh token
+      parameters:
+        - $ref: '#/components/parameters/api.Utils.Versions.VersionParams'
+      responses:
+        '200':
+          description: login refresh token successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefreshTokenOutput'
+      tags:
+        - Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshTokenInput'
+components:
+  parameters:
+    api.Utils.Versions.VersionParams:
+      name: version
+      in: path
+      required: true
+      description: route version
+      schema:
+        $ref: '#/components/schemas/api.Utils.Versions.Versions'
+  schemas:
+    LoginInput:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+      description: login input
+    LoginOutput:
+      type: object
+      required:
+        - accessToken
+        - refreshToken
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+      description: login ouput
+    LoginRoleNotFoundError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 404
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - roleNotFound
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When resource not found.
+      description: When user role not found
+    LoginUserNotFoundError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 404
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - userNotFound
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When resource not found.
+      description: When user not found
+    LoginValidationError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 400
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - 'email: Required'
+                      - 'password: Required'
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When input is invalid.
+      description: When login input is invalid
+    LoginWrongPasswordError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 400
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - incorrectPassword
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When input is invalid.
+      description: When user password is wrong
+    RefreshTokenInput:
+      type: object
+      required:
+        - refreshToken
+      properties:
+        refreshToken:
+          type: string
+      description: login refresh token input
+    RefreshTokenOutput:
+      type: object
+      required:
+        - accessToken
+        - refreshToken
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+      description: login refresh token output
+    api.Utils.Versions.Versions:
+      type: string
+      enum:
+        - v1
+        - v2

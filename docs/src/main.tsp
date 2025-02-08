@@ -16,7 +16,7 @@ using Utils.Versions;
 using TypeSpec.Versioning;
 
 @service({
-  title: "Microservice API)))",
+  title: "Microservice API",
   contact: {
     name: "API Support",
     email: "mike.rodrigues.lima@gmail.com",
@@ -27,4 +27,5 @@ using TypeSpec.Versioning;
   },
 })
 @server("http://localhost:4000/")
+@versioned(Versions)
 namespace api;
