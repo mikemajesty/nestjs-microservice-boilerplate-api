@@ -21,6 +21,18 @@ export class LoggerService implements ILoggerAdapter {
   logger!: HttpLogger;
 
   async connect<T = LevelWithSilent>(logLevel: T): Promise<void> {
+    const transport = pino.transport({
+      target: 'pino-mongodb',
+      options: {
+        uri: process.env.MONGO_URL,
+        collection: 'logs'
+      }
+    });
+
+    transport.on('error', (err: ErrorType) => {
+      console.error('Erro no transport do Pino:', err);
+    });
+
     const pinoLogger = pino(
       {
         level: [logLevel, 'trace']?.find(Boolean)?.toString()
@@ -32,13 +44,7 @@ export class LoggerService implements ILoggerAdapter {
         },
         {
           level: 'error',
-          stream: pino.transport({
-            target: 'pino-mongodb',
-            options: {
-              uri: process.env.MONGO_URL,
-              collection: 'logs'
-            }
-          })
+          stream: transport
         }
       ])
     );

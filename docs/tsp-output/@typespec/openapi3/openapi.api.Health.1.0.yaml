@@ -12,11 +12,11 @@ paths:
       parameters: []
       responses:
         '200':
-          description: health output
+          description: app health successfully
           content:
-            text/plain:
+            application/json:
               schema:
-                type: string
+                $ref: '#/components/schemas/HealthOuput'
       tags:
         - Health
   /health:
@@ -26,11 +26,129 @@ paths:
       parameters: []
       responses:
         '200':
-          description: health output
+          description: app health successfully
           content:
-            text/plain:
+            application/json:
               schema:
-                type: string
+                $ref: '#/components/schemas/HealthOuput'
       tags:
         - Health
-components: {}
+components:
+  schemas:
+    HealthOuput:
+      type: object
+      required:
+        - server
+        - mongoState
+        - redisState
+        - postgresState
+        - memory
+        - cpu
+      properties:
+        server:
+          type: string
+          description: 'server status: **UP** | **DOWN** '
+        mongoState:
+          type: string
+          description: 'mongo status: **UP** | **DOWN** '
+        redisState:
+          type: string
+          description: 'redis status: **UP** | **DOWN** '
+        postgresState:
+          type: string
+          description: 'postgres status: **UP** | **DOWN** '
+        memory:
+          type: object
+          properties:
+            process:
+              type: object
+              properties:
+                rss:
+                  type: string
+                  description: Total memory allocated by the process, including heap, buffers, and native code.
+                heapTotal:
+                  type: string
+                  description: Total heap memory allocated by V8.
+                heapUsed:
+                  type: string
+                  description: Heap memory currently used by V8.
+                external:
+                  type: string
+                  description: Memory allocated outside the V8 heap (e.g., buffers, native bindings).
+              required:
+                - rss
+                - heapTotal
+                - heapUsed
+                - external
+              description: process memory
+            v8:
+              type: object
+              properties:
+                totalHeapSize:
+                  type: string
+                  description: Total heap size managed by V8.
+                usedHeapSize:
+                  type: string
+                  description: Heap size actually being used.
+                executableHeapSize:
+                  type: string
+                  description: Heap size reserved for compiled JavaScript code.
+                heapSizeLimit:
+                  type: string
+                  description: Maximum heap size before memory allocation fails.
+              required:
+                - totalHeapSize
+                - usedHeapSize
+                - executableHeapSize
+                - heapSizeLimit
+              description: v8 memory
+          required:
+            - process
+            - v8
+          description: memory usage
+        cpu:
+          type: object
+          properties:
+            healthyLimit:
+              type: integer
+              format: int16
+              description: max healthy limit
+            loadAverage:
+              type: object
+              properties:
+                lastMinute:
+                  allOf:
+                    - $ref: '#/components/schemas/HealthOuputLoad'
+                  description: cpu load average on last minute
+                lastFiveMinutes:
+                  allOf:
+                    - $ref: '#/components/schemas/HealthOuputLoad'
+                  description: cpu load average on five minute
+                lastFifteenMinutes:
+                  allOf:
+                    - $ref: '#/components/schemas/HealthOuputLoad'
+                  description: cpu load average on fifteen minute
+              required:
+                - lastMinute
+                - lastFiveMinutes
+                - lastFifteenMinutes
+              description: cpu load average
+          required:
+            - healthyLimit
+            - loadAverage
+          description: cpu usage
+      description: health output
+    HealthOuputLoad:
+      type: object
+      required:
+        - load
+        - status
+      properties:
+        load:
+          type: number
+          format: decimal
+          description: load avererage
+        status:
+          type: string
+          description: load avererage status **healthy** | **overloaded**
+      description: load avererage

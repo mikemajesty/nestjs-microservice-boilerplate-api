@@ -5,7 +5,7 @@ import { RedisCacheKeyArgument, RedisCacheKeyValue, RedisCacheValueArgument } fr
 export abstract class ICacheAdapter<T = any> {
   client!: T;
 
-  abstract isConnected(): Promise<void> | void;
+  abstract ping(): Promise<string>;
 
   abstract connect(): Promise<T> | T;
 

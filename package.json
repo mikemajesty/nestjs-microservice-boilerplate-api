@@ -82,6 +82,7 @@
     "typeorm-naming-strategies": "^4.1.0",
     "typescript": "5.6.3",
     "uuid": "^11.0.3",
+    "v8": "^0.1.0",
     "write-excel-file": "^2.0.10",
     "yaml": "^2.7.0",
     "zod": "^3.23.8"

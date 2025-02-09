@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { RedisClientType, SetOptions } from 'redis';
 
-import { ILoggerAdapter } from '@/infra/logger';
+import { ErrorType, ILoggerAdapter } from '@/infra/logger';
 import { ApiInternalServerException } from '@/utils/exception';
 
 import { ICacheAdapter } from '../adapter';
@@ -19,9 +19,21 @@ export class RedisService implements Partial<ICacheAdapter<RedisClientType>> {
     this.client = client;
   }
 
-  async isConnected(): Promise<void> {
-    const ping = await this.client.ping();
-    if (ping !== 'PONG') new ApiInternalServerException('redis disconnected.');
+  async ping(): Promise<string> {
+    try {
+      const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('Redis ping timeout')), 100));
+      const ping = this.client.ping();
+      const result = await Promise.race([ping, timeout]);
+
+      return result as string;
+    } catch (error) {
+      if (typeof error === 'string') {
+        error = new ApiInternalServerException(error);
+      }
+      (error as { context: string }).context = `${RedisService.name}/ping`;
+      this.logger.error(error as ErrorType);
+      return 'DOWN';
+    }
   }
 
   async connect(): Promise<RedisClientType> {

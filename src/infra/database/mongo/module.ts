@@ -23,7 +23,7 @@ import { MongoService } from './service';
               logger.log('🎯 mongo connected successfully!');
             }
             connection.on('disconnected', () => {
-              logger.fatal(new ApiInternalServerException('mongo disconnected!'));
+              logger.error(new ApiInternalServerException('mongo disconnected!'));
             });
             connection.on('reconnected', () => {
               logger.log(red('mongo reconnected!\n'));

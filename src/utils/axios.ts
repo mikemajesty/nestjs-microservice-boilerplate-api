@@ -56,7 +56,7 @@ export class AxiosUtils {
             url: axiosError.config.url
           }
         });
-        return retryCount * 2000;
+        return Math.pow(2, retryCount) * 1000; //Exponential Backoff
       },
       retryCondition: (error) => {
         if (error?.code === 'ECONNABORTED' || error?.code === 'ECONNRESET') {
