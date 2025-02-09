@@ -6,7 +6,11 @@ import bodyParser from 'body-parser';
 import { bold } from 'colorette';
 import compression from 'compression';
 import { NextFunction, Request, Response } from 'express';
+import fs from 'fs';
 import helmet from 'helmet';
+import yaml from 'js-yaml';
+import path from 'path';
+import swagger from 'swagger-ui-express';
 
 import { ILoggerAdapter } from '@/infra/logger/adapter';
 import { ISecretsAdapter } from '@/infra/secrets';
@@ -18,10 +22,6 @@ import {
   TracingInterceptor
 } from '@/middlewares/interceptors';
 
-import fs from 'fs';
-import yaml from 'js-yaml';
-import path from 'path';
-import swagger from 'swagger-ui-express';
 import { name } from '../package.json';
 import { AppModule } from './app.module';
 import { ErrorType } from './infra/logger';
@@ -101,7 +101,9 @@ async function bootstrap() {
   });
 
   if (!IS_PRODUCTION) {
-    const swaggerDocument = yaml.load(fs.readFileSync(path.join(__dirname, "../docs/tsp-output/@typespec/openapi3/openapi.api.1.0.yaml"), 'utf8'));
+    const swaggerDocument = yaml.load(
+      fs.readFileSync(path.join(__dirname, '../docs/tsp-output/@typespec/openapi3/openapi.api.1.0.yaml'), 'utf8')
+    );
     app.use('/api-docs', swagger.serve, swagger.setup(swaggerDocument as swagger.SwaggerOptions));
   }
 

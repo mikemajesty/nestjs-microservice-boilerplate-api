@@ -50,9 +50,7 @@ describe(UserUpdateUsecase.name, () => {
     await TestUtils.expectZodError(
       () => usecase.execute({} as UserUpdateInput, TestUtils.getMockTracing()),
       (issues: ZodIssue[]) => {
-        expect(issues).toEqual([
-          { message: 'Required', path: TestUtils.nameOf<UserUpdateInput>('id') }
-        ]);
+        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<UserUpdateInput>('id') }]);
       }
     );
   });

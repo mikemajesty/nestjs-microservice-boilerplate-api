@@ -29,10 +29,6 @@ export class LoggerService implements ILoggerAdapter {
       }
     });
 
-    transport.on('error', (err: ErrorType) => {
-      console.error('Erro no transport do Pino:', err);
-    });
-
     const pinoLogger = pino(
       {
         level: [logLevel, 'trace']?.find(Boolean)?.toString()
