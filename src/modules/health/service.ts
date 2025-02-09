@@ -8,6 +8,7 @@ import { ErrorType, ILoggerAdapter } from '@/infra/logger';
 import { ApiInternalServerException } from '@/utils/exception';
 
 import { IHealthAdapter } from './adapter';
+import { HealthStatus, Load } from './types';
 
 export class HealthService implements IHealthAdapter {
   postgres!: DataSource;
@@ -22,7 +23,7 @@ export class HealthService implements IHealthAdapter {
 
     return {
       process: {
-        rss: `${this.bytesToMB(processMemory.rss)} MB`,
+        ramUsed: `${this.bytesToMB(processMemory.rss)} MB`,
         heapTotal: `${this.bytesToMB(processMemory.heapTotal)} MB`,
         heapUsed: `${this.bytesToMB(processMemory.heapUsed)} MB`,
         external: `${this.bytesToMB(processMemory.external)} MB`
@@ -37,8 +38,8 @@ export class HealthService implements IHealthAdapter {
   }
 
   getLoadAvarage(time: number, numCpus: number): Load {
-    const STATUS = time < numCpus ? 'healthy' : 'overloaded';
-    if (STATUS === 'overloaded') {
+    const STATUS = time < numCpus ? 'healthy 🟢' : 'overloaded 🔴';
+    if (STATUS === 'overloaded 🔴') {
       this.logger.warn({ message: `CPU ${STATUS} `, context: HealthService.name });
     }
     return { load: time, status: STATUS };
@@ -48,80 +49,44 @@ export class HealthService implements IHealthAdapter {
     try {
       const result = await this.postgres.query('SELECT 1');
 
-      return result ? 'UP' : 'DOWN';
+      return result ? HealthStatus.UP : HealthStatus.DOWN;
     } catch (error) {
-      if (typeof error === 'string') {
-        error = new ApiInternalServerException(error);
-      }
-      (error as { context: string }).context = `${HealthService.name}/postgres`;
+      error = this.buildError(error, `${HealthService.name}/postgres`);
       this.logger.error(error as ErrorType);
-      return 'DOWN';
+      return HealthStatus.DOWN;
     }
   }
 
   getMongoStatus() {
     try {
-      return this.mongo.readyState === 1 ? 'UP' : 'DOWN';
+      return this.mongo.readyState === 1 ? HealthStatus.UP : HealthStatus.DOWN;
     } catch (error) {
-      if (typeof error === 'string') {
-        error = new ApiInternalServerException(error);
-      }
-      (error as { context: string }).context = `${HealthService.name}/mongo`;
+      error = this.buildError(error, `${HealthService.name}/mongo`);
       this.logger.error(error as ErrorType);
-      return 'DOWN';
+      return HealthStatus.DOWN;
     }
   }
+
   async getRedisStatus() {
     try {
       const status = await this.redis.ping();
-      return status === 'PONG' ? 'UP' : 'DOWN';
+      return status === 'PONG' ? HealthStatus.UP : HealthStatus.DOWN;
     } catch (error) {
-      if (typeof error === 'string') {
-        error = new ApiInternalServerException(error);
-      }
-      (error as { context: string }).context = `${HealthService.name}/redis`;
+      error = this.buildError(error, `${HealthService.name}/redis`);
       this.logger.error(error as ErrorType);
-      return 'DOWN';
+      return HealthStatus.DOWN;
     }
+  }
+
+  private buildError(error: unknown, context: string) {
+    if (typeof error === 'string') {
+      error = new ApiInternalServerException(error);
+    }
+    (error as { context: string }).context = context;
+    return error;
   }
 
   private bytesToMB = (bytes: number) => {
     return (bytes / 1024 / 1024).toFixed(2);
   };
 }
-
-export type MemotyOutput = {
-  process: {
-    rss: string;
-    heapTotal: string;
-    heapUsed: string;
-    external: string;
-  };
-  v8: {
-    totalHeapSize: string;
-    usedHeapSize: string;
-    executableHeapSize: string;
-    heapSizeLimit: string;
-  };
-};
-
-export type HealthOutput = {
-  server: string;
-  mongoState: string;
-  postgresState: string;
-  redisState: string;
-  memory: MemotyOutput;
-  cpu: {
-    healthyLimit: number;
-    loadAverage: {
-      lastMinute: Load;
-      lastFiveMinutes: Load;
-      lastFifteenMinutes: Load;
-    };
-  };
-};
-
-export type Load = {
-  load: number;
-  status: string;
-};

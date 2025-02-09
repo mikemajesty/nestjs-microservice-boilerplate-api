@@ -63,7 +63,7 @@ components:
             process:
               type: object
               properties:
-                rss:
+                ramUsed:
                   type: string
                   description: Total memory allocated by the process, including heap, buffers, and native code.
                 heapTotal:
@@ -76,7 +76,7 @@ components:
                   type: string
                   description: Memory allocated outside the V8 heap (e.g., buffers, native bindings).
               required:
-                - rss
+                - ramUsed
                 - heapTotal
                 - heapUsed
                 - external

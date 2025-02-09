@@ -4,15 +4,15 @@ import { DataSource } from 'typeorm';
 
 import { ICacheAdapter } from '@/infra/cache';
 
-import { Load, MemotyOutput } from './service';
+import { HealthStatus, Load, MemotyOutput } from './types';
 
 export abstract class IHealthAdapter {
   abstract mongo: Connection;
   abstract postgres: DataSource;
   abstract redis: ICacheAdapter<RedisClientType>;
-  abstract getMongoStatus(): 'UP' | 'DOWN';
-  abstract getRedisStatus(): Promise<'UP' | 'DOWN'>;
-  abstract getPostgresStatus(): Promise<'UP' | 'DOWN'>;
+  abstract getMongoStatus(): HealthStatus;
+  abstract getRedisStatus(): Promise<HealthStatus>;
+  abstract getPostgresStatus(): Promise<HealthStatus>;
   abstract getMemoryUsageInMB(): MemotyOutput;
   abstract getLoadAvarage(time: number, numCpus: number): Load;
 }

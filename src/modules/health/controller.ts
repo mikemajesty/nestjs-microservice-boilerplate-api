@@ -1,19 +1,12 @@
 import { Controller, Get } from '@nestjs/common';
 import os from 'os';
 
-import { ICacheAdapter } from '@/infra/cache';
-import { ILoggerAdapter } from '@/infra/logger';
-
 import { IHealthAdapter } from './adapter';
-import { HealthOutput } from './service';
+import { HealthOutput, HealthStatus } from './types';
 
 @Controller()
 export class HealthController {
-  constructor(
-    private readonly logger: ILoggerAdapter,
-    private readonly service: IHealthAdapter,
-    private readonly redis: ICacheAdapter
-  ) {}
+  constructor(private readonly service: IHealthAdapter) {}
 
   @Get(['/health', '/'])
   async getHealth(): Promise<HealthOutput> {
@@ -36,7 +29,7 @@ export class HealthController {
     };
 
     return {
-      server: `UP`,
+      server: HealthStatus.UP,
       mongoState,
       postgresState,
       redisState,

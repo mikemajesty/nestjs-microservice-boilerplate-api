@@ -25,7 +25,7 @@ model HealthOuput {
     @doc("process memory")
     process: {
       @doc("Total memory allocated by the process, including heap, buffers, and native code.")
-      rss: string;
+      ramUsed: string;
 
       @doc("Total heap memory allocated by V8.")
       heapTotal: string;
