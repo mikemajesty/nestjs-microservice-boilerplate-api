@@ -1,6 +1,7 @@
 import { Controller, Get } from '@nestjs/common';
 import os from 'os';
 
+import { version } from '../../../package.json';
 import { IHealthAdapter } from './adapter';
 import { HealthOutput, HealthStatus } from './types';
 
@@ -28,11 +29,19 @@ export class HealthController {
       }
     };
 
+    const latency = await this.service.getLatency();
+    const connections = await this.service.getActiveConnections();
+
     return {
       server: HealthStatus.UP,
+      version,
       mongoState,
       postgresState,
       redisState,
+      network: {
+        latency: String(latency),
+        connections: Number(connections)
+      },
       memory,
       cpu
     };

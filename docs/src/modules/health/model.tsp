@@ -8,8 +8,11 @@ namespace api.Health;
 
 @doc("health output")
 model HealthOuput {
-  @doc("server status: **UP** | **DOWN** ")
+  @doc("application status: **UP** | **DOWN** ")
   server: string;
+
+  @doc("application version")
+  version: string;
 
   @doc("mongo status: **UP** | **DOWN** ")
   mongoState: string;
@@ -19,6 +22,21 @@ model HealthOuput {
 
   @doc("postgres status: **UP** | **DOWN** ")
   postgresState: string;
+
+  @doc("network information")
+  network: {
+    @doc("""
+          -- representing the network latency --
+        latency: ** <20  ** status: ** Excellent **\n
+        latency: ** <100 ** status: ** Acceptable **\n
+        latency: ** <300 ** status: ** Poor **\n
+        latency: ** >300 ** status: ** Critical ** 
+      """)
+    latency: string;
+
+    @doc("representing the active connections count")
+    connections: int32;
+  };
 
   @doc("memory usage")
   memory: {

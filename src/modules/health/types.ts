@@ -20,9 +20,14 @@ export type MemotyOutput = {
 
 export type HealthOutput = {
   server: string;
+  version: string;
   mongoState: string;
   postgresState: string;
   redisState: string;
+  network: {
+    latency: string;
+    connections: number;
+  };
   memory: MemotyOutput;
   cpu: {
     healthyLimit: number;

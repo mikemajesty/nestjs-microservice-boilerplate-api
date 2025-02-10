@@ -10,13 +10,14 @@ import { RedisCacheModule } from '@/infra/cache/redis';
 import { ConnectionName } from '@/infra/database/enum';
 import { PostgresDatabaseModule } from '@/infra/database/postgres';
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
+import { ISecretsAdapter, SecretsModule } from '@/infra/secrets';
 
 import { IHealthAdapter } from './adapter';
 import { HealthController } from './controller';
 import { HealthService } from './service';
 
 @Module({
-  imports: [LoggerModule, PostgresDatabaseModule, RedisCacheModule],
+  imports: [LoggerModule, PostgresDatabaseModule, RedisCacheModule, SecretsModule],
   controllers: [HealthController],
   providers: [
     {
@@ -25,9 +26,10 @@ import { HealthService } from './service';
         connection: Connection,
         dataSource: DataSource,
         cache: ICacheAdapter<RedisClientType>,
-        logger: ILoggerAdapter
+        logger: ILoggerAdapter,
+        secret: ISecretsAdapter
       ) => {
-        const service = new HealthService(logger);
+        const service = new HealthService(logger, secret);
         service.postgres = dataSource;
         service.mongo = connection;
         service.redis = cache;
@@ -37,7 +39,8 @@ import { HealthService } from './service';
         getConnectionToken(ConnectionName.CATS),
         getDataSourceToken(),
         ICacheAdapter<RedisClientType>,
-        ILoggerAdapter
+        ILoggerAdapter,
+        ISecretsAdapter
       ]
     }
   ],

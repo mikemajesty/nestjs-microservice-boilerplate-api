@@ -15,4 +15,6 @@ export abstract class IHealthAdapter {
   abstract getPostgresStatus(): Promise<HealthStatus>;
   abstract getMemoryUsageInMB(): MemotyOutput;
   abstract getLoadAvarage(time: number, numCpus: number): Load;
+  abstract getActiveConnections(): Promise<unknown>;
+  abstract getLatency(host?: string): Promise<unknown>;
 }

@@ -14,8 +14,8 @@ export function ValidateSchema(...schema: Schema[]) {
           const model = value.parse(args[`${index}`]);
 
           for (const key in model) {
-            if (model[key] === undefined) {
-              delete model[key];
+            if (model[`${key}`] === undefined) {
+              delete model[`${key}`];
             }
           }
 
