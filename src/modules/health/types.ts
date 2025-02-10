@@ -5,7 +5,7 @@ export enum HealthStatus {
 
 export type MemotyOutput = {
   process: {
-    ramUsed: string;
+    usedRam: string;
     heapTotal: string;
     heapUsed: string;
     external: string;

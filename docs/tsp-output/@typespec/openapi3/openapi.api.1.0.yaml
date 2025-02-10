@@ -1580,7 +1580,7 @@ components:
 
                   latency: ** <300 ** status: ** Poor **
 
-                  latency: ** >300 ** status: ** Critical ** 
+                  latency: ** >300 ** status: ** Critical **
             connections:
               type: integer
               format: int32
@@ -1595,7 +1595,7 @@ components:
             process:
               type: object
               properties:
-                ramUsed:
+                usedRam:
                   type: string
                   description: Total memory allocated by the process, including heap, buffers, and native code.
                 heapTotal:
@@ -1608,7 +1608,7 @@ components:
                   type: string
                   description: Memory allocated outside the V8 heap (e.g., buffers, native bindings).
               required:
-                - ramUsed
+                - usedRam
                 - heapTotal
                 - heapUsed
                 - external

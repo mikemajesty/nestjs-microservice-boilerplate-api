@@ -29,7 +29,7 @@ export class HealthService implements IHealthAdapter {
 
     return {
       process: {
-        ramUsed: `${this.bytesToMB(processMemory.rss)} MB`,
+        usedRam: `${this.bytesToMB(processMemory.rss)} MB`,
         heapTotal: `${this.bytesToMB(processMemory.heapTotal)} MB`,
         heapUsed: `${this.bytesToMB(processMemory.heapUsed)} MB`,
         external: `${this.bytesToMB(processMemory.external)} MB`
