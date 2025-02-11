@@ -29,14 +29,23 @@ export class HealthController {
       }
     };
 
+    const mongoConnections = await this.service.getMongoConnections();
+    const postgresConnections = await this.service.getPostgresConnections();
+
     const latency = await this.service.getLatency();
     const connections = await this.service.getActiveConnections();
 
     return {
       server: HealthStatus.UP,
       version,
-      mongoState,
-      postgresState,
+      mongo: {
+        status: mongoState,
+        connection: mongoConnections
+      },
+      postgres: {
+        status: postgresState,
+        connection: postgresConnections
+      },
       redisState,
       network: {
         latency: String(latency),

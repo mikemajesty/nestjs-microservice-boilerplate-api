@@ -21,8 +21,14 @@ export type MemotyOutput = {
 export type HealthOutput = {
   server: string;
   version: string;
-  mongoState: string;
-  postgresState: string;
+  mongo: {
+    status: string;
+    connection: DatabaseConnection;
+  };
+  postgres: {
+    status: string;
+    connection: DatabaseConnection;
+  };
   redisState: string;
   network: {
     latency: string;
@@ -42,4 +48,11 @@ export type HealthOutput = {
 export type Load = {
   load: number;
   status: string;
+};
+
+export type DatabaseConnection = {
+  active: number;
+  available: number;
+  current: number;
+  totalCreated: number;
 };

@@ -14,14 +14,14 @@ model HealthOuput {
   @doc("application version")
   version: string;
 
-  @doc("mongo status: **UP** | **DOWN** ")
-  mongoState: string;
+  @doc("mongo information")
+  mongo: DatabaseStatus;
+
+  @doc("postgres information")
+  postgres: DatabaseStatus;
 
   @doc("redis status: **UP** | **DOWN** ")
   redisState: string;
-
-  @doc("postgres status: **UP** | **DOWN** ")
-  postgresState: string;
 
   @doc("network information")
   network: {
@@ -97,4 +97,25 @@ model HealthOuputLoad {
 
   @doc("load avererage status **healthy** | **overloaded**")
   status: string;
+}
+
+@doc("db information")
+model DatabaseStatus {
+  @doc("db status: **UP** | **DOWN** ")
+  status: string;
+
+  @doc("The set of numbers you provided represents connection metrics for the db server.")
+  connection: {
+    @doc("Refers to the number of active connections that are currently in use, typically handling ongoing operations or queries.")
+    active: int64;
+
+    @doc("Indicates the number of available connections that can be established with the db server, based on its configuration and resources.")
+    available: int64;
+
+    @doc("Represents the current number of active connections to the db server")
+    current: int64;
+
+    @doc("The total number of connections created since the server started.")
+    totalCreated: int64;
+  };
 }

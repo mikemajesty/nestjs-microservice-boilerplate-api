@@ -15,11 +15,18 @@ import { MongoService } from './service';
   imports: [
     MongooseModule.forRootAsync({
       connectionName: ConnectionName.CATS,
-      useFactory: ({ MONGO: { MONGO_URL } }: ISecretsAdapter, logger: ILoggerAdapter) => {
+      useFactory: ({ MONGO: { MONGO_URL }, IS_PRODUCTION }: ISecretsAdapter, logger: ILoggerAdapter) => {
         const connection = new MongoService().getConnection({ URI: MONGO_URL });
         return {
-          connectionFactory: (connection: Connection) => {
+          connectionFactory: async (connection: Connection) => {
             if (connection.readyState === 1) {
+              if (connection.db && !IS_PRODUCTION) {
+                await connection.db.setProfilingLevel('slow_only');
+                await connection.db.command({
+                  profile: 1,
+                  slowms: 200
+                });
+              }
               logger.log('🎯 mongo connected successfully!');
             }
             connection.on('disconnected', () => {

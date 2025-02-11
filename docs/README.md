@@ -2,6 +2,11 @@
 
 ### Building and Running the documentaion
 
+Documentation:
+[documentation](https://typespec.io/)
+
+---
+
 - install dependencies
   ```
   $ yarn doc:install
@@ -14,11 +19,6 @@
   ```
   $ yarn start
   ```
-
----
-
-Documentation:
-[documentation](https://typespec.io/)
 
 ---
 

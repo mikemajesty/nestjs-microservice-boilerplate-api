@@ -8,10 +8,10 @@ import v8 from 'v8';
 import { ICacheAdapter } from '@/infra/cache';
 import { ErrorType, ILoggerAdapter } from '@/infra/logger';
 import { ISecretsAdapter } from '@/infra/secrets';
-import { ApiInternalServerException } from '@/utils/exception';
 
+import { ApiInternalServerException } from './../../utils/exception';
 import { IHealthAdapter } from './adapter';
-import { HealthStatus, Load } from './types';
+import { DatabaseConnection, HealthStatus, Load } from './types';
 
 export class HealthService implements IHealthAdapter {
   postgres!: DataSource;
@@ -23,10 +23,59 @@ export class HealthService implements IHealthAdapter {
     private readonly secret: ISecretsAdapter
   ) {}
 
+  async getMongoConnections(): Promise<DatabaseConnection> {
+    try {
+      if (this.mongo.readyState !== 1) {
+        throw new ApiInternalServerException('mongo down');
+      }
+
+      if (this.mongo.db) {
+        const status = await this.mongo.db.command({ serverStatus: 1 });
+
+        return status.connections;
+      }
+      return { active: 0, available: 0, current: 0, totalCreated: 0 };
+    } catch (error) {
+      error = this.buildError(error, `${HealthService.name}/getMongoConnections`);
+      this.logger.error(error as ErrorType);
+      return { active: 0, available: 0, current: 0, totalCreated: 0 };
+    }
+  }
+
+  async getPostgresConnections(): Promise<DatabaseConnection> {
+    try {
+      const manager = this.postgres.manager;
+      const currentQuery = `SELECT COUNT(*) FROM pg_stat_activity WHERE state = 'active'`;
+
+      const availableQuery = `SHOW max_connections`;
+
+      const totalCreatedQuery = `SELECT COUNT(*) FROM pg_stat_activity`;
+
+      const current = await manager.query(currentQuery);
+      const available = await manager.query(availableQuery);
+      const totalCreated = await manager.query(totalCreatedQuery);
+
+      return {
+        current: Number(current[0].count),
+        available: Number(available[0].max_connections) - Number(current[0].count),
+        totalCreated: Number(totalCreated[0].count),
+        active: Number(current[0].count)
+      };
+    } catch (error) {
+      error = this.buildError(error, `${HealthService.name}/getMongoConnections`);
+      this.logger.error(error as ErrorType);
+      return {
+        current: 0,
+        available: 0,
+        totalCreated: 0,
+        active: 0
+      };
+    }
+  }
+
   getMemoryUsageInMB() {
     const processMemory = process.memoryUsage();
     const heapStats = v8.getHeapStatistics();
-
     return {
       process: {
         usedRam: `${this.bytesToMB(processMemory.rss)} MB`,

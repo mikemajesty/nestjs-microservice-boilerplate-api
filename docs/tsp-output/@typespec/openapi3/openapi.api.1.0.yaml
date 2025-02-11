@@ -1540,14 +1540,49 @@ components:
               description: default error model
           description: When input is invalid.
       description: When input is invalid
+    Health.DatabaseStatus:
+      type: object
+      required:
+        - status
+        - connection
+      properties:
+        status:
+          type: string
+          description: 'db status: **UP** | **DOWN** '
+        connection:
+          type: object
+          properties:
+            active:
+              type: integer
+              format: int64
+              description: Refers to the number of active connections that are currently in use, typically handling ongoing operations or queries.
+            available:
+              type: integer
+              format: int64
+              description: Indicates the number of available connections that can be established with the db server, based on its configuration and resources.
+            current:
+              type: integer
+              format: int64
+              description: Represents the current number of active connections to the db server
+            totalCreated:
+              type: integer
+              format: int64
+              description: The total number of connections created since the server started.
+          required:
+            - active
+            - available
+            - current
+            - totalCreated
+          description: The set of numbers you provided represents connection metrics for the db server.
+      description: db information
     Health.HealthOuput:
       type: object
       required:
         - server
         - version
-        - mongoState
+        - mongo
+        - postgres
         - redisState
-        - postgresState
         - network
         - memory
         - cpu
@@ -1558,15 +1593,17 @@ components:
         version:
           type: string
           description: application version
-        mongoState:
-          type: string
-          description: 'mongo status: **UP** | **DOWN** '
+        mongo:
+          allOf:
+            - $ref: '#/components/schemas/Health.DatabaseStatus'
+          description: mongo information
+        postgres:
+          allOf:
+            - $ref: '#/components/schemas/Health.DatabaseStatus'
+          description: postgres information
         redisState:
           type: string
           description: 'redis status: **UP** | **DOWN** '
-        postgresState:
-          type: string
-          description: 'postgres status: **UP** | **DOWN** '
         network:
           type: object
           properties:
@@ -1580,7 +1617,7 @@ components:
 
                   latency: ** <300 ** status: ** Poor **
 
-                  latency: ** >300 ** status: ** Critical **
+                  latency: ** >300 ** status: ** Critical ** 
             connections:
               type: integer
               format: int32
