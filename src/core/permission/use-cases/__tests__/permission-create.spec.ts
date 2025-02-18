@@ -1,11 +1,11 @@
 import { Test } from '@nestjs/testing';
+import { TestMock } from 'test/mock';
 import { ZodIssue } from 'zod';
 
 import { ILoggerAdapter } from '@/infra/logger';
 import { CreatedModel } from '@/infra/repository';
 import { IPermissionCreateAdapter } from '@/modules/permission/adapter';
 import { ApiConflictException } from '@/utils/exception';
-import { TestUtils } from '@/utils/tests';
 
 import { PermissionEntity } from '../../entity/permission';
 import { IPermissionRepository } from '../../repository/permission';
@@ -25,7 +25,7 @@ describe(PermissionCreateUsecase.name, () => {
         {
           provide: ILoggerAdapter,
           useValue: {
-            info: TestUtils.mockReturnValue<void>()
+            info: TestMock.mockReturnValue<void>()
           }
         },
         {
@@ -43,10 +43,10 @@ describe(PermissionCreateUsecase.name, () => {
   });
 
   test('when no input is specified, should expect an error', async () => {
-    await TestUtils.expectZodError(
+    await TestMock.expectZodError(
       () => usecase.execute({} as PermissionCreateInput),
       (issues: ZodIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<PermissionCreateInput>('name') }]);
+        expect(issues).toEqual([{ message: 'Required', path: TestMock.nameOf<PermissionCreateInput>('name') }]);
       }
     );
   });
@@ -55,17 +55,17 @@ describe(PermissionCreateUsecase.name, () => {
     name: 'name:permission'
   };
 
-  const output: PermissionEntity = new PermissionEntity({ id: TestUtils.getMockUUID(), name: input.name });
+  const output: PermissionEntity = new PermissionEntity({ id: TestMock.getMockUUID(), name: input.name });
 
   test('when permission exists, should expect an error', async () => {
-    repository.findOne = TestUtils.mockResolvedValue<PermissionEntity>(output);
+    repository.findOne = TestMock.mockResolvedValue<PermissionEntity>(output);
 
     await expect(usecase.execute(input)).rejects.toThrow(ApiConflictException);
   });
 
   test('when permission created successfully, should expect a permission created', async () => {
-    repository.create = TestUtils.mockResolvedValue<CreatedModel>({ created: true, id: TestUtils.getMockUUID() });
-    repository.findOne = TestUtils.mockResolvedValue<PermissionEntity>(null);
+    repository.create = TestMock.mockResolvedValue<CreatedModel>({ created: true, id: TestMock.getMockUUID() });
+    repository.findOne = TestMock.mockResolvedValue<PermissionEntity>(null);
 
     await expect(usecase.execute(input)).resolves.toBeInstanceOf(PermissionEntity);
   });

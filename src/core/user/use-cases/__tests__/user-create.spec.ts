@@ -1,4 +1,5 @@
 import { Test } from '@nestjs/testing';
+import { TestMock } from 'test/mock';
 import { ZodIssue } from 'zod';
 
 import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
@@ -8,7 +9,6 @@ import { CreatedModel } from '@/infra/repository';
 import { EmitEventOutput, IEventAdapter } from '@/libs/event';
 import { IUserCreateAdapter } from '@/modules/user/adapter';
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception';
-import { TestUtils } from '@/utils/tests';
 
 import { UserEntity } from '../../entity/user';
 import { UserPasswordEntity } from '../../entity/user-password';
@@ -35,7 +35,7 @@ describe(UserCreateUsecase.name, () => {
         {
           provide: IEventAdapter,
           useValue: {
-            emit: TestUtils.mockResolvedValue<EmitEventOutput>()
+            emit: TestMock.mockResolvedValue<EmitEventOutput>()
           }
         },
         {
@@ -59,14 +59,14 @@ describe(UserCreateUsecase.name, () => {
   });
 
   test('when no input is specified, should expect an error', async () => {
-    await TestUtils.expectZodError(
-      () => usecase.execute({} as UserCreateInput, TestUtils.getMockTracing()),
+    await TestMock.expectZodError(
+      () => usecase.execute({} as UserCreateInput, TestMock.getMockTracing()),
       (issues: ZodIssue[]) => {
         expect(issues).toEqual([
-          { message: 'Required', path: TestUtils.nameOf<UserCreateInput>('email') },
-          { message: 'Required', path: TestUtils.nameOf<UserCreateInput>('name') },
-          { message: 'Required', path: TestUtils.nameOf<UserCreateInput>('password') },
-          { message: 'Required', path: TestUtils.nameOf<UserCreateInput>('roles') }
+          { message: 'Required', path: TestMock.nameOf<UserCreateInput>('email') },
+          { message: 'Required', path: TestMock.nameOf<UserCreateInput>('name') },
+          { message: 'Required', path: TestMock.nameOf<UserCreateInput>('password') },
+          { message: 'Required', path: TestMock.nameOf<UserCreateInput>('roles') }
         ]);
       }
     );
@@ -80,37 +80,37 @@ describe(UserCreateUsecase.name, () => {
   };
 
   test('when role not found, should expect an error', async () => {
-    roleRepository.findIn = TestUtils.mockResolvedValue<RoleEntity[]>([]);
+    roleRepository.findIn = TestMock.mockResolvedValue<RoleEntity[]>([]);
 
-    await expect(usecase.execute(input, TestUtils.getMockTracing())).rejects.toThrow(ApiNotFoundException);
+    await expect(usecase.execute(input, TestMock.getMockTracing())).rejects.toThrow(ApiNotFoundException);
   });
 
-  const role = new RoleEntity({ id: TestUtils.getMockUUID(), name: RoleEnum.USER });
+  const role = new RoleEntity({ id: TestMock.getMockUUID(), name: RoleEnum.USER });
 
   const user = new UserEntity({
-    id: TestUtils.getMockUUID(),
+    id: TestMock.getMockUUID(),
     email: 'admin@admin.com',
     name: 'Admin',
-    roles: [new RoleEntity({ id: TestUtils.getMockUUID(), name: RoleEnum.USER })],
+    roles: [new RoleEntity({ id: TestMock.getMockUUID(), name: RoleEnum.USER })],
     password: new UserPasswordEntity({
-      id: TestUtils.getMockUUID(),
+      id: TestMock.getMockUUID(),
       password: '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918'
     })
   });
 
   test('when user already exists, should expect an error', async () => {
-    roleRepository.findIn = TestUtils.mockResolvedValue<RoleEntity[]>([role]);
-    repository.findOne = TestUtils.mockResolvedValue<UserEntity>(user);
+    roleRepository.findIn = TestMock.mockResolvedValue<RoleEntity[]>([role]);
+    repository.findOne = TestMock.mockResolvedValue<UserEntity>(user);
 
-    await expect(usecase.execute(input, TestUtils.getMockTracing())).rejects.toThrow(ApiConflictException);
+    await expect(usecase.execute(input, TestMock.getMockTracing())).rejects.toThrow(ApiConflictException);
   });
 
   test('when user created successfully, should expect an user', async () => {
-    roleRepository.findIn = TestUtils.mockResolvedValue<RoleEntity[]>([role]);
-    repository.findOne = TestUtils.mockResolvedValue<UserEntity>(null);
-    const createOutput = { created: true, id: TestUtils.getMockUUID() };
-    repository.create = TestUtils.mockResolvedValue<CreatedModel>(createOutput);
+    roleRepository.findIn = TestMock.mockResolvedValue<RoleEntity[]>([role]);
+    repository.findOne = TestMock.mockResolvedValue<UserEntity>(null);
+    const createOutput = { created: true, id: TestMock.getMockUUID() };
+    repository.create = TestMock.mockResolvedValue<CreatedModel>(createOutput);
 
-    await expect(usecase.execute(input, TestUtils.getMockTracing())).resolves.toEqual(createOutput);
+    await expect(usecase.execute(input, TestMock.getMockTracing())).resolves.toEqual(createOutput);
   });
 });

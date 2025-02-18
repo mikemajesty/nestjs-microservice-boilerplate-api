@@ -1,4 +1,5 @@
 import { Test } from '@nestjs/testing';
+import { TestMock } from 'test/mock';
 import { ZodIssue } from 'zod';
 
 import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
@@ -7,7 +8,6 @@ import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { CreatedModel } from '@/infra/repository';
 import { IUserUpdateAdapter } from '@/modules/user/adapter';
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception';
-import { TestUtils } from '@/utils/tests';
 import { UUIDUtils } from '@/utils/uuid';
 
 import { UserEntity } from '../../entity/user';
@@ -47,19 +47,19 @@ describe(UserUpdateUsecase.name, () => {
   });
 
   test('when no input is specified, should expect an error', async () => {
-    await TestUtils.expectZodError(
-      () => usecase.execute({} as UserUpdateInput, TestUtils.getMockTracing()),
+    await TestMock.expectZodError(
+      () => usecase.execute({} as UserUpdateInput, TestMock.getMockTracing()),
       (issues: ZodIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<UserUpdateInput>('id') }]);
+        expect(issues).toEqual([{ message: 'Required', path: TestMock.nameOf<UserUpdateInput>('id') }]);
       }
     );
   });
 
   const user = new UserEntity({
-    id: TestUtils.getMockUUID(),
+    id: TestMock.getMockUUID(),
     name: 'Admin',
     email: 'admin@admin.com',
-    roles: [new RoleEntity({ id: TestUtils.getMockUUID(), name: RoleEnum.USER })]
+    roles: [new RoleEntity({ id: TestMock.getMockUUID(), name: RoleEnum.USER })]
   });
 
   const input: UserUpdateInput = {
@@ -70,43 +70,43 @@ describe(UserUpdateUsecase.name, () => {
   };
 
   test('when user not found, should expect an error', async () => {
-    repository.findOne = TestUtils.mockResolvedValue<UserEntity>(null);
+    repository.findOne = TestMock.mockResolvedValue<UserEntity>(null);
 
-    await expect(usecase.execute(input, TestUtils.getMockTracing())).rejects.toThrow(ApiNotFoundException);
+    await expect(usecase.execute(input, TestMock.getMockTracing())).rejects.toThrow(ApiNotFoundException);
   });
 
   const role = new RoleEntity({ id: UUIDUtils.create(), name: RoleEnum.USER });
 
   test('when user already exists, should expect an error', async () => {
-    repository.findOne = TestUtils.mockResolvedValue<UserEntity>(user);
-    repository.existsOnUpdate = TestUtils.mockResolvedValue<boolean>(true);
-    roleRepository.findIn = TestUtils.mockResolvedValue<RoleEntity[]>([role]);
+    repository.findOne = TestMock.mockResolvedValue<UserEntity>(user);
+    repository.existsOnUpdate = TestMock.mockResolvedValue<boolean>(true);
+    roleRepository.findIn = TestMock.mockResolvedValue<RoleEntity[]>([role]);
 
-    await expect(usecase.execute(input, TestUtils.getMockTracing())).rejects.toThrow(ApiConflictException);
+    await expect(usecase.execute(input, TestMock.getMockTracing())).rejects.toThrow(ApiConflictException);
   });
 
   test('when nole not found, should expect an error', async () => {
-    repository.findOne = TestUtils.mockResolvedValue<UserEntity>(user);
-    roleRepository.findIn = TestUtils.mockResolvedValue<RoleEntity[]>([]);
+    repository.findOne = TestMock.mockResolvedValue<UserEntity>(user);
+    roleRepository.findIn = TestMock.mockResolvedValue<RoleEntity[]>([]);
 
-    await expect(usecase.execute(input, TestUtils.getMockTracing())).rejects.toThrow(ApiNotFoundException);
+    await expect(usecase.execute(input, TestMock.getMockTracing())).rejects.toThrow(ApiNotFoundException);
   });
 
   test('when user updated successfully, should expect an user updated', async () => {
-    repository.findOne = TestUtils.mockResolvedValue<UserEntity>(user);
-    repository.existsOnUpdate = TestUtils.mockResolvedValue<boolean>(false);
-    roleRepository.findIn = TestUtils.mockResolvedValue<RoleEntity[]>([role]);
-    repository.create = TestUtils.mockResolvedValue<CreatedModel>();
+    repository.findOne = TestMock.mockResolvedValue<UserEntity>(user);
+    repository.existsOnUpdate = TestMock.mockResolvedValue<boolean>(false);
+    roleRepository.findIn = TestMock.mockResolvedValue<RoleEntity[]>([role]);
+    repository.create = TestMock.mockResolvedValue<CreatedModel>();
 
-    await expect(usecase.execute(input, TestUtils.getMockTracing())).resolves.toEqual(user);
+    await expect(usecase.execute(input, TestMock.getMockTracing())).resolves.toEqual(user);
   });
 
   test('when user role not provided, should use user role, then should expect an user updated', async () => {
-    repository.findOne = TestUtils.mockResolvedValue<UserEntity>(user);
-    repository.existsOnUpdate = TestUtils.mockResolvedValue<boolean>(false);
-    roleRepository.findIn = TestUtils.mockResolvedValue<RoleEntity[]>([role]);
-    repository.create = TestUtils.mockResolvedValue<CreatedModel>();
+    repository.findOne = TestMock.mockResolvedValue<UserEntity>(user);
+    repository.existsOnUpdate = TestMock.mockResolvedValue<boolean>(false);
+    roleRepository.findIn = TestMock.mockResolvedValue<RoleEntity[]>([role]);
+    repository.create = TestMock.mockResolvedValue<CreatedModel>();
 
-    await expect(usecase.execute({ id: user.id }, TestUtils.getMockTracing())).resolves.toEqual(user);
+    await expect(usecase.execute({ id: user.id }, TestMock.getMockTracing())).resolves.toEqual(user);
   });
 });

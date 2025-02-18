@@ -1,9 +1,9 @@
 import { Test } from '@nestjs/testing';
+import { TestMock } from 'test/mock';
 import { ZodIssue } from 'zod';
 
 import { RoleListInput, RoleListOutput, RoleListUsecase } from '@/core/role/use-cases/role-list';
 import { IRoleListAdapter } from '@/modules/role/adapter';
-import { TestUtils } from '@/utils/tests';
 
 import { IRoleRepository } from '../../repository/role';
 import { RoleEntity, RoleEnum } from './../../entity/role';
@@ -34,10 +34,10 @@ describe(RoleListUsecase.name, () => {
   });
 
   test('when sort input is specified, should expect an error', async () => {
-    await TestUtils.expectZodError(
+    await TestMock.expectZodError(
       () => usecase.execute({} as RoleListInput),
       (issues: ZodIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<RoleListInput>('search') }]);
+        expect(issues).toEqual([{ message: 'Required', path: TestMock.nameOf<RoleListInput>('search') }]);
       }
     );
   });
@@ -45,7 +45,7 @@ describe(RoleListUsecase.name, () => {
   const input: RoleListInput = { limit: 1, page: 1, search: {}, sort: { createdAt: -1 } };
 
   const role = new RoleEntity({
-    id: TestUtils.getMockUUID(),
+    id: TestMock.getMockUUID(),
     name: RoleEnum.USER,
     createdAt: new Date(),
     updatedAt: new Date()
@@ -53,7 +53,7 @@ describe(RoleListUsecase.name, () => {
 
   test('when role are found, should expect an role list', async () => {
     const output: RoleListOutput = { docs: [role], page: 1, limit: 1, total: 1 };
-    repository.paginate = TestUtils.mockResolvedValue<RoleListOutput>(output);
+    repository.paginate = TestMock.mockResolvedValue<RoleListOutput>(output);
 
     await expect(usecase.execute(input)).resolves.toEqual({
       docs: [role],
@@ -65,7 +65,7 @@ describe(RoleListUsecase.name, () => {
 
   test('when role not found, should expect an empty list', async () => {
     const output: RoleListOutput = { docs: [], page: 1, limit: 1, total: 1 };
-    repository.paginate = TestUtils.mockResolvedValue<RoleListOutput>(output);
+    repository.paginate = TestMock.mockResolvedValue<RoleListOutput>(output);
 
     await expect(usecase.execute(input)).resolves.toEqual(output);
   });

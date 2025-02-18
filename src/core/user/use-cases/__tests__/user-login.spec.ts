@@ -1,11 +1,11 @@
 import { Test } from '@nestjs/testing';
+import { TestMock } from 'test/mock';
 import { ZodIssue } from 'zod';
 
 import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
 import { ITokenAdapter, TokenLibModule } from '@/libs/token';
 import { ILoginAdapter } from '@/modules/login/adapter';
 import { ApiBadRequestException, ApiNotFoundException } from '@/utils/exception';
-import { TestUtils } from '@/utils/tests';
 
 import { UserEntity } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
@@ -38,12 +38,12 @@ describe(LoginUsecase.name, () => {
   });
 
   test('when no input is specified, should expect an error', async () => {
-    await TestUtils.expectZodError(
-      () => usecase.execute({} as LoginInput, TestUtils.getMockTracing()),
+    await TestMock.expectZodError(
+      () => usecase.execute({} as LoginInput, TestMock.getMockTracing()),
       (issues: ZodIssue[]) => {
         expect(issues).toEqual([
-          { message: 'Required', path: TestUtils.nameOf<LoginInput>('email') },
-          { message: 'Required', path: TestUtils.nameOf<LoginInput>('password') }
+          { message: 'Required', path: TestMock.nameOf<LoginInput>('email') },
+          { message: 'Required', path: TestMock.nameOf<LoginInput>('password') }
         ]);
       }
     );
@@ -51,36 +51,36 @@ describe(LoginUsecase.name, () => {
 
   const input: LoginInput = { email: 'admin@admin.com', password: '****' };
   test('when user not found, should expect an error', async () => {
-    repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(null);
+    repository.findOneWithRelation = TestMock.mockResolvedValue<UserEntity>(null);
 
-    await expect(usecase.execute(input, TestUtils.getMockTracing())).rejects.toThrow(ApiNotFoundException);
+    await expect(usecase.execute(input, TestMock.getMockTracing())).rejects.toThrow(ApiNotFoundException);
   });
 
   const user = new UserEntity({
-    id: TestUtils.getMockUUID(),
+    id: TestMock.getMockUUID(),
     email: 'admin@admin.com',
     name: 'Admin',
-    roles: [new RoleEntity({ id: TestUtils.getMockUUID(), name: RoleEnum.USER })],
-    password: { id: TestUtils.getMockUUID(), password: '***' }
+    roles: [new RoleEntity({ id: TestMock.getMockUUID(), name: RoleEnum.USER })],
+    password: { id: TestMock.getMockUUID(), password: '***' }
   });
 
   test('when user role not found, should expect an error', async () => {
-    repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>({ ...user, roles: [] });
+    repository.findOneWithRelation = TestMock.mockResolvedValue<UserEntity>({ ...user, roles: [] });
 
-    await expect(usecase.execute(input, TestUtils.getMockTracing())).rejects.toThrow(ApiNotFoundException);
+    await expect(usecase.execute(input, TestMock.getMockTracing())).rejects.toThrow(ApiNotFoundException);
   });
 
   test('when password is incorrect, should expect an error', async () => {
-    repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(user);
+    repository.findOneWithRelation = TestMock.mockResolvedValue<UserEntity>(user);
 
-    await expect(usecase.execute(input, TestUtils.getMockTracing())).rejects.toThrow(ApiBadRequestException);
+    await expect(usecase.execute(input, TestMock.getMockTracing())).rejects.toThrow(ApiBadRequestException);
   });
 
   test('when user login successfully, should expect a token', async () => {
     user.password.password = '69bf0bc46f51b33377c4f3d92caf876714f6bbbe99e7544487327920873f9820';
-    repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(user);
+    repository.findOneWithRelation = TestMock.mockResolvedValue<UserEntity>(user);
 
-    await expect(usecase.execute(input, TestUtils.getMockTracing())).resolves.toEqual({
+    await expect(usecase.execute(input, TestMock.getMockTracing())).resolves.toEqual({
       accessToken: expect.any(String),
       refreshToken: expect.any(String)
     } as LoginOutput);

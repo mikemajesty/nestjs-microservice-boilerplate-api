@@ -1,4 +1,5 @@
 import { Test } from '@nestjs/testing';
+import { TestMock } from 'test/mock';
 import { ZodIssue } from 'zod';
 
 import { PermissionEntity } from '@/core/permission/entity/permission';
@@ -6,7 +7,6 @@ import { RoleDeleteInput, RoleDeleteUsecase } from '@/core/role/use-cases/role-d
 import { CreatedModel } from '@/infra/repository';
 import { IRoleDeleteAdapter } from '@/modules/role/adapter';
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception';
-import { TestUtils } from '@/utils/tests';
 
 import { IRoleRepository } from '../../repository/role';
 import { RoleEntity, RoleEnum } from './../../entity/role';
@@ -37,26 +37,26 @@ describe(RoleDeleteUsecase.name, () => {
   });
 
   test('when no input is specified, should expect an error', async () => {
-    await TestUtils.expectZodError(
+    await TestMock.expectZodError(
       () => usecase.execute({} as RoleDeleteInput),
       (issues: ZodIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<RoleDeleteInput>('id') }]);
+        expect(issues).toEqual([{ message: 'Required', path: TestMock.nameOf<RoleDeleteInput>('id') }]);
       }
     );
   });
 
   const input: RoleDeleteInput = {
-    id: TestUtils.getMockUUID()
+    id: TestMock.getMockUUID()
   };
 
   test('when role not found, should expect an error', async () => {
-    repository.findById = TestUtils.mockResolvedValue<RoleEntity>(null);
+    repository.findById = TestMock.mockResolvedValue<RoleEntity>(null);
 
     await expect(usecase.execute(input)).rejects.toThrow(ApiNotFoundException);
   });
 
   test('when role has association with permission, should expect an error', async () => {
-    repository.findById = TestUtils.mockResolvedValue<RoleEntity>({
+    repository.findById = TestMock.mockResolvedValue<RoleEntity>({
       permissions: [{ name: 'create:cat' } as PermissionEntity]
     });
 
@@ -64,13 +64,13 @@ describe(RoleDeleteUsecase.name, () => {
   });
 
   const role = new RoleEntity({
-    id: TestUtils.getMockUUID(),
+    id: TestMock.getMockUUID(),
     name: RoleEnum.USER
   });
 
   test('when role deleted successfully, should expect a role deleted', async () => {
-    repository.findById = TestUtils.mockResolvedValue<RoleEntity>(role);
-    repository.create = TestUtils.mockResolvedValue<CreatedModel>();
+    repository.findById = TestMock.mockResolvedValue<RoleEntity>(role);
+    repository.create = TestMock.mockResolvedValue<CreatedModel>();
 
     await expect(usecase.execute(input)).resolves.toEqual({
       ...role,

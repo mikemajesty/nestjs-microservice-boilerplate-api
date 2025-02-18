@@ -1,9 +1,9 @@
 import { Test } from '@nestjs/testing';
+import { TestMock } from 'test/mock';
 import { ZodIssue } from 'zod';
 
 import { ILoggerAdapter } from '@/infra/logger';
 import { IRoleCreateAdapter } from '@/modules/role/adapter';
-import { TestUtils } from '@/utils/tests';
 
 import { RoleEnum } from '../../entity/role';
 import { IRoleRepository } from '../../repository/role';
@@ -23,7 +23,7 @@ describe(RoleCreateUsecase.name, () => {
         {
           provide: ILoggerAdapter,
           useValue: {
-            info: TestUtils.mockReturnValue<void>()
+            info: TestMock.mockReturnValue<void>()
           }
         },
         {
@@ -41,10 +41,10 @@ describe(RoleCreateUsecase.name, () => {
   });
 
   test('when no input is specified, should expect an error', async () => {
-    await TestUtils.expectZodError(
+    await TestMock.expectZodError(
       () => usecase.execute({} as RoleCreateInput),
       (issues: ZodIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<RoleCreateInput>('name') }]);
+        expect(issues).toEqual([{ message: 'Required', path: TestMock.nameOf<RoleCreateInput>('name') }]);
       }
     );
   });
@@ -54,8 +54,8 @@ describe(RoleCreateUsecase.name, () => {
   };
 
   test('when role created successfully, should expect a role created', async () => {
-    const output: RoleCreateOutput = { created: true, id: TestUtils.getMockUUID() };
-    repository.create = TestUtils.mockResolvedValue<RoleCreateOutput>(output);
+    const output: RoleCreateOutput = { created: true, id: TestMock.getMockUUID() };
+    repository.create = TestMock.mockResolvedValue<RoleCreateOutput>(output);
 
     await expect(usecase.execute(input)).resolves.toEqual(output);
   });

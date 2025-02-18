@@ -1,9 +1,9 @@
 import { Test } from '@nestjs/testing';
+import { TestMock } from 'test/mock';
 import { ZodIssue } from 'zod';
 
 import { IPermissionGetByIdAdapter } from '@/modules/permission/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
-import { TestUtils } from '@/utils/tests';
 
 import { IPermissionRepository } from '../../repository/permission';
 import { PermissionGetByIdInput, PermissionGetByIdUsecase } from '../permission-get-by-id';
@@ -35,31 +35,31 @@ describe(PermissionGetByIdUsecase.name, () => {
   });
 
   test('when no input is specified, should expect an error', async () => {
-    await TestUtils.expectZodError(
+    await TestMock.expectZodError(
       () => usecase.execute({} as PermissionGetByIdInput),
       (issues: ZodIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<PermissionGetByIdInput>('id') }]);
+        expect(issues).toEqual([{ message: 'Required', path: TestMock.nameOf<PermissionGetByIdInput>('id') }]);
       }
     );
   });
 
   const input: PermissionGetByIdInput = {
-    id: TestUtils.getMockUUID()
+    id: TestMock.getMockUUID()
   };
 
   test('when permission not found, should expect an error', async () => {
-    repository.findById = TestUtils.mockResolvedValue<PermissionEntity>(null);
+    repository.findById = TestMock.mockResolvedValue<PermissionEntity>(null);
 
     await expect(usecase.execute(input)).rejects.toThrow(ApiNotFoundException);
   });
 
   const permission = new PermissionEntity({
-    id: TestUtils.getMockUUID(),
+    id: TestMock.getMockUUID(),
     name: 'name:permission'
   });
 
   test('when permission found, should expect a permission found', async () => {
-    repository.findById = TestUtils.mockResolvedValue<PermissionEntity>(permission);
+    repository.findById = TestMock.mockResolvedValue<PermissionEntity>(permission);
 
     await expect(usecase.execute(input)).resolves.toEqual(permission);
   });

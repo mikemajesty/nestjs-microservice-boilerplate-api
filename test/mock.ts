@@ -4,9 +4,9 @@ import { z } from 'zod';
 
 import { ApiTrancingInput, TracingType, UserRequest } from '@/utils/request';
 
-import { BaseException } from './exception';
+import { BaseException } from '../src/utils/exception';
 
-export class TestUtils {
+export class TestMock {
   static mock(): jest.Mock {
     return jest.fn();
   }

@@ -24,7 +24,7 @@ export default [
             'src/infra/database/postgres/migrations',
             'src/infra/database/mongo/migrations',
             'src/utils/collection.ts',
-            'test/initialization.js',
+            '**/test/*.ts',
             '**/commitlint.config.js',
             '**/*.md'
         ]

@@ -1,10 +1,10 @@
 import { Test } from '@nestjs/testing';
+import { TestMock } from 'test/mock';
 import { ZodIssue } from 'zod';
 
 import { CreatedModel } from '@/infra/repository';
 import { ICatCreateAdapter } from '@/modules/cat/adapter';
 import { ApiInternalServerException } from '@/utils/exception';
-import { TestUtils } from '@/utils/tests';
 
 import { CatEntity } from '../../entity/cat';
 import { ICatRepository } from '../../repository/cat';
@@ -37,34 +37,34 @@ describe(CatCreateUsecase.name, () => {
   });
 
   test('when no input is specified, should expect an error', async () => {
-    await TestUtils.expectZodError(
-      () => usecase.execute({} as CatCreateInput, TestUtils.getMockTracing()),
+    await TestMock.expectZodError(
+      () => usecase.execute({} as CatCreateInput, TestMock.getMockTracing()),
       (issues: ZodIssue[]) => {
         expect(issues).toEqual([
-          { message: 'Required', path: TestUtils.nameOf<CatCreateInput>('name') },
-          { message: 'Required', path: TestUtils.nameOf<CatCreateInput>('breed') },
-          { message: 'Required', path: TestUtils.nameOf<CatCreateInput>('age') }
+          { message: 'Required', path: TestMock.nameOf<CatCreateInput>('name') },
+          { message: 'Required', path: TestMock.nameOf<CatCreateInput>('breed') },
+          { message: 'Required', path: TestMock.nameOf<CatCreateInput>('age') }
         ]);
       }
     );
   });
 
   const input = new CatEntity({
-    id: TestUtils.getMockUUID(),
+    id: TestMock.getMockUUID(),
     age: 10,
     breed: 'dummy',
     name: 'dummy'
   });
 
   test('when cat created successfully, should expect a cat created', async () => {
-    repository.create = TestUtils.mockResolvedValue<CreatedModel>(input);
+    repository.create = TestMock.mockResolvedValue<CreatedModel>(input);
 
-    await expect(usecase.execute(input, TestUtils.getMockTracing())).resolves.toEqual(input);
+    await expect(usecase.execute(input, TestMock.getMockTracing())).resolves.toEqual(input);
   });
 
   test('when transaction throw an error, should expect an error', async () => {
-    repository.create = TestUtils.mockRejectedValue(new ApiInternalServerException());
+    repository.create = TestMock.mockRejectedValue(new ApiInternalServerException());
 
-    await expect(usecase.execute(input, TestUtils.getMockTracing())).rejects.toThrow(ApiInternalServerException);
+    await expect(usecase.execute(input, TestMock.getMockTracing())).rejects.toThrow(ApiInternalServerException);
   });
 });

@@ -1,4 +1,5 @@
 import { Test } from '@nestjs/testing';
+import { TestMock } from 'test/mock';
 import { ZodIssue } from 'zod';
 
 import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
@@ -10,7 +11,6 @@ import { EmitEventOutput, IEventAdapter } from '@/libs/event';
 import { ITokenAdapter, SignOutput } from '@/libs/token';
 import { IConfirmResetPasswordAdapter, ISendEmailResetPasswordAdapter } from '@/modules/reset-password/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
-import { TestUtils } from '@/utils/tests';
 
 import { ResetPasswordEntity } from '../../entity/reset-password';
 import { IResetPasswordRepository } from '../../repository/reset-password';
@@ -42,13 +42,13 @@ describe(ResetPasswordSendEmailUsecase.name, () => {
         {
           provide: ITokenAdapter,
           useValue: {
-            sign: TestUtils.mockReturnValue<SignOutput>({ token: 'token' })
+            sign: TestMock.mockReturnValue<SignOutput>({ token: 'token' })
           }
         },
         {
           provide: IEventAdapter,
           useValue: {
-            emit: TestUtils.mockResolvedValue<EmitEventOutput>()
+            emit: TestMock.mockResolvedValue<EmitEventOutput>()
           }
         },
         {
@@ -73,10 +73,10 @@ describe(ResetPasswordSendEmailUsecase.name, () => {
   });
 
   test('when no input is specified, should expect an error', async () => {
-    await TestUtils.expectZodError(
+    await TestMock.expectZodError(
       () => usecase.execute({} as ResetPasswordSendEmailInput),
       (issues: ZodIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<ResetPasswordSendEmailInput>('email') }]);
+        expect(issues).toEqual([{ message: 'Required', path: TestMock.nameOf<ResetPasswordSendEmailInput>('email') }]);
       }
     );
   });
@@ -84,31 +84,31 @@ describe(ResetPasswordSendEmailUsecase.name, () => {
   const input: ResetPasswordSendEmailInput = { email: 'admin@admin.com' };
 
   test('when user not found, should expect an error', async () => {
-    userRepository.findOne = TestUtils.mockResolvedValue<UserEntity>(null);
+    userRepository.findOne = TestMock.mockResolvedValue<UserEntity>(null);
 
     await expect(usecase.execute(input)).rejects.toThrow(ApiNotFoundException);
   });
 
   const user = new UserEntity({
-    id: TestUtils.getMockUUID(),
+    id: TestMock.getMockUUID(),
     email: 'admin@admin.com',
     name: 'Admin',
-    roles: [new RoleEntity({ id: TestUtils.getMockUUID(), name: RoleEnum.USER })]
+    roles: [new RoleEntity({ id: TestMock.getMockUUID(), name: RoleEnum.USER })]
   });
 
-  const resetPassword = new ResetPasswordEntity({ id: TestUtils.getMockUUID(), token: 'token', user });
+  const resetPassword = new ResetPasswordEntity({ id: TestMock.getMockUUID(), token: 'token', user });
 
   test('when token was founded, should expect void', async () => {
-    userRepository.findOne = TestUtils.mockResolvedValue<UserEntity>(user);
-    repository.findByIdUserId = TestUtils.mockResolvedValue<ResetPasswordEntity>(resetPassword);
+    userRepository.findOne = TestMock.mockResolvedValue<UserEntity>(user);
+    repository.findByIdUserId = TestMock.mockResolvedValue<ResetPasswordEntity>(resetPassword);
 
     await expect(usecase.execute(input)).resolves.toBeUndefined();
   });
 
   test('when token was not founded, should expect void', async () => {
-    userRepository.findOne = TestUtils.mockResolvedValue<UserEntity>(user);
-    repository.findByIdUserId = TestUtils.mockResolvedValue<ResetPasswordEntity>(null);
-    repository.create = TestUtils.mockResolvedValue<CreatedModel>();
+    userRepository.findOne = TestMock.mockResolvedValue<UserEntity>(user);
+    repository.findByIdUserId = TestMock.mockResolvedValue<ResetPasswordEntity>(null);
+    repository.create = TestMock.mockResolvedValue<CreatedModel>();
 
     await expect(usecase.execute(input)).resolves.toBeUndefined();
   });

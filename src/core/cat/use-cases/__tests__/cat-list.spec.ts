@@ -1,10 +1,10 @@
 import { Test } from '@nestjs/testing';
+import { TestMock } from 'test/mock';
 import { ZodIssue } from 'zod';
 
 import { CatListInput, CatListOutput, CatListUsecase } from '@/core/cat/use-cases/cat-list';
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { ICatListAdapter } from '@/modules/cat/adapter';
-import { TestUtils } from '@/utils/tests';
 
 import { CatEntity } from '../../entity/cat';
 import { ICatRepository } from '../../repository/cat';
@@ -36,21 +36,21 @@ describe(CatListUsecase.name, () => {
   });
 
   test('when no input is specified, should expect an error', async () => {
-    await TestUtils.expectZodError(
+    await TestMock.expectZodError(
       () => usecase.execute({} as CatListInput),
       (issues: ZodIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<CatListInput>('search') }]);
+        expect(issues).toEqual([{ message: 'Required', path: TestMock.nameOf<CatListInput>('search') }]);
       }
     );
   });
 
   const cat = new CatEntity({
-    id: TestUtils.getMockUUID(),
+    id: TestMock.getMockUUID(),
     age: 10,
     breed: 'dummy',
     name: 'dummy',
-    createdAt: TestUtils.getMockDate(),
-    updatedAt: TestUtils.getMockDate(),
+    createdAt: TestMock.getMockDate(),
+    updatedAt: TestMock.getMockDate(),
     deletedAt: null
   });
 
@@ -58,7 +58,7 @@ describe(CatListUsecase.name, () => {
 
   test('when cats are found, should expect an user list', async () => {
     const output = { docs: cats, page: 1, limit: 1, total: 1 };
-    repository.paginate = TestUtils.mockResolvedValue<CatListOutput>(output);
+    repository.paginate = TestMock.mockResolvedValue<CatListOutput>(output);
 
     await expect(usecase.execute({ limit: 1, page: 1, search: {}, sort: { createdAt: -1 } })).resolves.toEqual({
       docs: cats,
@@ -70,7 +70,7 @@ describe(CatListUsecase.name, () => {
 
   test('when cats not found, should expect an empty list', async () => {
     const output = { docs: [{} as CatEntity], page: 1, limit: 1, total: 1 };
-    repository.paginate = TestUtils.mockResolvedValue<CatListOutput>(output);
+    repository.paginate = TestMock.mockResolvedValue<CatListOutput>(output);
 
     await expect(usecase.execute({ limit: 1, page: 1, search: {}, sort: { createdAt: -1 } })).resolves.toEqual(output);
   });

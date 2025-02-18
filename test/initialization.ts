@@ -1,4 +1,4 @@
-import { TestUtils } from '@/utils/tests';
+import { TestMock } from 'test/mock';
 
 jest.setTimeout(30000);
 
@@ -10,8 +10,8 @@ jest.mock('pino-http', () => ({
   HttpLogger: {},
   pinoHttp: () => ({
     logger: {
-      info: TestUtils.mockReturnValue<void>(),
-      error: TestUtils.mockReturnValue<void>()
+      info: TestMock.mockReturnValue<void>(),
+      error: TestMock.mockReturnValue<void>()
     }
   })
 }));
