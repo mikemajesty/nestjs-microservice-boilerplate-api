@@ -36,12 +36,13 @@ export type HealthOutput = {
   };
   memory: MemotyOutput;
   cpu: {
-    healthyLimit: number;
-    loadAverage: {
+    cpus: number;
+    globalAvarage: {
       lastMinute: Load;
       lastFiveMinutes: Load;
       lastFifteenMinutes: Load;
     };
+    cores: { core: number; load: string }[];
   };
 };
 

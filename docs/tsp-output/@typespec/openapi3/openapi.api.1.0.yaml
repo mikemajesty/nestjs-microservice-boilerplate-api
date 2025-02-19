@@ -1678,11 +1678,11 @@ components:
         cpu:
           type: object
           properties:
-            healthyLimit:
+            cpus:
               type: integer
               format: int16
-              description: max healthy limit
-            loadAverage:
+              description: max healthy limit/total cpus
+            globalAvarage:
               type: object
               properties:
                 lastMinute:
@@ -1702,9 +1702,26 @@ components:
                 - lastFiveMinutes
                 - lastFifteenMinutes
               description: cpu load average
+            cores:
+              type: array
+              items:
+                type: object
+                properties:
+                  core:
+                    type: integer
+                    format: int16
+                    description: cpu core number
+                  load:
+                    type: string
+                    description: cpu core load
+                required:
+                  - core
+                  - load
+              description: cpu cores
           required:
-            - healthyLimit
-            - loadAverage
+            - cpus
+            - globalAvarage
+            - cores
           description: cpu usage
       description: health output
     Health.HealthOuputLoad:

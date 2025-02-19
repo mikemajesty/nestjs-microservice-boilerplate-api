@@ -20,13 +20,21 @@ export class HealthController {
     const postgresState = await this.service.getPostgresStatus();
     const redisState = await this.service.getRedisStatus();
 
+    const cpuList = await this.service.getCPUCore();
+
+    const cpuStatus = [];
+    for (const [index, core] of cpuList.cpus.entries()) {
+      cpuStatus.push({ core: index + 1, load: `${core.load.toFixed(2)}%` });
+    }
+
     const cpu = {
-      healthyLimit: numCpus,
-      loadAverage: {
+      cpus: numCpus,
+      globalAvarage: {
         lastMinute: this.service.getLoadAvarage(lastMinute, numCpus),
         lastFiveMinutes: this.service.getLoadAvarage(lastFiveMinutes, numCpus),
         lastFifteenMinutes: this.service.getLoadAvarage(lastFifteenMinutes, numCpus)
-      }
+      },
+      cores: cpuStatus
     };
 
     const mongoConnections = await this.service.getMongoConnections();

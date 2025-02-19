@@ -73,11 +73,11 @@ model HealthOuput {
 
   @doc("cpu usage")
   cpu: {
-    @doc("max healthy limit")
-    healthyLimit: int16;
+    @doc("max healthy limit/total cpus")
+    cpus: int16;
 
     @doc("cpu load average")
-    loadAverage: {
+    globalAvarage: {
       @doc("cpu load average on last minute")
       lastMinute: HealthOuputLoad;
 
@@ -87,6 +87,15 @@ model HealthOuput {
       @doc("cpu load average on fifteen minute")
       lastFifteenMinutes: HealthOuputLoad;
     };
+
+    @doc("cpu cores")
+    cores: {
+      @doc("cpu core number")
+      core: int16;
+
+      @doc("cpu core load")
+      load: string;
+    }[];
   };
 }
 

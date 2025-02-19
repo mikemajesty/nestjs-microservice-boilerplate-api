@@ -19,4 +19,5 @@ export abstract class IHealthAdapter {
   abstract getLatency(host?: string): Promise<unknown>;
   abstract getMongoConnections(): Promise<DatabaseConnection>;
   abstract getPostgresConnections(): Promise<DatabaseConnection>;
+  abstract getCPUCore(): Promise<{ cpus: { load: number }[] }>;
 }
