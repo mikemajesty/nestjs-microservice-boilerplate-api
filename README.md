@@ -189,6 +189,7 @@ docs
 ### Microservice architecture.
 
 - I18n
+- Circuit Breaker
 - Docker
 - Observability
   - tracing
