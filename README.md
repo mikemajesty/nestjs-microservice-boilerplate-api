@@ -190,6 +190,7 @@ docs
 
 - I18n
 - Circuit Breaker
+- Process Management and High Availability.
 - Docker
 - Observability
   - tracing

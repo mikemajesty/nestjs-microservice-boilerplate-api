@@ -26,6 +26,7 @@ export default [
             'src/utils/collection.ts',
             '**/test/*.ts',
             '**/commitlint.config.js',
+            '**/ecosystem.config.js',
             '**/*.md'
         ]
     },
