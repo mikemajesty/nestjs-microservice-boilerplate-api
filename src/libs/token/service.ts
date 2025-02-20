@@ -22,7 +22,7 @@ export class TokenService implements ITokenAdapter {
       model,
       this.secret.JWT_SECRET_KEY,
       options || {
-        expiresIn: this.secret.TOKEN_EXPIRATION as string
+        expiresIn: this.secret.TOKEN_EXPIRATION as jwt.SignOptions['expiresIn']
       }
     );
 
