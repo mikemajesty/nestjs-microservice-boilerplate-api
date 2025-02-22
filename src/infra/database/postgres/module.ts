@@ -6,8 +6,8 @@ import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 
 import { ISecretsAdapter, SecretsModule } from '@/infra/secrets';
 
+import { name } from '../../../../package.json';
 import { PostgresService } from './service';
-
 @Module({
   imports: [
     TypeOrmModule.forRootAsync({
@@ -17,13 +17,17 @@ import { PostgresService } from './service';
           ...conn,
           timeout: 5000,
           connectTimeout: 5000,
-          logging: IS_LOCAL,
+          logging: false,
           autoLoadEntities: true,
           namingStrategy: new SnakeNamingStrategy(),
           synchronize: IS_LOCAL,
           migrationsTableName: 'migrations',
           migrations: [path.join(__dirname, '/migrations/*.{ts,js}')],
-          entities: [path.join(__dirname, '/schemas/*.{ts,js}')]
+          entities: [path.join(__dirname, '/schemas/*.{ts,js}')],
+          applicationName: name,
+          extra: {
+            connectionTimeoutMillis: 10000
+          }
         };
       },
       async dataSourceFactory(options) {
