@@ -8,6 +8,7 @@ import compression from 'compression';
 import { NextFunction, Request, Response } from 'express';
 import fs from 'fs';
 import helmet from 'helmet';
+import { IncomingMessage, ServerResponse } from 'http';
 import yaml from 'js-yaml';
 import path from 'path';
 import swagger from 'swagger-ui-express';
@@ -26,6 +27,7 @@ import { name } from '../package.json';
 import { AppModule } from './app.module';
 import { ErrorType } from './infra/logger';
 import { RequestTimeoutInterceptor } from './middlewares/interceptors/request-timeout.interceptor';
+import { CryptoUtils } from './utils/crypto';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true,
@@ -54,25 +56,41 @@ async function bootstrap() {
     ]
   });
 
-  app.use(
-    helmet({
-      contentSecurityPolicy: {
-        directives: {
-          defaultSrc: [`'self'`],
-          styleSrc: [`'self'`, `'unsafe-inline'`],
-          imgSrc: [`'self'`, 'data:', 'blob:', 'validator.swagger.io'],
-          scriptSrc: [`'self'`, `https: 'unsafe-inline'`]
-        }
-      }
-    })
-  );
-
   app.use((req: Request, res: Response, next: NextFunction) => {
     if (req.originalUrl && req.originalUrl.split('/').pop() === 'favicon.ico') {
       return res.sendStatus(204);
     }
+    const nonce = CryptoUtils.generateRandomBase64();
+    res.locals.nonce = nonce;
+    res.setHeader('X-Content-Security-Policy-Nonce', nonce);
     next();
   });
+
+  app.use(
+    helmet({
+      xssFilter: true,
+      hsts: {
+        maxAge: 31536000,
+        includeSubDomains: true,
+        preload: true
+      },
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: [`'self'`],
+          styleSrc: [`'self'`],
+          frameSrc: ["'none'"],
+          upgradeInsecureRequests: [],
+          imgSrc: [`'self'`, 'data:', 'blob:', 'validator.swagger.io'],
+          scriptSrc: [
+            "'self'",
+            (req, res) => {
+              return `'nonce-${(res as ServerResponse<IncomingMessage> & { locals: { nonce: string } }).locals.nonce}'`;
+            }
+          ]
+        }
+      }
+    })
+  );
 
   app.use(compression());
 
