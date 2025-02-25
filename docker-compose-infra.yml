@@ -60,6 +60,8 @@ services:
   zipkin-all-in-one:
     container_name: nestjs-microservice-zipkin-all-in-one
     image: openzipkin/zipkin:latest
+    networks:
+      - collector-network
     ports:
       - '9411:9411'
     env_file:

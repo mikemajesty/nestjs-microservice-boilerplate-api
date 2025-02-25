@@ -11,6 +11,7 @@ import { RedisInstrumentation } from '@opentelemetry/instrumentation-redis-4';
 import { Resource } from '@opentelemetry/resources';
 import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
 import { NodeSDK } from '@opentelemetry/sdk-node';
+import { green, red } from 'colorette';
 
 import { name, version } from '../../package.json';
 import { getPathWithoutUUID } from './request';
@@ -79,7 +80,17 @@ const sdk = new NodeSDK({
   ]
 });
 
-sdk.start();
+const start = () => {
+  try {
+    sdk.start();
+    // eslint-disable-next-line no-console
+    console.log(green('Tracing started.'));
+  } catch (error) {
+    console.error(red('Tracing start error '), error);
+  }
+};
+
+start();
 
 process.on('SIGTERM', () => {
   sdk

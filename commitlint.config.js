@@ -23,7 +23,7 @@ scopes.push(
   'test',
   'migration',
   'core',
-  "swagger"
+  'swagger'
 );
 
 module.exports = {
