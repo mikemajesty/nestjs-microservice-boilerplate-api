@@ -1,7 +1,7 @@
 import './utils/tracing';
 
 import { RequestMethod, VersioningType } from '@nestjs/common';
-import { NestFactory, Reflector } from '@nestjs/core';
+import { NestFactory } from '@nestjs/core';
 import bodyParser from 'body-parser';
 import { bold } from 'colorette';
 import compression from 'compression';
@@ -16,17 +16,10 @@ import swagger from 'swagger-ui-express';
 import { ILoggerAdapter } from '@/infra/logger/adapter';
 import { ISecretsAdapter } from '@/infra/secrets';
 import { ExceptionHandlerFilter } from '@/middlewares/filters';
-import {
-  ExceptionHandlerInterceptor,
-  HttpLoggerInterceptor,
-  MetricsInterceptor,
-  TracingInterceptor
-} from '@/middlewares/interceptors';
 
 import { name } from '../package.json';
 import { AppModule } from './app.module';
 import { ErrorType } from './infra/logger';
-import { RequestTimeoutInterceptor } from './middlewares/interceptors/request-timeout.interceptor';
 import { CryptoUtils } from './utils/crypto';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -40,14 +33,6 @@ async function bootstrap() {
   app.useLogger(loggerService);
 
   app.useGlobalFilters(new ExceptionHandlerFilter(loggerService));
-
-  app.useGlobalInterceptors(
-    new RequestTimeoutInterceptor(new Reflector(), loggerService),
-    new ExceptionHandlerInterceptor(),
-    new HttpLoggerInterceptor(loggerService),
-    new TracingInterceptor(loggerService),
-    new MetricsInterceptor()
-  );
 
   app.setGlobalPrefix('api', {
     exclude: [
