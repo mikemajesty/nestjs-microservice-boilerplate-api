@@ -13,6 +13,13 @@ In this microservice I used the best architecture concepts: Onion Architecture, 
 
 ### Building and Running the application
 
+- install node version
+  ```bash
+  $ nvm install
+  ```
+  ```bash
+  $ nvm use
+  ```
 - install dependencies
   ```
   $ yarn
