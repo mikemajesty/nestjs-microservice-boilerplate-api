@@ -1,6 +1,7 @@
 import "../../utils/model.tsp";
 import "../../utils/exceptions.tsp";
 import "@typespec/http";
+import "@typespec/versioning";
 
 using TypeSpec.Http;
 using TypeSpec.Versioning;
