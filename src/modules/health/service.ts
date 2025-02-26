@@ -99,11 +99,11 @@ export class HealthService implements IHealthAdapter {
 
   getActiveConnections() {
     return new Promise((resolve, reject) => {
-      exec('netstat -an | wc -l', (error, stdout, stderr) => {
+      exec('lsof -i -n | grep ESTABLISHED | wc -l', (error, stdout, stderr) => {
         if (error) {
           reject(`Error getting connection: ${stderr}`);
         }
-        resolve(parseInt(stdout.trim(), 10));
+        resolve(parseInt(stdout.trim(), 10)); // Conta as conexões abertas
       });
     });
   }

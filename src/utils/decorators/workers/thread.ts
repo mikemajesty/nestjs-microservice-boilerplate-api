@@ -1,13 +1,13 @@
 import { parentPort } from 'worker_threads';
 
-parentPort?.on('message', (data) => {
+parentPort?.on('message', async (data) => {
   try {
     const [fnCode, args] = data;
 
     const removeAsync = (fnCode as string).replace('async', '');
 
     const fn = new Function(`return async function ${removeAsync}`)();
-    const result = fn(...args);
+    const result = await fn(...args);
 
     parentPort?.postMessage(result);
   } catch (error) {
