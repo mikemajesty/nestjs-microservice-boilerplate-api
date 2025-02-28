@@ -23,19 +23,29 @@ export function RunInNewThread(timeout?: number) {
           const error = new ApiTimeoutException('worker execution timed out.', { timeout });
           Object.assign(error, { context: `${className}/${methodName}` });
 
-          worker.postMessage(error);
+          console.error(error);
           worker.terminate();
         }, timeout);
       }
 
-      worker.on('message', () => {
+      worker.on('message', (value: { error: Error; success: unknown }) => {
         if (timeoutId) clearTimeout(timeoutId);
+        if (value.error) {
+          return Promise.reject(value.error);
+        }
+
+        if (value.success) {
+          return Promise.resolve(value.success);
+        }
       });
 
       worker.on('error', (err: Error) => {
         if (timeoutId) clearTimeout(timeoutId);
-
-        console.error(red('worker error: '), err);
+        if (err.name === 'ReferenceError') {
+          console.error(red('worker error '), err);
+          return;
+        }
+        console.error(red('worker error '), err?.message ?? err);
       });
 
       worker.on('exit', (code: number) => {

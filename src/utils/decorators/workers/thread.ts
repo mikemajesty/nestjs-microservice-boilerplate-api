@@ -9,8 +9,8 @@ parentPort?.on('message', async (data) => {
     const fn = new Function(`return async function ${removeAsync}`)();
     const result = await fn(...args);
 
-    parentPort?.postMessage(result);
+    parentPort?.postMessage({ success: result });
   } catch (error) {
-    parentPort?.postMessage(error);
+    parentPort?.postMessage({ error });
   }
 });

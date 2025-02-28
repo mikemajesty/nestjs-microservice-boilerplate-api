@@ -103,7 +103,7 @@ export class HealthService implements IHealthAdapter {
         if (error) {
           reject(`Error getting connection: ${stderr}`);
         }
-        resolve(parseInt(stdout.trim(), 10)); // Conta as conexões abertas
+        resolve(parseInt(stdout.trim(), 10));
       });
     });
   }
