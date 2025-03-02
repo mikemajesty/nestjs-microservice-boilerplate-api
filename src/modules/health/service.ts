@@ -99,7 +99,7 @@ export class HealthService implements IHealthAdapter {
 
   getActiveConnections() {
     return new Promise((resolve, reject) => {
-      exec('lsof -i -n | grep ESTABLISHED | wc -l', (error, stdout, stderr) => {
+      exec(`lsof -i -n -p ${process.pid} | grep ESTABLISHED | wc -l`, (error, stdout, stderr) => {
         if (error) {
           reject(`Error getting connection: ${stderr}`);
         }
