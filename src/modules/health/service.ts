@@ -11,7 +11,7 @@ import { ErrorType, ILoggerAdapter } from '@/infra/logger';
 
 import { ApiInternalServerException } from './../../utils/exception';
 import { IHealthAdapter } from './adapter';
-import { DatabaseConnection, HealthStatus, Load } from './types';
+import { DatabaseConnectionOutput, DatabaseMemoryOutput, HealthStatus, Load } from './types';
 
 export class HealthService implements IHealthAdapter {
   postgres!: DataSource;
@@ -20,7 +20,48 @@ export class HealthService implements IHealthAdapter {
 
   constructor(private readonly logger: ILoggerAdapter) {}
 
-  async getMongoConnections(): Promise<DatabaseConnection> {
+  async getPostgresMemory(): Promise<DatabaseMemoryOutput> {
+    try {
+      const result = await this.postgres.query(`
+        SELECT 
+          sum(pg_database_size(datname)) AS "ramUsed",
+          sum(pg_stat_get_db_blocks_fetched(d.oid) * 8192) AS "reservedMemory"
+        FROM pg_database d;
+      `);
+
+      return {
+        ramUsed: `${(result[0].ramUsed / 1024 / 1024).toFixed(2)} MB`,
+        reservedMemory: `${(result[0].reservedMemory / 1024 / 1024).toFixed(2)} MB`
+      };
+    } catch (error) {
+      error = this.buildError(error, `${HealthService.name}/getPostgresMemory`);
+      this.logger.error(error as ErrorType);
+      return { ramUsed: 0, reservedMemory: 0 };
+    }
+  }
+
+  async getMongoMemory(): Promise<DatabaseMemoryOutput> {
+    try {
+      if (this.mongo.readyState !== 1) {
+        throw new ApiInternalServerException('mongo down');
+      }
+
+      if (this.mongo.db) {
+        const status = await this.mongo.db.command({ serverStatus: 1 });
+
+        return {
+          ramUsed: `${(status.mem.resident / (1024 * 1024)).toFixed(2)} MB`,
+          reservedMemory: `${(status.mem.virtual / (1024 * 1024)).toFixed(2)} MB`
+        };
+      }
+      return { ramUsed: 0, reservedMemory: 0 };
+    } catch (error) {
+      error = this.buildError(error, `${HealthService.name}/getMongoMemory`);
+      this.logger.error(error as ErrorType);
+      return { ramUsed: 0, reservedMemory: 0 };
+    }
+  }
+  async getMongoConnections(): Promise<DatabaseConnectionOutput> {
     try {
       if (this.mongo.readyState !== 1) {
         throw new ApiInternalServerException('mongo down');
@@ -39,7 +80,7 @@ export class HealthService implements IHealthAdapter {
     }
   }
 
-  async getPostgresConnections(): Promise<DatabaseConnection> {
+  async getPostgresConnections(): Promise<DatabaseConnectionOutput> {
     try {
       const manager = this.postgres.manager;
       const currentQuery = `SELECT COUNT(*) FROM pg_stat_activity WHERE state = 'active'`;

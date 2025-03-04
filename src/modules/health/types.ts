@@ -23,11 +23,13 @@ export type HealthOutput = {
   version: string;
   mongo: {
     status: string;
-    connection: DatabaseConnection;
+    connection: DatabaseConnectionOutput;
+    memory: DatabaseMemoryOutput;
   };
   postgres: {
     status: string;
-    connection: DatabaseConnection;
+    connection: DatabaseConnectionOutput;
+    memory: DatabaseMemoryOutput;
   };
   redisState: string;
   network: {
@@ -51,9 +53,14 @@ export type Load = {
   status: string;
 };
 
-export type DatabaseConnection = {
+export type DatabaseConnectionOutput = {
   active: number;
   available: number;
   current: number;
   totalCreated: number;
+};
+
+export type DatabaseMemoryOutput = {
+  ramUsed: number | string;
+  reservedMemory: number | string;
 };

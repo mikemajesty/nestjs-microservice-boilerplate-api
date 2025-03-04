@@ -127,4 +127,13 @@ model DatabaseStatus {
     @doc("The total number of connections created since the server started.")
     totalCreated: int64;
   };
+
+  @doc("Memory usage statistics for the database instance.")
+  memory: {
+    @doc("The amount of RAM currently used by database in megabytes (MB).")
+    ramUsed: string;
+
+    @doc("The total amount of virtual memory reserved by database in megabytes (MB).")
+    reservedMemory: string;
+  };
 }

@@ -38,6 +38,9 @@ export class HealthController {
     };
 
     const mongoConnections = await this.service.getMongoConnections();
+    const mongoMemory = await this.service.getMongoMemory();
+
+    const postgresMemory = await this.service.getPostgresMemory();
     const postgresConnections = await this.service.getPostgresConnections();
 
     const latency = await this.service.getLatency();
@@ -48,11 +51,13 @@ export class HealthController {
       version,
       mongo: {
         status: mongoState,
-        connection: mongoConnections
+        connection: mongoConnections,
+        memory: mongoMemory
       },
       postgres: {
         status: postgresState,
-        connection: postgresConnections
+        connection: postgresConnections,
+        memory: postgresMemory
       },
       redisState,
       network: {

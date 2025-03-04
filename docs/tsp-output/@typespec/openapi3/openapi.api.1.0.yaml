@@ -1545,6 +1545,7 @@ components:
       required:
         - status
         - connection
+        - memory
       properties:
         status:
           type: string
@@ -1574,6 +1575,19 @@ components:
             - current
             - totalCreated
           description: The set of numbers you provided represents connection metrics for the db server.
+        memory:
+          type: object
+          properties:
+            ramUsed:
+              type: string
+              description: The amount of RAM currently used by database in megabytes (MB).
+            reservedMemory:
+              type: string
+              description: The total amount of virtual memory reserved by database in megabytes (MB).
+          required:
+            - ramUsed
+            - reservedMemory
+          description: Memory usage statistics for the database instance.
       description: db information
     Health.HealthOuput:
       type: object
