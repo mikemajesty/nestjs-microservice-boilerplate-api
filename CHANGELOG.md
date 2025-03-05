@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/v1.2.0...v1.3.0) (2025-03-05)
+
+
+### Features
+
+* **deps:** change tag name ([06e5c84](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/06e5c84d76421294a1c73fef12661002ff29feb7))
+
 # [1.2.0](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/v1.1.0...v1.2.0) (2025-03-05)
 
 
