@@ -2518,7 +2518,7 @@
     p-filter "^4.0.0"
     url-join "^5.0.0"
 
-"@semantic-release/npm@^12.0.0":
+"@semantic-release/npm@^12.0.0", "@semantic-release/npm@^12.0.1":
   version "12.0.1"
   resolved "https://registry.npmjs.org/@semantic-release/npm/-/npm-12.0.1.tgz"
   integrity sha512-/6nntGSUGK2aTOI0rHPwY3ZjgY9FkXmEHbW9Kr+62NVOsyqpKKeP0lrCH+tphv+EsNdJNmqqwijTEnVWUMQ2Nw==
