@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/v1.0.0-production...v1.1.0-production) (2025-03-05)
+
+
+### Features
+
+* **deps:** remove pipe item ([8592dba](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/8592dba03aed5f99ceaa1464041341314fb296aa))
+
 # 1.0.0 (2025-03-05)
 
 
