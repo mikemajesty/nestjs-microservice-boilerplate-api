@@ -2,7 +2,7 @@
   "branches": [
     "master"
   ],
-  "tagFormat": "v${version}",
+  "tagFormat": "v${version}-production",
   "plugins": [
     "@semantic-release/commit-analyzer",
     "@semantic-release/release-notes-generator",
@@ -14,6 +14,12 @@
       }
     ],
     [
+      "@semantic-release/npm",
+      {
+        "npmPublish": false
+      }
+    ],
+    [
       "@semantic-release/git",
       {
         "assets": [
@@ -22,12 +28,6 @@
           "package-lock.json"
         ],
         "message": "chore(release): ${nextRelease.version} [skip ci]"
-      }
-    ],
-    [
-      "@semantic-release/npm",
-      {
-        "npmPublish": false
       }
     ],
     "@semantic-release/github"
