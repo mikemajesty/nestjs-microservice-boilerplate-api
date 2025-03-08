@@ -1,0 +1,18 @@
+config:
+  target: 'http://localhost:4000'
+  phases:
+    - duration: 60
+      arrivalRate: 100
+    - duration: 60
+      arrivalRate: 140
+
+scenarios:
+  - flow:
+      - post:
+          url: '/api/v1/login'
+          json:
+            email: 'admin@admin.com'
+            password: 'admin'
+          headers:
+            accept: 'application/json'
+            Content-Type: 'application/json'
