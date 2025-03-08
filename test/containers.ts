@@ -10,7 +10,7 @@ import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 import { RedisService } from '@/infra/cache/redis';
 import { ConnectionName } from '@/infra/database/enum';
 import { PostgresService } from '@/infra/database/postgres';
-import { ILoggerAdapter } from '@/infra/logger';
+import { ILoggerAdapter, LoggerService } from '@/infra/logger';
 
 export class TestMongoContainer {
   mongoContainer!: StartedMongoDBContainer;
@@ -73,7 +73,7 @@ export class TestRedisContainer {
   client!: RedisClientType;
 
   getTestRedis = async (): Promise<RedisService> => {
-    const logger: ILoggerAdapter = { error: console.error, log: console.log } as ILoggerAdapter;
+    const logger: ILoggerAdapter = { error: console.error, log: LoggerService.log } as ILoggerAdapter;
     this.redisContainer = await new RedisContainer().start();
     this.client = createClient({ url: this.redisContainer.getConnectionUrl() }) as RedisClientType;
     await this.client.connect();

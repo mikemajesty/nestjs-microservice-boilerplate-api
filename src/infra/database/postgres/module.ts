@@ -26,7 +26,10 @@ import { PostgresService } from './service';
           entities: [path.join(__dirname, '/schemas/*.{ts,js}')],
           applicationName: name,
           extra: {
-            connectionTimeoutMillis: 10000
+            connectionTimeoutMillis: 10000,
+            idleTimeoutMillis: 30000,
+            max: 90,
+            min: 10
           }
         };
       },

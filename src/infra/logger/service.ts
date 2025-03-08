@@ -11,11 +11,18 @@ import { DateUtils } from '@/utils/date';
 import { ApiBadRequestException, ApiInternalServerException, BaseException } from '@/utils/exception';
 import { UUIDUtils } from '@/utils/uuid';
 
+import { name } from '../../../package.json';
 import { ILoggerAdapter } from './adapter';
 import { ErrorType, MessageType } from './types';
 
 @Injectable({ scope: Scope.REQUEST })
 export class LoggerService implements ILoggerAdapter {
+  static log(message: string) {
+    const timestamp = DateUtils.getDateStringWithFormat();
+    // eslint-disable-next-line no-console
+    console.log(`${gray('TRACE')} [${timestamp}]: [${blue(name)}] ${green(message)}`);
+  }
+
   private app!: string;
 
   logger!: HttpLogger;
@@ -44,7 +51,7 @@ export class LoggerService implements ILoggerAdapter {
   }
 
   log(message: string): void {
-    this.logger.logger.trace(green(message));
+    LoggerService.log(message);
   }
 
   debug({ message, context, obj = {} }: MessageType): void {
