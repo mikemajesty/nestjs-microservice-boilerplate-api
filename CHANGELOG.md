@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/v1.1.0-production...v1.2.0-production) (2025-03-08)
+
+
+### Features
+
+* **database:** add more database feature ([d3dcbdf](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/d3dcbdf1bac917d53e8cd58e145c69aeb63aa911))
+
 # [1.1.0](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/v1.0.0-production...v1.1.0-production) (2025-03-05)
 
 
