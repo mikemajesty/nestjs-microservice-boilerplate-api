@@ -1,3 +1,11 @@
+# [1.3.0](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/v1.2.0-production...v1.3.0-production) (2025-03-08)
+
+
+### Features
+
+* **config:** add artillery config ([29c8978](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/29c89783e63eb66f1b81c30ef1f9e52dc4ccc5fa))
+* **config:** add artillery config ([a0ed227](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/a0ed2275844fa549f294c7dec250fadfc3e396c8))
+
 # [1.2.0](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/v1.1.0-production...v1.2.0-production) (2025-03-08)
 
 
