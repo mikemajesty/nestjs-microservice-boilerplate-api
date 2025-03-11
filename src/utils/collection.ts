@@ -1,48 +1,60 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { ApiBadRequestException } from './exception';
 import { SortEnum } from './sort';
 
 export class CollectionUtil {
-  static groupBy = <T>(collection: unknown[] = [], key: string): { [key: string]: T[] } => {
-    if (!key.length) {
-      throw new ApiBadRequestException();
+  static groupBy<T>(collection: T[], property: keyof T): Record<string, T[]> {
+    if (collection.length === 0) {
+      return {};
     }
 
-    return collection.reduce((prev: any, next: any) => {
-      prev[next[key]] = prev[next[key]] ?? [];
-      prev[next[key]].push(next);
-      return prev;
-    }, {}) as { [key: string]: [] };
-  };
+    return collection.reduce(
+      (accumulator, currentItem) => {
+        const key = currentItem[property];
+        if (!accumulator[`${key}`]) {
+          accumulator[`${key}`] = [];
+        }
+        accumulator[`${key}`].push(currentItem);
+        return accumulator;
+      },
+      {} as Record<string, T[]>
+    );
+  }
 
-  static group = (collection: unknown[]) => {
-    return collection.reduce((rv: any, x: any) => {
-      (rv[x] = rv[x] || []).push(x);
+  static group = <T>(collection: T[]): Record<string, T[]> => {
+    return collection.reduce((rv: Record<string, T[]>, x: T) => {
+      const key = String(x);
+      (rv[key] = rv[key] || []).push(x);
       return rv;
     }, {});
   };
 
-  static maxBy = (collection: unknown[] = [], key: string) => {
-    if (!key.length) {
-      throw new ApiBadRequestException('key is required');
+  static maxBy<T>(collection: T[] = [], key: keyof T): T | null {
+    if (collection.length === 0) {
+      return null;
     }
 
-    return collection.reduce((prev: any, current: any) => {
-      return Number(prev[key] > current[key]) ? prev : current;
+    if (!key) {
+      throw new Error('key is required');
+    }
+
+    return collection.reduce((prev, current) => {
+      return prev[key] > current[key] ? prev : current;
     });
-  };
+  }
 
   static max = (collection: string[] | number[]) => {
     return Math.max(...collection.map((c: number | string) => Number(c)));
   };
 
-  static minBy = (collection: unknown[] = [], key: string) => {
-    if (!key.length) {
-      throw new ApiBadRequestException('key is required');
+  static minBy = <T>(collection: T[], key: keyof T): T | null => {
+    if (collection.length === 0) {
+      return null;
     }
 
-    return collection.reduce((prev: any, current: any) => {
-      return Number(prev[key] > current[key]) ? current : prev;
+    return collection.reduce((prev, current) => {
+      if (prev[key] < current[key]) {
+        return prev;
+      }
+      return current;
     });
   };
 
@@ -59,27 +71,23 @@ export class CollectionUtil {
     }) as number;
   };
 
-  static sumBy = (collection: unknown[] = [], key: string) => {
-    if (!key.length) {
-      throw new ApiBadRequestException('key is required');
+  static sumBy<T>(collection: T[] = [], key: keyof T): number {
+    if (!key) {
+      throw new Error('key is required');
     }
 
-    if (!collection.length) {
+    if (collection.length === 0) {
       return 0;
     }
 
-    return collection.reduce((prev: any, current: any): number => {
-      if (isNaN(prev[key] || 0)) {
-        return 0 + Number(current[key]);
+    return collection.reduce((sum, current) => {
+      const value = current[key];
+      if (typeof value === 'number') {
+        return sum + value;
       }
-
-      if (prev[key]) {
-        return Number(prev[key]) + Number(current[key]);
-      }
-
-      return Number(prev) + Number(current[key]);
-    }) as number;
-  };
+      return sum;
+    }, 0);
+  }
 
   static hasDuplicated = (collection: unknown[] = []) => {
     return new Set(collection).size !== collection.length;
@@ -95,25 +103,28 @@ export class CollectionUtil {
     return array;
   }
 
-  static sortNullToLastPosition = <T>(collection: T[], key: keyof T, sort: SortEnum = SortEnum.asc) => {
-    return collection.sort((a: any, b: any) => {
-      if (a[key.toString()] === b[key.toString()]) {
+  static sortNullToLastPosition = <T>(collection: T[], key: keyof T, sort: SortEnum = SortEnum.asc): T[] => {
+    return collection.sort((a: T, b: T) => {
+      const aValue = a[key] ?? null;
+      const bValue = b[key] ?? null;
+
+      if (aValue === bValue) {
         return 0;
       }
 
-      if (a[key.toString()] === null) {
+      if (aValue === null) {
         return 1;
       }
 
-      if (b[key.toString()] === null) {
+      if (bValue === null) {
         return -1;
       }
 
       if (sort === SortEnum.asc) {
-        return a[key.toString()] < b[key.toString()] ? -1 : 1;
+        return aValue < bValue ? -1 : 1;
       }
 
-      return a[key.toString()] < b[key.toString()] ? 1 : -1;
+      return aValue < bValue ? 1 : -1;
     });
   };
 }

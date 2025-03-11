@@ -28,25 +28,24 @@ export class MongoUtils {
   };
 
   static diacriticSensitiveRegex = (filter: string | string[]): string | string[] => {
-    if (typeof filter === 'string') {
-      return filter
+    const handlerFilter = (innerFilter: string) => {
+      return innerFilter
         .replace(/a/g, '[a,á,à,ä,â,ã]')
         .replace(/e/g, '[e,é,ë,è,ê]')
         .replace(/i/g, '[i,í,ï,ì,î]')
         .replace(/o/g, '[o,ó,ö,ò,ô]')
         .replace(/c/g, '[c,ç]')
         .replace(/u/g, '[u,ü,ú,ù]');
+    };
+
+    if (typeof filter === 'string') {
+      return handlerFilter(filter);
     }
     if (typeof filter === 'object') {
       const regexText = filter.map((f) => {
-        return f
-          .replace(/a/g, '[a,á,à,ä,â,ã]')
-          .replace(/e/g, '[e,é,ë,è,ê]')
-          .replace(/i/g, '[i,í,ï,ì,î]')
-          .replace(/o/g, '[o,ó,ö,ò,ô]')
-          .replace(/c/g, '[c,ç]')
-          .replace(/u/g, '[u,ü,ú,ù]');
+        return handlerFilter(f);
       });
+
       return regexText;
     }
 

@@ -4,7 +4,7 @@ import { ApiBadRequestException } from '@/utils/exception';
 import { DatabaseOperationCommand, DatabaseOperationEnum } from './types';
 
 export const validateFindByCommandsFilter = <T>(filterList: DatabaseOperationCommand<T>[]) => {
-  const groupList = CollectionUtil.groupBy<{ command: unknown }>(filterList, 'property');
+  const groupList = CollectionUtil.groupBy<DatabaseOperationCommand<T>>(filterList, 'property');
 
   for (const key in groupList) {
     const commands = groupList[`${key}`].map((g) => g.command);
