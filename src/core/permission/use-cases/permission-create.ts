@@ -1,10 +1,9 @@
-import { z } from 'zod';
-
 import { ILoggerAdapter } from '@/infra/logger';
 import { ValidateSchema } from '@/utils/decorators';
 import { ApiConflictException } from '@/utils/exception';
 import { IUsecase } from '@/utils/usecase';
 import { UUIDUtils } from '@/utils/uuid';
+import { Infer } from '@/utils/validator';
 
 import { IPermissionRepository } from '../repository/permission';
 import { PermissionEntity, PermissionEntitySchema } from './../entity/permission';
@@ -37,5 +36,5 @@ export class PermissionCreateUsecase implements IUsecase {
   }
 }
 
-export type PermissionCreateInput = z.infer<typeof PermissionCreateSchema>;
+export type PermissionCreateInput = Infer<typeof PermissionCreateSchema>;
 export type PermissionCreateOutput = PermissionEntity;

@@ -1,5 +1,3 @@
-import { z } from 'zod';
-
 import { RoleEnum } from '@/core/role/entity/role';
 import { IRoleRepository } from '@/core/role/repository/role';
 import { ILoggerAdapter } from '@/infra/logger';
@@ -7,6 +5,7 @@ import { ValidateSchema } from '@/utils/decorators';
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception';
 import { ApiTrancingInput } from '@/utils/request';
 import { IUsecase } from '@/utils/usecase';
+import { Infer, InputValidator } from '@/utils/validator';
 
 import { UserEntity, UserEntitySchema } from '../entity/user';
 import { IUserRepository } from '../repository/user';
@@ -15,7 +14,7 @@ export const UserUpdateSchema = UserEntitySchema.pick({
   id: true
 })
   .merge(UserEntitySchema.pick({ name: true, email: true, roles: true }).partial())
-  .merge(z.object({ roles: z.array(z.nativeEnum(RoleEnum)).optional() }))
+  .merge(InputValidator.object({ roles: InputValidator.array(InputValidator.nativeEnum(RoleEnum)).optional() }))
   .strict();
 
 export class UserUpdateUsecase implements IUsecase {
@@ -69,5 +68,5 @@ export class UserUpdateUsecase implements IUsecase {
   }
 }
 
-export type UserUpdateInput = Partial<z.infer<typeof UserUpdateSchema>>;
+export type UserUpdateInput = Partial<Infer<typeof UserUpdateSchema>>;
 export type UserUpdateOutput = UserEntity;

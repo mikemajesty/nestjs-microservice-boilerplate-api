@@ -1,11 +1,11 @@
 import { Test } from '@nestjs/testing';
 import { TestMock } from 'test/mock';
-import { ZodIssue } from 'zod';
 
 import { ICacheAdapter } from '@/infra/cache';
 import { ISecretsAdapter, SecretsModule } from '@/infra/secrets';
 import { TokenLibModule } from '@/libs/token';
 import { ILogoutAdapter } from '@/modules/logout/adapter';
+import { ZodExceptionIssue } from '@/utils/validator';
 
 import { LogoutInput, LogoutUsecase } from '../user-logout';
 
@@ -40,7 +40,7 @@ describe(LogoutUsecase.name, () => {
   test('when no input is specified, should expect an error', async () => {
     await TestMock.expectZodError(
       () => usecase.execute({} as LogoutInput, TestMock.getMockTracing()),
-      (issues: ZodIssue[]) => {
+      (issues: ZodExceptionIssue[]) => {
         expect(issues).toEqual([{ message: 'Required', path: TestMock.nameOf<LogoutInput>('token') }]);
       }
     );

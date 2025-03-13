@@ -1,9 +1,8 @@
-import { z } from 'zod';
-
 import { PermissionEntitySchema } from '@/core/permission/entity/permission';
 import { ValidateSchema } from '@/utils/decorators';
 import { ApiNotFoundException } from '@/utils/exception';
 import { IUsecase } from '@/utils/usecase';
+import { Infer } from '@/utils/validator';
 
 import { PermissionEntity } from '../entity/permission';
 import { IPermissionRepository } from '../repository/permission';
@@ -27,5 +26,5 @@ export class PermissionGetByIdUsecase implements IUsecase {
   }
 }
 
-export type PermissionGetByIdInput = z.infer<typeof PermissionGetByIdSchema>;
+export type PermissionGetByIdInput = Infer<typeof PermissionGetByIdSchema>;
 export type PermissionGetByIdOutput = PermissionEntity;

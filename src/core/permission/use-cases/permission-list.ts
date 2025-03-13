@@ -1,15 +1,14 @@
-import { z } from 'zod';
-
 import { PermissionEntity } from '@/core/permission/entity/permission';
 import { ValidateSchema } from '@/utils/decorators';
 import { PaginationInput, PaginationOutput, PaginationSchema } from '@/utils/pagination';
 import { SearchSchema } from '@/utils/search';
 import { SortSchema } from '@/utils/sort';
 import { IUsecase } from '@/utils/usecase';
+import { InputValidator } from '@/utils/validator';
 
 import { IPermissionRepository } from '../repository/permission';
 
-export const PermissionListSchema = z.intersection(PaginationSchema, SortSchema.merge(SearchSchema));
+export const PermissionListSchema = InputValidator.intersection(PaginationSchema, SortSchema.merge(SearchSchema));
 
 export class PermissionListUsecase implements IUsecase {
   constructor(private readonly permissionRepository: IPermissionRepository) {}

@@ -1,10 +1,9 @@
-import { z } from 'zod';
-
 import { ICatRepository } from '@/core/cat/repository/cat';
 import { ValidateSchema } from '@/utils/decorators';
 import { ApiNotFoundException } from '@/utils/exception';
 import { ApiTrancingInput } from '@/utils/request';
 import { IUsecase } from '@/utils/usecase';
+import { Infer } from '@/utils/validator';
 
 import { CatEntity, CatEntitySchema } from '../entity/cat';
 
@@ -34,5 +33,5 @@ export class CatDeleteUsecase implements IUsecase {
   }
 }
 
-export type CatDeleteInput = z.infer<typeof CatDeleteSchema>;
+export type CatDeleteInput = Infer<typeof CatDeleteSchema>;
 export type CatDeleteOutput = CatEntity;

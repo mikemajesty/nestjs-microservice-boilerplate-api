@@ -1,11 +1,12 @@
 import { ArgumentsHost, Catch, ExceptionFilter as AppExceptionFilter, HttpException } from '@nestjs/common';
 import { AxiosError } from 'axios';
-import { ZodError, ZodIssue, ZodUnrecognizedKeysIssue } from 'zod';
+import { ZodError, ZodUnrecognizedKeysIssue } from 'zod';
 
 import { ILoggerAdapter } from '@/infra/logger/adapter';
 import { DateUtils } from '@/utils/date';
 import { ApiBadRequestException, ApiErrorType, ApiInternalServerException, BaseException } from '@/utils/exception';
 import { DefaultErrorMessage } from '@/utils/http-status';
+import { ZodExceptionIssue } from '@/utils/validator';
 
 @Catch()
 export class ExceptionHandlerFilter implements AppExceptionFilter {
@@ -43,14 +44,15 @@ export class ExceptionHandlerFilter implements AppExceptionFilter {
     }
 
     if (exception instanceof ZodError) {
-      return exception.issues.map((issue: ZodIssue) => {
+      return exception.issues.map((issue: ZodExceptionIssue) => {
         const path = (issue as ZodUnrecognizedKeysIssue)?.keys?.join('.') || issue?.path?.join('.') || 'key';
 
         const idArrayError = new RegExp(/^\d./).exec(path);
         if (idArrayError?.length) {
           return `${path.replace(/^\d./, `array position: ${Number(new RegExp(/^\d/)?.exec(path)?.[0])}, property: `)}: ${issue.message.toLowerCase()}`;
         }
-        return `${path}: ${issue.message.toLowerCase()}`;
+
+        return `${path}: ${issue.message}`;
       });
     }
 

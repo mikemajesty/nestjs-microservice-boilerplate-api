@@ -21,6 +21,7 @@ import { name } from '../package.json';
 import { AppModule } from './app.module';
 import { ErrorType } from './infra/logger';
 import { CryptoUtils } from './utils/crypto';
+import { changeLanguage, initI18n, LocaleInput } from './utils/validator';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -42,7 +43,14 @@ async function bootstrap() {
     ]
   });
 
-  app.use((req: Request, res: Response, next: NextFunction) => {
+  await initI18n();
+
+  app.use(async (req: Request, res: Response, next: NextFunction) => {
+    const languegeQuery = req.query.lang;
+    const acceptLanguage = req.headers['accept-language'];
+
+    const locale = [languegeQuery, (acceptLanguage || '').split(',')[0].split(';')[0], 'en'].find(Boolean);
+    await changeLanguage(locale as LocaleInput);
     if (req.originalUrl && req.originalUrl.split('/').pop() === 'favicon.ico') {
       return res.sendStatus(204);
     }

@@ -1,9 +1,9 @@
 import { Test } from '@nestjs/testing';
 import { TestMock } from 'test/mock';
-import { ZodIssue } from 'zod';
 
 import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
 import { IUserListAdapter } from '@/modules/user/adapter';
+import { ZodExceptionIssue } from '@/utils/validator';
 
 import { UserEntity } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
@@ -38,7 +38,7 @@ describe(UserListUsecase.name, () => {
   test('when no input is specified, should expect an error', async () => {
     await TestMock.expectZodError(
       () => usecase.execute({} as UserListInput),
-      (issues: ZodIssue[]) => {
+      (issues: ZodExceptionIssue[]) => {
         expect(issues).toEqual([{ message: 'Required', path: TestMock.nameOf<UserListInput>('search') }]);
       }
     );

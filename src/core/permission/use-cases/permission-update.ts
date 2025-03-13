@@ -1,10 +1,9 @@
-import { z } from 'zod';
-
 import { IPermissionRepository } from '@/core/permission/repository/permission';
 import { ILoggerAdapter } from '@/infra/logger';
 import { ValidateSchema } from '@/utils/decorators';
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception';
 import { IUsecase } from '@/utils/usecase';
+import { Infer } from '@/utils/validator';
 
 import { PermissionEntity, PermissionEntitySchema } from './../entity/permission';
 
@@ -47,5 +46,5 @@ export class PermissionUpdateUsecase implements IUsecase {
   }
 }
 
-export type PermissionUpdateInput = z.infer<typeof PermissionUpdateSchema>;
+export type PermissionUpdateInput = Infer<typeof PermissionUpdateSchema>;
 export type PermissionUpdateOutput = PermissionEntity;

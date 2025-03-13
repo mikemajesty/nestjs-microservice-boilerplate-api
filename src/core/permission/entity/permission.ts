@@ -1,21 +1,19 @@
-import { z } from 'zod';
-
 import { RoleEntity } from '@/core/role/entity/role';
 import { BaseEntity } from '@/utils/entity';
+import { Infer, InputValidator } from '@/utils/validator';
 
-const ID = z.string().uuid();
-const Name = z
-  .string()
+const ID = InputValidator.string().uuid();
+const Name = InputValidator.string()
   .transform((value) => value.trim().replace(/ /g, '_').toLowerCase())
   .refine((val) => val.includes(':'), {
     message: "permission must contains ':'"
   });
-const CreatedAt = z.date().nullish().optional();
-const UpdatedAt = z.date().nullish().optional();
-const DeletedAt = z.date().nullish().optional();
-const Roles = z.array(z.unknown()).optional();
+const CreatedAt = InputValidator.date().nullish().optional();
+const UpdatedAt = InputValidator.date().nullish().optional();
+const DeletedAt = InputValidator.date().nullish().optional();
+const Roles = InputValidator.array(InputValidator.unknown()).optional();
 
-export const PermissionEntitySchema = z.object({
+export const PermissionEntitySchema = InputValidator.object({
   id: ID,
   name: Name,
   roles: Roles,
@@ -24,7 +22,7 @@ export const PermissionEntitySchema = z.object({
   deletedAt: DeletedAt
 });
 
-type Permission = z.infer<typeof PermissionEntitySchema>;
+type Permission = Infer<typeof PermissionEntitySchema>;
 
 export class PermissionEntity extends BaseEntity<PermissionEntity>() {
   name!: string;

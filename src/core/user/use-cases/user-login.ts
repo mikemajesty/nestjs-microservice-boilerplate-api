@@ -1,11 +1,10 @@
-import { z } from 'zod';
-
 import { ITokenAdapter } from '@/libs/token';
 import { ValidateSchema } from '@/utils/decorators';
 import { ApiNotFoundException } from '@/utils/exception';
 import { ApiTrancingInput, UserRequest } from '@/utils/request';
 import { IUsecase } from '@/utils/usecase';
 import { UUIDUtils } from '@/utils/uuid';
+import { Infer } from '@/utils/validator';
 
 import { UserEntitySchema } from '../entity/user';
 import { UserPasswordEntity, UserPasswordEntitySchema } from '../entity/user-password';
@@ -58,5 +57,5 @@ export class LoginUsecase implements IUsecase {
   }
 }
 
-export type LoginInput = z.infer<typeof LoginSchema>;
+export type LoginInput = Infer<typeof LoginSchema>;
 export type LoginOutput = { accessToken: string; refreshToken: string };

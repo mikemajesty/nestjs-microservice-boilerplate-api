@@ -1,11 +1,11 @@
 import { Test } from '@nestjs/testing';
 import { TestMock } from 'test/mock';
-import { ZodIssue } from 'zod';
 
 import { ILoggerAdapter } from '@/infra/logger';
 import { CreatedModel } from '@/infra/repository';
 import { IPermissionCreateAdapter } from '@/modules/permission/adapter';
 import { ApiConflictException } from '@/utils/exception';
+import { ZodExceptionIssue } from '@/utils/validator';
 
 import { PermissionEntity } from '../../entity/permission';
 import { IPermissionRepository } from '../../repository/permission';
@@ -45,7 +45,7 @@ describe(PermissionCreateUsecase.name, () => {
   test('when no input is specified, should expect an error', async () => {
     await TestMock.expectZodError(
       () => usecase.execute({} as PermissionCreateInput),
-      (issues: ZodIssue[]) => {
+      (issues: ZodExceptionIssue[]) => {
         expect(issues).toEqual([{ message: 'Required', path: TestMock.nameOf<PermissionCreateInput>('name') }]);
       }
     );

@@ -1,5 +1,3 @@
-import { z } from 'zod';
-
 import { RoleEnum } from '@/core/role/entity/role';
 import { IRoleRepository } from '@/core/role/repository/role';
 import { SendEmailInput } from '@/infra/email';
@@ -12,6 +10,7 @@ import { ApiConflictException, ApiNotFoundException } from '@/utils/exception';
 import { ApiTrancingInput } from '@/utils/request';
 import { IUsecase } from '@/utils/usecase';
 import { UUIDUtils } from '@/utils/uuid';
+import { Infer, InputValidator } from '@/utils/validator';
 
 import { UserEntity, UserEntitySchema } from '../entity/user';
 import { UserPasswordEntity, UserPasswordEntitySchema } from '../entity/user-password';
@@ -22,7 +21,7 @@ export const UserCreateSchema = UserEntitySchema.pick({
   name: true
 })
   .merge(UserPasswordEntitySchema.pick({ password: true }))
-  .merge(z.object({ roles: z.array(z.nativeEnum(RoleEnum)).min(1) }));
+  .merge(InputValidator.object({ roles: InputValidator.array(InputValidator.nativeEnum(RoleEnum)).min(1) }));
 
 export class UserCreateUsecase implements IUsecase {
   constructor(
@@ -73,5 +72,5 @@ export class UserCreateUsecase implements IUsecase {
   }
 }
 
-export type UserCreateInput = z.infer<typeof UserCreateSchema>;
+export type UserCreateInput = Infer<typeof UserCreateSchema>;
 export type UserCreateOutput = CreatedModel;

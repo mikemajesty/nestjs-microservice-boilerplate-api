@@ -1,21 +1,20 @@
-import { z } from 'zod';
-
 import { PermissionEntity, PermissionEntitySchema } from '@/core/permission/entity/permission';
 import { BaseEntity } from '@/utils/entity';
+import { Infer, InputValidator } from '@/utils/validator';
 
 export enum RoleEnum {
   USER = 'USER',
   BACKOFFICE = 'BACKOFFICE'
 }
 
-const ID = z.string().uuid();
-const Name = z.string().transform((value) => value.trim().replace(/ /g, '_').toUpperCase());
-const Permissions = z.array(PermissionEntitySchema).optional();
-const CreatedAt = z.date().nullish();
-const UpdatedAt = z.date().nullish();
-const DeletedAt = z.date().optional().nullish();
+const ID = InputValidator.string().uuid();
+const Name = InputValidator.string().transform((value) => value.trim().replace(/ /g, '_').toUpperCase());
+const Permissions = InputValidator.array(PermissionEntitySchema).optional();
+const CreatedAt = InputValidator.date().nullish();
+const UpdatedAt = InputValidator.date().nullish();
+const DeletedAt = InputValidator.date().optional().nullish();
 
-export const RoleEntitySchema = z.object({
+export const RoleEntitySchema = InputValidator.object({
   id: ID,
   name: Name,
   permissions: Permissions,
@@ -24,7 +23,7 @@ export const RoleEntitySchema = z.object({
   deletedAt: DeletedAt
 });
 
-type Role = z.infer<typeof RoleEntitySchema>;
+type Role = Infer<typeof RoleEntitySchema>;
 
 export class RoleEntity extends BaseEntity<RoleEntity>() {
   name!: RoleEnum;

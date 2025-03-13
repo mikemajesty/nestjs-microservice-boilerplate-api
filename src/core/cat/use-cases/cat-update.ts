@@ -1,11 +1,10 @@
-import { z } from 'zod';
-
 import { ICatRepository } from '@/core/cat/repository/cat';
 import { ILoggerAdapter } from '@/infra/logger';
 import { ValidateSchema } from '@/utils/decorators';
 import { ApiNotFoundException } from '@/utils/exception';
 import { ApiTrancingInput } from '@/utils/request';
 import { IUsecase } from '@/utils/usecase';
+import { Infer } from '@/utils/validator';
 
 import { CatEntity, CatEntitySchema } from '../entity/cat';
 
@@ -41,5 +40,5 @@ export class CatUpdateUsecase implements IUsecase {
   }
 }
 
-export type CatUpdateInput = z.infer<typeof CatUpdateSchema>;
+export type CatUpdateInput = Infer<typeof CatUpdateSchema>;
 export type CatUpdateOutput = CatEntity;

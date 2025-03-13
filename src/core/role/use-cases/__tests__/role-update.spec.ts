@@ -1,11 +1,11 @@
 import { Test } from '@nestjs/testing';
 import { TestMock } from 'test/mock';
-import { ZodIssue } from 'zod';
 
 import { ILoggerAdapter } from '@/infra/logger';
 import { CreatedModel } from '@/infra/repository';
 import { IRoleUpdateAdapter } from '@/modules/role/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
+import { ZodExceptionIssue } from '@/utils/validator';
 
 import { IRoleRepository } from '../../repository/role';
 import { RoleUpdateInput, RoleUpdateUsecase } from '../role-update';
@@ -45,7 +45,7 @@ describe(RoleUpdateUsecase.name, () => {
   test('when no input is specified, should expect an error', async () => {
     await TestMock.expectZodError(
       () => usecase.execute({} as RoleUpdateInput),
-      (issues: ZodIssue[]) => {
+      (issues: ZodExceptionIssue[]) => {
         expect(issues).toEqual([{ message: 'Required', path: TestMock.nameOf<RoleUpdateInput>('id') }]);
       }
     );

@@ -1,16 +1,15 @@
-import { z } from 'zod';
-
 import { UserEntity, UserEntitySchema } from '@/core/user/entity/user';
 import { BaseEntity } from '@/utils/entity';
+import { Infer, InputValidator } from '@/utils/validator';
 
-const ID = z.string().uuid();
-const Token = z.string().min(1).trim();
+const ID = InputValidator.string().uuid();
+const Token = InputValidator.string().min(1).trim();
 const User = UserEntitySchema;
-const CreatedAt = z.date().nullish();
-const UpdatedAt = z.date().nullish();
-const DeletedAt = z.date().nullish();
+const CreatedAt = InputValidator.date().nullish();
+const UpdatedAt = InputValidator.date().nullish();
+const DeletedAt = InputValidator.date().nullish();
 
-export const ResetPasswordEntitySchema = z.object({
+export const ResetPasswordEntitySchema = InputValidator.object({
   id: ID,
   token: Token,
   user: User.optional(),
@@ -19,7 +18,7 @@ export const ResetPasswordEntitySchema = z.object({
   deletedAt: DeletedAt
 });
 
-type ResetPassword = z.infer<typeof ResetPasswordEntitySchema>;
+type ResetPassword = Infer<typeof ResetPasswordEntitySchema>;
 
 export class ResetPasswordEntity extends BaseEntity<ResetPasswordEntity>() {
   token!: string;

@@ -1,10 +1,9 @@
-import { z } from 'zod';
-
 import { ILoggerAdapter } from '@/infra/logger';
 import { CreatedModel } from '@/infra/repository';
 import { ValidateSchema } from '@/utils/decorators';
 import { IUsecase } from '@/utils/usecase';
 import { UUIDUtils } from '@/utils/uuid';
+import { Infer } from '@/utils/validator';
 
 import { IRoleRepository } from '../repository/role';
 import { RoleEntity, RoleEntitySchema } from './../entity/role';
@@ -31,5 +30,5 @@ export class RoleCreateUsecase implements IUsecase {
   }
 }
 
-export type RoleCreateInput = z.infer<typeof RoleCreateSchema>;
+export type RoleCreateInput = Infer<typeof RoleCreateSchema>;
 export type RoleCreateOutput = CreatedModel;

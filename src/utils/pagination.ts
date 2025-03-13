@@ -1,15 +1,13 @@
-import { z } from 'zod';
-
 import { SearchInput } from './search';
 import { SortInput } from './sort';
+import { Infer, InputValidator } from './validator';
 
 const maxLimit = (limit: number) => (limit > 100 ? 100 : limit);
 
-export const PaginationSchema = z
-  .object({
-    page: z.number().or(z.string()).or(z.nan()).default(1),
-    limit: z.number().or(z.string()).or(z.nan()).default(10)
-  })
+export const PaginationSchema = InputValidator.object({
+  page: InputValidator.number().or(InputValidator.string()).or(InputValidator.nan()).default(1),
+  limit: InputValidator.number().or(InputValidator.string()).or(InputValidator.nan()).default(10)
+})
   .transform((pagination) => {
     let limit = Number(pagination.limit);
     let page = Number(pagination.page);
@@ -37,7 +35,7 @@ export const PaginationSchema = z
   });
 
 export class PaginationUtils {
-  static calculateSkip = (input: z.infer<typeof PaginationSchema>) => {
+  static calculateSkip = (input: Infer<typeof PaginationSchema>) => {
     return (input.page - 1) * input.limit;
   };
 
@@ -46,5 +44,5 @@ export class PaginationUtils {
   };
 }
 
-export type PaginationInput<T> = z.infer<typeof PaginationSchema> & SortInput & SearchInput<Partial<T>>;
-export type PaginationOutput<T> = z.infer<typeof PaginationSchema> & { total: number; docs: T[]; totalPages?: number };
+export type PaginationInput<T> = Infer<typeof PaginationSchema> & SortInput & SearchInput<Partial<T>>;
+export type PaginationOutput<T> = Infer<typeof PaginationSchema> & { total: number; docs: T[]; totalPages?: number };

@@ -1,5 +1,3 @@
-import { z } from 'zod';
-
 import { UserEntity, UserEntitySchema } from '@/core/user/entity/user';
 import { IUserRepository } from '@/core/user/repository/user';
 import { SendEmailInput } from '@/infra/email';
@@ -11,6 +9,7 @@ import { ValidateSchema } from '@/utils/decorators';
 import { ApiNotFoundException } from '@/utils/exception';
 import { IUsecase } from '@/utils/usecase';
 import { UUIDUtils } from '@/utils/uuid';
+import { Infer } from '@/utils/validator';
 
 import { ResetPasswordEntity } from '../entity/reset-password';
 import { IResetPasswordRepository } from '../repository/reset-password';
@@ -60,5 +59,5 @@ export class ResetPasswordSendEmailUsecase implements IUsecase {
   }
 }
 
-export type ResetPasswordSendEmailInput = z.infer<typeof ResetPasswordSendEmailSchema>;
+export type ResetPasswordSendEmailInput = Infer<typeof ResetPasswordSendEmailSchema>;
 export type ResetPasswordSendEmailOutput = void;

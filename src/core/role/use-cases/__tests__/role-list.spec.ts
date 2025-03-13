@@ -1,9 +1,9 @@
 import { Test } from '@nestjs/testing';
 import { TestMock } from 'test/mock';
-import { ZodIssue } from 'zod';
 
 import { RoleListInput, RoleListOutput, RoleListUsecase } from '@/core/role/use-cases/role-list';
 import { IRoleListAdapter } from '@/modules/role/adapter';
+import { ZodExceptionIssue } from '@/utils/validator';
 
 import { IRoleRepository } from '../../repository/role';
 import { RoleEntity, RoleEnum } from './../../entity/role';
@@ -36,7 +36,7 @@ describe(RoleListUsecase.name, () => {
   test('when sort input is specified, should expect an error', async () => {
     await TestMock.expectZodError(
       () => usecase.execute({} as RoleListInput),
-      (issues: ZodIssue[]) => {
+      (issues: ZodExceptionIssue[]) => {
         expect(issues).toEqual([{ message: 'Required', path: TestMock.nameOf<RoleListInput>('search') }]);
       }
     );

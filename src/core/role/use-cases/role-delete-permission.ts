@@ -1,16 +1,15 @@
-import { z } from 'zod';
-
 import { IPermissionRepository } from '@/core/permission/repository/permission';
 import { ValidateSchema } from '@/utils/decorators';
 import { ApiNotFoundException } from '@/utils/exception';
 import { IUsecase } from '@/utils/usecase';
+import { Infer, InputValidator } from '@/utils/validator';
 
 import { RoleEntity, RoleEntitySchema } from '../entity/role';
 import { IRoleRepository } from '../repository/role';
 
 export const RoleDeletePermissionSchema = RoleEntitySchema.pick({
   id: true
-}).merge(z.object({ permissions: z.array(z.string()) }));
+}).merge(InputValidator.object({ permissions: InputValidator.array(InputValidator.string()) }));
 
 export class RoleDeletePermissionUsecase implements IUsecase {
   constructor(
@@ -48,5 +47,5 @@ export class RoleDeletePermissionUsecase implements IUsecase {
   }
 }
 
-export type RoleDeletePermissionInput = z.infer<typeof RoleDeletePermissionSchema>;
+export type RoleDeletePermissionInput = Infer<typeof RoleDeletePermissionSchema>;
 export type RoleDeletePermissionOutput = void;

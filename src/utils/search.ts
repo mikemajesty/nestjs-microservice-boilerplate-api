@@ -1,9 +1,8 @@
-import { z } from 'zod';
+import { Infer, InputValidator } from './validator';
 
 export type SearchInput<T> = { search: T | null };
 
-export const SearchHttpSchema = z
-  .string()
+export const SearchHttpSchema = InputValidator.string()
   .optional()
   .refine(
     (check) => {
@@ -48,11 +47,13 @@ export const SearchHttpSchema = z
     return search;
   });
 
-export type SearchHttpSchemaInput = z.infer<typeof SearchHttpSchema>;
+export type SearchHttpSchemaInput = Infer<typeof SearchHttpSchema>;
 
-export const SearchSchema = z.object({
-  search: z
-    .record(z.string().trim(), z.number().or(z.string()).or(z.array(z.any())))
+export const SearchSchema = InputValidator.object({
+  search: InputValidator.record(
+    InputValidator.string().trim(),
+    InputValidator.number().or(InputValidator.string()).or(InputValidator.array(InputValidator.any()))
+  )
     .nullable()
     .default({})
 });

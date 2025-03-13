@@ -1,11 +1,11 @@
 import { Test } from '@nestjs/testing';
 import { TestMock } from 'test/mock';
-import { ZodIssue } from 'zod';
 
 import { ILoggerAdapter } from '@/infra/logger';
 import { UpdatedModel } from '@/infra/repository';
 import { IPermissionUpdateAdapter } from '@/modules/permission/adapter';
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception';
+import { ZodExceptionIssue } from '@/utils/validator';
 
 import { IPermissionRepository } from '../../repository/permission';
 import { PermissionUpdateInput, PermissionUpdateUsecase } from '../permission-update';
@@ -45,7 +45,7 @@ describe(PermissionUpdateUsecase.name, () => {
   test('when no input is specified, should expect an error', async () => {
     await TestMock.expectZodError(
       () => usecase.execute({} as PermissionUpdateInput),
-      (issues: ZodIssue[]) => {
+      (issues: ZodExceptionIssue[]) => {
         expect(issues).toEqual([{ message: 'Required', path: TestMock.nameOf<PermissionUpdateInput>('id') }]);
       }
     );

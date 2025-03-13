@@ -1,6 +1,5 @@
 import { Test } from '@nestjs/testing';
 import { TestMock } from 'test/mock';
-import { ZodIssue } from 'zod';
 
 import {
   PermissionListInput,
@@ -8,6 +7,7 @@ import {
   PermissionListUsecase
 } from '@/core/permission/use-cases/permission-list';
 import { IPermissionListAdapter } from '@/modules/permission/adapter';
+import { ZodExceptionIssue } from '@/utils/validator';
 
 import { IPermissionRepository } from '../../repository/permission';
 import { PermissionEntity } from './../../entity/permission';
@@ -40,7 +40,7 @@ describe(PermissionListUsecase.name, () => {
   test('when sort input is specified, should expect an error', async () => {
     await TestMock.expectZodError(
       () => usecase.execute({} as PermissionListInput),
-      (issues: ZodIssue[]) => {
+      (issues: ZodExceptionIssue[]) => {
         expect(issues).toEqual([{ message: 'Required', path: TestMock.nameOf<PermissionListInput>('search') }]);
       }
     );

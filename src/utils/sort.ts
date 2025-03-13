@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { Infer, InputValidator } from './validator';
+
 export enum SortEnum {
   asc = 1,
   desc = -1
@@ -48,8 +50,10 @@ export const SortHttpSchema = z
     return order;
   });
 
-export const SortSchema = z.object({
-  sort: z.record(z.string().trim().min(1), z.nativeEnum(SortEnum)).nullable().default({})
+export const SortSchema = InputValidator.object({
+  sort: InputValidator.record(InputValidator.string().trim().min(1), InputValidator.nativeEnum(SortEnum))
+    .nullable()
+    .default({})
 });
 
-export type SortInput = z.infer<typeof SortSchema>;
+export type SortInput = Infer<typeof SortSchema>;

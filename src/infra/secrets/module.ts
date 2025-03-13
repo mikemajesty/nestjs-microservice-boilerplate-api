@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { z, ZodError, ZodIssue } from 'zod';
 
 import { ApiInternalServerException } from '@/utils/exception';
 import { ZodInferSchema } from '@/utils/types';
+import { InputValidator, ZodException, ZodExceptionIssue } from '@/utils/validator';
 
 import { LogLevelEnum } from '../logger';
 import { ISecretsAdapter } from './adapter';
@@ -20,46 +20,45 @@ import { EnvEnum } from './types';
     {
       provide: ISecretsAdapter,
       useFactory: (config: ConfigService) => {
-        const SecretsSchema = z.object<ZodInferSchema<ISecretsAdapter>>({
-          ENV: z.nativeEnum(EnvEnum),
-          HOST: z.string(),
-          IS_LOCAL: z.boolean(),
-          IS_PRODUCTION: z.boolean(),
-          JWT_SECRET_KEY: z.string(),
-          LOG_LEVEL: z.nativeEnum(LogLevelEnum),
-          DATE_FORMAT: z.string(),
-          TZ: z.string(),
-          MONGO: z.object({
-            MONGO_URL: z.string(),
-            MONGO_DATABASE: z.string(),
-            MONGO_EXPRESS_URL: z.string().url()
+        const SecretsSchema = InputValidator.object<ZodInferSchema<ISecretsAdapter>>({
+          ENV: InputValidator.nativeEnum(EnvEnum),
+          HOST: InputValidator.string(),
+          IS_LOCAL: InputValidator.boolean(),
+          IS_PRODUCTION: InputValidator.boolean(),
+          JWT_SECRET_KEY: InputValidator.string(),
+          LOG_LEVEL: InputValidator.nativeEnum(LogLevelEnum),
+          DATE_FORMAT: InputValidator.string(),
+          TZ: InputValidator.string(),
+          MONGO: InputValidator.object({
+            MONGO_URL: InputValidator.string(),
+            MONGO_DATABASE: InputValidator.string(),
+            MONGO_EXPRESS_URL: InputValidator.string().url()
           }),
-          POSTGRES: z.object({
-            POSTGRES_URL: z.string().url(),
-            POSTGRES_PGADMIN_URL: z.string().url()
+          POSTGRES: InputValidator.object({
+            POSTGRES_URL: InputValidator.string().url(),
+            POSTGRES_PGADMIN_URL: InputValidator.string().url()
           }),
-          PORT: z
-            .number()
-            .or(z.string())
+          PORT: InputValidator.number()
+            .or(InputValidator.string())
             .transform((p) => Number(p)),
-          PROMETHUES_URL: z.string().url(),
-          GRAFANA_URL: z.string().url(),
-          REDIS_URL: z.string().url(),
-          TOKEN_EXPIRATION: z.string().or(z.number()),
-          REFRESH_TOKEN_EXPIRATION: z.string().or(z.number()),
-          ZIPKIN_URL: z.string().url(),
-          EMAIL: z.object({
-            HOST: z.string(),
-            PORT: z.number(),
-            USER: z.string(),
-            PASS: z.string(),
-            FROM: z.string().email()
+          PROMETHUES_URL: InputValidator.string().url(),
+          GRAFANA_URL: InputValidator.string().url(),
+          REDIS_URL: InputValidator.string().url(),
+          TOKEN_EXPIRATION: InputValidator.string().or(InputValidator.number()),
+          REFRESH_TOKEN_EXPIRATION: InputValidator.string().or(InputValidator.number()),
+          ZIPKIN_URL: InputValidator.string().url(),
+          EMAIL: InputValidator.object({
+            HOST: InputValidator.string(),
+            PORT: InputValidator.number(),
+            USER: InputValidator.string(),
+            PASS: InputValidator.string(),
+            FROM: InputValidator.string().email()
           }),
-          AUTH: z.object({
-            GOOGLE: z.object({
-              CLIENT_ID: z.string(),
-              CLIENT_SECRET: z.string(),
-              REDIRECT_URL: z.string().url()
+          AUTH: InputValidator.object({
+            GOOGLE: InputValidator.object({
+              CLIENT_ID: InputValidator.string(),
+              CLIENT_SECRET: InputValidator.string(),
+              REDIRECT_URL: InputValidator.string().url()
             })
           })
         });
@@ -68,9 +67,9 @@ import { EnvEnum } from './types';
         try {
           SecretsSchema.parse(secret);
         } catch (error) {
-          const zodError = error as ZodError;
+          const zodError = error as ZodException;
           const message = zodError.issues
-            .map((i: ZodIssue) => `${SecretsService.name}.${i.path.join('.')}: ${i.message}`)
+            .map((i: ZodExceptionIssue) => `${SecretsService.name}.${i.path.join('.')}: ${i.message}`)
             .join(',');
           throw new ApiInternalServerException(message);
         }

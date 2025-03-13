@@ -1,10 +1,9 @@
-import { z } from 'zod';
-
 import { CreatedModel } from '@/infra/repository';
 import { ValidateSchema } from '@/utils/decorators';
 import { ApiTrancingInput } from '@/utils/request';
 import { IUsecase } from '@/utils/usecase';
 import { UUIDUtils } from '@/utils/uuid';
+import { Infer } from '@/utils/validator';
 
 import { CatEntity, CatEntitySchema } from '../entity/cat';
 import { ICatRepository } from '../repository/cat';
@@ -30,5 +29,5 @@ export class CatCreateUsecase implements IUsecase {
   }
 }
 
-export type CatCreateInput = z.infer<typeof CatCreateSchema>;
+export type CatCreateInput = Infer<typeof CatCreateSchema>;
 export type CatCreateOutput = CreatedModel;

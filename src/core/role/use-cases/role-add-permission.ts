@@ -1,18 +1,17 @@
-import { z } from 'zod';
-
 import { PermissionEntity } from '@/core/permission/entity/permission';
 import { IPermissionRepository } from '@/core/permission/repository/permission';
 import { ValidateSchema } from '@/utils/decorators';
 import { ApiNotFoundException } from '@/utils/exception';
 import { IUsecase } from '@/utils/usecase';
 import { UUIDUtils } from '@/utils/uuid';
+import { Infer, InputValidator } from '@/utils/validator';
 
 import { RoleEntity, RoleEntitySchema } from '../entity/role';
 import { IRoleRepository } from '../repository/role';
 
 export const RoleAddPermissionSchema = RoleEntitySchema.pick({
   id: true
-}).merge(z.object({ permissions: z.array(z.string()) }));
+}).merge(InputValidator.object({ permissions: InputValidator.array(InputValidator.string()) }));
 
 export class RoleAddPermissionUsecase implements IUsecase {
   constructor(
@@ -54,5 +53,5 @@ export class RoleAddPermissionUsecase implements IUsecase {
   }
 }
 
-export type RoleAddPermissionInput = z.infer<typeof RoleAddPermissionSchema>;
+export type RoleAddPermissionInput = Infer<typeof RoleAddPermissionSchema>;
 export type RoleAddPermissionOutput = void;

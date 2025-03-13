@@ -1,6 +1,5 @@
 import { Test } from '@nestjs/testing';
 import { TestMock } from 'test/mock';
-import { ZodIssue } from 'zod';
 
 import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
 import { UserEntity } from '@/core/user/entity/user';
@@ -10,6 +9,7 @@ import { EmitEventOutput, IEventAdapter } from '@/libs/event';
 import { ITokenAdapter } from '@/libs/token';
 import { IConfirmResetPasswordAdapter } from '@/modules/reset-password/adapter';
 import { ApiBadRequestException, ApiNotFoundException, ApiUnauthorizedException } from '@/utils/exception';
+import { ZodExceptionIssue } from '@/utils/validator';
 
 import { ResetPasswordEntity } from '../../entity/reset-password';
 import { IResetPasswordRepository } from '../../repository/reset-password';
@@ -71,7 +71,7 @@ describe(ResetPasswordConfirmUsecase.name, () => {
   test('when no input is specified, should expect an error', async () => {
     await TestMock.expectZodError(
       () => usecase.execute({} as ResetPasswordConfirmInput),
-      (issues: ZodIssue[]) => {
+      (issues: ZodExceptionIssue[]) => {
         expect(issues).toEqual([
           { message: 'Required', path: TestMock.nameOf<ResetPasswordConfirmInput>('token') },
           { message: 'Required', path: TestMock.nameOf<ResetPasswordConfirmInput>('password') },

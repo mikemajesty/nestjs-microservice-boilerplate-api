@@ -1,12 +1,12 @@
 import { Test } from '@nestjs/testing';
 import { TestMock } from 'test/mock';
-import { ZodIssue } from 'zod';
 
 import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
 import { LoggerModule } from '@/infra/logger';
 import { CreatedModel } from '@/infra/repository';
 import { IUserChangePasswordAdapter } from '@/modules/user/adapter';
 import { ApiBadRequestException, ApiNotFoundException } from '@/utils/exception';
+import { ZodExceptionIssue } from '@/utils/validator';
 
 import { UserEntity } from '../../entity/user';
 import { UserPasswordEntity } from '../../entity/user-password';
@@ -42,7 +42,7 @@ describe(UserChangePasswordUsecase.name, () => {
   test('when no input is specified, should expect an error', async () => {
     await TestMock.expectZodError(
       () => usecase.execute({} as UserChangePasswordInput),
-      (issues: ZodIssue[]) => {
+      (issues: ZodExceptionIssue[]) => {
         expect(issues).toEqual([
           { message: 'Required', path: TestMock.nameOf<UserChangePasswordInput>('id') },
           { message: 'Required', path: TestMock.nameOf<UserChangePasswordInput>('password') },

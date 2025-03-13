@@ -1,12 +1,11 @@
-import { z } from 'zod';
-
 import { ICacheAdapter } from '@/infra/cache';
 import { ISecretsAdapter } from '@/infra/secrets';
 import { ValidateSchema } from '@/utils/decorators';
 import { ApiTrancingInput } from '@/utils/request';
 import { IUsecase } from '@/utils/usecase';
+import { Infer, InputValidator } from '@/utils/validator';
 
-export const LogoutSchema = z.object({ token: z.string().trim().min(10) });
+export const LogoutSchema = InputValidator.object({ token: InputValidator.string().trim().min(10) });
 
 export class LogoutUsecase implements IUsecase {
   constructor(
@@ -22,5 +21,5 @@ export class LogoutUsecase implements IUsecase {
   }
 }
 
-export type LogoutInput = z.infer<typeof LogoutSchema>;
+export type LogoutInput = Infer<typeof LogoutSchema>;
 export type LogoutOutput = Promise<void>;

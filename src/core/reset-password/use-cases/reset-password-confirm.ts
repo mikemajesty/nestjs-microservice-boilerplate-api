@@ -1,5 +1,3 @@
-import { z } from 'zod';
-
 import { UserPasswordEntity } from '@/core/user/entity/user-password';
 import { IUserRepository } from '@/core/user/repository/user';
 import { SendEmailInput } from '@/infra/email';
@@ -9,13 +7,14 @@ import { ITokenAdapter } from '@/libs/token';
 import { ValidateSchema } from '@/utils/decorators';
 import { ApiBadRequestException, ApiNotFoundException, ApiUnauthorizedException } from '@/utils/exception';
 import { IUsecase } from '@/utils/usecase';
+import { Infer, InputValidator } from '@/utils/validator';
 
 import { IResetPasswordRepository } from '../repository/reset-password';
 
-export const ResetPasswordConfirmSchema = z.object({
-  token: z.string(),
-  password: z.string().min(5).max(200),
-  confirmPassword: z.string().min(5).max(200)
+export const ResetPasswordConfirmSchema = InputValidator.object({
+  token: InputValidator.string(),
+  password: InputValidator.string().min(5).max(200),
+  confirmPassword: InputValidator.string().min(5).max(200)
 });
 
 export class ResetPasswordConfirmUsecase implements IUsecase {
@@ -65,7 +64,7 @@ export class ResetPasswordConfirmUsecase implements IUsecase {
   }
 }
 
-export type ResetPasswordConfirmInput = z.infer<typeof ResetPasswordConfirmSchema>;
+export type ResetPasswordConfirmInput = Infer<typeof ResetPasswordConfirmSchema>;
 export type ResetPasswordConfirmOutput = void;
 
 export type ResetPasswordConfirmVerify = {

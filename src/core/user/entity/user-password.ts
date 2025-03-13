@@ -1,16 +1,15 @@
-import { z } from 'zod';
-
 import { CryptoUtils } from '@/utils/crypto';
 import { BaseEntity } from '@/utils/entity';
 import { ApiBadRequestException } from '@/utils/exception';
+import { Infer, InputValidator } from '@/utils/validator';
 
-const ID = z.string().uuid();
-const Password = z.string();
-const CreatedAt = z.date().nullish();
-const UpdatedAt = z.date().nullish();
-const DeletedAt = z.date().nullish();
+const ID = InputValidator.string().uuid();
+const Password = InputValidator.string();
+const CreatedAt = InputValidator.date().nullish();
+const UpdatedAt = InputValidator.date().nullish();
+const DeletedAt = InputValidator.date().nullish();
 
-export const UserPasswordEntitySchema = z.object({
+export const UserPasswordEntitySchema = InputValidator.object({
   id: ID,
   password: Password,
   createdAt: CreatedAt,
@@ -18,7 +17,7 @@ export const UserPasswordEntitySchema = z.object({
   deletedAt: DeletedAt
 });
 
-type UserPassword = z.infer<typeof UserPasswordEntitySchema>;
+type UserPassword = Infer<typeof UserPasswordEntitySchema>;
 
 export class UserPasswordEntity extends BaseEntity<UserPasswordEntity>() {
   password!: string;

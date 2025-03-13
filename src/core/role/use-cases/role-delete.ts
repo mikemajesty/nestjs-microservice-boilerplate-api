@@ -1,9 +1,8 @@
-import { z } from 'zod';
-
 import { IRoleRepository } from '@/core/role/repository/role';
 import { ValidateSchema } from '@/utils/decorators';
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception';
 import { IUsecase } from '@/utils/usecase';
+import { Infer } from '@/utils/validator';
 
 import { RoleEntity, RoleEntitySchema } from '../entity/role';
 
@@ -36,5 +35,5 @@ export class RoleDeleteUsecase implements IUsecase {
   }
 }
 
-export type RoleDeleteInput = z.infer<typeof RoleDeleteSchema>;
+export type RoleDeleteInput = Infer<typeof RoleDeleteSchema>;
 export type RoleDeleteOutput = RoleEntity;

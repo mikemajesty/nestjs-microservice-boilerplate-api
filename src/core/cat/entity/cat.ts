@@ -1,16 +1,15 @@
-import { z } from 'zod';
-
 import { BaseEntity } from '@/utils/entity';
+import { Infer, InputValidator } from '@/utils/validator';
 
-const ID = z.string().uuid();
-const Name = z.string().trim().min(1).max(200);
-const Breed = z.string().trim().min(1).max(200);
-const Age = z.number().min(0).max(30);
-const CreatedAt = z.date().nullish();
-const UpdatedAt = z.date().nullish();
-const DeletedAt = z.date().nullish();
+const ID = InputValidator.string().uuid();
+const Name = InputValidator.string().trim().min(1).max(200);
+const Breed = InputValidator.string().trim().min(1).max(200);
+const Age = InputValidator.number().min(0).max(30);
+const CreatedAt = InputValidator.date().nullish();
+const UpdatedAt = InputValidator.date().nullish();
+const DeletedAt = InputValidator.date().nullish();
 
-export const CatEntitySchema = z.object({
+export const CatEntitySchema = InputValidator.object({
   id: ID,
   name: Name,
   breed: Breed,
@@ -20,7 +19,7 @@ export const CatEntitySchema = z.object({
   deletedAt: DeletedAt
 });
 
-type Cat = z.infer<typeof CatEntitySchema>;
+type Cat = Infer<typeof CatEntitySchema>;
 
 export class CatEntity extends BaseEntity<CatEntity>() {
   name!: string;

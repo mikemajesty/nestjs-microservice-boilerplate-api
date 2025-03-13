@@ -1,12 +1,12 @@
 import { Test } from '@nestjs/testing';
 import { TestMock } from 'test/mock';
-import { ZodIssue } from 'zod';
 
 import { PermissionDeleteInput, PermissionDeleteUsecase } from '@/core/permission/use-cases/permission-delete';
 import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
 import { CreatedModel } from '@/infra/repository';
 import { IPermissionDeleteAdapter } from '@/modules/permission/adapter';
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception';
+import { ZodExceptionIssue } from '@/utils/validator';
 
 import { IPermissionRepository } from '../../repository/permission';
 import { PermissionEntity } from './../../entity/permission';
@@ -39,7 +39,7 @@ describe(PermissionDeleteUsecase.name, () => {
   test('when no input is specified, should expect an error', async () => {
     await TestMock.expectZodError(
       () => usecase.execute({} as PermissionDeleteInput),
-      (issues: ZodIssue[]) => {
+      (issues: ZodExceptionIssue[]) => {
         expect(issues).toEqual([{ message: 'Required', path: TestMock.nameOf<PermissionDeleteInput>('id') }]);
       }
     );

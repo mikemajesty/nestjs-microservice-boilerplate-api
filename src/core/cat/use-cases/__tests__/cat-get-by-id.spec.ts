@@ -1,10 +1,10 @@
 import { Test } from '@nestjs/testing';
 import { TestMock } from 'test/mock';
-import { ZodIssue } from 'zod';
 
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { ICatGetByIdAdapter } from '@/modules/cat/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
+import { ZodExceptionIssue } from '@/utils/validator';
 
 import { CatEntity } from '../../entity/cat';
 import { ICatRepository } from '../../repository/cat';
@@ -39,7 +39,7 @@ describe(CatGetByIdUsecase.name, () => {
   test('when no input is specified, should expect an error', async () => {
     await TestMock.expectZodError(
       () => usecase.execute({} as CatGetByIdInput),
-      (issues: ZodIssue[]) => {
+      (issues: ZodExceptionIssue[]) => {
         expect(issues).toEqual([{ message: 'Required', path: TestMock.nameOf<CatGetByIdInput>('id') }]);
       }
     );

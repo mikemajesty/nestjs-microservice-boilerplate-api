@@ -42,12 +42,10 @@ import { MongoService } from './service';
             return connection;
           },
           uri: connection.uri,
-          useNewUrlParser: true,
-          useUnifiedTopology: true,
           minPoolSize: 10,
           serverSelectionTimeoutMS: 5000,
           socketTimeoutMS: 5000,
-          readPreference: 'secondaryPreferred', // Per
+          readPreference: 'secondaryPreferred',
           appName: name
         };
       },

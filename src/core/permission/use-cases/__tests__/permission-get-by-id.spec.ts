@@ -1,9 +1,9 @@
 import { Test } from '@nestjs/testing';
 import { TestMock } from 'test/mock';
-import { ZodIssue } from 'zod';
 
 import { IPermissionGetByIdAdapter } from '@/modules/permission/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
+import { ZodExceptionIssue } from '@/utils/validator';
 
 import { IPermissionRepository } from '../../repository/permission';
 import { PermissionGetByIdInput, PermissionGetByIdUsecase } from '../permission-get-by-id';
@@ -37,7 +37,7 @@ describe(PermissionGetByIdUsecase.name, () => {
   test('when no input is specified, should expect an error', async () => {
     await TestMock.expectZodError(
       () => usecase.execute({} as PermissionGetByIdInput),
-      (issues: ZodIssue[]) => {
+      (issues: ZodExceptionIssue[]) => {
         expect(issues).toEqual([{ message: 'Required', path: TestMock.nameOf<PermissionGetByIdInput>('id') }]);
       }
     );
