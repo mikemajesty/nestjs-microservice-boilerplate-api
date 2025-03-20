@@ -17,6 +17,11 @@ export class ExcelUtils {
     { data, sheetName }: GenerateExcelV2DataInput,
     configList: GenerateExcelV2ConfigInput[]
   ): Promise<Buffer> => {
+    const MAX_SYNC_LIMIT = 10000;
+    if (data.length > MAX_SYNC_LIMIT) {
+      throw new ApiBadRequestException(`limit: ${MAX_SYNC_LIMIT} was reached`);
+    }
+
     const HEADER_ROW: Row = configList.map((l) => ({ value: l.header }));
 
     const DATA_ROWS: Row[] = [];

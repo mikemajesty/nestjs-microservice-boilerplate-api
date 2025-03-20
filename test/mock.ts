@@ -1,10 +1,11 @@
 import { AttributeValue, SpanStatus, TimeInput } from '@opentelemetry/api';
 import { Types } from 'mongoose';
-import { z } from 'zod';
 
 import { ApiTrancingInput, TracingType, UserRequest } from '@/utils/request';
 
-import { BaseException } from '../src/utils/exception';
+import { BaseException } from '@/utils/exception';
+import { ZodExceptionIssue } from '@/utils/validator';
+import { z } from 'zod';
 
 export class TestMock {
   static mock(): jest.Mock {
@@ -41,7 +42,7 @@ export class TestMock {
       await callback();
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const issues = error.issues.map(({ message, path }: z.ZodIssue) => ({ message, path: path[0] }));
+        const issues = error.issues.map(({ message, path }: ZodExceptionIssue) => ({ message, path: path[0] }));
         expected(issues);
       }
     }
