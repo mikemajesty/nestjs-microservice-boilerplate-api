@@ -45,7 +45,7 @@ import { MongoService } from './service';
           minPoolSize: 10,
           serverSelectionTimeoutMS: 5000,
           socketTimeoutMS: 5000,
-          readPreference: 'secondaryPreferred',
+          readPreference: 'primaryPreferred',
           appName: name
         };
       },
