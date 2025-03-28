@@ -1,12 +1,69 @@
 import OpossumCircuitBreaker, { Options } from 'opossum';
 
 const events = new Map<string, Map<string, Map<string, string>>>();
+const breakerInstances = new Map<string, OpossumCircuitBreaker>();
+
+const MAX_EXECUTION_TIME_MS = 1000;
+const CIRCUIT_RESET_TIMEOUT_MS = 5000;
+const MIN_REQUEST_COUNT = 5;
 
 /**
- * Decorator to map events to methods. This allows event-specific methods to be invoked automatically when the circuit breaker state changes.
- * It also accepts a circuitId to differentiate events for multiple circuit breakers.
+ * Main Circuit Breaker decorator. It initializes a circuit breaker for each method it decorates and handles its events.
  */
+export function CircuitBreaker(params: CircuitBreakerInput = { options: {}, circuitGroup: 'default' }) {
+  return function (target: object, propertyKey: string | symbol, descriptor: PropertyDescriptor): void {
+    const opt: Options = {
+      ...(params?.options ?? {}),
+      timeout: params?.options?.timeout ?? MAX_EXECUTION_TIME_MS,
+      resetTimeout: params?.options?.resetTimeout ?? CIRCUIT_RESET_TIMEOUT_MS,
+      volumeThreshold: params?.options?.volumeThreshold ?? MIN_REQUEST_COUNT,
+      group: params?.circuitGroup ?? 'default'
+    };
 
+    const originalMethod = descriptor.value;
+
+    descriptor.value = async function (...args: unknown[]) {
+      const className = target.constructor.name;
+      const instanceKey = `${className}:${opt.group}`;
+
+      if (!breakerInstances.has(instanceKey)) {
+        const breaker = new OpossumCircuitBreaker(originalMethod.bind(this), opt);
+        breakerInstances.set(instanceKey, breaker);
+
+        const classEvents = events.get(className) || new Map();
+        const circuitEvents = classEvents.get(opt.group) || new Map();
+
+        for (const [eventName, methodName] of circuitEvents) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          if (eventName !== 'fallback' && typeof (this as any)[`${methodName}`] === 'function') {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            breaker.on(eventName as any, (this as any)[`${methodName}`].bind(this));
+          }
+        }
+
+        const fallbackMethod = circuitEvents.get('fallback');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if (fallbackMethod && typeof (this as any)[`${fallbackMethod}`] === 'function') {
+          breaker.fallback(async (args: unknown, error: Error) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            return await (this as any)[`${fallbackMethod}`]({ input: args, err: error });
+          });
+        }
+      }
+
+      try {
+        return await breakerInstances.get(instanceKey)!.fire(...args);
+      } catch (error) {
+        throw error;
+      }
+    };
+  };
+}
+
+/**
+ * Decorator para registrar eventos no circuito.
+ * Os eventos são armazenados e usados pelo `CircuitBreaker` quando ele for instanciado.
+ */
 export function onEvent({ eventName, circuitGroup = 'default' }: OnEventInput) {
   return function (target: object, propertyKey: string | symbol): void {
     const className = target.constructor.name;
@@ -16,69 +73,12 @@ export function onEvent({ eventName, circuitGroup = 'default' }: OnEventInput) {
     }
 
     const classEvents = events.get(className)!;
-    if (!classEvents.has(circuitGroup ?? 'default')) {
-      classEvents.set(circuitGroup ?? 'default', new Map());
+    if (!classEvents.has(circuitGroup)) {
+      classEvents.set(circuitGroup, new Map());
     }
 
-    const circuitEvents = classEvents.get(circuitGroup ?? 'default')!;
+    const circuitEvents = classEvents.get(circuitGroup)!;
     circuitEvents.set(eventName, propertyKey.toString());
-  };
-}
-
-const MAX_EXECUTION_TIME_MS = 1000;
-const ERROR_THRESHOLD_PERCENTAGE = 20;
-const CIRCUIT_RESET_TIMEOUT_MS = 5000;
-const MIN_REQUEST_COUNT = 5;
-
-/**
- * Main Circuit Breaker decorator. It initializes a circuit breaker for each method it decorates and handles its events.
- */
-export function CircuitBreaker(params: CircuitBreakerInput = { options: {}, circuitGroup: 'default' }) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return function (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor): void {
-    const opt: Options = {
-      ...(params?.options ?? {}),
-      timeout: params?.options?.timeout ?? MAX_EXECUTION_TIME_MS,
-      errorThresholdPercentage: params?.options?.errorThresholdPercentage ?? ERROR_THRESHOLD_PERCENTAGE,
-      resetTimeout: params?.options?.resetTimeout ?? CIRCUIT_RESET_TIMEOUT_MS,
-      volumeThreshold: params?.options?.volumeThreshold ?? MIN_REQUEST_COUNT,
-      group: params?.circuitGroup ?? 'default'
-    };
-
-    const originalMethod = descriptor.value;
-    const breaker = new OpossumCircuitBreaker(originalMethod, opt);
-
-    const className = target.constructor.name;
-    const classEvents = events.get(className) || new Map();
-    const circuitEvents = classEvents.get(opt.group) || new Map();
-    const registeredEvents = new Set<string>();
-
-    const fallbackMethod = circuitEvents.get('fallback');
-
-    for (const [eventName, methodName] of circuitEvents) {
-      if (eventName === 'fallback' && fallbackMethod) {
-        continue;
-      }
-
-      const eventHandler = target[`${methodName}`];
-      if (typeof eventHandler === 'function' && !registeredEvents.has(methodName)) {
-        registeredEvents.add(methodName);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        breaker.on(eventName as any, async (...args: unknown[]) => {
-          return eventHandler.call(target, ...args);
-        });
-      }
-    }
-
-    if (fallbackMethod && typeof target[`${fallbackMethod}`] === 'function') {
-      breaker.fallback(async (args: unknown, error: Error) => {
-        return await target[`${fallbackMethod}`].call(target, { input: args, err: error });
-      });
-    }
-
-    descriptor.value = function (...args: unknown[]) {
-      return breaker.fire(args?.[0]);
-    };
   };
 }
 
