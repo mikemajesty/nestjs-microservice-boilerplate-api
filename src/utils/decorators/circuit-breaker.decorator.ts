@@ -77,7 +77,7 @@ export function CircuitBreaker(params: CircuitBreakerInput = { options: {}, circ
     }
 
     descriptor.value = function (...args: unknown[]) {
-      return breaker.fire(...args);
+      return breaker.fire(args?.[0]);
     };
   };
 }
