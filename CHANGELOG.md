@@ -1,3 +1,10 @@
+## [1.3.1](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/v1.3.0-production...v1.3.1-production) (2025-03-28)
+
+
+### Bug Fixes
+
+* **utils:** fix circuit breaker bug ([337c5ee](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/337c5ee21d859bb56952a6149679223146f447cc))
+
 # [1.3.0](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/v1.2.0-production...v1.3.0-production) (2025-03-08)
 
 
