@@ -3,10 +3,11 @@ import OpossumCircuitBreaker, { Options } from 'opossum';
 const events = new Map<string, Map<string, Map<string, string>>>();
 const breakerInstances = new Map<string, OpossumCircuitBreaker>();
 
-const MAX_EXECUTION_TIME_MS = 1000;
-const CIRCUIT_RESET_TIMEOUT_MS = 5000;
-const MIN_REQUEST_COUNT = 5;
-
+const ERROR_THRESHOLD_PERCENTAGE = 20; // O circuito abre quando 20% das requisições falham
+const VOLUME_THRESHOLD = 5; // Exige pelo menos 5 requisições para abrir o circuito
+const ROLLING_COUNT_TIMEOUT = 5000; // Contagem das falhas durante 5 segundos
+const RESET_TIMEOUT = 2500; // Tempo de reset do circuito (2.5 segundos)
+const ALLOW_WARM_UP = true; // Permite falhas sem abrir o circuito durante o aquecimento
 /**
  * Main Circuit Breaker decorator. It initializes a circuit breaker for each method it decorates and handles its events.
  */
@@ -14,9 +15,11 @@ export function CircuitBreaker(params: CircuitBreakerInput = { options: {}, circ
   return function (target: object, propertyKey: string | symbol, descriptor: PropertyDescriptor): void {
     const opt: Options = {
       ...(params?.options ?? {}),
-      timeout: params?.options?.timeout ?? MAX_EXECUTION_TIME_MS,
-      resetTimeout: params?.options?.resetTimeout ?? CIRCUIT_RESET_TIMEOUT_MS,
-      volumeThreshold: params?.options?.volumeThreshold ?? MIN_REQUEST_COUNT,
+      errorThresholdPercentage: params?.options?.errorThresholdPercentage ?? ERROR_THRESHOLD_PERCENTAGE,
+      volumeThreshold: params?.options?.volumeThreshold ?? VOLUME_THRESHOLD,
+      rollingCountTimeout: params?.options?.rollingCountTimeout ?? ROLLING_COUNT_TIMEOUT,
+      resetTimeout: params?.options?.resetTimeout ?? RESET_TIMEOUT,
+      allowWarmUp: params?.options?.allowWarmUp ?? ALLOW_WARM_UP,
       group: params?.circuitGroup ?? 'default'
     };
 
