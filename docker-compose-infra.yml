@@ -81,6 +81,7 @@ services:
       - '9090:9090'
     volumes:
       - .docker/prometheus/config.yml:/etc/prometheus/prometheus.yml
+      - .docker/prometheus/alert.rules.yml:/etc/prometheus/alert.rules.yml
   collector:
     container_name: nestjs-microservice-collector
     image: otel/opentelemetry-collector-contrib:latest
@@ -89,12 +90,24 @@ services:
       - collector-network
     volumes:
       - .docker/collector/collector-config.yaml:/conf/collector-config.yaml
+    env_file:
+      - .env
     ports:
       - '9464:9464'
       - '4317:4317'
       - '4318:4318'
     depends_on:
       - zipkin-all-in-one
+  app-alertmanager:
+    image: prom/alertmanager
+    networks:
+      - collector-network
+    env_file:
+      - .env
+    ports:
+      - "9093:9093"
+    volumes:
+      - .docker/prometheus/alertmanager.yml:/etc/alertmanager/alertmanager.yml
   mongo-express:
     container_name: nestjs-microservice-mongo-express
     image: mongo-express:0.49.0
@@ -141,6 +154,8 @@ services:
     ports:
       - "3100:3100"
     command: -config.file=/etc/loki/local-config.yaml
+    env_file:
+      - .env
     networks:
     - collector-network
     - postgres-network
@@ -159,6 +174,8 @@ services:
     command: -config.file=/etc/promtail/promtail.yaml
     depends_on:
       - grafana
+    env_file:
+      - .env
 
 volumes:
   nestjs-microservice-postgres:

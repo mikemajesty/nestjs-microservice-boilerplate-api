@@ -1,0 +1,11 @@
+groups:
+  - name: app-error-alerts
+    rules:
+      - alert: HTTPStatus500ErrorRateHigh
+        expr: increase(http_server_requests_count_total{http_status_code="500"}[5m]) >= 1
+        for: 0m
+        labels:
+          severity: critical
+        annotations:
+          summary: 'HTTP 500 Errors in 1 Minute'
+          description: 'There was at least 1 HTTP 500 error in the last 60 seconds. Please check the affected service.'

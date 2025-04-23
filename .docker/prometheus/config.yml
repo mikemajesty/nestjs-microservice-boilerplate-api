@@ -1,9 +1,15 @@
 global:
-  scrape_interval: 15s # Default is every 15 seconds.
+  scrape_interval: 15s # Default is every 1 minute.
+
+rule_files:
+  - '/etc/prometheus/alert.rules.yml'
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['app-alertmanager:9093']
 
 scrape_configs:
   - job_name: 'collector'
-    # metrics_path defaults to '/metrics'
-    # scheme defaults to 'http'.
     static_configs:
       - targets: ['collector:9464']

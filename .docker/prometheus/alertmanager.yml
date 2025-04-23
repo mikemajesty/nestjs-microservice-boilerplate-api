@@ -1,0 +1,18 @@
+global:
+  resolve_timeout: 1m
+
+route:
+  receiver: 'webhook-nodejs'
+  group_wait: 10s
+  group_interval: 5s
+  repeat_interval: 1s
+  routes:
+    - matchers:
+        - alertname="AlwaysFiring"
+      receiver: 'webhook-nodejs'
+
+receivers:
+  - name: 'webhook-nodejs'
+    webhook_configs:
+      - url: 'http://172.17.0.1:4000/alert'
+        send_resolved: true

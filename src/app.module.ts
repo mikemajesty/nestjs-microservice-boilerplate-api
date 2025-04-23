@@ -19,6 +19,7 @@ import {
   RequestTimeoutInterceptor,
   TracingInterceptor
 } from './middlewares/interceptors';
+import { AlertModule } from './modules/alert/module';
 import { PermissionModule } from './modules/permission/module';
 import { ResetPasswordModule } from './modules/reset-password/module';
 import { RoleModule } from './modules/role/module';
@@ -28,6 +29,7 @@ import { RoleModule } from './modules/role/module';
     InfraModule,
     LibModule,
     HealthModule,
+    AlertModule,
     UserModule,
     LoginModule,
     LogoutModule,
