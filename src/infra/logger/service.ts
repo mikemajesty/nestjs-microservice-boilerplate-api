@@ -5,6 +5,7 @@ import { blue, gray, green, isColorSupported } from 'colorette';
 import { PinoRequestConverter } from 'convert-pino-request-to-curl';
 import { LevelWithSilent, LogDescriptor, Logger, multistream, pino } from 'pino';
 import { HttpLogger, Options, pinoHttp } from 'pino-http';
+import lokiTransport from 'pino-loki';
 import pinoPretty, { PrettyOptions } from 'pino-pretty';
 
 import { DateUtils } from '@/utils/date';
@@ -36,6 +37,14 @@ export class LoggerService implements ILoggerAdapter {
         {
           level: 'trace',
           stream: pinoPretty(this.getPinoConfig())
+        },
+        {
+          level: 'info',
+          stream: lokiTransport({
+            host: 'http://localhost:3100',
+            labels: { job: 'nestjs' },
+            interval: 5
+          })
         }
       ])
     );

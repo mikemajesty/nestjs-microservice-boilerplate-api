@@ -2,33 +2,47 @@ receivers:
   otlp:
     protocols:
       grpc:
-        endpoint: '0.0.0.0:4317'
+        endpoint: '0.0.0.0:4317' # Endpoint para recepção de traces via gRPC
       http:
-        endpoint: '0.0.0.0:4318'
+        endpoint: '0.0.0.0:4318' # Endpoint para recepção de traces via HTTP
         cors:
           allowed_origins:
-            - http://*
-            - https://*
+            - http://* # Permite requisições de qualquer origem via HTTP
+            - https://* # Permite requisições de qualquer origem via HTTPS
 
 exporters:
   zipkin:
-    endpoint: 'http://zipkin-all-in-one:9411/api/v2/spans'
+    endpoint: 'http://zipkin-all-in-one:9411/api/v2/spans' # Endpoint para exportação de traces para o Zipkin
   prometheus:
-    endpoint: '0.0.0.0:9464'
+    endpoint: '0.0.0.0:9464' # Endpoint para exportação de métricas para o Prometheus
+  loki:
+    endpoint: 'http://loki:3100/loki/api/v1/push' # Endpoint para exportação de logs para o Loki
 
 processors:
   batch:
+    timeout: 5s # Define o tempo máximo para agrupar logs antes de enviá-los
+    send_batch_size: 1024 # Define o número máximo de logs por lote
+
+  attributes:
+    actions:
+      - key: service.name
+        value: 'nestjs-boilerplate-microservice-api' # Define o nome do serviço nos logs
+        action: insert # Ação para inserir o atributo nos logs
 
 service:
   telemetry:
     logs:
-      level: 'debug'
+      level: 'debug' # Define o nível de log para o Collector
   pipelines:
+    logs:
+      receivers: [otlp] # Recebe logs via OTLP
+      processors: [batch, attributes] # Processa logs com os processadores definidos
+      exporters: [loki] # Exporta logs para o Loki
     traces:
-      receivers: [otlp]
-      exporters: [zipkin]
-      processors: [batch]
+      receivers: [otlp] # Recebe traces via OTLP
+      exporters: [zipkin] # Exporta traces para o Zipkin
+      processors: [batch] # Processa traces com o processador de batch
     metrics:
-      receivers: [otlp]
-      exporters: [prometheus]
-      processors: [batch]
+      receivers: [otlp] # Recebe métricas via OTLP
+      exporters: [prometheus] # Exporta métricas para o Prometheus
+      processors: [batch] # Processa métricas com o processador de batch

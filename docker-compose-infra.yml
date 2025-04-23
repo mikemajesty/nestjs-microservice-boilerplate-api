@@ -136,6 +136,29 @@ services:
     depends_on:
       - prometheus
     restart: always
+  loki:
+    image: grafana/loki:2.9.4
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+    - collector-network
+    - postgres-network
+    - mongo-network
+    depends_on:
+      - grafana
+  promtail:
+    image: grafana/promtail:2.9.4
+    networks:
+    - collector-network
+    - postgres-network
+    - mongo-network
+    volumes:
+      - /var/log:/var/log
+      - .docker/grafana/promtail-config.yml:/etc/promtail/promtail.yaml
+    command: -config.file=/etc/promtail/promtail.yaml
+    depends_on:
+      - grafana
 
 volumes:
   nestjs-microservice-postgres:

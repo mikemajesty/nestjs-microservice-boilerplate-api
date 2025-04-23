@@ -1,13 +1,18 @@
 import { Controller, Get } from '@nestjs/common';
 import os from 'os';
 
+import { ILoggerAdapter } from '@/infra/logger';
+
 import { version } from '../../../package.json';
 import { IHealthAdapter } from './adapter';
 import { HealthOutput, HealthStatus } from './types';
 
 @Controller()
 export class HealthController {
-  constructor(private readonly service: IHealthAdapter) {}
+  constructor(
+    private readonly service: IHealthAdapter,
+    private readonly logger: ILoggerAdapter
+  ) {}
 
   @Get(['/health', '/'])
   async getHealth(): Promise<HealthOutput> {
@@ -46,7 +51,7 @@ export class HealthController {
     const latency = await this.service.getLatency();
     const connections = await this.service.getActiveConnections();
 
-    return {
+    const output = {
       server: HealthStatus.UP,
       version,
       mongo: {
@@ -67,5 +72,9 @@ export class HealthController {
       memory,
       cpu
     };
+
+    this.logger.info({ message: 'Server Up!', context: HealthController.name, obj: output });
+
+    return output;
   }
 }
