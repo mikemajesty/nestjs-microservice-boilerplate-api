@@ -1,3 +1,15 @@
+# [1.4.0](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/v1.3.1-production...v1.4.0-production) (2025-04-23)
+
+
+### Bug Fixes
+
+* **utils:** fix circuit breaker doest execute events ([820501c](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/820501c68f9e9d52fb3cdfc9eaa7b0a0a006a768))
+
+
+### Features
+
+* **logger:** add grafana loki ([3c5e5e2](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/3c5e5e2aa0388c23cdd27238549a0ee0e5616274))
+
 ## [1.3.1](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/v1.3.0-production...v1.3.1-production) (2025-03-28)
 
 
