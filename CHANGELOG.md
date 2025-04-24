@@ -1,3 +1,16 @@
+# [1.5.0](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/v1.4.0-production...v1.5.0-production) (2025-04-24)
+
+
+### Bug Fixes
+
+* **health:** health controller rollback ([0d50b64](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/0d50b649d790e81fef934d70cd3e00fe0611e265))
+
+
+### Features
+
+* **logger:** add metrics module ([63569ef](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/63569efc3e19372097e1bb29300f397a26ed2989))
+* **logger:** add promethues alert ([bdd1129](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/bdd1129cfe349907b9853973f66deb398dc9a553))
+
 # [1.4.0](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/v1.3.1-production...v1.4.0-production) (2025-04-23)
 
 
