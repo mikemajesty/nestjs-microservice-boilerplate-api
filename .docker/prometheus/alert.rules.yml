@@ -2,7 +2,7 @@ groups:
   - name: app-error-alerts
     rules:
       - alert: HTTPStatus500ErrorRateHigh
-        expr: increase(http_server_requests_count_total{http_status_code="500"}[5m]) >= 1
+        expr: increase(http_server_requests_count_total{http_status_code="500"}[1m]) >= 5
         for: 0m
         labels:
           severity: critical
