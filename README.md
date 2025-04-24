@@ -203,6 +203,7 @@ docs
   - tracing
   - logs
   - metrics
+  - alerts
 - Lint-staged + Husky
 - Commitlint
 - Secrets Service

@@ -2173,7 +2173,7 @@
     webpack "5.98.0"
     webpack-node-externals "3.0.0"
 
-"@nestjs/common@*", "@nestjs/common@^10.0.0 || ^11.0.0", "@nestjs/common@^11.0.0", "@nestjs/common@^11.0.10":
+"@nestjs/common@*", "@nestjs/common@^10.0.0 || ^11.0.0", "@nestjs/common@^11.0.0", "@nestjs/common@^11.0.10", "@nestjs/common@>= 10 < 12":
   version "11.0.11"
   resolved "https://registry.npmjs.org/@nestjs/common/-/common-11.0.11.tgz"
   integrity sha512-b3zYiho5/XGCnLa7W2hHv5ecSBR1huQrXCHu6pxd+g2HY2B7sKP5CXHMv4gHYqpIqu4ClOb7Q4tLKXMp9LyLUg==
@@ -2200,7 +2200,7 @@
     dotenv-expand "12.0.1"
     lodash "4.17.21"
 
-"@nestjs/core@*", "@nestjs/core@^10.0.0 || ^11.0.0", "@nestjs/core@^11.0.0", "@nestjs/core@^11.0.10":
+"@nestjs/core@*", "@nestjs/core@^10.0.0 || ^11.0.0", "@nestjs/core@^11.0.0", "@nestjs/core@^11.0.10", "@nestjs/core@>= 10 < 12":
   version "11.0.11"
   resolved "https://registry.npmjs.org/@nestjs/core/-/core-11.0.11.tgz"
   integrity sha512-jMH3jrjrPiaGrkQ5hANNcgDWN+j+hcM5GMQ3jSs4vOWNs3lmKHTVR11wJ9y5tTNnwKydzMogeju0VTUdfXDI5Q==
@@ -2994,6 +2994,13 @@
     "@opentelemetry/resources" "1.30.1"
     "@opentelemetry/sdk-trace-base" "1.30.1"
     "@opentelemetry/semantic-conventions" "1.28.0"
+
+"@opentelemetry/host-metrics@^0.35.5":
+  version "0.35.5"
+  resolved "https://registry.npmjs.org/@opentelemetry/host-metrics/-/host-metrics-0.35.5.tgz"
+  integrity sha512-Zf9Cjl7H6JalspnK5KD1+LLKSVecSinouVctNmUxRy+WP+20KwHq+qg4hADllkEmJ99MZByLLmEmzrr7s92V6g==
+  dependencies:
+    systeminformation "5.23.8"
 
 "@opentelemetry/instrumentation-http@^0.57.2":
   version "0.57.2"
@@ -7964,7 +7971,7 @@ delayed-stream@~1.0.0:
   resolved "https://registry.npmjs.org/delayed-stream/-/delayed-stream-1.0.0.tgz"
   integrity sha512-ZySD7Nf91aLB0RxL4KGrKHBXl7Eds1DAmEdcoVawXnLD7SDhpNgtuII2aAkg7a7QS41jxPSZ17p4VdGnMHk3MQ==
 
-depd@2.0.0:
+depd@~2.0.0, depd@2.0.0:
   version "2.0.0"
   resolved "https://registry.npmjs.org/depd/-/depd-2.0.0.tgz"
   integrity sha512-g7nH6P6dyDioJogAAGprGpCtVImJhpPk/roCzdb3fIh61/s/nPsfR6onyMwkCAR/OlC3yBC0lESvUoQEAssIrw==
@@ -12275,6 +12282,15 @@ nestjs-i18n@^10.5.0:
     js-yaml "^4.1.0"
     string-format "^2.0.0"
 
+nestjs-otel@^6.2.0:
+  version "6.2.0"
+  resolved "https://registry.npmjs.org/nestjs-otel/-/nestjs-otel-6.2.0.tgz"
+  integrity sha512-F15GnWNrmHxDRdn0o2/cDx65gR7+s3xou1mEJ5vVONfOOYeneIJi1Mkf6h/Qu6NfO4SHPFPKGMXoovvTX1D8Iw==
+  dependencies:
+    "@opentelemetry/api" "^1.9.0"
+    "@opentelemetry/host-metrics" "^0.35.5"
+    response-time "^2.3.3"
+
 netmask@^2.0.2:
   version "2.0.2"
   resolved "https://registry.npmjs.org/netmask/-/netmask-2.0.2.tgz"
@@ -12703,7 +12719,7 @@ on-finished@^2.4.1, on-finished@2.4.1:
   dependencies:
     ee-first "1.1.1"
 
-on-headers@~1.0.2:
+on-headers@~1.0.1, on-headers@~1.0.2:
   version "1.0.2"
   resolved "https://registry.npmjs.org/on-headers/-/on-headers-1.0.2.tgz"
   integrity sha512-pZAE+FJLoyITytdqK0U5s+FIpjN0JP3OzFi/u8Rx+EV5/W+JTWGXG8xFzevE7AjBfDqHv/8vL8qQsIhHnqRkrA==
@@ -14273,6 +14289,14 @@ resolve@^1.20.0, resolve@^1.22.1, resolve@^1.22.3, resolve@^1.22.8:
     path-parse "^1.0.7"
     supports-preserve-symlinks-flag "^1.0.0"
 
+response-time@^2.3.3:
+  version "2.3.3"
+  resolved "https://registry.npmjs.org/response-time/-/response-time-2.3.3.tgz"
+  integrity sha512-SsjjOPHl/FfrTQNgmc5oen8Hr1Jxpn6LlHNXxCIFdYMHuK1kMeYMobb9XN3mvxaGQm3dbegqYFMX4+GDORfbWg==
+  dependencies:
+    depd "~2.0.0"
+    on-headers "~1.0.1"
+
 responselike@^2.0.0:
   version "2.0.1"
   resolved "https://registry.npmjs.org/responselike/-/responselike-2.0.1.tgz"
@@ -15427,6 +15451,11 @@ systeminformation@^5.25.11, systeminformation@^5.7:
   version "5.25.11"
   resolved "https://registry.npmjs.org/systeminformation/-/systeminformation-5.25.11.tgz"
   integrity sha512-jI01fn/t47rrLTQB0FTlMCC+5dYx8o0RRF+R4BPiUNsvg5OdY0s9DKMFmJGrx5SwMZQ4cag0Gl6v8oycso9b/g==
+
+systeminformation@5.23.8:
+  version "5.23.8"
+  resolved "https://registry.npmjs.org/systeminformation/-/systeminformation-5.23.8.tgz"
+  integrity sha512-Osd24mNKe6jr/YoXLLK3k8TMdzaxDffhpCxgkfgBHcapykIkd50HXThM3TCEuHO2pPuCsSx2ms/SunqhU5MmsQ==
 
 tap-parser@16.0.1:
   version "16.0.1"

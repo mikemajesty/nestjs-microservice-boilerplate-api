@@ -67,6 +67,7 @@
     "mongoose-paginate-v2": "^1.9.0",
     "nestjs-convert-to-curl": "^1.0.7",
     "nestjs-i18n": "^10.5.0",
+    "nestjs-otel": "^6.2.0",
     "node-cache": "^5.1.2",
     "nodemailer": "^6.10.0",
     "opossum": "^8.4.0",
