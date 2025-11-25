@@ -2,7 +2,7 @@
   "branches": [
     "master"
   ],
-  "tagFormat": "v${version}-production",
+  "tagFormat": "v${version}",
   "plugins": [
     "@semantic-release/commit-analyzer",
     "@semantic-release/release-notes-generator",
