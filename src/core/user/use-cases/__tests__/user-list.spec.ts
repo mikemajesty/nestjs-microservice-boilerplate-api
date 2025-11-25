@@ -57,11 +57,11 @@ describe(UserListUsecase.name, () => {
       createdAt: TestMock.getMockDate(),
       updatedAt: TestMock.getMockDate(),
       deletedAt: null
-    }
+    } as UserEntity
   ];
 
   test('when users are found, should expect an user list', async () => {
-    const output = { docs: users, page: 1, limit: 1, total: 1 };
+    const output: UserListOutput = { docs: users, page: 1, limit: 1, total: 1 };
     repository.paginate = TestMock.mockResolvedValue<UserListOutput>(output);
 
     await expect(usecase.execute({ limit: 1, page: 1, search: {}, sort: { createdAt: -1 } })).resolves.toEqual({
