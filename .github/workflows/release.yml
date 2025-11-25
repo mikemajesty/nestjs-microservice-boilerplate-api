@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -13,18 +14,27 @@ jobs:
       pull-requests: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # CRÍTICO para semantic-release analisar histórico de commits
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: '22.14.0'
+          cache: 'npm'
 
       - name: Install dependencies
-        run: npm install --legacy-peer-deps
+        run: npm ci --force
 
       - name: Run tests
         run: npm test
+
+      - name: Verify git configuration
+        run: |
+          git config --global user.name 'GitHub Actions'
+          git config --global user.email 'actions@github.com'
 
       - name: Run semantic-release
         env:
