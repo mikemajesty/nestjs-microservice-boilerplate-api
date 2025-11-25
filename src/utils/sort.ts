@@ -51,7 +51,7 @@ export const SortHttpSchema = z
   });
 
 export const SortSchema = InputValidator.object({
-  sort: InputValidator.record(InputValidator.string().trim().min(1), InputValidator.nativeEnum(SortEnum))
+  sort: InputValidator.record(InputValidator.string().trim().min(1), InputValidator.enum(SortEnum))
     .nullable()
     .default({})
 });

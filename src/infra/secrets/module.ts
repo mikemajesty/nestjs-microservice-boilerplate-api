@@ -21,12 +21,12 @@ import { EnvEnum } from './types';
       provide: ISecretsAdapter,
       useFactory: (config: ConfigService) => {
         const SecretsSchema = InputValidator.object<ZodInferSchema<ISecretsAdapter>>({
-          ENV: InputValidator.nativeEnum(EnvEnum),
+          ENV: InputValidator.enum(EnvEnum),
           HOST: InputValidator.string(),
           IS_LOCAL: InputValidator.boolean(),
           IS_PRODUCTION: InputValidator.boolean(),
           JWT_SECRET_KEY: InputValidator.string(),
-          LOG_LEVEL: InputValidator.nativeEnum(LogLevelEnum),
+          LOG_LEVEL: InputValidator.enum(LogLevelEnum),
           DATE_FORMAT: InputValidator.string(),
           TZ: InputValidator.string(),
           MONGO: InputValidator.object({

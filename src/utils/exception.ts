@@ -89,6 +89,6 @@ export type ApiErrorType = {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type ParametersType = { [key: string]: any; context?: string };
+export type ParametersType = { [key: string]: any; context?: string };
 
-type MessageType = string | string[];
+export type MessageType = string | string[];

@@ -1,6 +1,6 @@
 import { BaseException } from '@/utils/exception';
 
-export type MessageType = {
+export type MessageInputType = {
   message: string;
   context?: string;
   obj?: object;

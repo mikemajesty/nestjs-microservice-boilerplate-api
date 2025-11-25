@@ -63,3 +63,23 @@ export type MongoRepositorySession = {
   abortTransaction: () => Promise<{ [key: string]: unknown }>;
   commitTransaction: () => Promise<{ [key: string]: unknown }>;
 };
+
+type MongoOperators<T> = {
+  $eq?: T;
+  $ne?: T;
+  $in?: T[];
+  $nin?: T[];
+  $gt?: T;
+  $gte?: T;
+  $lt?: T;
+  $lte?: T;
+};
+
+export type FieldQuery<T> = T | MongoOperators<T>;
+
+export type FilterQuery<T> = {
+  [K in keyof T]?: T[K] extends object ? FilterQuery<T[K]> | FieldQuery<T[K]> : FieldQuery<T[K]>;
+} & {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any;
+};

@@ -66,10 +66,11 @@ export default [
                     allow: ['error']
                 }
             ],
-
+            "security/detect-unsafe-regex": "error",
             'simple-import-sort/imports': 'error',
             'simple-import-sort/exports': 'error',
             '@typescript-eslint/interface-name-prefix': 'off',
+            'security/detect-object-injection': 'error',
             '@typescript-eslint/explicit-module-boundary-types': 'off',
             '@typescript-eslint/no-explicit-any': 'error',
             '@typescript-eslint/explicit-function-return-type': 'off',

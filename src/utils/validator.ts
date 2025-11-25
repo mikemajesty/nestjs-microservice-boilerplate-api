@@ -1,5 +1,5 @@
 import i18next, { ResourceLanguage } from 'i18next';
-import { z, ZodError, ZodIssue } from 'zod';
+import { z } from 'zod';
 import { zodI18nMap } from 'zod-i18n-map';
 
 import { LoggerService } from '@/infra/logger';
@@ -73,7 +73,7 @@ export const initI18n = async (defaultLocale = 'en-US') => {
     resources
   });
 
-  z.setErrorMap(zodI18nMap);
+  z.config(zodI18nMap as z.core.$ZodConfig);
 };
 
 export const changeLanguage = async (locale: string) => {
@@ -81,7 +81,7 @@ export const changeLanguage = async (locale: string) => {
 
   if (language) {
     await i18next.changeLanguage(language);
-    z.setErrorMap(zodI18nMap);
+    z.config(zodI18nMap as z.core.$ZodConfig);
   } else {
     console.error(`Language for region ${locale} not found.`);
   }
@@ -123,11 +123,11 @@ export type LocaleInput =
 
 export type Infer<T extends z.ZodType> = z.infer<T>;
 
-export type ZodException = ZodError;
-export type ZodExceptionIssue = ZodIssue;
+export type ZodException = z.ZodError;
+export type ZodExceptionIssue = z.ZodIssue;
 
 export type ZodOptionalType<T> = z.ZodOptional<z.ZodType<NonNullable<T>>>;
 
-export type ZodOptionalPipeline<T> = z.ZodPipeline<z.ZodOptional<z.ZodType<unknown>>, z.ZodType<T>>;
+export type ZodOptionalPipeline<T> = z.core.$ZodPipe<z.ZodOptional<z.ZodType<unknown>>, z.ZodType<T>>;
 
-export type ZodSchema<T> = z.ZodType<T> | z.ZodPipeline<z.ZodType<unknown>, z.ZodType<T>>;
+export type ZodSchema<T> = z.ZodType<T> | z.core.$ZodPipe<z.ZodType<unknown>, z.ZodType<T>>;

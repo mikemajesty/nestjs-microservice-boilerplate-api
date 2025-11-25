@@ -1,14 +1,11 @@
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4, validate as uuidValidate, version as uuidVersion } from 'uuid';
 
 export class UUIDUtils {
-  static create() {
+  static create(): string {
     return uuidv4();
   }
 
-  static isUUID = (uuid: string) => {
-    const regex = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
-    const isUUID = new RegExp(regex).exec(uuid) || [];
-
-    return isUUID.length > 0;
-  };
+  static isUUID(uuid: string): boolean {
+    return uuidValidate(uuid) && uuidVersion(uuid) === 4;
+  }
 }

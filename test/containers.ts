@@ -16,7 +16,7 @@ export class TestMongoContainer {
   mongoContainer!: StartedMongoDBContainer;
 
   getTestMongo = async (conectionName: ConnectionName): Promise<{ mongoConnection: mongoose.Connection }> => {
-    this.mongoContainer = await new MongoDBContainer('mongo:6.0.1').start();
+    this.mongoContainer = await new MongoDBContainer('mongo:7.0.2').start();
 
     const mongo: mongoose.Connection = mongoose
       .createConnection(this.mongoContainer.getConnectionString(), { directConnection: true, appName: conectionName })
@@ -33,7 +33,7 @@ export class TestPostgresContainer {
   postgresContainer!: StartedPostgreSqlContainer;
 
   getTestPostgres = async (): Promise<StartedPostgreSqlContainer> => {
-    const postgres = new PostgreSqlContainer();
+    const postgres = new PostgreSqlContainer('postgres:16.1-alpine');
     postgres.withDatabase('nestjs-microservice');
 
     this.postgresContainer = await postgres.start();
@@ -74,7 +74,7 @@ export class TestRedisContainer {
 
   getTestRedis = async (): Promise<RedisService> => {
     const logger: ILoggerAdapter = { error: console.error, log: LoggerService.log } as ILoggerAdapter;
-    this.redisContainer = await new RedisContainer().start();
+    this.redisContainer = await new RedisContainer('redis:7.2.4-alpine').start();
     this.client = createClient({ url: this.redisContainer.getConnectionUrl() }) as RedisClientType;
     await this.client.connect();
     const conn = new RedisService(logger, this.client);

@@ -1,12 +1,18 @@
 import { ArgumentsHost, Catch, ExceptionFilter as AppExceptionFilter, HttpException } from '@nestjs/common';
 import { AxiosError } from 'axios';
-import { ZodError, ZodUnrecognizedKeysIssue } from 'zod';
+import { ZodError } from 'zod';
 
 import { ILoggerAdapter } from '@/infra/logger/adapter';
 import { DateUtils } from '@/utils/date';
 import { ApiBadRequestException, ApiErrorType, ApiInternalServerException, BaseException } from '@/utils/exception';
 import { DefaultErrorMessage } from '@/utils/http-status';
-import { ZodExceptionIssue } from '@/utils/validator';
+
+interface ZodUnrecognizedKeysIssue {
+  code: 'unrecognized_keys';
+  keys: string[];
+  path: (string | number)[];
+  message: string;
+}
 
 @Catch()
 export class ExceptionHandlerFilter implements AppExceptionFilter {
@@ -15,17 +21,17 @@ export class ExceptionHandlerFilter implements AppExceptionFilter {
   catch(exception: BaseException, host: ArgumentsHost): void {
     const context = host.switchToHttp();
     const response = context.getResponse();
-    const request = context.getRequest<Request>();
+    const request = context.getRequest();
 
     const status = this.getStatus(exception);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    exception.traceid = [exception.traceid, (request as any)['id']].find(Boolean);
+    const requestId = (request as { id: string }).id;
+    exception.traceid = [exception.traceid, requestId].find(Boolean) as string;
 
-    this.loggerService.error(exception, exception.message);
-    const message = this.getMessage(exception, status as number);
+    this.logError(exception);
+    const message = this.getErrorMessage(exception, status);
 
-    response.status(status).json({
+    const errorResponse: ApiErrorType = {
       error: {
         code: status,
         traceid: exception.traceid,
@@ -34,49 +40,97 @@ export class ExceptionHandlerFilter implements AppExceptionFilter {
         timestamp: DateUtils.getDateStringWithFormat(),
         path: request.url
       }
-    } as ApiErrorType);
+    };
+
+    response.status(status).json(errorResponse);
   }
 
-  private getMessage(exception: BaseException, status: string | number): string[] {
+  private logError(exception: BaseException): void {
+    const logContext = {
+      traceid: exception.traceid,
+      context: exception.context,
+      stack: exception.stack
+    };
+
+    this.loggerService.error(new ApiInternalServerException(exception.message, logContext));
+  }
+
+  private getErrorMessage(exception: BaseException, status: number): string[] {
     const defaultError = DefaultErrorMessage[String(status)];
     if (defaultError) {
       return [defaultError];
     }
 
     if (exception instanceof ZodError) {
-      return exception.issues.map((issue: ZodExceptionIssue) => {
-        const path = (issue as ZodUnrecognizedKeysIssue)?.keys?.join('.') || issue?.path?.join('.') || 'key';
-
-        const idArrayError = new RegExp(/^\d./).exec(path);
-        if (idArrayError?.length) {
-          return `${path.replace(/^\d./, `array position: ${Number(new RegExp(/^\d/)?.exec(path)?.[0])}, property: `)}: ${issue.message.toLowerCase()}`;
-        }
-
-        return `${path}: ${issue.message}`;
-      });
+      return this.formatZodErrors(exception);
     }
 
     if (exception instanceof AxiosError) {
-      if ((exception as AxiosError).response?.data) {
-        return [(exception as AxiosError).message];
+      return this.formatAxiosError(exception);
+    }
+
+    return this.formatBaseException(exception);
+  }
+
+  private formatZodErrors(exception: ZodError): string[] {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return exception.issues.map((issue: any) => {
+      const isUnrecognizedKeys = issue.code === 'unrecognized_keys';
+
+      const path = isUnrecognizedKeys
+        ? (issue as ZodUnrecognizedKeysIssue).keys?.join('.')
+        : issue.path?.join('.') || 'key';
+
+      const arrayPositionMatch = /^\d+/.exec(path);
+      if (arrayPositionMatch?.[0]) {
+        const position = Number(arrayPositionMatch[0]);
+        const property = path.replace(/^\d+\./, '');
+        return `array position: ${position}, property: ${property}: ${issue.message.toLowerCase()}`;
+      }
+
+      return `${path}: ${issue.message}`;
+    });
+  }
+
+  private formatAxiosError(exception: AxiosError): string[] {
+    if (exception.response?.data) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const responseData = exception.response.data as any;
+      if (typeof responseData === 'string') {
+        return [responseData];
+      }
+      if (responseData.message) {
+        return Array.isArray(responseData.message) ? responseData.message : [responseData.message];
       }
     }
 
-    const errorList = Array.isArray(exception.getResponse());
-
-    if (errorList) {
-      return exception.getResponse() as string[];
-    }
-    return [exception.message];
+    return [exception.message || 'External API request failed'];
   }
 
-  private getStatus(exception: BaseException) {
+  private formatBaseException(exception: BaseException): string[] {
+    const response = exception.getResponse();
+
+    if (Array.isArray(response)) {
+      return response as string[];
+    }
+
+    if (typeof response === 'object' && response !== null && 'message' in response) {
+      const message = (response as { message: string | string[] }).message;
+      return Array.isArray(message) ? message : [message];
+    }
+
+    return [exception.message || 'An unexpected error occurred'];
+  }
+
+  private getStatus(exception: BaseException): number {
     if (exception instanceof ZodError) {
       return ApiBadRequestException.STATUS;
     }
 
-    return exception instanceof HttpException
-      ? exception.getStatus()
-      : [exception['status'], ApiInternalServerException.STATUS].find(Boolean);
+    if (exception instanceof HttpException) {
+      return exception.getStatus();
+    }
+
+    return exception['status'] || ApiInternalServerException.STATUS;
   }
 }

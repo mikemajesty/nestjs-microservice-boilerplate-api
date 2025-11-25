@@ -57,7 +57,7 @@ describe(UserListUsecase.name, () => {
       createdAt: TestMock.getMockDate(),
       updatedAt: TestMock.getMockDate(),
       deletedAt: null
-    } as UserEntity
+    }
   ];
 
   test('when users are found, should expect an user list', async () => {

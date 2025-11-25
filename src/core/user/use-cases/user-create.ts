@@ -21,7 +21,7 @@ export const UserCreateSchema = UserEntitySchema.pick({
   name: true
 })
   .merge(UserPasswordEntitySchema.pick({ password: true }))
-  .merge(InputValidator.object({ roles: InputValidator.array(InputValidator.nativeEnum(RoleEnum)).min(1) }));
+  .merge(InputValidator.object({ roles: InputValidator.array(InputValidator.enum(RoleEnum)).min(1) }));
 
 export class UserCreateUsecase implements IUsecase {
   constructor(

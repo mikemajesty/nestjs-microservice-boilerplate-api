@@ -14,7 +14,7 @@ import { Observable, tap } from 'rxjs';
 
 import { ILoggerAdapter } from '@/infra/logger';
 import { AxiosUtils } from '@/utils/axios';
-import { getPathWithoutUUID, TracingType } from '@/utils/request';
+import { generalizePath, TracingType } from '@/utils/request';
 
 import { name, version } from '../../../package.json';
 
@@ -34,7 +34,7 @@ export class TracingInterceptor implements NestInterceptor {
 
     const controller = `${executionContext.getClass().name}.${executionContext.getHandler().name}`;
 
-    const span = this.tracer.startSpan(getPathWithoutUUID(request.path));
+    const span = this.tracer.startSpan(generalizePath(request.path));
 
     const createTracingInstance = (): TracingType => {
       return {

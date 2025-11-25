@@ -33,9 +33,10 @@ export class TestMock {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static mockImplementation<T = void>(mock?: (...args: unknown[]) => NoInfer<T>): jest.Mock<any> {
+  static mockImplementation<T = void>(mock?: (...args: unknown[]) => Partial<NoInfer<T>> | null): jest.Mock<any> {
     return jest.fn().mockImplementation(mock);
   }
+
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   static expectZodError = async (callback: Function, expected: Function) => {
     try {

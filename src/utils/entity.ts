@@ -1,4 +1,4 @@
-import { ZodSchema } from 'zod';
+import z from 'zod';
 
 import { DateUtils } from './date';
 import { UUIDUtils } from './uuid';
@@ -18,12 +18,12 @@ export interface IEntity {
   deletedAt?: Date | null | undefined;
 }
 
-let schema: ZodSchema;
-
 export const BaseEntity = <T>() => {
   abstract class Entity implements IEntity {
-    constructor(zodSchema: ZodSchema) {
-      schema = zodSchema;
+    schema: z.ZodSchema;
+
+    constructor(zodSchema: z.ZodSchema) {
+      this.schema = zodSchema;
     }
 
     readonly id!: string;
@@ -47,7 +47,7 @@ export const BaseEntity = <T>() => {
     validate<T>(entity: T): T {
       Object.assign(entity as IEntity, withID(entity as IEntity));
       Object.assign(this, { id: (entity as Pick<IEntity, 'id'>).id });
-      return schema.parse(entity) as T;
+      return this.schema.parse(entity) as T;
     }
   }
 

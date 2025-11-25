@@ -209,7 +209,6 @@ docs
 - Secrets Service
 - HTTP Service
 - Logger Service
-  - mongodb transport
 - Authentication
   - Login
   - Logout

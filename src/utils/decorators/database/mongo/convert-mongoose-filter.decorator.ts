@@ -1,16 +1,15 @@
-import { FilterQuery, RootFilterQuery } from 'mongoose';
-
 import { IEntity } from '@/utils/entity';
+import { FilterQuery } from '@/utils/mongoose';
 
 export function ConvertMongoFilterToBaseRepository() {
   return (target: unknown, propertyKey: string, descriptor: PropertyDescriptor) => {
     const originalMethod = descriptor.value;
-    descriptor.value = function (...args: { id?: string }[]) {
-      const input: RootFilterQuery<IEntity> = args[0];
+
+    descriptor.value = function (...args: unknown[]) {
+      const input = args[0] as FilterQuery<IEntity> | undefined;
 
       if (!input) {
-        const result = originalMethod.apply(this, args);
-        return result;
+        return originalMethod.apply(this, args);
       }
 
       input.deletedAt = null;
@@ -20,26 +19,29 @@ export function ConvertMongoFilterToBaseRepository() {
         delete input.id;
       }
 
-      args[0] = convertObjectFilterToMongoFilter(input);
-      const result = originalMethod.apply(this, args);
-      return result;
+      args[0] = convertFilterToMongo(input);
+
+      return originalMethod.apply(this, args);
     };
   };
 }
 
-const convertObjectFilterToMongoFilter = (input: FilterQuery<IEntity>, recursiveInput: FilterQuery<IEntity> = {}) => {
-  const filterFormated: FilterQuery<IEntity> = recursiveInput;
+const convertFilterToMongo = (input: FilterQuery<IEntity>): Record<string, unknown> => {
+  const flat: Record<string, unknown> = {};
+  flattenKeys(input, flat);
+  return flat;
+};
 
+const flattenKeys = (input: Record<string, unknown>, target: Record<string, unknown>, prefix = '') => {
   for (const key in input) {
-    if (input[`${key}`] && typeof input[`${key}`] === 'object') {
-      for (const subKey of Object.keys(input[`${key}`])) {
-        convertObjectFilterToMongoFilter({ [`${key}.${subKey}`]: input[`${key}`][`${subKey}`] }, filterFormated);
-        continue;
-      }
+    const value = input[`${key}`];
+    const fullKey = prefix ? `${prefix}.${key}` : key;
+
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+      flattenKeys(value as Record<string, unknown>, target, fullKey);
       continue;
     }
-    filterFormated[`${key}`] = input[`${key}`];
-  }
 
-  return filterFormated;
+    target[`${fullKey}`] = value;
+  }
 };

@@ -14,7 +14,7 @@ export const UserUpdateSchema = UserEntitySchema.pick({
   id: true
 })
   .merge(UserEntitySchema.pick({ name: true, email: true, roles: true }).partial())
-  .merge(InputValidator.object({ roles: InputValidator.array(InputValidator.nativeEnum(RoleEnum)).optional() }))
+  .merge(InputValidator.object({ roles: InputValidator.array(InputValidator.enum(RoleEnum)).optional() }))
   .strict();
 
 export class UserUpdateUsecase implements IUsecase {

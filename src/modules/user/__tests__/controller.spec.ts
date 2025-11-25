@@ -22,7 +22,7 @@ describe('User', () => {
   const postgresContainer = new TestPostgresContainer();
 
   beforeAll(async () => {
-    const postgres = new PostgreSqlContainer();
+    const postgres = new PostgreSqlContainer('14.1');
     postgres.withDatabase('nestjs-microservice');
 
     const postgresConection = await postgresContainer.getTestPostgres();
