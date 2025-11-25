@@ -1,3 +1,24 @@
+# [1.4.0](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/v1.3.0...v1.4.0) (2025-11-25)
+
+
+### Bug Fixes
+
+* **health:** health controller rollback ([0d50b64](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/0d50b649d790e81fef934d70cd3e00fe0611e265))
+* **utils:** fix circuit breaker bug ([337c5ee](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/337c5ee21d859bb56952a6149679223146f447cc))
+* **utils:** fix circuit breaker doest execute events ([820501c](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/820501c68f9e9d52fb3cdfc9eaa7b0a0a006a768))
+
+
+### Features
+
+* **config:** add artillery config ([29c8978](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/29c89783e63eb66f1b81c30ef1f9e52dc4ccc5fa))
+* **config:** add artillery config ([a0ed227](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/a0ed2275844fa549f294c7dec250fadfc3e396c8))
+* **database:** add more database feature ([d3dcbdf](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/d3dcbdf1bac917d53e8cd58e145c69aeb63aa911))
+* **deps:** change pipe order ([a7736f8](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/a7736f8bec63eda5febb48ad5af1f492b39f133e))
+* **deps:** remove pipe item ([8592dba](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/8592dba03aed5f99ceaa1464041341314fb296aa))
+* **logger:** add grafana loki ([3c5e5e2](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/3c5e5e2aa0388c23cdd27238549a0ee0e5616274))
+* **logger:** add metrics module ([63569ef](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/63569efc3e19372097e1bb29300f397a26ed2989))
+* **logger:** add promethues alert ([bdd1129](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/bdd1129cfe349907b9853973f66deb398dc9a553))
+
 # [1.5.0](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/v1.4.0-production...v1.5.0-production) (2025-04-24)
 
 
