@@ -1,5 +1,4 @@
 import { Test } from '@nestjs/testing';
-import { TestMock } from 'test/mock';
 
 import {
   PermissionListInput,
@@ -7,6 +6,7 @@ import {
   PermissionListUsecase
 } from '@/core/permission/use-cases/permission-list';
 import { IPermissionListAdapter } from '@/modules/permission/adapter';
+import { TestUtils } from '@/utils/test/util';
 import { ZodExceptionIssue } from '@/utils/validator';
 
 import { IPermissionRepository } from '../../repository/permission';
@@ -38,10 +38,10 @@ describe(PermissionListUsecase.name, () => {
   });
 
   test('when sort input is specified, should expect an error', async () => {
-    await TestMock.expectZodError(
+    await TestUtils.expectZodError(
       () => usecase.execute({} as PermissionListInput),
       (issues: ZodExceptionIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: TestMock.nameOf<PermissionListInput>('search') }]);
+        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<PermissionListInput>('search') }]);
       }
     );
   });
@@ -49,7 +49,7 @@ describe(PermissionListUsecase.name, () => {
   const input: PermissionListInput = { limit: 1, page: 1, search: {}, sort: { createdAt: -1 } };
 
   const permission = new PermissionEntity({
-    id: TestMock.getMockUUID(),
+    id: TestUtils.getMockUUID(),
     name: 'name:permission',
     createdAt: new Date(),
     updatedAt: new Date()
@@ -59,7 +59,7 @@ describe(PermissionListUsecase.name, () => {
 
   test('when permission are found, should expect an permission list', async () => {
     const output: PermissionListOutput = { docs: [permission], page: 1, limit: 1, total: 1 };
-    repository.paginate = TestMock.mockResolvedValue<PermissionListOutput>(output);
+    repository.paginate = TestUtils.mockResolvedValue<PermissionListOutput>(output);
 
     await expect(usecase.execute(input)).resolves.toEqual({
       docs: permissions,
@@ -71,7 +71,7 @@ describe(PermissionListUsecase.name, () => {
 
   test('when permission not found, should expect an empty list', async () => {
     const output: PermissionListOutput = { docs: [], page: 1, limit: 1, total: 1 };
-    repository.paginate = TestMock.mockResolvedValue<PermissionListOutput>(output);
+    repository.paginate = TestUtils.mockResolvedValue<PermissionListOutput>(output);
 
     await expect(usecase.execute(input)).resolves.toEqual(output);
   });

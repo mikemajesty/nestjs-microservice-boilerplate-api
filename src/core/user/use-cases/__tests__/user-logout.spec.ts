@@ -1,10 +1,10 @@
 import { Test } from '@nestjs/testing';
-import { TestMock } from 'test/mock';
 
 import { ICacheAdapter } from '@/infra/cache';
 import { ISecretsAdapter, SecretsModule } from '@/infra/secrets';
 import { TokenLibModule } from '@/libs/token';
 import { ILogoutAdapter } from '@/modules/logout/adapter';
+import { TestUtils } from '@/utils/test/util';
 import { ZodExceptionIssue } from '@/utils/validator';
 
 import { LogoutInput, LogoutUsecase } from '../user-logout';
@@ -20,7 +20,7 @@ describe(LogoutUsecase.name, () => {
         {
           provide: ICacheAdapter,
           useValue: {
-            set: TestMock.mockResolvedValue<void>()
+            set: TestUtils.mockResolvedValue<void>()
           }
         },
         {
@@ -38,17 +38,17 @@ describe(LogoutUsecase.name, () => {
   });
 
   test('when no input is specified, should expect an error', async () => {
-    await TestMock.expectZodError(
-      () => usecase.execute({} as LogoutInput, TestMock.getMockTracing()),
+    await TestUtils.expectZodError(
+      () => usecase.execute({} as LogoutInput, TestUtils.getMockTracing()),
       (issues: ZodExceptionIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: TestMock.nameOf<LogoutInput>('token') }]);
+        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<LogoutInput>('token') }]);
       }
     );
   });
 
   test('when user logout, should expect set token to blacklist', async () => {
-    cache.set = TestMock.mockResolvedValue<void>();
+    cache.set = TestUtils.mockResolvedValue<void>();
 
-    await expect(usecase.execute({ token: '12345678910' }, TestMock.getMockTracing())).resolves.toBeUndefined();
+    await expect(usecase.execute({ token: '12345678910' }, TestUtils.getMockTracing())).resolves.toBeUndefined();
   });
 });

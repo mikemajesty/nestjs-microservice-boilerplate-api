@@ -1,5 +1,3 @@
-import { TestMock } from 'test/mock';
-
 jest.setTimeout(30000);
 
 process.env.NODE_ENV = 'test';
@@ -10,8 +8,12 @@ jest.mock('pino-http', () => ({
   HttpLogger: {},
   pinoHttp: () => ({
     logger: {
-      info: TestMock.mockReturnValue<void>(),
-      error: TestMock.mockReturnValue<void>()
+      info: jest.fn(),
+      warn: jest.fn(),
+      error: jest.fn(),
+      debug: jest.fn(),
+      trace: jest.fn(),
+      fatal: jest.fn()
     }
   })
 }));

@@ -1,8 +1,8 @@
 import { Test } from '@nestjs/testing';
-import { TestMock } from 'test/mock';
 
 import { IRoleGetByIdAdapter } from '@/modules/role/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
+import { TestUtils } from '@/utils/test/util';
 import { ZodExceptionIssue } from '@/utils/validator';
 
 import { IRoleRepository } from '../../repository/role';
@@ -35,31 +35,31 @@ describe(RoleGetByIdUsecase.name, () => {
   });
 
   test('when no input is specified, should expect an error', async () => {
-    await TestMock.expectZodError(
+    await TestUtils.expectZodError(
       () => usecase.execute({} as RoleGetByIdInput),
       (issues: ZodExceptionIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: TestMock.nameOf<RoleGetByIdInput>('id') }]);
+        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<RoleGetByIdInput>('id') }]);
       }
     );
   });
 
   const input: RoleGetByIdInput = {
-    id: TestMock.getMockUUID()
+    id: TestUtils.getMockUUID()
   };
 
   test('when role not found, should expect an error', async () => {
-    repository.findById = TestMock.mockResolvedValue<RoleEntity>(null);
+    repository.findById = TestUtils.mockResolvedValue<RoleEntity>(null);
 
     await expect(usecase.execute(input)).rejects.toThrow(ApiNotFoundException);
   });
 
   const role = new RoleEntity({
-    id: TestMock.getMockUUID(),
+    id: TestUtils.getMockUUID(),
     name: RoleEnum.USER
   });
 
   test('when role found, should expect a role found', async () => {
-    repository.findById = TestMock.mockResolvedValue<RoleEntity>(role);
+    repository.findById = TestUtils.mockResolvedValue<RoleEntity>(role);
 
     await expect(usecase.execute(input)).resolves.toEqual(role);
   });

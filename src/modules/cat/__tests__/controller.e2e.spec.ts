@@ -2,8 +2,6 @@ import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import mongoose, { PaginateModel, Schema } from 'mongoose';
 import request from 'supertest';
-import { TestMongoContainer, TestRedisContainer } from 'test/containers';
-import { TestMock } from 'test/mock';
 
 import { CatEntity } from '@/core/cat/entity/cat';
 import { ICatRepository } from '@/core/cat/repository/cat';
@@ -11,6 +9,8 @@ import { ICacheAdapter } from '@/infra/cache';
 import { RedisService } from '@/infra/cache/redis';
 import { ConnectionName } from '@/infra/database/enum';
 import { Cat, CatDocument, CatSchema } from '@/infra/database/mongo/schemas/cat';
+import { TestMongoContainer, TestRedisContainer } from '@/utils/test/containers';
+import { TestUtils } from '@/utils/test/util';
 
 import { CatModule } from '../module';
 import { CatRepository } from '../repository';
@@ -58,7 +58,7 @@ describe('Cats', () => {
   });
 
   it(`/GET /v1/cats`, async () => {
-    await repository.create(new CatEntity({ id: TestMock.getMockUUID(), name: 'Miau', age: 10, breed: 'siamese' }));
+    await repository.create(new CatEntity({ id: TestUtils.getMockUUID(), name: 'Miau', age: 10, breed: 'siamese' }));
 
     return request(app.getHttpServer())
       .get('/cats')

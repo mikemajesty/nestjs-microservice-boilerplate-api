@@ -1,10 +1,10 @@
 import { Test } from '@nestjs/testing';
-import { TestMock } from 'test/mock';
 
 import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
 import { ITokenAdapter, SignOutput } from '@/libs/token';
 import { IRefreshTokenAdapter } from '@/modules/login/adapter';
 import { ApiBadRequestException, ApiNotFoundException } from '@/utils/exception';
+import { TestUtils } from '@/utils/test/util';
 import { ZodExceptionIssue } from '@/utils/validator';
 
 import { UserEntity } from '../../entity/user';
@@ -32,7 +32,7 @@ describe(RefreshTokenUsecase.name, () => {
         {
           provide: ITokenAdapter,
           useValue: {
-            verify: TestMock.mockResolvedValue<UserRefreshTokenVerifyInput>()
+            verify: TestUtils.mockResolvedValue<UserRefreshTokenVerifyInput>()
           }
         },
         {
@@ -51,61 +51,61 @@ describe(RefreshTokenUsecase.name, () => {
   });
 
   test('when no input is specified, should expect an error', async () => {
-    await TestMock.expectZodError(
+    await TestUtils.expectZodError(
       () => usecase.execute({} as RefreshTokenInput),
       (issues: ZodExceptionIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: TestMock.nameOf<RefreshTokenInput>('refreshToken') }]);
+        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<RefreshTokenInput>('refreshToken') }]);
       }
     );
   });
 
   const input: RefreshTokenInput = { refreshToken: '<token>' };
   test('when token is incorrect, should expect an error', async () => {
-    token.verify = TestMock.mockImplementation<UserRefreshTokenVerifyInput>(() => ({
+    token.verify = TestUtils.mockImplementation<UserRefreshTokenVerifyInput>(() => ({
       userId: null
     }));
-    repository.findOne = TestMock.mockResolvedValue<UserEntity>(null);
+    repository.findOne = TestUtils.mockResolvedValue<UserEntity>(null);
 
     await expect(usecase.execute(input)).rejects.toThrow(ApiBadRequestException);
   });
 
   test('when user not found, should expect an error', async () => {
-    token.verify = TestMock.mockImplementation<UserRefreshTokenVerifyInput>(() => {
+    token.verify = TestUtils.mockImplementation<UserRefreshTokenVerifyInput>(() => {
       return {
-        userId: TestMock.getMockUUID()
+        userId: TestUtils.getMockUUID()
       };
     });
-    repository.findOne = TestMock.mockResolvedValue<UserEntity>(null);
+    repository.findOne = TestUtils.mockResolvedValue<UserEntity>(null);
 
     await expect(usecase.execute(input)).rejects.toThrow(ApiNotFoundException);
   });
 
   const user = new UserEntity({
-    id: TestMock.getMockUUID(),
+    id: TestUtils.getMockUUID(),
     email: 'admin@admin.com',
     name: 'Admin',
-    roles: [new RoleEntity({ id: TestMock.getMockUUID(), name: RoleEnum.USER })],
-    password: { id: TestMock.getMockUUID(), password: '***' }
+    roles: [new RoleEntity({ id: TestUtils.getMockUUID(), name: RoleEnum.USER })],
+    password: { id: TestUtils.getMockUUID(), password: '***' }
   });
 
   test('when user role not found, should expect an error', async () => {
-    token.verify = TestMock.mockImplementation<UserRefreshTokenVerifyInput>(() => {
+    token.verify = TestUtils.mockImplementation<UserRefreshTokenVerifyInput>(() => {
       return {
-        userId: TestMock.getMockUUID()
+        userId: TestUtils.getMockUUID()
       };
     });
-    repository.findOne = TestMock.mockResolvedValue<UserEntity>({ ...user, roles: [] });
+    repository.findOne = TestUtils.mockResolvedValue<UserEntity>({ ...user, roles: [] });
 
     await expect(usecase.execute(input)).rejects.toThrow(ApiNotFoundException);
   });
 
   test('when user refresh token successfully, should expect a token', async () => {
-    token.verify = TestMock.mockImplementation<UserRefreshTokenVerifyInput>(() => ({
-      userId: TestMock.getMockUUID()
+    token.verify = TestUtils.mockImplementation<UserRefreshTokenVerifyInput>(() => ({
+      userId: TestUtils.getMockUUID()
     }));
-    token.sign = TestMock.mockReturnValue<SignOutput>({ token: '<token>' });
+    token.sign = TestUtils.mockReturnValue<SignOutput>({ token: '<token>' });
     user.password.password = '69bf0bc46f51b33377c4f3d92caf876714f6bbbe99e7544487327920873f9820';
-    repository.findOne = TestMock.mockResolvedValue<UserEntity>(user);
+    repository.findOne = TestUtils.mockResolvedValue<UserEntity>(user);
 
     await expect(usecase.execute(input)).resolves.toEqual({
       accessToken: expect.any(String),

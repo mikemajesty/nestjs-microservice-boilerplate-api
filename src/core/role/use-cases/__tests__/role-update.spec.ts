@@ -1,10 +1,10 @@
 import { Test } from '@nestjs/testing';
-import { TestMock } from 'test/mock';
 
 import { ILoggerAdapter } from '@/infra/logger';
 import { CreatedModel } from '@/infra/repository';
 import { IRoleUpdateAdapter } from '@/modules/role/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
+import { TestUtils } from '@/utils/test/util';
 import { ZodExceptionIssue } from '@/utils/validator';
 
 import { IRoleRepository } from '../../repository/role';
@@ -25,7 +25,7 @@ describe(RoleUpdateUsecase.name, () => {
         {
           provide: ILoggerAdapter,
           useValue: {
-            info: TestMock.mockReturnValue<void>()
+            info: TestUtils.mockReturnValue<void>()
           }
         },
         {
@@ -43,32 +43,32 @@ describe(RoleUpdateUsecase.name, () => {
   });
 
   test('when no input is specified, should expect an error', async () => {
-    await TestMock.expectZodError(
+    await TestUtils.expectZodError(
       () => usecase.execute({} as RoleUpdateInput),
       (issues: ZodExceptionIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: TestMock.nameOf<RoleUpdateInput>('id') }]);
+        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<RoleUpdateInput>('id') }]);
       }
     );
   });
 
   const input: RoleUpdateInput = {
-    id: TestMock.getMockUUID()
+    id: TestUtils.getMockUUID()
   };
 
   test('when role not found, should expect an error', async () => {
-    repository.findById = TestMock.mockResolvedValue<RoleEntity>(null);
+    repository.findById = TestUtils.mockResolvedValue<RoleEntity>(null);
 
     await expect(usecase.execute(input)).rejects.toThrow(ApiNotFoundException);
   });
 
   const role = new RoleEntity({
-    id: TestMock.getMockUUID(),
+    id: TestUtils.getMockUUID(),
     name: RoleEnum.USER
   });
 
   test('when role updated successfully, should expect an role updated', async () => {
-    repository.findById = TestMock.mockResolvedValue<RoleEntity>(role);
-    repository.create = TestMock.mockResolvedValue<CreatedModel>(null);
+    repository.findById = TestUtils.mockResolvedValue<RoleEntity>(role);
+    repository.create = TestUtils.mockResolvedValue<CreatedModel>(null);
 
     await expect(usecase.execute(input)).resolves.toEqual(role);
   });

@@ -1,9 +1,9 @@
 import { Test } from '@nestjs/testing';
-import { TestMock } from 'test/mock';
 
 import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
 import { IUserGetByIdAdapter } from '@/modules/user/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
+import { TestUtils } from '@/utils/test/util';
 import { ZodExceptionIssue } from '@/utils/validator';
 
 import { UserEntity } from '../../entity/user';
@@ -37,30 +37,30 @@ describe(UserGetByIdUsecase.name, () => {
   });
 
   test('when no input is specified, should expect an error', async () => {
-    await TestMock.expectZodError(
+    await TestUtils.expectZodError(
       () => usecase.execute({} as UserGetByIdInput),
       (issues: ZodExceptionIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: TestMock.nameOf<UserGetByIdInput>('id') }]);
+        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<UserGetByIdInput>('id') }]);
       }
     );
   });
 
   test('when user not found, should expect an errror', async () => {
-    repository.findOne = TestMock.mockResolvedValue<UserEntity>(null);
+    repository.findOne = TestUtils.mockResolvedValue<UserEntity>(null);
 
-    await expect(usecase.execute({ id: TestMock.getMockUUID() })).rejects.toThrow(ApiNotFoundException);
+    await expect(usecase.execute({ id: TestUtils.getMockUUID() })).rejects.toThrow(ApiNotFoundException);
   });
 
   const user = new UserEntity({
-    id: TestMock.getMockUUID(),
+    id: TestUtils.getMockUUID(),
     email: 'admin@admin.com',
     name: 'Admin',
-    roles: [new RoleEntity({ id: TestMock.getMockUUID(), name: RoleEnum.USER })]
+    roles: [new RoleEntity({ id: TestUtils.getMockUUID(), name: RoleEnum.USER })]
   });
 
   test('when user getById successfully, should expect a user', async () => {
-    repository.findOne = TestMock.mockResolvedValue<UserEntity>(user);
+    repository.findOne = TestUtils.mockResolvedValue<UserEntity>(user);
 
-    await expect(usecase.execute({ id: TestMock.getMockUUID() })).resolves.toEqual(user);
+    await expect(usecase.execute({ id: TestUtils.getMockUUID() })).resolves.toEqual(user);
   });
 });

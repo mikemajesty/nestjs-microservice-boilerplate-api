@@ -1,11 +1,11 @@
 import { Test } from '@nestjs/testing';
-import { TestMock } from 'test/mock';
 
 import { PermissionEntity } from '@/core/permission/entity/permission';
 import { IPermissionRepository } from '@/core/permission/repository/permission';
 import { CreatedModel } from '@/infra/repository';
 import { IRoleDeletePermissionAdapter } from '@/modules/role/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
+import { TestUtils } from '@/utils/test/util';
 import { UUIDUtils } from '@/utils/uuid';
 import { ZodExceptionIssue } from '@/utils/validator';
 
@@ -46,24 +46,24 @@ describe(RoleDeletePermissionUsecase.name, () => {
   });
 
   test('when no input is specified, should expect an error', async () => {
-    await TestMock.expectZodError(
+    await TestUtils.expectZodError(
       () => usecase.execute({} as RoleDeletePermissionInput),
       (issues: ZodExceptionIssue[]) => {
         expect(issues).toEqual([
-          { message: 'Required', path: TestMock.nameOf<RoleDeletePermissionInput>('id') },
-          { message: 'Required', path: TestMock.nameOf<RoleDeletePermissionInput>('permissions') }
+          { message: 'Required', path: TestUtils.nameOf<RoleDeletePermissionInput>('id') },
+          { message: 'Required', path: TestUtils.nameOf<RoleDeletePermissionInput>('permissions') }
         ]);
       }
     );
   });
 
   const input: RoleAddPermissionInput = {
-    id: TestMock.getMockUUID(),
+    id: TestUtils.getMockUUID(),
     permissions: ['user:create']
   };
 
   test('when role not exists, should expect an error', async () => {
-    repository.findOne = TestMock.mockResolvedValue<RoleEntity>(null);
+    repository.findOne = TestUtils.mockResolvedValue<RoleEntity>(null);
 
     await expect(usecase.execute(input)).rejects.toThrow(ApiNotFoundException);
   });
@@ -76,9 +76,9 @@ describe(RoleDeletePermissionUsecase.name, () => {
   const role = new RoleEntity({ id: UUIDUtils.create(), name: RoleEnum.USER, permissions });
 
   test('when some permisson, should expect an error', async () => {
-    repository.findOne = TestMock.mockResolvedValue<RoleEntity>(role);
-    permissionRepository.findIn = TestMock.mockResolvedValue<PermissionEntity[]>(permissions);
-    repository.create = TestMock.mockResolvedValue<CreatedModel>(null);
+    repository.findOne = TestUtils.mockResolvedValue<RoleEntity>(role);
+    permissionRepository.findIn = TestUtils.mockResolvedValue<PermissionEntity[]>(permissions);
+    repository.create = TestUtils.mockResolvedValue<CreatedModel>(null);
 
     await expect(
       usecase.execute({ ...input, permissions: input.permissions.concat('user:getbyid') })

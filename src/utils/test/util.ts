@@ -7,7 +7,7 @@ import { BaseException } from '@/utils/exception';
 import { ZodExceptionIssue } from '@/utils/validator';
 import { z } from 'zod';
 
-export class TestMock {
+export class TestUtils {
   static mock(): jest.Mock {
     return jest.fn();
   }

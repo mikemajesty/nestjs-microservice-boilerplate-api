@@ -1,11 +1,11 @@
 import { Test } from '@nestjs/testing';
-import { TestMock } from 'test/mock';
 
 import { PermissionDeleteInput, PermissionDeleteUsecase } from '@/core/permission/use-cases/permission-delete';
 import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
 import { CreatedModel } from '@/infra/repository';
 import { IPermissionDeleteAdapter } from '@/modules/permission/adapter';
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception';
+import { TestUtils } from '@/utils/test/util';
 import { ZodExceptionIssue } from '@/utils/validator';
 
 import { IPermissionRepository } from '../../repository/permission';
@@ -37,26 +37,26 @@ describe(PermissionDeleteUsecase.name, () => {
   });
 
   test('when no input is specified, should expect an error', async () => {
-    await TestMock.expectZodError(
+    await TestUtils.expectZodError(
       () => usecase.execute({} as PermissionDeleteInput),
       (issues: ZodExceptionIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: TestMock.nameOf<PermissionDeleteInput>('id') }]);
+        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<PermissionDeleteInput>('id') }]);
       }
     );
   });
 
   const input: PermissionDeleteInput = {
-    id: TestMock.getMockUUID()
+    id: TestUtils.getMockUUID()
   };
 
   test('when permission not found, should expect an error', async () => {
-    repository.findOneWithRelation = TestMock.mockResolvedValue<PermissionEntity>(null);
+    repository.findOneWithRelation = TestUtils.mockResolvedValue<PermissionEntity>(null);
 
     await expect(usecase.execute(input)).rejects.toThrow(ApiNotFoundException);
   });
 
   test('when permission has association with role, should expect an error', async () => {
-    repository.findOneWithRelation = TestMock.mockResolvedValue<PermissionEntity>({
+    repository.findOneWithRelation = TestUtils.mockResolvedValue<PermissionEntity>({
       roles: [{ name: RoleEnum.BACKOFFICE } as RoleEntity]
     });
 
@@ -64,13 +64,13 @@ describe(PermissionDeleteUsecase.name, () => {
   });
 
   const permission = new PermissionEntity({
-    id: TestMock.getMockUUID(),
+    id: TestUtils.getMockUUID(),
     name: 'name:permission'
   });
 
   test('when permission deleted successfully, should expect a permission deleted', async () => {
-    repository.findOneWithRelation = TestMock.mockResolvedValue<PermissionEntity>(permission);
-    repository.create = TestMock.mockResolvedValue<CreatedModel>();
+    repository.findOneWithRelation = TestUtils.mockResolvedValue<PermissionEntity>(permission);
+    repository.create = TestUtils.mockResolvedValue<CreatedModel>();
 
     await expect(usecase.execute(input)).resolves.toEqual({
       ...permission,

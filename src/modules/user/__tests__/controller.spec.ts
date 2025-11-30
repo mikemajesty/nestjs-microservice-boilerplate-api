@@ -3,7 +3,6 @@ import { Test } from '@nestjs/testing';
 import { getRepositoryToken, TypeOrmModule } from '@nestjs/typeorm';
 import { PostgreSqlContainer } from '@testcontainers/postgresql';
 import request from 'supertest';
-import { TestPostgresContainer, TestRedisContainer } from 'test/containers';
 import { Repository } from 'typeorm';
 
 import { UserEntity } from '@/core/user/entity/user';
@@ -11,6 +10,7 @@ import { IUserRepository } from '@/core/user/repository/user';
 import { ICacheAdapter } from '@/infra/cache';
 import { RedisService } from '@/infra/cache/redis';
 import { UserSchema } from '@/infra/database/postgres/schemas/user';
+import { TestPostgresContainer, TestRedisContainer } from '@/utils/test/containers';
 
 import { UserModule } from '../module';
 import { UserRepository } from '../repository';

@@ -1,10 +1,10 @@
 import { Test } from '@nestjs/testing';
-import { TestMock } from 'test/mock';
 
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { UpdatedModel } from '@/infra/repository';
 import { ICatUpdateAdapter } from '@/modules/cat/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
+import { TestUtils } from '@/utils/test/util';
 import { ZodExceptionIssue } from '@/utils/validator';
 
 import { CatEntity } from '../../entity/cat';
@@ -38,33 +38,33 @@ describe(CatUpdateUsecase.name, () => {
   });
 
   test('when no input is specified, should expect an error', async () => {
-    await TestMock.expectZodError(
-      () => usecase.execute({} as CatUpdateInput, TestMock.getMockTracing()),
+    await TestUtils.expectZodError(
+      () => usecase.execute({} as CatUpdateInput, TestUtils.getMockTracing()),
       (issues: ZodExceptionIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: TestMock.nameOf<CatUpdateInput>('id') }]);
+        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<CatUpdateInput>('id') }]);
       }
     );
   });
 
   test('when cat not found, should expect an error', async () => {
-    repository.findById = TestMock.mockResolvedValue<CatEntity>(null);
+    repository.findById = TestUtils.mockResolvedValue<CatEntity>(null);
 
-    await expect(usecase.execute({ id: TestMock.getMockUUID() }, TestMock.getMockTracing())).rejects.toThrow(
+    await expect(usecase.execute({ id: TestUtils.getMockUUID() }, TestUtils.getMockTracing())).rejects.toThrow(
       ApiNotFoundException
     );
   });
 
   const cat = new CatEntity({
-    id: TestMock.getMockUUID(),
+    id: TestUtils.getMockUUID(),
     age: 10,
     breed: 'dummy',
     name: 'dummy'
   });
 
   test('when cat updated successfully, should expect a cat updated', async () => {
-    repository.findById = TestMock.mockResolvedValue<CatEntity>(cat);
-    repository.updateOne = TestMock.mockResolvedValue<UpdatedModel>();
+    repository.findById = TestUtils.mockResolvedValue<CatEntity>(cat);
+    repository.updateOne = TestUtils.mockResolvedValue<UpdatedModel>();
 
-    await expect(usecase.execute({ id: TestMock.getMockUUID() }, TestMock.getMockTracing())).resolves.toEqual(cat);
+    await expect(usecase.execute({ id: TestUtils.getMockUUID() }, TestUtils.getMockTracing())).resolves.toEqual(cat);
   });
 });

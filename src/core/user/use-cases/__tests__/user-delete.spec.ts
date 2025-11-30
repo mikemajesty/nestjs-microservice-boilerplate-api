@@ -1,9 +1,9 @@
 import { Test } from '@nestjs/testing';
-import { TestMock } from 'test/mock';
 
 import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
 import { IUserDeleteAdapter } from '@/modules/user/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
+import { TestUtils } from '@/utils/test/util';
 import { ZodExceptionIssue } from '@/utils/validator';
 
 import { UserEntity } from '../../entity/user';
@@ -37,35 +37,35 @@ describe(UserDeleteUsecase.name, () => {
   });
 
   test('when no input is specified, should expect an error', async () => {
-    await TestMock.expectZodError(
-      () => usecase.execute({ id: 'uuid' } as UserDeleteInput, TestMock.getMockTracing()),
+    await TestUtils.expectZodError(
+      () => usecase.execute({ id: 'uuid' } as UserDeleteInput, TestUtils.getMockTracing()),
       (issues: ZodExceptionIssue[]) => {
-        expect(issues).toEqual([{ message: 'Invalid uuid', path: TestMock.nameOf<UserDeleteInput>('id') }]);
+        expect(issues).toEqual([{ message: 'Invalid uuid', path: TestUtils.nameOf<UserDeleteInput>('id') }]);
       }
     );
   });
 
   test('when user not found, should expect an error', async () => {
-    repository.findOneWithRelation = TestMock.mockResolvedValue<UserEntity>(null);
+    repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(null);
 
-    await expect(usecase.execute({ id: TestMock.getMockUUID() }, TestMock.getMockTracing())).rejects.toThrow(
+    await expect(usecase.execute({ id: TestUtils.getMockUUID() }, TestUtils.getMockTracing())).rejects.toThrow(
       ApiNotFoundException
     );
   });
 
   const user = new UserEntity({
-    id: TestMock.getMockUUID(),
+    id: TestUtils.getMockUUID(),
     email: 'admin@admin.com',
     name: '*Admin',
-    roles: [new RoleEntity({ id: TestMock.getMockUUID(), name: RoleEnum.USER })],
-    password: { id: TestMock.getMockUUID(), password: '****' }
+    roles: [new RoleEntity({ id: TestUtils.getMockUUID(), name: RoleEnum.USER })],
+    password: { id: TestUtils.getMockUUID(), password: '****' }
   });
 
   test('when user deleted successfully, should expect an user deleted.', async () => {
-    repository.findOneWithRelation = TestMock.mockResolvedValue<UserEntity>(user);
-    repository.softRemove = TestMock.mockResolvedValue<UserEntity>();
+    repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(user);
+    repository.softRemove = TestUtils.mockResolvedValue<UserEntity>();
 
-    await expect(usecase.execute({ id: TestMock.getMockUUID() }, TestMock.getMockTracing())).resolves.toEqual(
+    await expect(usecase.execute({ id: TestUtils.getMockUUID() }, TestUtils.getMockTracing())).resolves.toEqual(
       expect.any(UserEntity)
     );
     expect(repository.softRemove).toHaveBeenCalled();
