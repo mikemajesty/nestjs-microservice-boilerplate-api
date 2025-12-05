@@ -1,3 +1,4 @@
+import { ZodMockSchema } from '@mikemajesty/zod-mock-schema';
 import { Test } from '@nestjs/testing';
 
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
@@ -7,7 +8,7 @@ import { ApiNotFoundException } from '@/utils/exception';
 import { TestUtils } from '@/utils/test/util';
 import { ZodExceptionIssue } from '@/utils/validator';
 
-import { CatEntity } from '../../entity/cat';
+import { CatEntity, CatEntitySchema } from '../../entity/cat';
 import { ICatRepository } from '../../repository/cat';
 import { CatUpdateInput, CatUpdateUsecase } from '../cat-update';
 
@@ -54,17 +55,19 @@ describe(CatUpdateUsecase.name, () => {
     );
   });
 
-  const cat = new CatEntity({
-    id: TestUtils.getMockUUID(),
-    age: 10,
-    breed: 'dummy',
-    name: 'dummy'
+  const mock = new ZodMockSchema(CatEntitySchema);
+  const input = mock.generate({
+    overrides: {
+      updatedAt: null,
+      createdAt: null,
+      deletedAt: null
+    }
   });
 
   test('when cat updated successfully, should expect a cat updated', async () => {
-    repository.findById = TestUtils.mockResolvedValue<CatEntity>(cat);
+    repository.findById = TestUtils.mockResolvedValue<CatEntity>(input);
     repository.updateOne = TestUtils.mockResolvedValue<UpdatedModel>();
 
-    await expect(usecase.execute({ id: TestUtils.getMockUUID() }, TestUtils.getMockTracing())).resolves.toEqual(cat);
+    await expect(usecase.execute({ id: TestUtils.getMockUUID() }, TestUtils.getMockTracing())).resolves.toEqual(input);
   });
 });

@@ -1,3 +1,4 @@
+import { ZodMockSchema } from '@mikemajesty/zod-mock-schema';
 import { Test } from '@nestjs/testing';
 
 import { IPermissionGetByIdAdapter } from '@/modules/permission/adapter';
@@ -7,7 +8,7 @@ import { ZodExceptionIssue } from '@/utils/validator';
 
 import { IPermissionRepository } from '../../repository/permission';
 import { PermissionGetByIdInput, PermissionGetByIdUsecase } from '../permission-get-by-id';
-import { PermissionEntity } from './../../entity/permission';
+import { PermissionEntity, PermissionEntitySchema } from './../../entity/permission';
 
 describe(PermissionGetByIdUsecase.name, () => {
   let usecase: IPermissionGetByIdAdapter;
@@ -53,9 +54,12 @@ describe(PermissionGetByIdUsecase.name, () => {
     await expect(usecase.execute(input)).rejects.toThrow(ApiNotFoundException);
   });
 
-  const permission = new PermissionEntity({
-    id: TestUtils.getMockUUID(),
-    name: 'name:permission'
+  const mock = new ZodMockSchema(PermissionEntitySchema);
+  const permission = mock.generate<PermissionEntity>({
+    overrides: {
+      name: 'name:permission',
+      roles: []
+    }
   });
 
   test('when permission found, should expect a permission found', async () => {

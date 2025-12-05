@@ -26,7 +26,7 @@ export const RoleEntitySchema = InputValidator.object({
 type Role = Infer<typeof RoleEntitySchema>;
 
 export class RoleEntity extends BaseEntity<RoleEntity>() {
-  name!: RoleEnum;
+  name!: Role['name'];
 
   permissions!: PermissionEntity[];
 

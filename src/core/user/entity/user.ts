@@ -4,8 +4,8 @@ import { Infer, InputValidator } from '@/utils/validator';
 
 import { UserPasswordEntity, UserPasswordEntitySchema } from './user-password';
 
-const ID = InputValidator.string().uuid();
-const Email = InputValidator.string().email();
+const ID = InputValidator.uuid();
+const Email = InputValidator.email();
 const Name = InputValidator.string();
 const Password = UserPasswordEntitySchema;
 const Role = RoleEntitySchema;
@@ -27,9 +27,9 @@ export const UserEntitySchema = InputValidator.object({
 type User = Infer<typeof UserEntitySchema>;
 
 export class UserEntity extends BaseEntity<UserEntity>() {
-  name!: string;
+  name!: User['name'];
 
-  email!: string;
+  email!: User['email'];
 
   roles!: RoleEntity[];
 

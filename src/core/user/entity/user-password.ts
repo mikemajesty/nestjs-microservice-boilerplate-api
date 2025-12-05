@@ -3,7 +3,7 @@ import { BaseEntity } from '@/utils/entity';
 import { ApiBadRequestException } from '@/utils/exception';
 import { Infer, InputValidator } from '@/utils/validator';
 
-const ID = InputValidator.string().uuid();
+const ID = InputValidator.uuid();
 const Password = InputValidator.string();
 const CreatedAt = InputValidator.date().nullish();
 const UpdatedAt = InputValidator.date().nullish();
@@ -20,7 +20,7 @@ export const UserPasswordEntitySchema = InputValidator.object({
 type UserPassword = Infer<typeof UserPasswordEntitySchema>;
 
 export class UserPasswordEntity extends BaseEntity<UserPasswordEntity>() {
-  password!: string;
+  password!: UserPassword['password'];
 
   constructor(entity: UserPassword) {
     super(UserPasswordEntitySchema);

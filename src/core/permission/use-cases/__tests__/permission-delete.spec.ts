@@ -1,3 +1,4 @@
+import { ZodMockSchema } from '@mikemajesty/zod-mock-schema';
 import { Test } from '@nestjs/testing';
 
 import { PermissionDeleteInput, PermissionDeleteUsecase } from '@/core/permission/use-cases/permission-delete';
@@ -9,7 +10,7 @@ import { TestUtils } from '@/utils/test/util';
 import { ZodExceptionIssue } from '@/utils/validator';
 
 import { IPermissionRepository } from '../../repository/permission';
-import { PermissionEntity } from './../../entity/permission';
+import { PermissionEntity, PermissionEntitySchema } from './../../entity/permission';
 
 describe(PermissionDeleteUsecase.name, () => {
   let usecase: IPermissionDeleteAdapter;
@@ -63,9 +64,12 @@ describe(PermissionDeleteUsecase.name, () => {
     await expect(usecase.execute(input)).rejects.toThrow(ApiConflictException);
   });
 
-  const permission = new PermissionEntity({
-    id: TestUtils.getMockUUID(),
-    name: 'name:permission'
+  const mock = new ZodMockSchema(PermissionEntitySchema);
+  const permission = mock.generate<PermissionEntity>({
+    overrides: {
+      name: 'name:permission',
+      roles: []
+    }
   });
 
   test('when permission deleted successfully, should expect a permission deleted', async () => {

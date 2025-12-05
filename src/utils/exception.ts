@@ -10,14 +10,20 @@ export class BaseException extends HttpException {
   constructor(message: MessageType, status: HttpStatus, parameters?: ParametersType) {
     super(message, status);
 
-    Error.captureStackTrace(this);
-    Error.call(this);
+    const actualProto = new.target.prototype;
+
+    this.statusCode = status;
 
     if (parameters) {
       this.parameters = parameters;
     }
 
-    this.statusCode = super.getStatus();
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, this.constructor);
+    }
+
+    Object.setPrototypeOf(this, actualProto);
+    this.name = this.constructor.name;
   }
 }
 

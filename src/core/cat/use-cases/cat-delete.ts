@@ -26,10 +26,10 @@ export class CatDeleteUsecase implements IUsecase {
 
     entity.deactivated();
 
-    await this.catRepository.updateOne({ id: entity.id }, entity);
+    await this.catRepository.updateOne({ id: entity.id }, entity.toObject());
     tracing.logEvent('cat-deleted', `cat deleted by: ${user.email}`);
 
-    return entity;
+    return entity.toObject();
   }
 }
 

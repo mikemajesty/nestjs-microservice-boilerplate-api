@@ -1,3 +1,4 @@
+import { UserEntity } from '@/core/user/entity/user';
 import { UserPasswordEntity } from '@/core/user/entity/user-password';
 import { IUserRepository } from '@/core/user/repository/user';
 import { SendEmailInput } from '@/infra/email';
@@ -41,26 +42,27 @@ export class ResetPasswordConfirmUsecase implements IUsecase {
       throw new ApiNotFoundException('user not found');
     }
 
-    const resetPasswordToken = await this.resetPasswordTokenRepository.findByIdUserId(user.id);
+    const userEntity = new UserEntity(user);
+    const resetPasswordToken = await this.resetPasswordTokenRepository.findByIdUserId(userEntity.id);
 
     if (!resetPasswordToken) {
       throw new ApiUnauthorizedException('token was expired');
     }
 
-    const passwordEntity = new UserPasswordEntity(user.password);
+    const passwordEntity = new UserPasswordEntity(userEntity.password);
 
     passwordEntity.createPassword();
 
-    await this.userRepository.create(user);
+    await this.userRepository.create(userEntity.toObject());
 
     this.event.emit<SendEmailInput>(EventNameEnum.SEND_EMAIL, {
-      email: user.email,
+      email: userEntity.email,
       subject: 'Password has been changed successfully',
       template: 'reset-password',
-      payload: { name: user.name }
+      payload: { name: userEntity.name }
     });
 
-    await this.resetPasswordTokenRepository.remove({ userId: user.id });
+    await this.resetPasswordTokenRepository.remove({ userId: userEntity.id });
   }
 }
 

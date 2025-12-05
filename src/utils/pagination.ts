@@ -5,8 +5,8 @@ import { Infer, InputValidator } from './validator';
 const maxLimit = (limit: number) => (limit > 100 ? 100 : limit);
 
 export const PaginationSchema = InputValidator.object({
-  page: InputValidator.number().or(InputValidator.string()).or(InputValidator.nan()).default(1),
-  limit: InputValidator.number().or(InputValidator.string()).or(InputValidator.nan()).default(10)
+  page: InputValidator.union([InputValidator.number(), InputValidator.string(), InputValidator.nan()]).default(1),
+  limit: InputValidator.union([InputValidator.number(), InputValidator.string(), InputValidator.nan()]).default(10)
 })
   .transform((pagination) => {
     let limit = Number(pagination.limit);

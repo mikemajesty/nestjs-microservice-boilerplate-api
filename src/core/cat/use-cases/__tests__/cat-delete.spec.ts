@@ -1,3 +1,4 @@
+import { ZodMockSchema } from '@mikemajesty/zod-mock-schema';
 import { Test } from '@nestjs/testing';
 
 import { CatDeleteInput, CatDeleteUsecase } from '@/core/cat/use-cases/cat-delete';
@@ -8,7 +9,7 @@ import { ApiNotFoundException } from '@/utils/exception';
 import { TestUtils } from '@/utils/test/util';
 import { ZodExceptionIssue } from '@/utils/validator';
 
-import { CatEntity } from '../../entity/cat';
+import { CatEntity, CatEntitySchema } from '../../entity/cat';
 import { ICatRepository } from '../../repository/cat';
 
 describe(CatDeleteUsecase.name, () => {
@@ -54,19 +55,15 @@ describe(CatDeleteUsecase.name, () => {
     );
   });
 
-  const cat = new CatEntity({
-    id: TestUtils.getMockUUID(),
-    age: 10,
-    breed: 'dummy',
-    name: 'dummy'
-  });
+  const mock = new ZodMockSchema(CatEntitySchema);
+  const input = mock.generate();
 
   test('when cat deleted successfully, should expect a cat deleted', async () => {
-    repository.findById = TestUtils.mockResolvedValue<CatEntity>(cat);
+    repository.findById = TestUtils.mockResolvedValue<CatEntity>(input);
     repository.updateOne = TestUtils.mockResolvedValue<UpdatedModel>();
 
     await expect(usecase.execute({ id: TestUtils.getMockUUID() }, TestUtils.getMockTracing())).resolves.toEqual({
-      ...cat,
+      ...input,
       deletedAt: expect.any(Date)
     });
   });

@@ -1,4 +1,5 @@
 import i18next, { ResourceLanguage } from 'i18next';
+import * as validatorBrasil from 'validator-brasil';
 import { z } from 'zod';
 import { zodI18nMap } from 'zod-i18n-map';
 
@@ -87,7 +88,73 @@ export const changeLanguage = async (locale: string) => {
   }
 };
 
-export const InputValidator = z;
+const validateRG = (rg: string): boolean => {
+  const cleanedRG = rg.replace(/\D/g, '');
+  return cleanedRG.length === 9;
+};
+
+const validateCPF = (cpf: string): boolean => {
+  return validatorBrasil.isCPF(cpf);
+};
+
+const validateCNPJ = (cnpj: string): boolean => {
+  return validatorBrasil.isCNPJ(cnpj);
+};
+
+const validatePhone = (telefone: string): boolean => {
+  const phone = telefone.replace(/\D/g, '');
+  return phone.length >= 10 && phone.length <= 11;
+};
+
+const validateCEP = (cep: string): boolean => {
+  return validatorBrasil.isCEP(cep);
+};
+
+export const InputValidator = {
+  ...z,
+  cpf: () =>
+    z
+      .string()
+      .transform((val) => val.replace(/\D/g, ''))
+      .refine(validateCPF, {
+        message: 'invalid CPF'
+      })
+      .meta({ format: 'cpf' }),
+  rg: () =>
+    z
+      .string()
+      .transform((val) => val.replace(/\D/g, ''))
+      .refine(validateRG, {
+        message: 'invalid RG'
+      })
+      .meta({ format: 'rg' }),
+  cnpj: () =>
+    z
+      .string()
+      .transform((val) => val.replace(/\D/g, ''))
+      .refine(validateCNPJ, {
+        message: 'invalid CNPJ'
+      })
+      .meta({ format: 'cnpj' }),
+
+  phoneBR: () =>
+    z
+      .string()
+      .transform((val) => val.replace(/\D/g, ''))
+      .refine(validatePhone, {
+        message: 'Phone must have 10 or 11 digits'
+      })
+      .meta({ format: 'phoneBR' }),
+
+  cep: () =>
+    z
+      .string()
+      .transform((val) => val.replace(/\D/g, ''))
+      .refine(validateCEP, {
+        message: 'invalid CEP'
+      })
+      .meta({ format: 'cep' })
+};
 
 export type LocaleInput =
   | 'ar'
@@ -124,7 +191,7 @@ export type LocaleInput =
 export type Infer<T extends z.ZodType> = z.infer<T>;
 
 export type ZodException = z.ZodError;
-export type ZodExceptionIssue = z.ZodIssue;
+export type ZodExceptionIssue = z.core.$ZodIssue;
 
 export type ZodOptionalType<T> = z.ZodOptional<z.ZodType<NonNullable<T>>>;
 

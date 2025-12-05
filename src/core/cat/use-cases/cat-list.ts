@@ -8,7 +8,7 @@ import { InputValidator } from '@/utils/validator';
 
 import { ICatRepository } from '../repository/cat';
 
-export const CatListSchema = InputValidator.intersection(PaginationSchema, SortSchema.merge(SearchSchema));
+export const CatListSchema = InputValidator.intersection(PaginationSchema, SortSchema).and(SearchSchema);
 export class CatListUsecase implements IUsecase {
   constructor(private readonly catRepository: ICatRepository) {}
 

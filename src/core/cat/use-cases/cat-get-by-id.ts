@@ -22,7 +22,7 @@ export class CatGetByIdUsecase implements IUsecase {
       throw new ApiNotFoundException();
     }
 
-    return new CatEntity(cat);
+    return new CatEntity(cat).toObject();
   }
 }
 

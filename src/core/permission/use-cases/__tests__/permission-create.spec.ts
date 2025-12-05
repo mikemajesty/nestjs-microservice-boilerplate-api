@@ -1,3 +1,4 @@
+import { ZodMockSchema } from '@mikemajesty/zod-mock-schema';
 import { Test } from '@nestjs/testing';
 
 import { ILoggerAdapter } from '@/infra/logger';
@@ -7,7 +8,7 @@ import { ApiConflictException } from '@/utils/exception';
 import { TestUtils } from '@/utils/test/util';
 import { ZodExceptionIssue } from '@/utils/validator';
 
-import { PermissionEntity } from '../../entity/permission';
+import { PermissionEntity, PermissionEntitySchema } from '../../entity/permission';
 import { IPermissionRepository } from '../../repository/permission';
 import { PermissionCreateInput, PermissionCreateUsecase } from '../permission-create';
 
@@ -55,7 +56,12 @@ describe(PermissionCreateUsecase.name, () => {
     name: 'name:permission'
   };
 
-  const output: PermissionEntity = new PermissionEntity({ id: TestUtils.getMockUUID(), name: input.name });
+  const mock = new ZodMockSchema(PermissionEntitySchema);
+  const output = mock.generate<PermissionEntity>({
+    overrides: {
+      name: 'create:permission'
+    }
+  });
 
   test('when permission exists, should expect an error', async () => {
     repository.findOne = TestUtils.mockResolvedValue<PermissionEntity>(output);
@@ -67,6 +73,6 @@ describe(PermissionCreateUsecase.name, () => {
     repository.create = TestUtils.mockResolvedValue<CreatedModel>({ created: true, id: TestUtils.getMockUUID() });
     repository.findOne = TestUtils.mockResolvedValue<PermissionEntity>(null);
 
-    await expect(usecase.execute(input)).resolves.toBeInstanceOf(PermissionEntity);
+    await expect(usecase.execute(input)).resolves.toBeDefined();
   });
 });

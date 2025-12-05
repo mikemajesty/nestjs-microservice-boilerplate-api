@@ -1,7 +1,8 @@
+import { ZodMockSchema } from '@mikemajesty/zod-mock-schema';
 import { Test } from '@nestjs/testing';
 
-import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
-import { UserEntity } from '@/core/user/entity/user';
+import { RoleEntitySchema } from '@/core/role/entity/role';
+import { UserEntity, UserEntitySchema } from '@/core/user/entity/user';
 import { IUserRepository } from '@/core/user/repository/user';
 import { CreatedModel, RemovedModel } from '@/infra/repository';
 import { EmitEventOutput, IEventAdapter } from '@/libs/event';
@@ -89,12 +90,18 @@ describe(ResetPasswordConfirmUsecase.name, () => {
 
   const input: ResetPasswordConfirmInput = { confirmPassword: '123456', password: '123456', token: 'token' };
 
-  const user = new UserEntity({
-    id: TestUtils.getMockUUID(),
-    email: 'admin@admin.com',
-    name: 'Admin',
-    roles: [new RoleEntity({ id: TestUtils.getMockUUID(), name: RoleEnum.USER })],
-    password: { id: TestUtils.getMockUUID(), password: '****' }
+  const resetPasswordMock = new ZodMockSchema(UserEntitySchema);
+  const roleMock = new ZodMockSchema(RoleEntitySchema);
+  const user = resetPasswordMock.generate<UserEntity>({
+    overrides: {
+      roles: [
+        roleMock.generate({
+          overrides: {
+            permissions: []
+          }
+        })
+      ]
+    }
   });
 
   test('when user not found, should expect an error', async () => {

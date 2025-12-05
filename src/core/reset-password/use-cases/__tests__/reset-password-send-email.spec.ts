@@ -1,7 +1,9 @@
+import { ZodMockSchema } from '@mikemajesty/zod-mock-schema';
 import { Test } from '@nestjs/testing';
 
+import { PermissionEntitySchema } from '@/core/permission/entity/permission';
 import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
-import { UserEntity } from '@/core/user/entity/user';
+import { UserEntity, UserEntitySchema } from '@/core/user/entity/user';
 import { IUserRepository } from '@/core/user/repository/user';
 import { CreatedModel } from '@/infra/repository';
 import { ISecretsAdapter } from '@/infra/secrets';
@@ -89,14 +91,19 @@ describe(ResetPasswordSendEmailUsecase.name, () => {
     await expect(usecase.execute(input)).rejects.toThrow(ApiNotFoundException);
   });
 
-  const user = new UserEntity({
-    id: TestUtils.getMockUUID(),
-    email: 'admin@admin.com',
-    name: 'Admin',
-    roles: [new RoleEntity({ id: TestUtils.getMockUUID(), name: RoleEnum.USER })]
+  const userMock = new ZodMockSchema(UserEntitySchema);
+  const user = userMock.generate<UserEntity>({
+    overrides: {
+      roles: [new RoleEntity({ id: TestUtils.getMockUUID(), name: RoleEnum.USER })]
+    }
   });
 
-  const resetPassword = new ResetPasswordEntity({ id: TestUtils.getMockUUID(), token: 'token', user });
+  const resetPasswordMock = new ZodMockSchema(PermissionEntitySchema);
+  const resetPassword = resetPasswordMock.generate({
+    overrides: {
+      name: 'create:name'
+    }
+  });
 
   test('when token was founded, should expect void', async () => {
     userRepository.findOne = TestUtils.mockResolvedValue<UserEntity>(user);

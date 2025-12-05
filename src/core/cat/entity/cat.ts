@@ -1,10 +1,10 @@
 import { BaseEntity } from '@/utils/entity';
 import { Infer, InputValidator } from '@/utils/validator';
 
-const ID = InputValidator.string().uuid();
+const ID = InputValidator.uuid();
 const Name = InputValidator.string().trim().min(1).max(200);
 const Breed = InputValidator.string().trim().min(1).max(200);
-const Age = InputValidator.number().min(0).max(30);
+const Age = InputValidator.int().min(0).max(30);
 const CreatedAt = InputValidator.date().nullish();
 const UpdatedAt = InputValidator.date().nullish();
 const DeletedAt = InputValidator.date().nullish();
@@ -22,11 +22,11 @@ export const CatEntitySchema = InputValidator.object({
 type Cat = Infer<typeof CatEntitySchema>;
 
 export class CatEntity extends BaseEntity<CatEntity>() {
-  name!: string;
+  name!: Cat['name'];
 
-  breed!: string;
+  breed!: Cat['breed'];
 
-  age!: number;
+  age!: Cat['age'];
 
   constructor(entity: Cat) {
     super(CatEntitySchema);

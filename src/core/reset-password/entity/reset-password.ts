@@ -21,7 +21,7 @@ export const ResetPasswordEntitySchema = InputValidator.object({
 type ResetPassword = Infer<typeof ResetPasswordEntitySchema>;
 
 export class ResetPasswordEntity extends BaseEntity<ResetPasswordEntity>() {
-  token!: string;
+  token!: ResetPassword['token'];
 
   user!: UserEntity;
 

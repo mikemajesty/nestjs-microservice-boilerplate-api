@@ -1,6 +1,6 @@
 {
   "name": "nestjs-boilerplate-microservice-api",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "NestJs boilerplate api",
   "author": "mike.rodrigues.lima@gmail.com",
   "private": true,
@@ -31,6 +31,8 @@
     "make-badges": "istanbul-badges-readme"
   },
   "dependencies": {
+    "@faker-js/faker": "^10.1.0",
+    "@mikemajesty/zod-mock-schema": "1.0.10",
     "@nestjs/common": "^11.1.9",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.1.9",
@@ -79,6 +81,7 @@
     "pino-loki": "^2.6.0",
     "pino-pretty": "^13.1.2",
     "pm2": "^6.0.13",
+    "randexp": "^0.5.3",
     "redis": "^5.10.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
@@ -90,6 +93,7 @@
     "typescript": "5.9.3",
     "uuid": "^11.0.0",
     "v8": "^0.1.0",
+    "validator-brasil": "^1.0.0",
     "write-excel-file": "^2.3.10",
     "yaml": "^2.8.1",
     "zod": "^4.1.12",

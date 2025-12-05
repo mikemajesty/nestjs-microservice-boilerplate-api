@@ -42,7 +42,14 @@ export class PermissionRepository extends TypeORMRepository<Model> implements IP
       where: input.search as FindOptionsWhere<unknown>
     });
 
-    return { docs, total, page: input.page, limit: input.limit };
+    return {
+      docs: docs.map((d) => {
+        return new PermissionEntity(d).toObject();
+      }),
+      total,
+      page: input.page,
+      limit: input.limit
+    };
   }
 }
 

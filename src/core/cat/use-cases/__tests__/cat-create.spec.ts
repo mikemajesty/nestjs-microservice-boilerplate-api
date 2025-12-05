@@ -1,3 +1,4 @@
+import { ZodMockSchema } from '@mikemajesty/zod-mock-schema';
 import { Test } from '@nestjs/testing';
 
 import { CreatedModel } from '@/infra/repository';
@@ -6,8 +7,7 @@ import { ApiInternalServerException } from '@/utils/exception';
 import { TestUtils } from '@/utils/test/util';
 import { ZodExceptionIssue } from '@/utils/validator';
 
-// import { EntityMock } from '@/test/mock';
-import { CatEntity } from '../../entity/cat';
+import { CatEntitySchema } from '../../entity/cat';
 import { ICatRepository } from '../../repository/cat';
 import { CatCreateInput, CatCreateUsecase } from '../cat-create';
 
@@ -50,18 +50,12 @@ describe(CatCreateUsecase.name, () => {
     );
   });
 
-  const input = new CatEntity({
-    id: TestUtils.getMockUUID(),
-    age: 10,
-    breed: 'dummy',
-    name: 'dummy'
-  });
+  const mock = new ZodMockSchema(CatEntitySchema);
+  const input = mock.generate();
 
   test('when cat created successfully, should expect a cat created', async () => {
     repository.create = TestUtils.mockResolvedValue<CreatedModel>(input);
 
-    // const entity = new EntityMock(CatEntitySchema);
-    // console.log('entity', entity);
     await expect(usecase.execute(input, TestUtils.getMockTracing())).resolves.toEqual(input);
   });
 

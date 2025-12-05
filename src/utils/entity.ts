@@ -1,6 +1,9 @@
+import 'reflect-metadata';
+
 import z from 'zod';
 
 import { DateUtils } from './date';
+import { ApiUnprocessableEntityException } from './exception';
 import { UUIDUtils } from './uuid';
 
 export const withID = (entity: { _id?: string; id?: string }) => {
@@ -20,10 +23,10 @@ export interface IEntity {
 
 export const BaseEntity = <T>() => {
   abstract class Entity implements IEntity {
-    schema: z.ZodSchema;
-
-    constructor(zodSchema: z.ZodSchema) {
-      this.schema = zodSchema;
+    protected constructor(readonly _schema: z.ZodSchema) {
+      if (!_schema) {
+        throw new ApiUnprocessableEntityException('BaseEntity requires a schema');
+      }
     }
 
     readonly id!: string;
@@ -47,7 +50,15 @@ export const BaseEntity = <T>() => {
     validate<T>(entity: T): T {
       Object.assign(entity as IEntity, withID(entity as IEntity));
       Object.assign(this, { id: (entity as Pick<IEntity, 'id'>).id });
-      return this.schema.parse(entity) as T;
+      return this._schema.parse(entity) as T;
+    }
+
+    toObject() {
+      return this._schema.safeParse(this).data as T;
+    }
+
+    toJson() {
+      return JSON.stringify(this.toObject());
     }
   }
 

@@ -23,6 +23,7 @@ const config: Config.InitialOptions = {
       }
     ]
   },
+  transformIgnorePatterns: ['node_modules/(?!.*\\.(js|ts)$)'],
   setupFilesAfterEnv: ['<rootDir>/test/initialization.ts'],
   testEnvironment: 'node',
   collectCoverageFrom: ['**/*.ts'],

@@ -2053,6 +2053,11 @@
     "@eslint/core" "^0.17.0"
     levn "^0.4.1"
 
+"@faker-js/faker@^10.1.0":
+  version "10.1.0"
+  resolved "https://registry.npmjs.org/@faker-js/faker/-/faker-10.1.0.tgz"
+  integrity sha512-C3mrr3b5dRVlKPJdfrAXS8+dq+rq8Qm5SNRazca0JKgw1HQERFmrVb0towvMmw5uu8hHKNiQasMaR/tydf3Zsg==
+
 "@fastify/busboy@^2.0.0":
   version "2.1.1"
   resolved "https://registry.npmjs.org/@fastify/busboy/-/busboy-2.1.1.tgz"
@@ -2645,6 +2650,15 @@
     pluralize "^8.0.0"
     prompt-sync "^4.2.0"
     rimraf "^6.0.1"
+
+"@mikemajesty/zod-mock-schema@1.0.10":
+  version "1.0.10"
+  resolved "https://registry.npmjs.org/@mikemajesty/zod-mock-schema/-/zod-mock-schema-1.0.10.tgz"
+  integrity sha512-1xhVYJ8Pr+SUAhpn7gbXt4Sas0BWhNHBsT+uuTS7F/ATG1hfEp0SgdvlRVNEeple8BD8Nxd5/XDcAQSnYSoC6A==
+  dependencies:
+    "@faker-js/faker" "^10.1.0"
+    randexp "^0.5.3"
+    zod "^4.1.12"
 
 "@mongodb-js/saslprep@^1.3.0":
   version "1.3.2"
@@ -7143,6 +7157,11 @@ cjs-module-lexer@^2.1.0:
   resolved "https://registry.npmjs.org/cjs-module-lexer/-/cjs-module-lexer-2.1.1.tgz"
   integrity sha512-+CmxIZ/L2vNcEfvNtLdU0ZQ6mbq3FZnwAP2PPTiKP+1QOoKwlKlPgb8UKV0Dds7QVaMnHm+FwSft2VB0s/SLjQ==
 
+class-transformer@*, class-transformer@>=0.4.1:
+  version "0.5.1"
+  resolved "https://registry.npmjs.org/class-transformer/-/class-transformer-0.5.1.tgz"
+  integrity sha512-SQa1Ws6hUbfC98vKGxZH3KFY0Y1lm5Zm0SY8XX9zbK7FJCyVEac3ATW0RIpwzW+oOfmHE5PMPufDG9hCfoEOMw==
+
 class-validator@*, class-validator@^0.14.2, class-validator@>=0.13.2:
   version "0.14.2"
   resolved "https://registry.npmjs.org/class-validator/-/class-validator-0.14.2.tgz"
@@ -8148,6 +8167,11 @@ dotenv@^16.0.1, dotenv@^16.4.5, dotenv@^16.4.7, dotenv@16.4.7:
   version "16.4.7"
   resolved "https://registry.npmjs.org/dotenv/-/dotenv-16.4.7.tgz"
   integrity sha512-47qPchRCykZC03FhkYAhrvwU4xDBFIj1QPqaarj6mdM/hgUzfPHcpkHJOn3mJAufFeeAxAzeGsr5X0M4k6fLZQ==
+
+drange@^1.0.2:
+  version "1.1.1"
+  resolved "https://registry.npmjs.org/drange/-/drange-1.1.1.tgz"
+  integrity sha512-pYxfDYpued//QpnLIm4Avk7rsNtAtQkUES2cwAYSvD/wd2pKD71gN2Ebj3e7klzXwjocvE8c5vx/1fxwpqmSxA==
 
 driftless@^2.0.3:
   version "2.0.3"
@@ -13469,6 +13493,14 @@ quote-unquote@^1.0.0:
   resolved "https://registry.npmjs.org/quote-unquote/-/quote-unquote-1.0.0.tgz"
   integrity sha512-twwRO/ilhlG/FIgYeKGFqyHhoEhqgnKVkcmqMKi2r524gz3ZbDTcyFt38E9xjJI2vT+KbRNHVbnJ/e0I25Azwg==
 
+randexp@^0.5.3:
+  version "0.5.3"
+  resolved "https://registry.npmjs.org/randexp/-/randexp-0.5.3.tgz"
+  integrity sha512-U+5l2KrcMNOUPYvazA3h5ekF80FHTUG+87SEAmHZmolh1M+i/WyTCxVzmi+tidIa1tM4BSe8g2Y/D3loWDjj+w==
+  dependencies:
+    drange "^1.0.2"
+    ret "^0.2.0"
+
 randombytes@^2.1.0:
   version "2.1.0"
   resolved "https://registry.npmjs.org/randombytes/-/randombytes-2.1.0.tgz"
@@ -13821,6 +13853,11 @@ restore-cursor@^5.0.0:
   dependencies:
     onetime "^7.0.0"
     signal-exit "^4.1.0"
+
+ret@^0.2.0:
+  version "0.2.2"
+  resolved "https://registry.npmjs.org/ret/-/ret-0.2.2.tgz"
+  integrity sha512-M0b3YWQs7R3Z917WRQy1HHA7Ba7D8hvZg6UE5mLykJxQVE2ju0IXbGlaHPPlkY+WN7wFP+wUMXmBFA0aV6vYGQ==
 
 retry@^0.12.0:
   version "0.12.0"
@@ -15626,6 +15663,11 @@ validate-npm-package-name@^7.0.0:
   version "7.0.0"
   resolved "https://registry.npmjs.org/validate-npm-package-name/-/validate-npm-package-name-7.0.0.tgz"
   integrity sha512-bwVk/OK+Qu108aJcMAEiU4yavHUI7aN20TgZNBj9MR2iU1zPUl1Z1Otr7771ExfYTPTvfN8ZJ1pbr5Iklgt4xg==
+
+validator-brasil@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.npmjs.org/validator-brasil/-/validator-brasil-1.0.0.tgz"
+  integrity sha512-53XtHQJFsf40rXniisUK3UZ2hFrjtkkr6LmLeI4i53QYBwYSwhzT9ahQmphJj7j3V1MzvwgL87MtrHQ4KX6FYA==
 
 validator@^13.9.0:
   version "13.15.23"

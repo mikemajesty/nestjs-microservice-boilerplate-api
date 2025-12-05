@@ -38,11 +38,11 @@ export class PermissionUpdateUsecase implements IUsecase {
 
     const entity = new PermissionEntity({ ...permission, ...input });
 
-    await this.permissionRepository.updateOne({ id: entity.id }, entity);
+    await this.permissionRepository.updateOne({ id: entity.id }, entity.toObject());
 
     this.loggerService.info({ message: 'permission updated.', obj: { permission: input } });
 
-    return entity;
+    return entity.toObject();
   }
 }
 
