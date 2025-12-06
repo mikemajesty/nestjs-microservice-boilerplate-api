@@ -15,8 +15,8 @@ import { LoggerService } from '@/infra/logger';
 
 import { name, version } from '../../package.json';
 import { ApiBadRequestException } from './exception';
+import { IDGeneratorUtils } from './id-generator';
 import { generalizePath } from './request';
-import { UUIDUtils } from './uuid';
 
 const logger = new LoggerService();
 diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.ERROR);
@@ -269,7 +269,7 @@ const getTraceId = (request: IncomingMessage | ClientRequest) => {
 };
 
 const setTraceId = (request: IncomingMessage | ClientRequest) => {
-  const newTraceId = UUIDUtils.create();
+  const newTraceId = IDGeneratorUtils.uuid();
   if ('setHeader' in request) {
     (request as ClientRequest).setHeader('traceid', newTraceId);
   }

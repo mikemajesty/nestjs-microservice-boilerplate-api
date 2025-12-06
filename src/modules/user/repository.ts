@@ -54,7 +54,7 @@ export class UserRepository extends TypeORMRepository<Model> implements IUserRep
       where: input.search as FindOptionsWhere<IEntity>
     });
 
-    return { docs, total, page: input.page, limit: input.limit };
+    return { docs: docs.map((doc) => new UserEntity(doc).toObject()), total, page: input.page, limit: input.limit };
   }
 }
 

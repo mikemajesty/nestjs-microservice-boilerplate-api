@@ -1,18 +1,22 @@
+import { ZodMockSchema } from '@mikemajesty/zod-mock-schema';
 import { Test } from '@nestjs/testing';
 
-import { PermissionEntity } from '@/core/permission/entity/permission';
+import { PermissionEntity, PermissionEntitySchema } from '@/core/permission/entity/permission';
 import { IPermissionRepository } from '@/core/permission/repository/permission';
 import { CreatedModel } from '@/infra/repository';
 import { IRoleDeletePermissionAdapter } from '@/modules/role/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
+import { IDGeneratorUtils } from '@/utils/id-generator';
 import { TestUtils } from '@/utils/test/util';
-import { UUIDUtils } from '@/utils/uuid';
 import { ZodExceptionIssue } from '@/utils/validator';
 
 import { RoleEntity, RoleEnum } from '../../entity/role';
 import { IRoleRepository } from '../../repository/role';
-import { RoleAddPermissionInput } from '../role-add-permission';
-import { RoleDeletePermissionInput, RoleDeletePermissionUsecase } from '../role-delete-permission';
+import {
+  RoleDeletePermissionInput,
+  RoleDeletePermissionSchema,
+  RoleDeletePermissionUsecase
+} from '../role-delete-permission';
 
 describe(RoleDeletePermissionUsecase.name, () => {
   let usecase: IRoleDeletePermissionAdapter;
@@ -57,10 +61,12 @@ describe(RoleDeletePermissionUsecase.name, () => {
     );
   });
 
-  const input: RoleAddPermissionInput = {
-    id: TestUtils.getMockUUID(),
-    permissions: ['user:create']
-  };
+  const permissionDeleteInputMock = new ZodMockSchema(RoleDeletePermissionSchema);
+  const input = permissionDeleteInputMock.generate({
+    overrides: {
+      permissions: ['user:create', 'user:update']
+    }
+  });
 
   test('when role not exists, should expect an error', async () => {
     repository.findOne = TestUtils.mockResolvedValue<RoleEntity>(null);
@@ -68,12 +74,14 @@ describe(RoleDeletePermissionUsecase.name, () => {
     await expect(usecase.execute(input)).rejects.toThrow(ApiNotFoundException);
   });
 
-  const permissions = [
-    new PermissionEntity({ id: UUIDUtils.create(), name: 'user:create' }),
-    new PermissionEntity({ id: UUIDUtils.create(), name: 'user:update' })
-  ];
+  const permissiontMock = new ZodMockSchema(PermissionEntitySchema);
+  const permissions = permissiontMock.generateMany<PermissionEntity>(10, {
+    overrides: {
+      name: 'user:create'
+    }
+  });
 
-  const role = new RoleEntity({ id: UUIDUtils.create(), name: RoleEnum.USER, permissions });
+  const role = new RoleEntity({ id: IDGeneratorUtils.uuid(), name: RoleEnum.USER, permissions });
 
   test('when some permisson, should expect an error', async () => {
     repository.findOne = TestUtils.mockResolvedValue<RoleEntity>(role);

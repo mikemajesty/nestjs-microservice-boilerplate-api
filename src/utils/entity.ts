@@ -4,10 +4,10 @@ import z from 'zod';
 
 import { DateUtils } from './date';
 import { ApiUnprocessableEntityException } from './exception';
-import { UUIDUtils } from './uuid';
+import { IDGeneratorType, IDGeneratorTypes, IDGeneratorUtils } from './id-generator';
 
-export const withID = (entity: { _id?: string; id?: string }) => {
-  Object.assign(entity, { id: [entity?.id, entity?._id, UUIDUtils.create()].find(Boolean) });
+export const setEntityID = (entity: { _id?: string; id?: string }) => {
+  Object.assign(entity, { id: [entity?.id, entity?._id].find(Boolean) });
   return entity;
 };
 
@@ -48,9 +48,17 @@ export const BaseEntity = <T>() => {
     }
 
     validate<T>(entity: T): T {
-      Object.assign(entity as IEntity, withID(entity as IEntity));
-      Object.assign(this, { id: (entity as Pick<IEntity, 'id'>).id });
-      return this._schema.parse(entity) as T;
+      setEntityID(entity as IEntity);
+      const parsed = this._schema.parse(entity) as T;
+      Object.assign(this, parsed);
+      return parsed;
+    }
+
+    addIDWhenMissing(type?: IDGeneratorType, options?: IDGeneratorTypes) {
+      if (!this.id) {
+        const id = IDGeneratorUtils.generators[type || 'uuid'](options);
+        Object.assign(this, { id });
+      }
     }
 
     toObject() {

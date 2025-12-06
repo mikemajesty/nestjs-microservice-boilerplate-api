@@ -1,3 +1,4 @@
+import { ZodMockSchema } from '@mikemajesty/zod-mock-schema';
 import { Test } from '@nestjs/testing';
 
 import { ILoggerAdapter } from '@/infra/logger';
@@ -5,9 +6,8 @@ import { IRoleCreateAdapter } from '@/modules/role/adapter';
 import { TestUtils } from '@/utils/test/util';
 import { ZodExceptionIssue } from '@/utils/validator';
 
-import { RoleEnum } from '../../entity/role';
 import { IRoleRepository } from '../../repository/role';
-import { RoleCreateInput, RoleCreateOutput, RoleCreateUsecase } from '../role-create';
+import { RoleCreateInput, RoleCreateOutput, RoleCreateSchema, RoleCreateUsecase } from '../role-create';
 
 describe(RoleCreateUsecase.name, () => {
   let usecase: IRoleCreateAdapter;
@@ -49,9 +49,8 @@ describe(RoleCreateUsecase.name, () => {
     );
   });
 
-  const input: RoleCreateInput = {
-    name: RoleEnum.USER
-  };
+  const mock = new ZodMockSchema(RoleCreateSchema);
+  const input = mock.generate();
 
   test('when role created successfully, should expect a role created', async () => {
     const output: RoleCreateOutput = { created: true, id: TestUtils.getMockUUID() };

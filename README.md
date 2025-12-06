@@ -22,17 +22,17 @@ In this microservice I used the best architecture concepts: Onion Architecture, 
   ```
 - install dependencies
   ```
-  $ yarn
+  $ npm i
   ```
 - infra
   ```
-   $ yarn infra
+   $ npm run setup
   ```
 - running
 
   - dev
     ```
-    $ yarn start:dev
+    $ npm run start:dev
     ```
   - debug
     ```
@@ -40,13 +40,13 @@ In this microservice I used the best architecture concepts: Onion Architecture, 
     ```
   - production
     ```
-    $ yarn start
+    $ npm run start
     ```
 
 - build
 
   ```
-  $ yarn build
+  $ npm run build
   ```
 
 ---
@@ -70,7 +70,7 @@ Creating a CRUD in Postgres and Mongo in seconds.
 
 - run
   ```
-  $ yarn scaffold
+  $ npm run scaffold
   ```
 - Choose database for CRUD.
 - `(x) POSTGRES:CRUD`
@@ -127,46 +127,46 @@ Creating a CRUD in Postgres and Mongo in seconds.
 
 - create
   ```
-  $ yarn migration-postgres:create
+  $ npm run migration-postgres:create
   ```
 - run
 
   ```
-  $ yarn migration-postgres:run
+  $ npm run migration-postgres:run
   ```
 
 ### Mongo migrations
 
 - create
   ```
-  $ yarn migration-mongo:create
+  $ npm run migration-mongo:create
   ```
 - run
 
   ```
-  $ yarn migration-mongo:run
+  $ npm run migration-mongo:run
   ```
 
 ### Test
 
 - run
   ```
-  $ yarn test
+  $ npm run test
   ```
 - coverage
   ```
-  $ yarn test:cov
+  $ npm run test:cov
   ```
 
 ### Lint
 
 - lint
   ```
-  $ yarn lint
+  $ npm run lint
   ```
 - prettier
   ```
-  $ yarn prettier
+  $ npm run prettier
   ```
 
 ### snippets

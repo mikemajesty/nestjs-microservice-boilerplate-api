@@ -31,7 +31,7 @@ export class CatRepository extends MongoRepository<CatDocument> implements ICatR
     });
 
     return {
-      docs: cats.docs.map((u) => new CatEntity(u.toObject({ virtuals: true }))),
+      docs: cats.docs.map((u) => new CatEntity(u.toObject({ virtuals: true })).toObject()),
       limit,
       page,
       total: cats.totalDocs

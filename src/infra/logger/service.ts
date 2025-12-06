@@ -9,7 +9,7 @@ import pinoPretty, { PrettyOptions } from 'pino-pretty';
 
 import { DateUtils } from '@/utils/date';
 import { ApiBadRequestException, ApiInternalServerException, BaseException } from '@/utils/exception';
-import { UUIDUtils } from '@/utils/uuid';
+import { IDGeneratorUtils } from '@/utils/id-generator';
 
 import { name } from '../../../package.json';
 import { ILoggerAdapter } from './adapter';
@@ -254,7 +254,7 @@ export class LoggerService implements ILoggerAdapter {
   }
 
   private getTraceId(error: string | { traceid: string }): string {
-    if (typeof error === 'string') return UUIDUtils.create();
+    if (typeof error === 'string') return IDGeneratorUtils.uuid();
     return [error.traceid, this.logger.logger.bindings()?.traceid].find(Boolean);
   }
 }

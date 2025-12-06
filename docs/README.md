@@ -13,7 +13,7 @@ Documentation:
   ```
 - running infra
   ```
-  $ yarn infra
+  $ yarn setup
   ```
 - starting doc
   ```

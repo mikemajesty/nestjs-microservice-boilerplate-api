@@ -2,7 +2,7 @@ import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nes
 import { Observable } from 'rxjs';
 
 import { ILoggerAdapter } from '@/infra/logger';
-import { UUIDUtils } from '@/utils/uuid';
+import { IDGeneratorUtils } from '@/utils/id-generator';
 
 @Injectable()
 export class HttpLoggerInterceptor implements NestInterceptor {
@@ -16,7 +16,7 @@ export class HttpLoggerInterceptor implements NestInterceptor {
     request['context'] = context;
 
     if (!request.headers?.traceid) {
-      request.headers.traceid = UUIDUtils.create();
+      request.headers.traceid = IDGeneratorUtils.uuid();
       request.id = request.headers.traceid;
     }
 

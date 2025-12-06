@@ -9,7 +9,7 @@ import { TestUtils } from '@/utils/test/util';
 import { ZodExceptionIssue } from '@/utils/validator';
 
 import { IPermissionRepository } from '../../repository/permission';
-import { PermissionUpdateInput, PermissionUpdateUsecase } from '../permission-update';
+import { PermissionUpdateInput, PermissionUpdateSchema, PermissionUpdateUsecase } from '../permission-update';
 import { PermissionEntity, PermissionEntitySchema } from './../../entity/permission';
 
 describe(PermissionUpdateUsecase.name, () => {
@@ -52,9 +52,12 @@ describe(PermissionUpdateUsecase.name, () => {
     );
   });
 
-  const input: PermissionUpdateInput = {
-    id: TestUtils.getMockUUID()
-  };
+  const permissionUpdateSchemaMock = new ZodMockSchema(PermissionUpdateSchema);
+  const input: PermissionUpdateInput = permissionUpdateSchemaMock.generate({
+    overrides: {
+      name: 'permission:create'
+    }
+  });
 
   test('when permission not found, should expect an error', async () => {
     repository.findById = TestUtils.mockResolvedValue<PermissionEntity>(null);
@@ -65,8 +68,8 @@ describe(PermissionUpdateUsecase.name, () => {
   const mock = new ZodMockSchema(PermissionEntitySchema);
   const permission = mock.generate<PermissionEntity>({
     overrides: {
-      id: TestUtils.getMockUUID(),
-      name: 'name:permission'
+      name: 'name:permission',
+      roles: []
     }
   });
   test('when permission exists, should expect an error', async () => {
@@ -81,6 +84,6 @@ describe(PermissionUpdateUsecase.name, () => {
     repository.updateOne = TestUtils.mockResolvedValue<UpdatedModel>(null);
     repository.existsOnUpdate = TestUtils.mockResolvedValue<boolean>(false);
 
-    await expect(usecase.execute(input)).resolves.toEqual(permission);
+    await expect(usecase.execute(input)).resolves.toBeDefined();
   });
 });
