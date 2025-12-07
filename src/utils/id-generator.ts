@@ -1,5 +1,5 @@
 import { randomBytes, UUID } from 'crypto';
-import { v1 as uuidV1, v3 as uuidV3, v4 as uuidV4, v5 as uuidV5 } from 'uuid';
+import { v1 as uuidV1, v3 as uuidV3, v4 as uuidV4, v5 as uuidV5, validate } from 'uuid';
 
 import { ApiUnauthorizedException } from './exception';
 
@@ -56,12 +56,18 @@ export class IDGeneratorUtils {
       if (!namespace) {
         throw new ApiUnauthorizedException('Namespace is required for UUID version 3');
       }
+      if (!validate(namespace)) {
+        throw new ApiUnauthorizedException('Invalid namespace UUID for UUID version 3');
+      }
       return `${prefix}${uuidV3(uuidV4(), namespace)}${suffix}`;
     }
 
     if (version === 5) {
       if (!namespace) {
         throw new ApiUnauthorizedException('Namespace is required for UUID version 5');
+      }
+      if (!validate(namespace)) {
+        throw new ApiUnauthorizedException('Invalid namespace UUID for UUID version 5');
       }
       return `${prefix}${uuidV5(uuidV4(), namespace)}${suffix}`;
     }
@@ -171,14 +177,19 @@ export class IDGeneratorUtils {
     } = options;
 
     const bytes = randomBytes(length);
-    let id = '';
+
+    const output: { id: string; prefix: string; suffix: string } = {
+      id: '',
+      prefix,
+      suffix
+    };
 
     for (let i = 0; i < length; i++) {
       const byte = bytes[`${i}`] % alphabet.length;
-      id += alphabet[`${byte}`];
+      output.id += alphabet[`${byte}`];
     }
 
-    return `${prefix}${id}${suffix}`;
+    return `${output.prefix}${output.id}${output.suffix}`;
   }
 
   /**

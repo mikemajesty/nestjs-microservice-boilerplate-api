@@ -1,196 +1,311 @@
-version: '3'
+version: '3.8'
 
 services:
   nestjs-microservice-primary:
     container_name: nestjs-microservice-primary
-    image: mongo:4.2.20
-    entrypoint: ['/usr/bin/mongod', '--bind_ip_all', '--replSet', 'app']
+    image: mongo:7.0
+    networks:
+      - mongo-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')", "--quiet"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
     volumes:
       - mongo-primary-data:/data/db
-      - .docker/mongo/rs-init.sh:/scripts/mongo/rs-init.sh
+      - mongo-keyfile:/keyfile-source
+      - .docker/mongo/primary-start.sh:/docker-entrypoint-initdb.d/primary-start.sh
     ports:
-      - 27081:27017
-    networks:
-      mongo-network:
-        ipv4_address: 10.5.0.5
+      - "27017:27017"
+    entrypoint: ["/bin/sh", "/docker-entrypoint-initdb.d/primary-start.sh"]
+    env_file:
+      - .env
 
   nestjs-microservice-secondary:
     container_name: nestjs-microservice-secondary
-    image: mongo:4.2.20
-    entrypoint: ['/usr/bin/mongod', '--bind_ip_all', '--replSet', 'app']
+    image: mongo:7.0
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')", "--quiet"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    command: 
+      - /bin/sh
+      - -c
+      - |
+        # Waiting for keyfile to exist in the shared volume
+        echo '⏳ Waiting for keyfile...'
+        while [ ! -f /keyfile-source/mongodb-keyfile ]; do
+          echo '⏳ Keyfile not yet available, waiting 2s...'
+          sleep 2
+        done
+        
+        echo '📋 Keyfile found, copying...'
+        mkdir -p /etc/mongo
+        cp /keyfile-source/mongodb-keyfile /etc/mongo/keyfile
+        chmod 400 /etc/mongo/keyfile
+        chown mongodb:mongodb /etc/mongo/keyfile
+        
+        echo '🚀 Iniciando MongoDB secondary...'
+        exec mongod --bind_ip_all --replSet app --keyFile /etc/mongo/keyfile
     volumes:
       - mongo-secondary-data:/data/db
-    ports:
-      - 27082:27017
+      - mongo-keyfile:/keyfile-source
     networks:
-      mongo-network:
-        ipv4_address: 10.5.0.6
-
+      - mongo-network
+    depends_on:
+      - nestjs-microservice-primary
+    ports:
+      - "27018:27017"
   nestjs-microservice-tertiary:
     container_name: nestjs-microservice-tertiary
-    image: mongo:4.2.20
-    entrypoint: ['/usr/bin/mongod', '--bind_ip_all', '--replSet', 'app']
+    image: mongo:7.0
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')", "--quiet"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    command: 
+      - /bin/sh
+      - -c
+      - |
+        # Waiting for keyfile to exist in the shared volume
+        echo '⏳ Waiting for keyfile...'
+        while [ ! -f /keyfile-source/mongodb-keyfile ]; do
+          echo '⏳ Keyfile not yet available, waiting 2s...'
+          sleep 2
+        done
+        
+        echo '📋 Keyfile found, copying...'
+        mkdir -p /etc/mongo
+        cp /keyfile-source/mongodb-keyfile /etc/mongo/keyfile
+        chmod 400 /etc/mongo/keyfile
+        chown mongodb:mongodb /etc/mongo/keyfile
+        
+        echo '🚀 Starting MongoDB tertiary...'
+        exec mongod --bind_ip_all --replSet app --keyFile /etc/mongo/keyfile
     volumes:
       - mongo-tertiary-data:/data/db
-    ports:
-      - 27083:27017
+      - mongo-keyfile:/keyfile-source
     networks:
-      mongo-network:
-        ipv4_address: 10.5.0.7
+      - mongo-network
+    depends_on:
+      - nestjs-microservice-primary
+    ports:
+      - "27019:27017"
+      
+  mongo-init-replica:
+    container_name: mongo-init-replica
+    image: mongo:7.0
+    depends_on:
+      nestjs-microservice-primary:
+        condition: service_healthy
+      nestjs-microservice-secondary:
+        condition: service_healthy
+      nestjs-microservice-tertiary:
+        condition: service_healthy
+    networks:
+      - mongo-network
+    restart: "no"
+    volumes:
+      - .docker/mongo/init-replica.sh:/init-replica.sh
+    entrypoint: ["/bin/sh", "/init-replica.sh"]
+
   postgres:
     container_name: nestjs-microservice-postgres
-    image: postgres
+    image: postgres:16-alpine
     env_file:
       - .env
     ports:
       - '5432:5432'
     volumes:
-      - nestjs-microservice-postgres:/data/postgres
-      - .docker/postgres/create-database.sql:/docker-entrypoint-initdb.d/create-database.sql
-    restart: always
+      - nestjs-microservice-postgres:/var/lib/postgresql/data
+      - .docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - postgres-network
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DATABASE}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
   redis:
     container_name: nestjs-microservice-redis
-    image: 'redis:alpine'
+    image: redis:7.2-alpine
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
     volumes:
       - nestjs-microservice-redis:/data
     ports:
-      - 6379:6379
+      - '6379:6379'
+    networks:
+      - postgres-network
+      - mongo-network
+    healthcheck:
+      test: ['CMD', 'redis-cli', '--raw', 'incr', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
   zipkin-all-in-one:
     container_name: nestjs-microservice-zipkin-all-in-one
-    image: openzipkin/zipkin:latest
+    image: openzipkin/zipkin:2.24
     networks:
       - collector-network
     ports:
       - '9411:9411'
-    env_file:
-      - .env
+    environment:
+      - STORAGE_TYPE=mem
+    restart: unless-stopped
+
   prometheus:
     container_name: nestjs-microservice-prometheus
-    image: prom/prometheus:v2.47.0
+    image: prom/prometheus:v2.51.0
     networks:
       - collector-network
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--enable-feature=otlp-write-receiver'
       - '--enable-feature=exemplar-storage'
-    env_file:
-      - .env
+      - '--web.enable-remote-write-receiver'
     ports:
       - '9090:9090'
     volumes:
       - .docker/prometheus/config.yml:/etc/prometheus/prometheus.yml
       - .docker/prometheus/alert.rules.yml:/etc/prometheus/alert.rules.yml
+      - prometheus-data:/prometheus
+    restart: unless-stopped
+
   collector:
     container_name: nestjs-microservice-collector
-    image: otel/opentelemetry-collector-contrib:latest
+    image: otel/opentelemetry-collector-contrib:0.96.0
     command: ['--config=/conf/collector-config.yaml']
     networks:
       - collector-network
     volumes:
       - .docker/collector/collector-config.yaml:/conf/collector-config.yaml
-    env_file:
-      - .env
     ports:
       - '9464:9464'
       - '4317:4317'
       - '4318:4318'
     depends_on:
-      - zipkin-all-in-one
+      zipkin-all-in-one:
+        condition: service_started
+    restart: unless-stopped
+
   app-alertmanager:
-    image: prom/alertmanager
+    container_name: nestjs-microservice-alertmanager
+    image: prom/alertmanager:v0.26.0
     networks:
       - collector-network
-    env_file:
-      - .env
     ports:
       - "9093:9093"
     volumes:
       - .docker/prometheus/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+      - alertmanager-data:/alertmanager
+    restart: unless-stopped
+
   mongo-express:
     container_name: nestjs-microservice-mongo-express
-    image: mongo-express:0.49.0
+    image: mongo-express:1.0.0-20-alpine3.18
     depends_on:
-      - nestjs-microservice-primary
-      - nestjs-microservice-secondary
-      - nestjs-microservice-tertiary
-    restart: always
-    ports:
-      - 8081:8081
+      nestjs-microservice-primary:
+        condition: service_healthy
+      nestjs-microservice-secondary:
+        condition: service_healthy
+      nestjs-microservice-tertiary:
+        condition: service_healthy
     env_file:
       - .env
+    ports:
+      - '4000:4000'
     networks:
-      mongo-network:
+      - mongo-network
+    restart: unless-stopped
+
   pgadmin:
     container_name: nestjs-microservice-pgadmin
-    image: dpage/pgadmin4
+    image: dpage/pgadmin4:8.5
     env_file:
       - .env
     ports:
       - '16543:80'
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     networks:
       - postgres-network
+    restart: unless-stopped
+
   grafana:
     container_name: nestjs-microservice-grafana
-    image: grafana/grafana:latest
+    image: grafana/grafana:10.4.0
     networks:
       - collector-network
-      - postgres-network
-      - mongo-network
     ports:
       - '3000:3000'
     volumes:
       - grafana-storage:/var/lib/grafana
+      - .docker/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - .docker/grafana/datasources:/etc/grafana/provisioning/datasources
     env_file:
       - .env
     depends_on:
-      - prometheus
-    restart: always
+      prometheus:
+        condition: service_started
+    healthcheck:
+      test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://localhost:3000/api/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
   loki:
+    container_name: nestjs-microservice-loki
     image: grafana/loki:2.9.4
+    command: -config.file=/etc/loki/local-config.yaml
     ports:
       - "3100:3100"
-    command: -config.file=/etc/loki/local-config.yaml
-    env_file:
-      - .env
+    volumes:
+      - loki-data:/loki
     networks:
-    - collector-network
-    - postgres-network
-    - mongo-network
-    depends_on:
-      - grafana
+      - collector-network
+    restart: unless-stopped
+
   promtail:
+    container_name: nestjs-microservice-promtail
     image: grafana/promtail:2.9.4
-    networks:
-    - collector-network
-    - postgres-network
-    - mongo-network
     volumes:
       - /var/log:/var/log
       - .docker/grafana/promtail-config.yml:/etc/promtail/promtail.yaml
     command: -config.file=/etc/promtail/promtail.yaml
+    networks:
+      - collector-network
     depends_on:
-      - grafana
-    env_file:
-      - .env
+      loki:
+        condition: service_started
+    restart: unless-stopped
 
 volumes:
   nestjs-microservice-postgres:
   nestjs-microservice-redis:
   mongo-primary-data:
   mongo-secondary-data:
-  grafana-storage:
   mongo-tertiary-data:
+  grafana-storage:
+  prometheus-data:
+  alertmanager-data:
+  loki-data:
+  mongo-keyfile:
+
 networks:
   collector-network:
     driver: bridge
   mongo-network:
     driver: bridge
-    ipam:
-      config:
-        - subnet: 10.5.0.0/16
   postgres-network:
     driver: bridge

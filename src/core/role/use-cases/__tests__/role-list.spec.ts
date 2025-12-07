@@ -38,7 +38,12 @@ describe(RoleListUsecase.name, () => {
     await TestUtils.expectZodError(
       () => usecase.execute({} as RoleListInput),
       (issues: ZodExceptionIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<RoleListInput>('search') }]);
+        expect(issues).toEqual([
+          {
+            message: 'Invalid input: expected string, received undefined',
+            path: TestUtils.nameOf<RoleListInput>('search')
+          }
+        ]);
       }
     );
   });

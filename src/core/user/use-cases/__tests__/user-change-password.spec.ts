@@ -44,10 +44,22 @@ describe(UserChangePasswordUsecase.name, () => {
       () => usecase.execute({} as UserChangePasswordInput),
       (issues: ZodExceptionIssue[]) => {
         expect(issues).toEqual([
-          { message: 'Required', path: TestUtils.nameOf<UserChangePasswordInput>('id') },
-          { message: 'Required', path: TestUtils.nameOf<UserChangePasswordInput>('password') },
-          { message: 'Required', path: TestUtils.nameOf<UserChangePasswordInput>('newPassword') },
-          { message: 'Required', path: TestUtils.nameOf<UserChangePasswordInput>('confirmPassword') }
+          {
+            message: 'Invalid input: expected string, received undefined',
+            path: TestUtils.nameOf<UserChangePasswordInput>('id')
+          },
+          {
+            message: 'Invalid input: expected string, received undefined',
+            path: TestUtils.nameOf<UserChangePasswordInput>('password')
+          },
+          {
+            message: 'Invalid input: expected string, received undefined',
+            path: TestUtils.nameOf<UserChangePasswordInput>('newPassword')
+          },
+          {
+            message: 'Invalid input: expected string, received undefined',
+            path: TestUtils.nameOf<UserChangePasswordInput>('confirmPassword')
+          }
         ]);
       }
     );

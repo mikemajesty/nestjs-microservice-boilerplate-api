@@ -40,7 +40,7 @@ describe(UserDeleteUsecase.name, () => {
     await TestUtils.expectZodError(
       () => usecase.execute({ id: 'uuid' } as UserDeleteInput, TestUtils.getMockTracing()),
       (issues: ZodExceptionIssue[]) => {
-        expect(issues).toEqual([{ message: 'Invalid uuid', path: TestUtils.nameOf<UserDeleteInput>('id') }]);
+        expect(issues).toEqual([{ message: 'Invalid UUID', path: TestUtils.nameOf<UserDeleteInput>('id') }]);
       }
     );
   });

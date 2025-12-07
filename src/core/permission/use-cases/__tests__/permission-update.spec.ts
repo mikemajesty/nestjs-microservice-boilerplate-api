@@ -47,7 +47,12 @@ describe(PermissionUpdateUsecase.name, () => {
     await TestUtils.expectZodError(
       () => usecase.execute({} as PermissionUpdateInput),
       (issues: ZodExceptionIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<PermissionUpdateInput>('id') }]);
+        expect(issues).toEqual([
+          {
+            message: 'Invalid input: expected string, received undefined',
+            path: TestUtils.nameOf<PermissionUpdateInput>('id')
+          }
+        ]);
       }
     );
   });

@@ -39,7 +39,12 @@ describe(UserListUsecase.name, () => {
     await TestUtils.expectZodError(
       () => usecase.execute({} as UserListInput),
       (issues: ZodExceptionIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<UserListInput>('search') }]);
+        expect(issues).toEqual([
+          {
+            message: 'Invalid input: expected string, received undefined',
+            path: TestUtils.nameOf<UserListInput>('search')
+          }
+        ]);
       }
     );
   });

@@ -42,9 +42,18 @@ describe(CatCreateUsecase.name, () => {
       () => usecase.execute({} as CatCreateInput, TestUtils.getMockTracing()),
       (issues: ZodExceptionIssue[]) => {
         expect(issues).toEqual([
-          { message: 'Required', path: TestUtils.nameOf<CatCreateInput>('name') },
-          { message: 'Required', path: TestUtils.nameOf<CatCreateInput>('breed') },
-          { message: 'Required', path: TestUtils.nameOf<CatCreateInput>('age') }
+          {
+            message: 'Invalid input: expected string, received undefined',
+            path: TestUtils.nameOf<CatCreateInput>('name')
+          },
+          {
+            message: 'Invalid input: expected string, received undefined',
+            path: TestUtils.nameOf<CatCreateInput>('breed')
+          },
+          {
+            message: 'Invalid input: expected number, received undefined',
+            path: TestUtils.nameOf<CatCreateInput>('age')
+          }
         ]);
       }
     );

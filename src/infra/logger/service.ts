@@ -112,10 +112,20 @@ export class LoggerService implements ILoggerAdapter {
         application: this.app,
         stack: error.stack?.replace(/\n/g, ''),
         ...error?.parameters,
-        message: typeof messages === 'string' ? [messages] : messages
+        message: this.getMessage(messages)
       },
       typeError
     );
+  }
+
+  private getMessage(messages: string | string[]): string[] {
+    if (Array.isArray(messages)) {
+      return messages;
+    }
+    if (messages.includes(`\n`)) {
+      return JSON.parse(messages);
+    }
+    return [messages];
   }
 
   fatal(error: ErrorType, message?: string): void {

@@ -50,7 +50,12 @@ describe(UserUpdateUsecase.name, () => {
     await TestUtils.expectZodError(
       () => usecase.execute({} as UserUpdateInput, TestUtils.getMockTracing()),
       (issues: ZodExceptionIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<UserUpdateInput>('id') }]);
+        expect(issues).toEqual([
+          {
+            message: 'Invalid input: expected string, received undefined',
+            path: TestUtils.nameOf<UserUpdateInput>('id')
+          }
+        ]);
       }
     );
   });

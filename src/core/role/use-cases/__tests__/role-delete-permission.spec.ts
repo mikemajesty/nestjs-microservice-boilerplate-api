@@ -54,8 +54,14 @@ describe(RoleDeletePermissionUsecase.name, () => {
       () => usecase.execute({} as RoleDeletePermissionInput),
       (issues: ZodExceptionIssue[]) => {
         expect(issues).toEqual([
-          { message: 'Required', path: TestUtils.nameOf<RoleDeletePermissionInput>('id') },
-          { message: 'Required', path: TestUtils.nameOf<RoleDeletePermissionInput>('permissions') }
+          {
+            message: 'Invalid input: expected string, received undefined',
+            path: TestUtils.nameOf<RoleDeletePermissionInput>('id')
+          },
+          {
+            message: 'Invalid input: expected array, received undefined',
+            path: TestUtils.nameOf<RoleDeletePermissionInput>('permissions')
+          }
         ]);
       }
     );

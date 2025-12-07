@@ -42,8 +42,14 @@ describe(LoginUsecase.name, () => {
       () => usecase.execute({} as LoginInput, TestUtils.getMockTracing()),
       (issues: ZodExceptionIssue[]) => {
         expect(issues).toEqual([
-          { message: 'Required', path: TestUtils.nameOf<LoginInput>('email') },
-          { message: 'Required', path: TestUtils.nameOf<LoginInput>('password') }
+          {
+            message: 'Invalid input: expected string, received undefined',
+            path: TestUtils.nameOf<LoginInput>('email')
+          },
+          {
+            message: 'Invalid input: expected string, received undefined',
+            path: TestUtils.nameOf<LoginInput>('password')
+          }
         ]);
       }
     );

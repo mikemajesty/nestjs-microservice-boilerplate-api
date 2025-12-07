@@ -40,7 +40,12 @@ describe(CatListUsecase.name, () => {
     await TestUtils.expectZodError(
       () => usecase.execute({} as CatListInput),
       (issues: ZodExceptionIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<CatListInput>('search') }]);
+        expect(issues).toEqual([
+          {
+            message: 'Invalid input: expected string, received undefined',
+            path: TestUtils.nameOf<CatListInput>('search')
+          }
+        ]);
       }
     );
   });

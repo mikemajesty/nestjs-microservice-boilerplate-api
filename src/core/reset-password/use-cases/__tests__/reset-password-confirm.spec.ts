@@ -74,9 +74,18 @@ describe(ResetPasswordConfirmUsecase.name, () => {
       () => usecase.execute({} as ResetPasswordConfirmInput),
       (issues: ZodExceptionIssue[]) => {
         expect(issues).toEqual([
-          { message: 'Required', path: TestUtils.nameOf<ResetPasswordConfirmInput>('token') },
-          { message: 'Required', path: TestUtils.nameOf<ResetPasswordConfirmInput>('password') },
-          { message: 'Required', path: TestUtils.nameOf<ResetPasswordConfirmInput>('confirmPassword') }
+          {
+            message: 'Invalid input: expected string, received undefined',
+            path: TestUtils.nameOf<ResetPasswordConfirmInput>('token')
+          },
+          {
+            message: 'Invalid input: expected string, received undefined',
+            path: TestUtils.nameOf<ResetPasswordConfirmInput>('password')
+          },
+          {
+            message: 'Invalid input: expected string, received undefined',
+            path: TestUtils.nameOf<ResetPasswordConfirmInput>('confirmPassword')
+          }
         ]);
       }
     );

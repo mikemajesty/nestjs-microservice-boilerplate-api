@@ -6,6 +6,7 @@ import { catchError } from 'rxjs/operators';
 import { ZodError } from 'zod';
 
 import { ApiBadRequestException, ApiInternalServerException, ApiTimeoutException } from '@/utils/exception';
+import { TracingType } from '@/utils/request';
 
 @Injectable()
 export class ExceptionHandlerInterceptor implements NestInterceptor {
@@ -29,10 +30,10 @@ export class ExceptionHandlerInterceptor implements NestInterceptor {
           error.context = context;
         }
 
-        if (request?.tracing) {
-          request.tracing.addAttribute('http.status_code', error.status);
-          request.tracing.setStatus({ message: error.message, code: SpanStatusCode.ERROR });
-          request.tracing.finish();
+        if (request?.tracing as TracingType) {
+          (request.tracing as TracingType).addAttribute('http.status_code', error.status);
+          (request.tracing as TracingType).setStatus({ message: error.message, code: SpanStatusCode.ERROR });
+          (request.tracing as TracingType).finish();
         }
 
         throw error;

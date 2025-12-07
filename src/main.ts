@@ -126,9 +126,13 @@ async function bootstrap() {
   });
 
   loggerService.log(`🔵 Postgres listening at ${bold(POSTGRES_URL)}`);
-  loggerService.log(`🔶 PgAdmin listening at ${bold(POSTGRES_PGADMIN_URL)}\n`);
+  loggerService.log(
+    `🔶 PgAdmin listening at ${bold(POSTGRES_PGADMIN_URL)} user: ${bold('pgadmin@gmail.com')} password: ${bold('PgAdmin2019!')}`
+  );
   loggerService.log(`🔵 Mongo listening at ${bold(MONGO_URL)}`);
-  loggerService.log(`🔶 Mongo express listening at ${bold(MONGO_EXPRESS_URL)}\n`);
+  loggerService.log(
+    `🔶 Mongo express listening at ${bold(MONGO_EXPRESS_URL)} user: ${bold('admin')} password: ${bold('pass')}\n`
+  );
   loggerService.log(`⚪ Grafana[${bold('Graphs')}] listening at ${bold(GRAFANA_URL)}`);
   loggerService.log(`⚪ Zipkin[${bold('Tracing')}] listening at ${bold(ZIPKIN_URL)}`);
   loggerService.log(`⚪ Promethues[${bold('Metrics')}] listening at ${bold(PROMETHUES_URL)}\n`);

@@ -39,7 +39,12 @@ describe(PermissionGetByIdUsecase.name, () => {
     await TestUtils.expectZodError(
       () => usecase.execute({} as PermissionGetByIdInput),
       (issues: ZodExceptionIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<PermissionGetByIdInput>('id') }]);
+        expect(issues).toEqual([
+          {
+            message: 'Invalid input: expected string, received undefined',
+            path: TestUtils.nameOf<PermissionGetByIdInput>('id')
+          }
+        ]);
       }
     );
   });

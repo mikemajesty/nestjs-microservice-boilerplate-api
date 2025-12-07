@@ -50,8 +50,14 @@ describe(RoleAddPermissionUsecase.name, () => {
       () => usecase.execute({} as RoleAddPermissionInput),
       (issues: ZodExceptionIssue[]) => {
         expect(issues).toEqual([
-          { message: 'Required', path: TestUtils.nameOf<RoleAddPermissionInput>('id') },
-          { message: 'Required', path: TestUtils.nameOf<RoleAddPermissionInput>('permissions') }
+          {
+            message: 'Invalid input: expected string, received undefined',
+            path: TestUtils.nameOf<RoleAddPermissionInput>('id')
+          },
+          {
+            message: 'Invalid input: expected array, received undefined',
+            path: TestUtils.nameOf<RoleAddPermissionInput>('permissions')
+          }
         ]);
       }
     );

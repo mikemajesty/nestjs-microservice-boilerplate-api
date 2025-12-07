@@ -41,7 +41,12 @@ describe(RoleDeleteUsecase.name, () => {
     await TestUtils.expectZodError(
       () => usecase.execute({} as RoleDeleteInput),
       (issues: ZodExceptionIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<RoleDeleteInput>('id') }]);
+        expect(issues).toEqual([
+          {
+            message: 'Invalid input: expected string, received undefined',
+            path: TestUtils.nameOf<RoleDeleteInput>('id')
+          }
+        ]);
       }
     );
   });

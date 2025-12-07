@@ -45,7 +45,12 @@ describe(PermissionDeleteUsecase.name, () => {
     await TestUtils.expectZodError(
       () => usecase.execute({} as PermissionDeleteInput),
       (issues: ZodExceptionIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<PermissionDeleteInput>('id') }]);
+        expect(issues).toEqual([
+          {
+            message: 'Invalid input: expected string, received undefined',
+            path: TestUtils.nameOf<PermissionDeleteInput>('id')
+          }
+        ]);
       }
     );
   });

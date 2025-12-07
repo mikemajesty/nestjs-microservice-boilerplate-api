@@ -42,7 +42,12 @@ describe(PermissionListUsecase.name, () => {
     await TestUtils.expectZodError(
       () => usecase.execute({} as PermissionListInput),
       (issues: ZodExceptionIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<PermissionListInput>('search') }]);
+        expect(issues).toEqual([
+          {
+            message: 'Invalid input: expected string, received undefined',
+            path: TestUtils.nameOf<PermissionListInput>('search')
+          }
+        ]);
       }
     );
   });

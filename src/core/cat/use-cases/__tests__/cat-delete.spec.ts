@@ -42,7 +42,12 @@ describe(CatDeleteUsecase.name, () => {
     await TestUtils.expectZodError(
       () => usecase.execute({} as CatDeleteInput, TestUtils.getMockTracing()),
       (issues: ZodExceptionIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<CatDeleteInput>('id') }]);
+        expect(issues).toEqual([
+          {
+            message: 'Invalid input: expected string, received undefined',
+            path: TestUtils.nameOf<CatDeleteInput>('id')
+          }
+        ]);
       }
     );
   });

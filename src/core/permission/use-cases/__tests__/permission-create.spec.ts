@@ -47,7 +47,12 @@ describe(PermissionCreateUsecase.name, () => {
     await TestUtils.expectZodError(
       () => usecase.execute({} as PermissionCreateInput),
       (issues: ZodExceptionIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<PermissionCreateInput>('name') }]);
+        expect(issues).toEqual([
+          {
+            message: 'Invalid input: expected string, received undefined',
+            path: TestUtils.nameOf<PermissionCreateInput>('name')
+          }
+        ]);
       }
     );
   });

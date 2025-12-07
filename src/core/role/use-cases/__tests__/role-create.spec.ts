@@ -44,7 +44,12 @@ describe(RoleCreateUsecase.name, () => {
     await TestUtils.expectZodError(
       () => usecase.execute({} as RoleCreateInput),
       (issues: ZodExceptionIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<RoleCreateInput>('name') }]);
+        expect(issues).toEqual([
+          {
+            message: 'Invalid input: expected string, received undefined',
+            path: TestUtils.nameOf<RoleCreateInput>('name')
+          }
+        ]);
       }
     );
   });
