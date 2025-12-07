@@ -1,8 +1,8 @@
 import { ILoggerAdapter } from '@/infra/logger';
 import { ValidateSchema } from '@/utils/decorators';
 import { ApiConflictException } from '@/utils/exception';
+import { IDGeneratorUtils } from '@/utils/id-generator';
 import { IUsecase } from '@/utils/usecase';
-import { UUIDUtils } from '@/utils/uuid';
 import { Infer } from '@/utils/validator';
 
 import { IPermissionRepository } from '../repository/permission';
@@ -26,7 +26,7 @@ export class PermissionCreateUsecase implements IUsecase {
       throw new ApiConflictException('permissionExists');
     }
 
-    const entity = new PermissionEntity({ id: UUIDUtils.create(), ...input });
+    const entity = new PermissionEntity({ id: IDGeneratorUtils.uuid(), ...input });
 
     await this.permissionRepository.create(entity.toObject());
 

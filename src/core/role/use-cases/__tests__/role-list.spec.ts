@@ -1,3 +1,4 @@
+import { ZodMockSchema } from '@mikemajesty/zod-mock-schema';
 import { Test } from '@nestjs/testing';
 
 import { RoleListInput, RoleListOutput, RoleListUsecase } from '@/core/role/use-cases/role-list';
@@ -6,7 +7,7 @@ import { TestUtils } from '@/utils/test/util';
 import { ZodExceptionIssue } from '@/utils/validator';
 
 import { IRoleRepository } from '../../repository/role';
-import { RoleEntity, RoleEnum } from './../../entity/role';
+import { RoleEntity, RoleEntitySchema } from './../../entity/role';
 
 describe(RoleListUsecase.name, () => {
   let usecase: IRoleListAdapter;
@@ -37,26 +38,30 @@ describe(RoleListUsecase.name, () => {
     await TestUtils.expectZodError(
       () => usecase.execute({} as RoleListInput),
       (issues: ZodExceptionIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<RoleListInput>('search') }]);
+        expect(issues).toEqual([
+          {
+            message: 'Invalid input: expected string, received undefined',
+            path: TestUtils.nameOf<RoleListInput>('search')
+          }
+        ]);
       }
     );
   });
 
   const input: RoleListInput = { limit: 1, page: 1, search: {}, sort: { createdAt: -1 } };
 
-  const role = new RoleEntity({
-    id: TestUtils.getMockUUID(),
-    name: RoleEnum.USER,
-    createdAt: new Date(),
-    updatedAt: new Date()
+  const roleEntityMock = new ZodMockSchema(RoleEntitySchema);
+  const roles: RoleEntity[] = roleEntityMock.generateMany<RoleEntity>(10, {
+    overrides: {
+      permissions: []
+    }
   });
-
   test('when role are found, should expect an role list', async () => {
-    const output: RoleListOutput = { docs: [role], page: 1, limit: 1, total: 1 };
+    const output: RoleListOutput = { docs: roles, page: 1, limit: 1, total: 1 };
     repository.paginate = TestUtils.mockResolvedValue<RoleListOutput>(output);
 
     await expect(usecase.execute(input)).resolves.toEqual({
-      docs: [role],
+      docs: roles,
       page: 1,
       limit: 1,
       total: 1

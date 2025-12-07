@@ -22,7 +22,7 @@ export class RoleGetByIdUsecase implements IUsecase {
       throw new ApiNotFoundException('roleNotFound');
     }
 
-    return new RoleEntity(role);
+    return new RoleEntity(role).toObject();
   }
 }
 

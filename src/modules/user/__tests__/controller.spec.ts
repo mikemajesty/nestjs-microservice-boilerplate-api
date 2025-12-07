@@ -10,6 +10,7 @@ import { IUserRepository } from '@/core/user/repository/user';
 import { ICacheAdapter } from '@/infra/cache';
 import { RedisService } from '@/infra/cache/redis';
 import { UserSchema } from '@/infra/database/postgres/schemas/user';
+import { ApiUnprocessableEntityException } from '@/utils/exception';
 import { TestPostgresContainer, TestRedisContainer } from '@/utils/test/containers';
 
 import { UserModule } from '../module';
@@ -23,7 +24,11 @@ describe('User', () => {
 
   beforeAll(async () => {
     const postgres = new PostgreSqlContainer('14.1');
-    postgres.withDatabase('nestjs-microservice');
+    const database = process.env.POSTGRES_DATABASE;
+    if (!database) {
+      throw new ApiUnprocessableEntityException('POSTGRES_DATABASE env var is not set');
+    }
+    postgres.withDatabase(database);
 
     const postgresConection = await postgresContainer.getTestPostgres();
 

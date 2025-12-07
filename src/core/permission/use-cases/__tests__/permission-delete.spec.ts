@@ -1,7 +1,11 @@
 import { ZodMockSchema } from '@mikemajesty/zod-mock-schema';
 import { Test } from '@nestjs/testing';
 
-import { PermissionDeleteInput, PermissionDeleteUsecase } from '@/core/permission/use-cases/permission-delete';
+import {
+  PermissionDeleteInput,
+  PermissionDeleteSchema,
+  PermissionDeleteUsecase
+} from '@/core/permission/use-cases/permission-delete';
 import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
 import { CreatedModel } from '@/infra/repository';
 import { IPermissionDeleteAdapter } from '@/modules/permission/adapter';
@@ -41,14 +45,18 @@ describe(PermissionDeleteUsecase.name, () => {
     await TestUtils.expectZodError(
       () => usecase.execute({} as PermissionDeleteInput),
       (issues: ZodExceptionIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<PermissionDeleteInput>('id') }]);
+        expect(issues).toEqual([
+          {
+            message: 'Invalid input: expected string, received undefined',
+            path: TestUtils.nameOf<PermissionDeleteInput>('id')
+          }
+        ]);
       }
     );
   });
 
-  const input: PermissionDeleteInput = {
-    id: TestUtils.getMockUUID()
-  };
+  const permissionDeleteSchemaMock = new ZodMockSchema(PermissionDeleteSchema);
+  const input: PermissionDeleteInput = permissionDeleteSchemaMock.generate();
 
   test('when permission not found, should expect an error', async () => {
     repository.findOneWithRelation = TestUtils.mockResolvedValue<PermissionEntity>(null);

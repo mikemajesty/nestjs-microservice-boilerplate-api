@@ -1,7 +1,7 @@
 import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
 import { UserEntity } from '@/core/user/entity/user';
 import { UserPasswordEntity } from '@/core/user/entity/user-password';
-import { UUIDUtils } from '@/utils/uuid';
+import { IDGeneratorUtils } from '@/utils/id-generator';
 import { MigrationInterface, QueryRunner } from 'typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { PermissionSchema } from '../schemas/permission';
@@ -13,7 +13,7 @@ import { userPermissions } from './1727654555722-insertPermissions';
 export class insertUser1727655177319 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const password = new UserPasswordEntity({
-      id: UUIDUtils.create(),
+      id: IDGeneratorUtils.uuid(),
       password: '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918'
     });
     await queryRunner.manager.insert(UserPasswordSchema, password as QueryDeepPartialEntity<UserPasswordSchema>);
@@ -21,7 +21,7 @@ export class insertUser1727655177319 implements MigrationInterface {
     const roles = await queryRunner.manager.find(RoleSchema);
 
     const entity = new UserEntity({
-      id: UUIDUtils.create(),
+      id: IDGeneratorUtils.uuid(),
       email: 'admin@admin.com',
       name: 'Admin',
       roles: roles.map((r) => new RoleEntity(r))

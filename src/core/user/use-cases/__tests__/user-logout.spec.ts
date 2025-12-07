@@ -41,7 +41,12 @@ describe(LogoutUsecase.name, () => {
     await TestUtils.expectZodError(
       () => usecase.execute({} as LogoutInput, TestUtils.getMockTracing()),
       (issues: ZodExceptionIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<LogoutInput>('token') }]);
+        expect(issues).toEqual([
+          {
+            message: 'Invalid input: expected string, received undefined',
+            path: TestUtils.nameOf<LogoutInput>('token')
+          }
+        ]);
       }
     );
   });

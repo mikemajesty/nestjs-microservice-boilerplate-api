@@ -15,17 +15,7 @@ export class UserListUsecase implements IUsecase {
 
   @ValidateSchema(UserListSchema)
   async execute(input: UserListInput): Promise<UserListOutput> {
-    const users = await this.userRepository.paginate(input);
-
-    return {
-      docs: users.docs.map((user) => {
-        const entity = new UserEntity(user);
-        return entity;
-      }),
-      limit: users.limit,
-      page: users.page,
-      total: users.total
-    };
+    return await this.userRepository.paginate(input);
   }
 }
 

@@ -4,7 +4,6 @@ import {
   InsertManyOptions,
   Model,
   MongooseUpdateQueryOptions,
-  QueryFilter,
   SaveOptions,
   UpdateQuery,
   UpdateWithAggregationPipeline
@@ -354,7 +353,7 @@ export class MongoRepository<T extends Document = Document> implements IReposito
     }
   }
 
-  private buildCommandFilter(filterList: DatabaseOperationCommand<T>[]): QueryFilter<T> {
+  private buildCommandFilter(filterList: DatabaseOperationCommand<T>[]): FilterQuery<T> {
     const mongoSearch = {
       equal: { type: '$in', like: false },
       not_equal: { type: '$nin', like: false },
@@ -384,7 +383,7 @@ export class MongoRepository<T extends Document = Document> implements IReposito
     }
 
     Object.assign(searchList, { deletedAt: null });
-    return searchList;
+    return searchList as FilterQuery<T>;
   }
 
   private applyFilterWhenFilterParameterIsNotFirstOption(filter?: FilterQuery<T>): FilterQuery<T> {

@@ -1,7 +1,8 @@
+import { ZodMockSchema } from '@mikemajesty/zod-mock-schema';
 import { Test } from '@nestjs/testing';
 
 import { PermissionEntity } from '@/core/permission/entity/permission';
-import { RoleDeleteInput, RoleDeleteUsecase } from '@/core/role/use-cases/role-delete';
+import { RoleDeleteInput, RoleDeleteSchema, RoleDeleteUsecase } from '@/core/role/use-cases/role-delete';
 import { CreatedModel } from '@/infra/repository';
 import { IRoleDeleteAdapter } from '@/modules/role/adapter';
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception';
@@ -9,7 +10,7 @@ import { TestUtils } from '@/utils/test/util';
 import { ZodExceptionIssue } from '@/utils/validator';
 
 import { IRoleRepository } from '../../repository/role';
-import { RoleEntity, RoleEnum } from './../../entity/role';
+import { RoleEntity, RoleEntitySchema } from './../../entity/role';
 
 describe(RoleDeleteUsecase.name, () => {
   let usecase: IRoleDeleteAdapter;
@@ -40,14 +41,18 @@ describe(RoleDeleteUsecase.name, () => {
     await TestUtils.expectZodError(
       () => usecase.execute({} as RoleDeleteInput),
       (issues: ZodExceptionIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<RoleDeleteInput>('id') }]);
+        expect(issues).toEqual([
+          {
+            message: 'Invalid input: expected string, received undefined',
+            path: TestUtils.nameOf<RoleDeleteInput>('id')
+          }
+        ]);
       }
     );
   });
 
-  const input: RoleDeleteInput = {
-    id: TestUtils.getMockUUID()
-  };
+  const roleDeleteInputMock = new ZodMockSchema(RoleDeleteSchema);
+  const input: RoleDeleteInput = roleDeleteInputMock.generate();
 
   test('when role not found, should expect an error', async () => {
     repository.findById = TestUtils.mockResolvedValue<RoleEntity>(null);
@@ -63,9 +68,12 @@ describe(RoleDeleteUsecase.name, () => {
     await expect(usecase.execute(input)).rejects.toThrow(ApiConflictException);
   });
 
-  const role = new RoleEntity({
-    id: TestUtils.getMockUUID(),
-    name: RoleEnum.USER
+  const roleEntityMock = new ZodMockSchema(RoleEntitySchema);
+  const role: RoleDeleteInput = roleEntityMock.generate({
+    overrides: {
+      deletedAt: null,
+      permissions: []
+    }
   });
 
   test('when role deleted successfully, should expect a role deleted', async () => {

@@ -78,7 +78,12 @@ describe(ResetPasswordSendEmailUsecase.name, () => {
     await TestUtils.expectZodError(
       () => usecase.execute({} as ResetPasswordSendEmailInput),
       (issues: ZodExceptionIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<ResetPasswordSendEmailInput>('email') }]);
+        expect(issues).toEqual([
+          {
+            message: 'Invalid input: expected string, received undefined',
+            path: TestUtils.nameOf<ResetPasswordSendEmailInput>('email')
+          }
+        ]);
       }
     );
   });

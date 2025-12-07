@@ -7,7 +7,7 @@ import { TestUtils } from '@/utils/test/util';
 import { ZodExceptionIssue } from '@/utils/validator';
 
 import { IPermissionRepository } from '../../repository/permission';
-import { PermissionGetByIdInput, PermissionGetByIdUsecase } from '../permission-get-by-id';
+import { PermissionGetByIdInput, PermissionGetByIdSchema, PermissionGetByIdUsecase } from '../permission-get-by-id';
 import { PermissionEntity, PermissionEntitySchema } from './../../entity/permission';
 
 describe(PermissionGetByIdUsecase.name, () => {
@@ -39,14 +39,18 @@ describe(PermissionGetByIdUsecase.name, () => {
     await TestUtils.expectZodError(
       () => usecase.execute({} as PermissionGetByIdInput),
       (issues: ZodExceptionIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<PermissionGetByIdInput>('id') }]);
+        expect(issues).toEqual([
+          {
+            message: 'Invalid input: expected string, received undefined',
+            path: TestUtils.nameOf<PermissionGetByIdInput>('id')
+          }
+        ]);
       }
     );
   });
 
-  const input: PermissionGetByIdInput = {
-    id: TestUtils.getMockUUID()
-  };
+  const permissionGetByIdSchemaMock = new ZodMockSchema(PermissionGetByIdSchema);
+  const input: PermissionGetByIdInput = permissionGetByIdSchemaMock.generate();
 
   test('when permission not found, should expect an error', async () => {
     repository.findById = TestUtils.mockResolvedValue<PermissionEntity>(null);

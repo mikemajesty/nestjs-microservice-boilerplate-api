@@ -1,3 +1,4 @@
+import { ZodMockSchema } from '@mikemajesty/zod-mock-schema';
 import { Test } from '@nestjs/testing';
 
 import { ILoggerAdapter } from '@/infra/logger';
@@ -8,8 +9,8 @@ import { TestUtils } from '@/utils/test/util';
 import { ZodExceptionIssue } from '@/utils/validator';
 
 import { IRoleRepository } from '../../repository/role';
-import { RoleUpdateInput, RoleUpdateUsecase } from '../role-update';
-import { RoleEntity, RoleEnum } from './../../entity/role';
+import { RoleUpdateInput, RoleUpdateSchema, RoleUpdateUsecase } from '../role-update';
+import { RoleEntity, RoleEntitySchema } from './../../entity/role';
 
 describe(RoleUpdateUsecase.name, () => {
   let usecase: IRoleUpdateAdapter;
@@ -46,14 +47,18 @@ describe(RoleUpdateUsecase.name, () => {
     await TestUtils.expectZodError(
       () => usecase.execute({} as RoleUpdateInput),
       (issues: ZodExceptionIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<RoleUpdateInput>('id') }]);
+        expect(issues).toEqual([
+          {
+            message: 'Invalid input: expected string, received undefined',
+            path: TestUtils.nameOf<RoleUpdateInput>('id')
+          }
+        ]);
       }
     );
   });
 
-  const input: RoleUpdateInput = {
-    id: TestUtils.getMockUUID()
-  };
+  const roleRoleGetByIdSchemaMock = new ZodMockSchema(RoleUpdateSchema);
+  const input: RoleUpdateInput = roleRoleGetByIdSchemaMock.generate();
 
   test('when role not found, should expect an error', async () => {
     repository.findById = TestUtils.mockResolvedValue<RoleEntity>(null);
@@ -61,9 +66,11 @@ describe(RoleUpdateUsecase.name, () => {
     await expect(usecase.execute(input)).rejects.toThrow(ApiNotFoundException);
   });
 
-  const role = new RoleEntity({
-    id: TestUtils.getMockUUID(),
-    name: RoleEnum.USER
+  const roleEntityMock = new ZodMockSchema(RoleEntitySchema);
+  const role: RoleEntity = roleEntityMock.generate({
+    overrides: {
+      permissions: []
+    }
   });
 
   test('when role updated successfully, should expect an role updated', async () => {

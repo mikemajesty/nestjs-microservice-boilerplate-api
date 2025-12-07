@@ -7,44 +7,18 @@ import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
 import { MongoDBInstrumentation } from '@opentelemetry/instrumentation-mongodb';
 import { PgInstrumentation } from '@opentelemetry/instrumentation-pg';
 import { RedisInstrumentation } from '@opentelemetry/instrumentation-redis-4';
-import { detectResources, Resource } from '@opentelemetry/resources';
 import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
 import { NodeSDK } from '@opentelemetry/sdk-node';
 
 import { LoggerService } from '@/infra/logger';
 
-import { name, version } from '../../package.json';
+import { name } from '../../package.json';
 import { ApiBadRequestException } from './exception';
+import { IDGeneratorUtils } from './id-generator';
 import { generalizePath } from './request';
-import { UUIDUtils } from './uuid';
 
 const logger = new LoggerService();
 diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.ERROR);
-
-const getResource = (): Resource => {
-  try {
-    const resource = detectResources();
-
-    Object.assign(resource.attributes, {
-      'service.name': name,
-      'service.version': version ?? '0.0.0',
-      'deployment.environment': process.env.NODE_ENV || 'development'
-    });
-
-    return resource;
-  } catch (error) {
-    logger.error(new ApiBadRequestException('Error detecting resources for tracing', { originalError: error }));
-    const fallbackResource = detectResources();
-    Object.assign(fallbackResource.attributes, {
-      'service.name': name,
-      'service.version': version ?? '0.0.0',
-      'deployment.environment': process.env.NODE_ENV || 'development'
-    });
-    return fallbackResource;
-  }
-};
-
-const resource = getResource();
 
 const tracerExporter = new OTLPTraceExporter({
   timeoutMillis: 30000
@@ -84,14 +58,9 @@ const updateSpanName = (span: Span, request: IncomingMessage | ClientRequest): s
     const path = generalizePath(urlPath) || '/';
     return buildSpanName(host as string, path);
   }
-
-  // Fallback para tipos desconhecidos
-  const host = headers?.host || 'unknown-host';
-  const path = generalizePath((request as { url?: string })?.url?.split('?')[0] || '/') || '/';
-  return `${'API'} => ${process.env.NODE_ENV === 'local' ? 'http' : 'https'}://${host}${path}`;
+  throw new Error('Unsupported request type for span name update');
 };
 
-// Configuração mais detalhada das instrumentações
 const httpInstrumentation = new HttpInstrumentation({
   ignoreIncomingRequestHook: (request: IncomingMessage) => {
     const path = request.url;
@@ -168,7 +137,6 @@ const mongodbInstrumentation = new MongoDBInstrumentation({
     if (!isSpan(span)) return;
 
     try {
-      // Para MongoDB, nome genérico
       const spanContext = span.spanContext();
       span.updateName(`mongodb => operation-${spanContext.spanId}`);
     } catch (error) {
@@ -191,9 +159,7 @@ const pgInstrumentation = new PgInstrumentation({
   }
 });
 
-// Configuração do SDK
 const sdk = new NodeSDK({
-  resource,
   traceExporter: tracerExporter,
   metricReader,
   instrumentations: [httpInstrumentation, redisInstrumentation, mongodbInstrumentation, pgInstrumentation],
@@ -233,10 +199,8 @@ const shutdown = async (): Promise<void> => {
   }
 };
 
-// Inicialização
 start();
 
-// Graceful shutdown
 process.on('SIGTERM', async () => {
   logger.log('Received SIGTERM, shutting down tracing...');
   await shutdown().finally(() => process.exit(0));
@@ -246,13 +210,6 @@ process.on('SIGINT', async () => {
   logger.log('Received SIGINT, shutting down tracing...');
   await shutdown().finally(() => process.exit(0));
 });
-
-// Export para uso em outros módulos
-export const Tracing = {
-  start,
-  shutdown,
-  isInitialized: () => isInitialized
-};
 
 const getHeaders = (request: IncomingMessage | ClientRequest): Record<string, string | string[] | undefined> => {
   if ('getHeader' in request) {
@@ -269,7 +226,7 @@ const getTraceId = (request: IncomingMessage | ClientRequest) => {
 };
 
 const setTraceId = (request: IncomingMessage | ClientRequest) => {
-  const newTraceId = UUIDUtils.create();
+  const newTraceId = IDGeneratorUtils.uuid();
   if ('setHeader' in request) {
     (request as ClientRequest).setHeader('traceid', newTraceId);
   }

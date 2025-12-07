@@ -7,9 +7,9 @@ import { IEventAdapter } from '@/libs/event';
 import { EventNameEnum } from '@/libs/event/types';
 import { ValidateSchema } from '@/utils/decorators';
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception';
+import { IDGeneratorUtils } from '@/utils/id-generator';
 import { ApiTrancingInput } from '@/utils/request';
 import { IUsecase } from '@/utils/usecase';
-import { UUIDUtils } from '@/utils/uuid';
 import { Infer, InputValidator } from '@/utils/validator';
 
 import { UserEntity, UserEntitySchema } from '../entity/user';
@@ -39,9 +39,9 @@ export class UserCreateUsecase implements IUsecase {
       throw new ApiNotFoundException('roleNotFound');
     }
 
-    const entity = new UserEntity({ id: UUIDUtils.create(), name: input.name, email: input.email, roles });
+    const entity = new UserEntity({ id: IDGeneratorUtils.uuid(), name: input.name, email: input.email, roles });
 
-    const passwordEntity = new UserPasswordEntity({ id: UUIDUtils.create(), password: input.password });
+    const passwordEntity = new UserPasswordEntity({ id: IDGeneratorUtils.uuid(), password: input.password });
 
     passwordEntity.createPassword();
 

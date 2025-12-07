@@ -1,3 +1,4 @@
+import { ZodMockSchema } from '@mikemajesty/zod-mock-schema';
 import { Test } from '@nestjs/testing';
 
 import { IRoleGetByIdAdapter } from '@/modules/role/adapter';
@@ -6,8 +7,8 @@ import { TestUtils } from '@/utils/test/util';
 import { ZodExceptionIssue } from '@/utils/validator';
 
 import { IRoleRepository } from '../../repository/role';
-import { RoleGetByIdInput, RoleGetByIdUsecase } from '../role-get-by-id';
-import { RoleEntity, RoleEnum } from './../../entity/role';
+import { RoleGetByIdInput, RoleGetByIdSchema, RoleGetByIdUsecase } from '../role-get-by-id';
+import { RoleEntity, RoleEntitySchema } from './../../entity/role';
 
 describe(RoleGetByIdUsecase.name, () => {
   let usecase: IRoleGetByIdAdapter;
@@ -38,14 +39,18 @@ describe(RoleGetByIdUsecase.name, () => {
     await TestUtils.expectZodError(
       () => usecase.execute({} as RoleGetByIdInput),
       (issues: ZodExceptionIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<RoleGetByIdInput>('id') }]);
+        expect(issues).toEqual([
+          {
+            message: 'Invalid input: expected string, received undefined',
+            path: TestUtils.nameOf<RoleGetByIdInput>('id')
+          }
+        ]);
       }
     );
   });
 
-  const input: RoleGetByIdInput = {
-    id: TestUtils.getMockUUID()
-  };
+  const roleRoleGetByIdSchemaMock = new ZodMockSchema(RoleGetByIdSchema);
+  const input: RoleGetByIdInput = roleRoleGetByIdSchemaMock.generate();
 
   test('when role not found, should expect an error', async () => {
     repository.findById = TestUtils.mockResolvedValue<RoleEntity>(null);
@@ -53,9 +58,11 @@ describe(RoleGetByIdUsecase.name, () => {
     await expect(usecase.execute(input)).rejects.toThrow(ApiNotFoundException);
   });
 
-  const role = new RoleEntity({
-    id: TestUtils.getMockUUID(),
-    name: RoleEnum.USER
+  const roleEntityMock = new ZodMockSchema(RoleEntitySchema);
+  const role: RoleEntity = roleEntityMock.generate({
+    overrides: {
+      permissions: []
+    }
   });
 
   test('when role found, should expect a role found', async () => {

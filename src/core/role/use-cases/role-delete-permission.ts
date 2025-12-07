@@ -43,7 +43,7 @@ export class RoleDeletePermissionUsecase implements IUsecase {
       }
     }
 
-    await this.roleRepository.create(entity);
+    await this.roleRepository.create(entity.toObject());
   }
 }
 

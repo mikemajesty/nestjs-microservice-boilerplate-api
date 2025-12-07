@@ -41,7 +41,12 @@ describe(CatGetByIdUsecase.name, () => {
     await TestUtils.expectZodError(
       () => usecase.execute({} as CatGetByIdInput),
       (issues: ZodExceptionIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<CatGetByIdInput>('id') }]);
+        expect(issues).toEqual([
+          {
+            message: 'Invalid input: expected string, received undefined',
+            path: TestUtils.nameOf<CatGetByIdInput>('id')
+          }
+        ]);
       }
     );
   });

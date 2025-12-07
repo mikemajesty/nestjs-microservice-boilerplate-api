@@ -1,17 +1,18 @@
+import { ZodMockSchema } from '@mikemajesty/zod-mock-schema';
 import { Test } from '@nestjs/testing';
 
-import { PermissionEntity } from '@/core/permission/entity/permission';
+import { PermissionEntity, PermissionEntitySchema } from '@/core/permission/entity/permission';
 import { IPermissionRepository } from '@/core/permission/repository/permission';
 import { CreatedModel } from '@/infra/repository';
 import { IRoleAddPermissionAdapter } from '@/modules/role/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
 import { TestUtils } from '@/utils/test/util';
-import { UUIDUtils } from '@/utils/uuid';
 import { ZodExceptionIssue } from '@/utils/validator';
 
-import { RoleEntity, RoleEnum } from '../../entity/role';
+import { RoleEntity, RoleEntitySchema } from '../../entity/role';
 import { IRoleRepository } from '../../repository/role';
-import { RoleAddPermissionInput, RoleAddPermissionUsecase } from '../role-add-permission';
+import { RoleAddPermissionUsecase } from '../role-add-permission';
+import { RoleAddPermissionInput, RoleAddPermissionSchema } from './../role-add-permission';
 
 describe(RoleAddPermissionUsecase.name, () => {
   let usecase: IRoleAddPermissionAdapter;
@@ -49,17 +50,23 @@ describe(RoleAddPermissionUsecase.name, () => {
       () => usecase.execute({} as RoleAddPermissionInput),
       (issues: ZodExceptionIssue[]) => {
         expect(issues).toEqual([
-          { message: 'Required', path: TestUtils.nameOf<RoleAddPermissionInput>('id') },
-          { message: 'Required', path: TestUtils.nameOf<RoleAddPermissionInput>('permissions') }
+          {
+            message: 'Invalid input: expected string, received undefined',
+            path: TestUtils.nameOf<RoleAddPermissionInput>('id')
+          },
+          {
+            message: 'Invalid input: expected array, received undefined',
+            path: TestUtils.nameOf<RoleAddPermissionInput>('permissions')
+          }
         ]);
       }
     );
   });
 
-  const input: RoleAddPermissionInput = {
-    id: TestUtils.getMockUUID(),
-    permissions: ['user:create', 'user:list']
-  };
+  const roleAddPermissionMock = new ZodMockSchema(RoleAddPermissionSchema);
+  const input = roleAddPermissionMock.generate({
+    overrides: { permissions: ['user:create', 'user:update'] }
+  });
 
   test('when role not exists, should expect an error', async () => {
     repository.findOne = TestUtils.mockResolvedValue<RoleEntity>(null);
@@ -67,12 +74,19 @@ describe(RoleAddPermissionUsecase.name, () => {
     await expect(usecase.execute(input)).rejects.toThrow(ApiNotFoundException);
   });
 
-  const permissions = [
-    new PermissionEntity({ id: UUIDUtils.create(), name: 'user:create' }),
-    new PermissionEntity({ id: UUIDUtils.create(), name: 'user:update' })
-  ];
+  const permissionMock = new ZodMockSchema(PermissionEntitySchema);
+  const permissions = permissionMock.generateMany<PermissionEntity>(10, {
+    overrides: {
+      name: permissionMock.faker.helpers.arrayElement(['user:create', 'user:update', 'user:delete', 'user:view'])
+    }
+  });
 
-  const role = new RoleEntity({ id: UUIDUtils.create(), name: RoleEnum.USER, permissions });
+  const roleMock = new ZodMockSchema(RoleEntitySchema);
+  const role = roleMock.generate<RoleEntity>({
+    overrides: {
+      permissions: roleMock.faker.helpers.arrayElements(permissions)
+    }
+  });
 
   test('when delete permission with associated permission successfully, should expect an update permission', async () => {
     repository.findOne = TestUtils.mockResolvedValue<RoleEntity>(role);

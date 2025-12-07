@@ -1,8 +1,8 @@
 import { CreatedModel } from '@/infra/repository';
 import { ValidateSchema } from '@/utils/decorators';
+import { IDGeneratorUtils } from '@/utils/id-generator';
 import { ApiTrancingInput } from '@/utils/request';
 import { IUsecase } from '@/utils/usecase';
-import { UUIDUtils } from '@/utils/uuid';
 import { Infer } from '@/utils/validator';
 
 import { CatEntity, CatEntitySchema } from '../entity/cat';
@@ -19,7 +19,7 @@ export class CatCreateUsecase implements IUsecase {
 
   @ValidateSchema(CatCreateSchema)
   async execute(input: CatCreateInput, { tracing, user }: ApiTrancingInput): Promise<CatCreateOutput> {
-    const entity = new CatEntity({ id: UUIDUtils.create(), ...input });
+    const entity = new CatEntity({ id: IDGeneratorUtils.uuid(), ...input });
 
     const created = await this.catRepository.create(entity.toObject());
 

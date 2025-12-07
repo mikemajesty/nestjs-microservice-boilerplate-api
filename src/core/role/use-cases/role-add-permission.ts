@@ -2,8 +2,8 @@ import { PermissionEntity } from '@/core/permission/entity/permission';
 import { IPermissionRepository } from '@/core/permission/repository/permission';
 import { ValidateSchema } from '@/utils/decorators';
 import { ApiNotFoundException } from '@/utils/exception';
+import { IDGeneratorUtils } from '@/utils/id-generator';
 import { IUsecase } from '@/utils/usecase';
-import { UUIDUtils } from '@/utils/uuid';
 import { Infer, InputValidator } from '@/utils/validator';
 
 import { RoleEntity, RoleEntitySchema } from '../entity/role';
@@ -11,7 +11,7 @@ import { IRoleRepository } from '../repository/role';
 
 export const RoleAddPermissionSchema = RoleEntitySchema.pick({
   id: true
-}).merge(InputValidator.object({ permissions: InputValidator.array(InputValidator.string()) }));
+}).and(InputValidator.object({ permissions: InputValidator.array(InputValidator.string()) }));
 
 export class RoleAddPermissionUsecase implements IUsecase {
   constructor(
@@ -35,7 +35,7 @@ export class RoleAddPermissionUsecase implements IUsecase {
       const permissionAlreadyCreated = permissions.find((p) => p.name === permission);
 
       if (!permissionAlreadyCreated) {
-        const newPermission = new PermissionEntity({ id: UUIDUtils.create(), name: permission });
+        const newPermission = new PermissionEntity({ id: IDGeneratorUtils.uuid(), name: permission });
         entity.permissions.push(newPermission);
         continue;
       }
@@ -49,7 +49,7 @@ export class RoleAddPermissionUsecase implements IUsecase {
       entity.permissions.push(permissionAlreadyCreated);
     }
 
-    await this.roleRepository.create(entity);
+    await this.roleRepository.create(entity.toObject());
   }
 }
 

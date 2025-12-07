@@ -28,7 +28,7 @@ export class RoleRepository extends TypeORMRepository<Model> implements IRoleRep
       where: input.search as FindOptionsWhere<unknown>
     });
 
-    return { docs, total, page: input.page, limit: input.limit };
+    return { docs: docs.map((doc) => new RoleEntity(doc).toObject()), total, page: input.page, limit: input.limit };
   }
 }
 

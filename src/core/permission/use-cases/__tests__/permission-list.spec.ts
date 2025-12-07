@@ -1,3 +1,4 @@
+import { ZodMockSchema } from '@mikemajesty/zod-mock-schema';
 import { Test } from '@nestjs/testing';
 
 import {
@@ -10,7 +11,7 @@ import { TestUtils } from '@/utils/test/util';
 import { ZodExceptionIssue } from '@/utils/validator';
 
 import { IPermissionRepository } from '../../repository/permission';
-import { PermissionEntity } from './../../entity/permission';
+import { PermissionEntity, PermissionEntitySchema } from './../../entity/permission';
 
 describe(PermissionListUsecase.name, () => {
   let usecase: IPermissionListAdapter;
@@ -41,24 +42,28 @@ describe(PermissionListUsecase.name, () => {
     await TestUtils.expectZodError(
       () => usecase.execute({} as PermissionListInput),
       (issues: ZodExceptionIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<PermissionListInput>('search') }]);
+        expect(issues).toEqual([
+          {
+            message: 'Invalid input: expected string, received undefined',
+            path: TestUtils.nameOf<PermissionListInput>('search')
+          }
+        ]);
       }
     );
   });
 
   const input: PermissionListInput = { limit: 1, page: 1, search: {}, sort: { createdAt: -1 } };
 
-  const permission = new PermissionEntity({
-    id: TestUtils.getMockUUID(),
-    name: 'name:permission',
-    createdAt: new Date(),
-    updatedAt: new Date()
+  const permissionEntityMock = new ZodMockSchema(PermissionEntitySchema);
+  const permissions = permissionEntityMock.generateMany<PermissionEntity>(5, {
+    overrides: {
+      name: 'name:permission',
+      roles: []
+    }
   });
 
-  const permissions = [permission];
-
   test('when permission are found, should expect an permission list', async () => {
-    const output: PermissionListOutput = { docs: [permission], page: 1, limit: 1, total: 1 };
+    const output: PermissionListOutput = { docs: permissions, page: 1, limit: 1, total: 1 };
     repository.paginate = TestUtils.mockResolvedValue<PermissionListOutput>(output);
 
     await expect(usecase.execute(input)).resolves.toEqual({

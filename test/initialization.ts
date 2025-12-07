@@ -1,4 +1,5 @@
-jest.setTimeout(30000);
+import { execSync } from 'child_process';
+jest.setTimeout(60000);
 
 process.env.NODE_ENV = 'test';
 process.env.TOKEN_TEST =
@@ -19,3 +20,15 @@ jest.mock('pino-http', () => ({
 }));
 
 jest.mock('pino', () => jest.createMockFromModule('pino'));
+
+try {
+  execSync('docker info', { stdio: 'ignore' });
+} catch {
+  console.error(`
+    Error: Docker is not running or accessible.
+
+    Container tests require Docker to be active.
+    Please start Docker and run the tests again.
+  `);
+  process.exit(1);
+}

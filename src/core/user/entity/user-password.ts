@@ -24,7 +24,7 @@ export class UserPasswordEntity extends BaseEntity<UserPasswordEntity>() {
 
   constructor(entity: UserPassword) {
     super(UserPasswordEntitySchema);
-    Object.assign(this, this.validate(entity));
+    this.validate(entity);
   }
 
   createPassword() {

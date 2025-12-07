@@ -5,8 +5,8 @@ import { NextFunction, Request, Response } from 'express';
 import { ICacheAdapter } from '@/infra/cache';
 import { ILoggerAdapter } from '@/infra/logger';
 import { ITokenAdapter } from '@/libs/token';
+import { IDGeneratorUtils } from '@/utils/id-generator';
 import { TracingType, UserRequest } from '@/utils/request';
-import { UUIDUtils } from '@/utils/uuid';
 
 import { ApiUnauthorizedException } from '../../utils/exception';
 
@@ -25,7 +25,7 @@ export class AuthenticationMiddleware implements NestMiddleware {
     const tokenHeader = request.headers.authorization;
 
     if (!request.headers?.traceid) {
-      Object.assign(request.headers, { traceid: request['id'] ?? UUIDUtils.create() });
+      Object.assign(request.headers, { traceid: request['id'] ?? IDGeneratorUtils.uuid() });
     }
 
     if (!tokenHeader) {

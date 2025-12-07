@@ -54,7 +54,12 @@ describe(RefreshTokenUsecase.name, () => {
     await TestUtils.expectZodError(
       () => usecase.execute({} as RefreshTokenInput),
       (issues: ZodExceptionIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<RefreshTokenInput>('refreshToken') }]);
+        expect(issues).toEqual([
+          {
+            message: 'Invalid input: expected string, received undefined',
+            path: TestUtils.nameOf<RefreshTokenInput>('refreshToken')
+          }
+        ]);
       }
     );
   });

@@ -63,10 +63,22 @@ describe(UserCreateUsecase.name, () => {
       () => usecase.execute({} as UserCreateInput, TestUtils.getMockTracing()),
       (issues: ZodExceptionIssue[]) => {
         expect(issues).toEqual([
-          { message: 'Required', path: TestUtils.nameOf<UserCreateInput>('email') },
-          { message: 'Required', path: TestUtils.nameOf<UserCreateInput>('name') },
-          { message: 'Required', path: TestUtils.nameOf<UserCreateInput>('password') },
-          { message: 'Required', path: TestUtils.nameOf<UserCreateInput>('roles') }
+          {
+            message: 'Invalid input: expected string, received undefined',
+            path: TestUtils.nameOf<UserCreateInput>('email')
+          },
+          {
+            message: 'Invalid input: expected string, received undefined',
+            path: TestUtils.nameOf<UserCreateInput>('name')
+          },
+          {
+            message: 'Invalid input: expected string, received undefined',
+            path: TestUtils.nameOf<UserCreateInput>('password')
+          },
+          {
+            message: 'Invalid input: expected array, received undefined',
+            path: TestUtils.nameOf<UserCreateInput>('roles')
+          }
         ]);
       }
     );

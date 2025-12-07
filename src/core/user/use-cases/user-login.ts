@@ -1,9 +1,9 @@
 import { ITokenAdapter } from '@/libs/token';
 import { ValidateSchema } from '@/utils/decorators';
 import { ApiNotFoundException } from '@/utils/exception';
+import { IDGeneratorUtils } from '@/utils/id-generator';
 import { ApiTrancingInput, UserRequest } from '@/utils/request';
 import { IUsecase } from '@/utils/usecase';
-import { UUIDUtils } from '@/utils/uuid';
 import { Infer } from '@/utils/validator';
 
 import { UserEntitySchema } from '../entity/user';
@@ -37,7 +37,7 @@ export class LoginUsecase implements IUsecase {
       throw new ApiNotFoundException('roleNotFound');
     }
 
-    const passwordEntity = new UserPasswordEntity({ id: UUIDUtils.create(), password: input.password });
+    const passwordEntity = new UserPasswordEntity({ id: IDGeneratorUtils.uuid(), password: input.password });
 
     passwordEntity.createPassword();
 

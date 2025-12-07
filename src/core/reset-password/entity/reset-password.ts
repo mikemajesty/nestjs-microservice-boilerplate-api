@@ -27,6 +27,6 @@ export class ResetPasswordEntity extends BaseEntity<ResetPasswordEntity>() {
 
   constructor(entity: ResetPassword) {
     super(ResetPasswordEntitySchema);
-    Object.assign(this, this.validate(entity));
+    this.validate(entity);
   }
 }

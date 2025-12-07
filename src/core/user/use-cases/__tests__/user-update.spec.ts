@@ -6,8 +6,8 @@ import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { CreatedModel } from '@/infra/repository';
 import { IUserUpdateAdapter } from '@/modules/user/adapter';
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception';
+import { IDGeneratorUtils } from '@/utils/id-generator';
 import { TestUtils } from '@/utils/test/util';
-import { UUIDUtils } from '@/utils/uuid';
 import { ZodExceptionIssue } from '@/utils/validator';
 
 import { UserEntity } from '../../entity/user';
@@ -50,7 +50,12 @@ describe(UserUpdateUsecase.name, () => {
     await TestUtils.expectZodError(
       () => usecase.execute({} as UserUpdateInput, TestUtils.getMockTracing()),
       (issues: ZodExceptionIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<UserUpdateInput>('id') }]);
+        expect(issues).toEqual([
+          {
+            message: 'Invalid input: expected string, received undefined',
+            path: TestUtils.nameOf<UserUpdateInput>('id')
+          }
+        ]);
       }
     );
   });
@@ -75,7 +80,7 @@ describe(UserUpdateUsecase.name, () => {
     await expect(usecase.execute(input, TestUtils.getMockTracing())).rejects.toThrow(ApiNotFoundException);
   });
 
-  const role = new RoleEntity({ id: UUIDUtils.create(), name: RoleEnum.USER });
+  const role = new RoleEntity({ id: IDGeneratorUtils.uuid(), name: RoleEnum.USER });
 
   test('when user already exists, should expect an error', async () => {
     repository.findOne = TestUtils.mockResolvedValue<UserEntity>(user);

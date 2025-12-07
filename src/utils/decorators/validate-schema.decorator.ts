@@ -1,39 +1,69 @@
 import zod from 'zod';
 
-export function ValidateSchema(...schema: zod.Schema[]) {
+interface ValidationErrorResult {
+  error: zod.ZodError | null;
+  issues: zod.core.$ZodIssue[];
+}
+
+export function ValidateSchema(...schemas: zod.Schema[]) {
   return (target: unknown, propertyKey: string, descriptor: PropertyDescriptor) => {
     const originalMethod = descriptor.value;
+
     descriptor.value = function (...args: unknown[]) {
-      const validatorError: { error?: zod.ZodError | null; issues: zod.ZodIssue[] } = {
+      const validationResult: ValidationErrorResult = {
         issues: [],
         error: null
       };
 
-      for (const [index, value] of schema.entries()) {
-        try {
-          const model = value.parse(args[`${index}`]) as { [key: string]: unknown };
-
-          for (const key in model) {
-            if (model[`${key}`] === undefined) {
-              delete model[`${key}`];
-            }
-          }
-
-          args[`${index}`] = model;
-        } catch (error) {
-          Object.assign(validatorError, { error });
-          validatorError.issues.push(...(validatorError.error as zod.ZodError).issues);
+      schemas.forEach((schema, index) => {
+        if (index >= args.length) {
+          return;
         }
+
+        try {
+          const validatedData = schema.parse(args[`${index}`]) as Record<string, unknown>;
+
+          const cleanedData = Object.keys(validatedData).reduce(
+            (acc, key) => {
+              if (validatedData[`${key}`] !== undefined) {
+                acc[`${key}`] = validatedData[`${key}`];
+              }
+              return acc;
+            },
+            {} as Record<string, unknown>
+          );
+
+          args[`${index}`] = cleanedData;
+        } catch (error) {
+          if (error instanceof zod.ZodError) {
+            if (!validationResult.error) {
+              validationResult.error = error;
+            }
+
+            validationResult.issues.push(...error.issues);
+          } else {
+            const zodError = new zod.ZodError([
+              {
+                code: 'custom',
+                message: 'Erro de validação não tratado',
+                path: [`${index}`]
+              }
+            ]);
+
+            if (!validationResult.error) {
+              validationResult.error = zodError;
+            }
+            validationResult.issues.push(...zodError.issues);
+          }
+        }
+      });
+
+      if (validationResult.error) {
+        const consolidatedError = new zod.ZodError(validationResult.issues);
+        throw consolidatedError;
       }
 
-      if (validatorError.error) {
-        const error = validatorError.error;
-        error.issues = validatorError.issues;
-        throw error;
-      }
-
-      const result = originalMethod.apply(this, args);
-      return result;
+      return originalMethod.apply(this, args);
     };
   };
 }

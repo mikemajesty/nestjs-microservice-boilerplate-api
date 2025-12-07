@@ -11,16 +11,20 @@ import { RedisService } from '@/infra/cache/redis';
 import { ConnectionName } from '@/infra/database/enum';
 import { PostgresService } from '@/infra/database/postgres';
 import { ILoggerAdapter, LoggerService } from '@/infra/logger';
+import { ApiUnprocessableEntityException } from '../exception';
 
 export class TestMongoContainer {
   mongoContainer!: StartedMongoDBContainer;
-
+  mongoDatabase = process.env.MONGO_DATABASE;
   getTestMongo = async (conectionName: ConnectionName): Promise<{ mongoConnection: mongoose.Connection }> => {
     this.mongoContainer = await new MongoDBContainer('mongo:7.0.2').start();
 
+    if (!this.mongoDatabase) {
+      throw new ApiUnprocessableEntityException('MONGO_DATABASE env var is not set');
+    }
     const mongo: mongoose.Connection = mongoose
       .createConnection(this.mongoContainer.getConnectionString(), { directConnection: true, appName: conectionName })
-      .useDb('nestjs-microservice');
+      .useDb(this.mongoDatabase, { useCache: true });
     return { mongoConnection: mongo };
   };
 
@@ -30,11 +34,15 @@ export class TestMongoContainer {
 }
 
 export class TestPostgresContainer {
+  postgresDatabase = process.env.POSTGRES_DATABASE;
   postgresContainer!: StartedPostgreSqlContainer;
 
   getTestPostgres = async (): Promise<StartedPostgreSqlContainer> => {
     const postgres = new PostgreSqlContainer('postgres:16.1-alpine');
-    postgres.withDatabase('nestjs-microservice');
+    if (!this.postgresDatabase) {
+      throw new ApiUnprocessableEntityException('POSTGRES_DATABASE env var is not set');
+    }
+    postgres.withDatabase(this.postgresDatabase);
 
     this.postgresContainer = await postgres.start();
 
@@ -82,7 +90,7 @@ export class TestRedisContainer {
   };
 
   async close() {
-    await this.client.disconnect();
+    this.client.destroy();
     await this.redisContainer.stop();
   }
 }

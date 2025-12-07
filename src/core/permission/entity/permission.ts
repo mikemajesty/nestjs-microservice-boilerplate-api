@@ -31,6 +31,6 @@ export class PermissionEntity extends BaseEntity<PermissionEntity>() {
 
   constructor(entity: Permission) {
     super(PermissionEntitySchema);
-    Object.assign(this, this.validate(entity));
+    this.validate(entity);
   }
 }

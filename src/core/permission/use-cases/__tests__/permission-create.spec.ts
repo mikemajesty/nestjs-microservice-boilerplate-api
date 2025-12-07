@@ -10,7 +10,7 @@ import { ZodExceptionIssue } from '@/utils/validator';
 
 import { PermissionEntity, PermissionEntitySchema } from '../../entity/permission';
 import { IPermissionRepository } from '../../repository/permission';
-import { PermissionCreateInput, PermissionCreateUsecase } from '../permission-create';
+import { PermissionCreateInput, PermissionCreateSchema, PermissionCreateUsecase } from '../permission-create';
 
 describe(PermissionCreateUsecase.name, () => {
   let usecase: IPermissionCreateAdapter;
@@ -47,14 +47,22 @@ describe(PermissionCreateUsecase.name, () => {
     await TestUtils.expectZodError(
       () => usecase.execute({} as PermissionCreateInput),
       (issues: ZodExceptionIssue[]) => {
-        expect(issues).toEqual([{ message: 'Required', path: TestUtils.nameOf<PermissionCreateInput>('name') }]);
+        expect(issues).toEqual([
+          {
+            message: 'Invalid input: expected string, received undefined',
+            path: TestUtils.nameOf<PermissionCreateInput>('name')
+          }
+        ]);
       }
     );
   });
 
-  const input: PermissionCreateInput = {
-    name: 'name:permission'
-  };
+  const permissionCreateSchemaMock = new ZodMockSchema(PermissionCreateSchema);
+  const input = permissionCreateSchemaMock.generate<PermissionCreateInput>({
+    overrides: {
+      name: 'create:permission'
+    }
+  });
 
   const mock = new ZodMockSchema(PermissionEntitySchema);
   const output = mock.generate<PermissionEntity>({
