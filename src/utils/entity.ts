@@ -68,6 +68,11 @@ export const BaseEntity = <T>() => {
     toJson() {
       return JSON.stringify(this.toObject());
     }
+
+    clone(): this {
+      const obj = this.toObject();
+      return new (this.constructor as new (entity: T) => this)(obj);
+    }
   }
 
   return Entity;

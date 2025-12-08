@@ -1,12 +1,13 @@
+import { ZodMockSchema } from '@mikemajesty/zod-mock-schema';
 import { Test } from '@nestjs/testing';
 
-import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
+import { RoleEntity, RoleEntitySchema } from '@/core/role/entity/role';
 import { IUserGetByIdAdapter } from '@/modules/user/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
 import { TestUtils } from '@/utils/test/util';
 import { ZodExceptionIssue } from '@/utils/validator';
 
-import { UserEntity } from '../../entity/user';
+import { UserEntity, UserEntitySchema } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
 import { UserGetByIdInput, UserGetByIdUsecase } from '../user-get-by-id';
 
@@ -56,11 +57,18 @@ describe(UserGetByIdUsecase.name, () => {
     await expect(usecase.execute({ id: TestUtils.getMockUUID() })).rejects.toThrow(ApiNotFoundException);
   });
 
-  const user = new UserEntity({
-    id: TestUtils.getMockUUID(),
-    email: 'admin@admin.com',
-    name: 'Admin',
-    roles: [new RoleEntity({ id: TestUtils.getMockUUID(), name: RoleEnum.USER })]
+  const roleMock = new ZodMockSchema(RoleEntitySchema);
+  const roles = roleMock.generateMany<RoleEntity>(2, {
+    overrides: {
+      permissions: []
+    }
+  });
+
+  const userMock = new ZodMockSchema(UserEntitySchema);
+  const user = userMock.generate<UserEntity>({
+    overrides: {
+      roles
+    }
   });
 
   test('when user getById successfully, should expect a user', async () => {

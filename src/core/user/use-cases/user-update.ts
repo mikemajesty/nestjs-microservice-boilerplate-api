@@ -42,7 +42,7 @@ export class UserUpdateUsecase implements IUsecase {
       throw new ApiConflictException('userExists');
     }
 
-    await this.userRepository.create(entity);
+    await this.userRepository.create(entity.toObject());
 
     this.loggerService.info({ message: 'user updated.', obj: { user: input } });
 
@@ -52,7 +52,7 @@ export class UserUpdateUsecase implements IUsecase {
 
     tracing.logEvent('user-updated', `user: ${user.email} updated by: ${userData.email}`);
 
-    return entityUpdated;
+    return entityUpdated.toObject();
   }
 
   private async getRoles(input: UserUpdateInput) {

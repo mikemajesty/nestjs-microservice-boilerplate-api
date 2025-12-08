@@ -55,7 +55,7 @@ export class UserCreateUsecase implements IUsecase {
       throw new ApiConflictException('userExists');
     }
 
-    const user = await this.userRepository.create(entity);
+    const user = await this.userRepository.create(entity.toObject());
 
     this.loggerService.info({ message: 'user created successfully', obj: { user } });
 

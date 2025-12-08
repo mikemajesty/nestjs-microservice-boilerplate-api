@@ -23,7 +23,7 @@ export class UserGetByIdUsecase implements IUsecase {
 
     const entity = new UserEntity(user);
 
-    return entity;
+    return entity.toObject();
   }
 }
 

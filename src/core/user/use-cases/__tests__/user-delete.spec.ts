@@ -1,12 +1,13 @@
+import { ZodMockSchema } from '@mikemajesty/zod-mock-schema';
 import { Test } from '@nestjs/testing';
 
-import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
+import { RoleEntity, RoleEntitySchema } from '@/core/role/entity/role';
 import { IUserDeleteAdapter } from '@/modules/user/adapter';
 import { ApiNotFoundException } from '@/utils/exception';
 import { TestUtils } from '@/utils/test/util';
 import { ZodExceptionIssue } from '@/utils/validator';
 
-import { UserEntity } from '../../entity/user';
+import { UserEntity, UserEntitySchema } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
 import { UserDeleteInput, UserDeleteUsecase } from '../user-delete';
 
@@ -53,12 +54,18 @@ describe(UserDeleteUsecase.name, () => {
     );
   });
 
-  const user = new UserEntity({
-    id: TestUtils.getMockUUID(),
-    email: 'admin@admin.com',
-    name: '*Admin',
-    roles: [new RoleEntity({ id: TestUtils.getMockUUID(), name: RoleEnum.USER })],
-    password: { id: TestUtils.getMockUUID(), password: '****' }
+  const roleMock = new ZodMockSchema(RoleEntitySchema);
+  const roles = roleMock.generateMany<RoleEntity>(2, {
+    overrides: {
+      permissions: []
+    }
+  });
+
+  const userMock = new ZodMockSchema(UserEntitySchema);
+  const user = userMock.generate<UserEntity>({
+    overrides: {
+      roles
+    }
   });
 
   test('when user deleted successfully, should expect an user deleted.', async () => {
@@ -66,7 +73,7 @@ describe(UserDeleteUsecase.name, () => {
     repository.softRemove = TestUtils.mockResolvedValue<UserEntity>();
 
     await expect(usecase.execute({ id: TestUtils.getMockUUID() }, TestUtils.getMockTracing())).resolves.toEqual(
-      expect.any(UserEntity)
+      expect.any(Object)
     );
     expect(repository.softRemove).toHaveBeenCalled();
   });

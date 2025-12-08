@@ -1,6 +1,7 @@
+import { ZodMockSchema } from '@mikemajesty/zod-mock-schema';
 import { Test } from '@nestjs/testing';
 
-import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
+import { RoleEntity, RoleEntitySchema } from '@/core/role/entity/role';
 import { LoggerModule } from '@/infra/logger';
 import { CreatedModel } from '@/infra/repository';
 import { IUserChangePasswordAdapter } from '@/modules/user/adapter';
@@ -8,10 +9,10 @@ import { ApiBadRequestException, ApiNotFoundException } from '@/utils/exception'
 import { TestUtils } from '@/utils/test/util';
 import { ZodExceptionIssue } from '@/utils/validator';
 
-import { UserEntity } from '../../entity/user';
-import { UserPasswordEntity } from '../../entity/user-password';
+import { UserEntity, UserEntitySchema } from '../../entity/user';
+import { UserPasswordEntitySchema } from '../../entity/user-password';
 import { IUserRepository } from '../../repository/user';
-import { UserChangePasswordInput, UserChangePasswordUsecase } from '../user-change-password';
+import { UserChangePasswordInput, UserChangePasswordSchema, UserChangePasswordUsecase } from '../user-change-password';
 
 describe(UserChangePasswordUsecase.name, () => {
   let usecase: IUserChangePasswordAdapter;
@@ -65,28 +66,38 @@ describe(UserChangePasswordUsecase.name, () => {
     );
   });
 
-  const input: UserChangePasswordInput = {
-    id: TestUtils.getMockUUID(),
-    password: '****',
-    confirmPassword: '****',
-    newPassword: '****'
-  };
-
+  const userChangePasswordSchemaMock = new ZodMockSchema(UserChangePasswordSchema);
+  const input = userChangePasswordSchemaMock.generate({
+    overrides: {
+      password: '****',
+      newPassword: '****',
+      confirmPassword: '****'
+    }
+  });
   test('when user not found, should expect an error', async () => {
     repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(null);
 
     await expect(usecase.execute(input)).rejects.toThrow(ApiNotFoundException);
   });
 
-  const user = new UserEntity({
-    id: TestUtils.getMockUUID(),
-    email: 'admin@admin.com',
-    name: 'Admin',
-    password: new UserPasswordEntity({
-      id: TestUtils.getMockUUID(),
+  const passwordMock = new ZodMockSchema(UserPasswordEntitySchema);
+  const password = passwordMock.generate({
+    overrides: {
       password: '69bf0bc46f51b33377c4f3d92caf876714f6bbbe99e7544487327920873f9820'
-    }),
-    roles: [new RoleEntity({ id: TestUtils.getMockUUID(), name: RoleEnum.USER })]
+    }
+  });
+  const roleMock = new ZodMockSchema(RoleEntitySchema);
+  const role = roleMock.generate<RoleEntity>({
+    overrides: {
+      permissions: []
+    }
+  });
+  const userMock = new ZodMockSchema(UserEntitySchema);
+  const user = userMock.generate<UserEntity>({
+    overrides: {
+      password,
+      roles: [role]
+    }
   });
 
   test('when user password is incorrect, should expect an error', async () => {
