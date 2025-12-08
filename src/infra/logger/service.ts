@@ -2,6 +2,7 @@ import { IncomingMessage, ServerResponse } from 'node:http';
 
 import { Injectable, InternalServerErrorException, Scope } from '@nestjs/common';
 import { blue, gray, green, isColorSupported } from 'colorette';
+import { PinoRequestConverter } from 'convert-pino-request-to-curl';
 import pino, { LevelWithSilent, LogDescriptor, Logger, multistream } from 'pino';
 import { HttpLogger, Options, pinoHttp } from 'pino-http';
 import lokiTransport from 'pino-loki';
@@ -125,6 +126,7 @@ export class LoggerService implements ILoggerAdapter {
     if (messages.includes(`\n`)) {
       return JSON.parse(messages);
     }
+
     return [messages];
   }
 
@@ -266,61 +268,5 @@ export class LoggerService implements ILoggerAdapter {
   private getTraceId(error: string | { traceid: string }): string {
     if (typeof error === 'string') return IDGeneratorUtils.uuid();
     return [error.traceid, this.logger.logger.bindings()?.traceid].find(Boolean);
-  }
-}
-
-export class PinoRequestConverter {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static getCurl(request: any, anonymizedFields: string[] = []): string {
-    const headers = { ...request.headers };
-    delete headers['content-length'];
-
-    const headerString = Object.keys(headers)
-      .map((key) => `--header '${key}: ${headers[`${key}`]}'`)
-      .join(' ');
-
-    const paramsString = Object.keys(request?.params || {})
-      .map((param) => `/${param}/${request.params[`${param}`]}`)
-      .join('');
-
-    const urlParts = request.url.split('?');
-    const baseUrl = urlParts[0];
-    const queryString = urlParts[1] ? `?${urlParts[1]}` : '';
-
-    const rawBody = request?.raw?.body;
-    const bodyString = rawBody
-      ? `--data-raw '${PinoRequestConverter.getBody(anonymizedFields, JSON.stringify(rawBody))}'`
-      : '';
-
-    const paramsUrl = request?.params ? paramsString : '';
-    const fullUrl = `${request.raw.protocol}://${request.headers.host}${baseUrl}${paramsUrl}${queryString}`;
-
-    const curlCommand = [
-      'curl --location -g',
-      `--request ${request.method.toUpperCase()}`,
-      `'${fullUrl}'`,
-      headerString,
-      bodyString
-    ]
-      .filter(Boolean)
-      .join(' ')
-      .trim();
-
-    return curlCommand;
-  }
-
-  private static getBody(anonymizedFields: string[], body: string | undefined): string {
-    if (!anonymizedFields.length || !body) {
-      return body || '';
-    }
-
-    let processedBody = body;
-
-    for (const field of anonymizedFields) {
-      const regex = new RegExp(`("${field}":\\s*)"([^"]*)"`, 'g');
-      processedBody = processedBody.replace(regex, '$1"******"');
-    }
-
-    return processedBody;
   }
 }
