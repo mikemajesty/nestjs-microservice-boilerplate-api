@@ -2,133 +2,84 @@ import { ApiInternalServerException } from './exception';
 import { SortEnum } from './sort';
 
 export class CollectionUtil {
-  static groupBy<T>(collection: T[], property: keyof T): Record<string, T[]> {
-    if (collection.length === 0) {
-      return {};
-    }
-
-    return collection.reduce(
-      (accumulator, currentItem) => {
-        const key = String(currentItem[property]);
-        if (!accumulator[key]) {
-          accumulator[key] = [];
-        }
-        accumulator[key].push(currentItem);
-        return accumulator;
+  static groupBy<T>(arr: T[], key: keyof T): Record<string, T[]> {
+    return (arr || []).reduce(
+      (acc, item) => {
+        const k = String(item[key] ?? '');
+        (acc[k] ??= []).push(item);
+        return acc;
       },
       {} as Record<string, T[]>
     );
   }
 
-  static maxBy<T>(collection: T[] = [], key: keyof T): T | null {
-    if (collection.length === 0) {
-      return null;
+  static maxBy<T>(arr: T[], key: keyof T): T | null {
+    if (!arr?.length) return null;
+
+    const first = arr[0][key];
+    if (typeof first !== 'number') {
+      throw new ApiInternalServerException(`Property "${String(key)}" must be numeric`);
     }
 
-    if (!key) {
-      throw new ApiInternalServerException('key is required');
-    }
-
-    return collection.reduce((prev, current) => {
-      const prevValue = prev[key];
-      const currentValue = current[key];
-
-      if (typeof prevValue !== 'number' || typeof currentValue !== 'number') {
-        throw new ApiInternalServerException('Values must be numbers for comparison');
-      }
-
-      return prevValue > currentValue ? prev : current;
-    }, collection[0]);
+    return arr.reduce((a, b) => (a[key] > b[key] ? a : b));
   }
 
-  static max(collection: (string | number)[]): number {
-    if (collection.length === 0) {
-      return NaN;
+  static minBy<T>(arr: T[], key: keyof T): T | null {
+    if (!arr?.length) return null;
+
+    const first = arr[0][key];
+    if (typeof first !== 'number') {
+      throw new ApiInternalServerException(`Property "${String(key)}" must be numeric`);
     }
-    return Math.max(...collection.map((c) => Number(c)));
+
+    return arr.reduce((a, b) => (a[key] < b[key] ? a : b));
   }
 
-  static minBy<T>(collection: T[], key: keyof T): T | null {
-    if (collection.length === 0) {
-      return null;
-    }
-
-    return collection.reduce((prev, current) => {
-      const prevValue = prev[key];
-      const currentValue = current[key];
-
-      if (typeof prevValue !== 'number' || typeof currentValue !== 'number') {
-        throw new ApiInternalServerException('Values must be numbers for comparison');
-      }
-
-      return prevValue < currentValue ? prev : current;
-    }, collection[0]) as T;
+  static max(arr: (number | string)[]): number {
+    const nums = (arr || []).map((n) => Number(n)).filter((n) => !isNaN(n));
+    return nums.length ? Math.max(...nums) : NaN;
   }
 
-  static min(collection: (string | number)[]): number {
-    if (collection.length === 0) {
-      return NaN;
-    }
-    return Math.min(...collection.map((c) => Number(c)));
+  static min(arr: (number | string)[]): number {
+    const nums = (arr || []).map((n) => Number(n)).filter((n) => !isNaN(n));
+    return nums.length ? Math.min(...nums) : NaN;
   }
 
-  static sum(collection: (string | number)[] = []): number {
-    if (!collection.length) {
-      return 0;
-    }
-    return collection.reduce((sum, current) => {
-      return Number(sum) + Number(current);
-    }, 0) as number;
+  static sum(arr: (number | string)[]): number {
+    return (arr || []).reduce((s: number, n) => s + (Number(n) || 0), 0);
   }
 
-  static sumBy<T>(collection: T[] = [], key: keyof T): number {
-    if (!key) {
-      throw new Error('key is required');
-    }
-
-    if (collection.length === 0) {
-      return 0;
-    }
-
-    return collection.reduce((sum, current) => {
-      const value = current[key];
-      if (typeof value === 'number') {
-        return sum + value;
-      }
-      return sum;
+  static sumBy<T>(arr: T[], key: keyof T): number {
+    return (arr || []).reduce((s, item) => {
+      const val = item[key];
+      return s + (typeof val === 'number' ? val : Number(val) || 0);
     }, 0);
   }
 
-  static hasDuplicated(collection: unknown[] = []): boolean {
-    return new Set(collection).size !== collection.length;
+  static hasDuplicated<T>(arr: T[]): boolean {
+    return new Set(arr || []).size !== (arr?.length || 0);
   }
 
-  static chunk<T>(list: T[], size: number): T[][] {
-    if (size <= 0) {
-      throw new Error('Size must be greater than 0');
-    }
-
-    const array: T[][] = [];
-    for (let i = 0; i < list.length; i += size) {
-      const chunk = list.slice(i, i + size);
-      array.push(chunk);
-    }
-    return array;
+  static chunk<T>(arr: T[], size: number): T[][] {
+    if (size <= 0) throw new Error('Size must be > 0');
+    return (arr || []).reduce((chunks, _, i) => {
+      if (i % size === 0) chunks.push(arr!.slice(i, i + size));
+      return chunks;
+    }, [] as T[][]);
   }
 
-  static sortNullToLastPosition<T>(collection: T[], key: keyof T, sort: SortEnum = SortEnum.asc): T[] {
-    return [...collection].sort((a: T, b: T) => {
-      const aValue = a[key] ?? null;
-      const bValue = b[key] ?? null;
-
-      if (aValue === bValue) return 0;
-      if (aValue === null) return 1;
-      if (bValue === null) return -1;
-
-      if (sort === SortEnum.asc) {
-        return aValue < bValue ? -1 : 1;
-      }
-      return aValue < bValue ? 1 : -1;
+  static sortNullLast<T>(arr: T[], key: keyof T, sort: SortEnum = SortEnum.asc): T[] {
+    return [...(arr || [])].sort((a, b) => {
+      const av = a[key] ?? null,
+        bv = b[key] ?? null;
+      if (av === bv) return 0;
+      if (av === null) return 1;
+      if (bv === null) return -1;
+      return sort === SortEnum.asc ? (av < bv ? -1 : 1) : av < bv ? 1 : -1;
     });
+  }
+
+  static isEmpty<T>(arr: T[] | null | undefined): boolean {
+    return !arr?.length;
   }
 }

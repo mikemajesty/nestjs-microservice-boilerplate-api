@@ -2,6 +2,6 @@
   "*.{js,ts,jsx}": [
     "npm run lint --fix",
     "npm run prettier",
-    "npm run test --verbose --findRelatedTests --passWithNoTests --forceExit"
+    "npm run test -- --verbose --findRelatedTests --passWithNoTests --forceExit"
   ]
 }

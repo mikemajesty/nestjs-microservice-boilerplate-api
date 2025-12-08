@@ -1,15 +1,17 @@
+import { ZodMockSchema } from '@mikemajesty/zod-mock-schema';
 import { Test } from '@nestjs/testing';
 
-import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
+import { RoleEntity, RoleEntitySchema } from '@/core/role/entity/role';
 import { ITokenAdapter, TokenLibModule } from '@/libs/token';
 import { ILoginAdapter } from '@/modules/login/adapter';
 import { ApiBadRequestException, ApiNotFoundException } from '@/utils/exception';
 import { TestUtils } from '@/utils/test/util';
 import { ZodExceptionIssue } from '@/utils/validator';
 
-import { UserEntity } from '../../entity/user';
+import { UserEntity, UserEntitySchema } from '../../entity/user';
+import { UserPasswordEntitySchema } from '../../entity/user-password';
 import { IUserRepository } from '../../repository/user';
-import { LoginInput, LoginOutput, LoginUsecase } from '../user-login';
+import { LoginInput, LoginOutput, LoginSchema, LoginUsecase } from '../user-login';
 
 describe(LoginUsecase.name, () => {
   let usecase: ILoginAdapter;
@@ -55,25 +57,40 @@ describe(LoginUsecase.name, () => {
     );
   });
 
-  const input: LoginInput = { email: 'admin@admin.com', password: '****' };
+  const loginInputMock = new ZodMockSchema(LoginSchema);
+  const input: LoginInput = loginInputMock.generate<LoginInput>({
+    overrides: {
+      email: 'admin@admin.com',
+      password: '****'
+    }
+  });
+
   test('when user not found, should expect an error', async () => {
     repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(null);
 
     await expect(usecase.execute(input, TestUtils.getMockTracing())).rejects.toThrow(ApiNotFoundException);
   });
 
-  const user = new UserEntity({
-    id: TestUtils.getMockUUID(),
-    email: 'admin@admin.com',
-    name: 'Admin',
-    roles: [new RoleEntity({ id: TestUtils.getMockUUID(), name: RoleEnum.USER })],
-    password: { id: TestUtils.getMockUUID(), password: '***' }
+  const userPasswordMock = new ZodMockSchema(UserPasswordEntitySchema);
+  const password = userPasswordMock.generate({
+    overrides: {
+      password: '****'
+    }
   });
 
-  test('when user role not found, should expect an error', async () => {
-    repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>({ ...user, roles: [] });
+  const roleMock = new ZodMockSchema(RoleEntitySchema);
+  const roles = roleMock.generateMany<RoleEntity>(2, {
+    overrides: {
+      permissions: []
+    }
+  });
 
-    await expect(usecase.execute(input, TestUtils.getMockTracing())).rejects.toThrow(ApiNotFoundException);
+  const userMock = new ZodMockSchema(UserEntitySchema);
+  const user = userMock.generate<UserEntity>({
+    overrides: {
+      roles,
+      password
+    }
   });
 
   test('when password is incorrect, should expect an error', async () => {

@@ -1,13 +1,15 @@
+import { ZodMockSchema } from '@mikemajesty/zod-mock-schema';
 import { Test } from '@nestjs/testing';
 
-import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
+import { RoleEntity, RoleEntitySchema } from '@/core/role/entity/role';
 import { ITokenAdapter, SignOutput } from '@/libs/token';
 import { IRefreshTokenAdapter } from '@/modules/login/adapter';
 import { ApiBadRequestException, ApiNotFoundException } from '@/utils/exception';
 import { TestUtils } from '@/utils/test/util';
 import { ZodExceptionIssue } from '@/utils/validator';
 
-import { UserEntity } from '../../entity/user';
+import { UserEntity, UserEntitySchema } from '../../entity/user';
+import { UserPasswordEntitySchema } from '../../entity/user-password';
 import { IUserRepository } from '../../repository/user';
 import {
   RefreshTokenInput,
@@ -85,15 +87,27 @@ describe(RefreshTokenUsecase.name, () => {
     await expect(usecase.execute(input)).rejects.toThrow(ApiNotFoundException);
   });
 
-  const user = new UserEntity({
-    id: TestUtils.getMockUUID(),
-    email: 'admin@admin.com',
-    name: 'Admin',
-    roles: [new RoleEntity({ id: TestUtils.getMockUUID(), name: RoleEnum.USER })],
-    password: { id: TestUtils.getMockUUID(), password: '***' }
+  const passwordMock = new ZodMockSchema(UserPasswordEntitySchema);
+  const password = passwordMock.generate({
+    overrides: {
+      password: '***'
+    }
   });
+  const roleMock = new ZodMockSchema(RoleEntitySchema);
+
+  const userMock = new ZodMockSchema(UserEntitySchema);
 
   test('when user role not found, should expect an error', async () => {
+    const user = userMock.generate<UserEntity>({
+      overrides: {
+        password,
+        roles: roleMock.generateMany<RoleEntity>(2, {
+          overrides: {
+            permissions: []
+          }
+        })
+      }
+    });
     token.verify = TestUtils.mockImplementation<UserRefreshTokenVerifyInput>(() => {
       return {
         userId: TestUtils.getMockUUID()
@@ -109,7 +123,16 @@ describe(RefreshTokenUsecase.name, () => {
       userId: TestUtils.getMockUUID()
     }));
     token.sign = TestUtils.mockReturnValue<SignOutput>({ token: '<token>' });
-    user.password.password = '69bf0bc46f51b33377c4f3d92caf876714f6bbbe99e7544487327920873f9820';
+    const user = userMock.generate<UserEntity>({
+      overrides: {
+        password: { ...password, password: '69bf0bc46f51b33377c4f3d92caf876714f6bbbe99e7544487327920873f9820' },
+        roles: roleMock.generateMany<RoleEntity>(2, {
+          overrides: {
+            permissions: []
+          }
+        })
+      }
+    });
     repository.findOne = TestUtils.mockResolvedValue<UserEntity>(user);
 
     await expect(usecase.execute(input)).resolves.toEqual({

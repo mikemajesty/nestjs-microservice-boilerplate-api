@@ -12,7 +12,7 @@ import { IUserRepository } from '../repository/user';
 
 export const LoginSchema = UserEntitySchema.pick({
   email: true
-}).merge(UserPasswordEntitySchema.pick({ password: true }));
+}).and(UserPasswordEntitySchema.pick({ password: true }));
 
 export class LoginUsecase implements IUsecase {
   constructor(
@@ -31,10 +31,6 @@ export class LoginUsecase implements IUsecase {
 
     if (!user) {
       throw new ApiNotFoundException('userNotFound');
-    }
-
-    if (!user.roles.length) {
-      throw new ApiNotFoundException('roleNotFound');
     }
 
     const passwordEntity = new UserPasswordEntity({ id: IDGeneratorUtils.uuid(), password: input.password });

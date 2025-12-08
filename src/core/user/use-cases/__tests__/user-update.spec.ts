@@ -1,6 +1,7 @@
+import { ZodMockSchema } from '@mikemajesty/zod-mock-schema';
 import { Test } from '@nestjs/testing';
 
-import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
+import { RoleEntity, RoleEntitySchema, RoleEnum } from '@/core/role/entity/role';
 import { IRoleRepository } from '@/core/role/repository/role';
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { CreatedModel } from '@/infra/repository';
@@ -10,9 +11,9 @@ import { IDGeneratorUtils } from '@/utils/id-generator';
 import { TestUtils } from '@/utils/test/util';
 import { ZodExceptionIssue } from '@/utils/validator';
 
-import { UserEntity } from '../../entity/user';
+import { UserEntity, UserEntitySchema } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
-import { UserUpdateInput, UserUpdateUsecase } from '../user-update';
+import { UserUpdateInput, UserUpdateSchema, UserUpdateUsecase } from '../user-update';
 
 describe(UserUpdateUsecase.name, () => {
   let usecase: IUserUpdateAdapter;
@@ -60,20 +61,21 @@ describe(UserUpdateUsecase.name, () => {
     );
   });
 
-  const user = new UserEntity({
-    id: TestUtils.getMockUUID(),
-    name: 'Admin',
-    email: 'admin@admin.com',
-    roles: [new RoleEntity({ id: TestUtils.getMockUUID(), name: RoleEnum.USER })]
+  const roleMock = new ZodMockSchema(RoleEntitySchema);
+  const roles = roleMock.generateMany<RoleEntity>(3, {
+    overrides: {
+      permissions: []
+    }
+  });
+  const userMock = new ZodMockSchema(UserEntitySchema);
+  const user = userMock.generate<UserEntity>({
+    overrides: {
+      roles
+    }
   });
 
-  const input: UserUpdateInput = {
-    id: user.id,
-    email: user.email,
-    name: user.name,
-    roles: [RoleEnum.USER]
-  };
-
+  const userUpdateMock = new ZodMockSchema(UserUpdateSchema);
+  const input = userUpdateMock.generate();
   test('when user not found, should expect an error', async () => {
     repository.findOne = TestUtils.mockResolvedValue<UserEntity>(null);
 

@@ -24,11 +24,11 @@ export class UserDeleteUsecase implements IUsecase {
 
     const entity = new UserEntity(user);
 
-    await this.userRepository.softRemove(entity);
+    await this.userRepository.softRemove(entity.toObject());
 
     tracing.logEvent('user-deleted', `user: ${user.email} deleted by: ${userData.email}`);
 
-    return entity;
+    return entity.toObject();
   }
 }
 

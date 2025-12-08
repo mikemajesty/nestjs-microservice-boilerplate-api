@@ -1,11 +1,12 @@
+import { ZodMockSchema } from '@mikemajesty/zod-mock-schema';
 import { Test } from '@nestjs/testing';
 
-import { RoleEntity, RoleEnum } from '@/core/role/entity/role';
+import { RoleEntity, RoleEntitySchema } from '@/core/role/entity/role';
 import { IUserListAdapter } from '@/modules/user/adapter';
 import { TestUtils } from '@/utils/test/util';
 import { ZodExceptionIssue } from '@/utils/validator';
 
-import { UserEntity } from '../../entity/user';
+import { UserEntity, UserEntitySchema } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
 import { UserListInput, UserListOutput, UserListUsecase } from '../user-list';
 
@@ -49,21 +50,19 @@ describe(UserListUsecase.name, () => {
     );
   });
 
-  const user = new UserEntity({
-    id: TestUtils.getMockUUID(),
-    email: 'admin@admin.com',
-    name: 'Admin',
-    roles: [new RoleEntity({ id: TestUtils.getMockUUID(), name: RoleEnum.USER })]
+  const roleMock = new ZodMockSchema(RoleEntitySchema);
+  const roles = roleMock.generateMany<RoleEntity>(2, {
+    overrides: {
+      permissions: []
+    }
   });
 
-  const users = [
-    {
-      ...user,
-      createdAt: TestUtils.getMockDate(),
-      updatedAt: TestUtils.getMockDate(),
-      deletedAt: null
-    } as UserEntity
-  ];
+  const userMock = new ZodMockSchema(UserEntitySchema);
+  const users = userMock.generateMany<UserEntity>(4, {
+    overrides: {
+      roles
+    }
+  });
 
   test('when users are found, should expect an user list', async () => {
     const output: UserListOutput = { docs: users, page: 1, limit: 1, total: 1 };
