@@ -7,7 +7,7 @@ import { ApiUnprocessableEntityException } from './exception';
 import { IDGeneratorType, IDGeneratorTypes, IDGeneratorUtils } from './id-generator';
 
 export const setEntityID = (entity: { _id?: string; id?: string }) => {
-  Object.assign(entity, { id: [entity?.id, entity?._id].find(Boolean) });
+  Object.assign(entity, { id: [entity?.id, entity?._id, null].find(Boolean) });
   return entity;
 };
 
@@ -54,7 +54,7 @@ export const BaseEntity = <T>() => {
       return parsed;
     }
 
-    addIDWhenMissing(type?: IDGeneratorType, options?: IDGeneratorTypes) {
+    assignIDWhenMissing(type?: IDGeneratorType, options?: IDGeneratorTypes) {
       if (!this.id) {
         const id = IDGeneratorUtils.generators[type || 'uuid'](options);
         Object.assign(this, { id });

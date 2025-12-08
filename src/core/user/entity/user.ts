@@ -38,5 +38,6 @@ export class UserEntity extends BaseEntity<UserEntity>() {
   constructor(entity: User) {
     super(UserEntitySchema);
     this.validate(entity);
+    this.assignIDWhenMissing();
   }
 }
