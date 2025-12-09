@@ -61,7 +61,7 @@ describe(CatUpdateUsecase.name, () => {
   });
 
   const mock = new ZodMockSchema(CatEntitySchema);
-  const input = mock.generate({
+  const input = mock.generate<CatEntity>({
     overrides: {
       updatedAt: null,
       createdAt: null,

@@ -219,10 +219,15 @@ services:
         condition: service_healthy
       nestjs-microservice-tertiary:
         condition: service_healthy
-    env_file:
-      - .env
+    environment:
+      - ME_CONFIG_MONGODB_URL=mongodb://admin:admin123@nestjs-microservice-primary:27017,nestjs-microservice-secondary:27017,nestjs-microservice-tertiary:27017/nestjs_microservice?replicaSet=app&authSource=admin&readPreference=primaryPreferred&ssl=false
+      - ME_CONFIG_MONGODB_REPLICA_SET=app
+      - ME_CONFIG_MONGODB_REPLICA_SET_NAME=app
+      - ME_CONFIG_MONGODB_READ_PREFERENCE=primaryPreferred
+      - ME_CONFIG_SITE_BASEURL=/
+      - ME_CONFIG_SITE_HOST=0.0.0.0
     ports:
-      - '4000:4000'
+      - '8081:8081'
     networks:
       - mongo-network
     restart: unless-stopped

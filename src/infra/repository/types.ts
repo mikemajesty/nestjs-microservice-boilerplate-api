@@ -36,3 +36,20 @@ export type DatabaseOperationCommand<T> = {
   value: unknown[];
   command: DatabaseOperationEnum;
 };
+
+export type JoinType<T> = {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+  [K in keyof T]?: T[K] extends Function
+    ? never
+    : T[K] extends infer U | undefined
+      ? U extends Array<infer V>
+        ? boolean | (keyof V)[]
+        : U extends object
+          ? boolean | (keyof U)[]
+          : never
+      : T[K] extends Array<infer U>
+        ? boolean | (keyof U)[]
+        : T[K] extends object
+          ? boolean | (keyof T[K])[]
+          : never;
+};

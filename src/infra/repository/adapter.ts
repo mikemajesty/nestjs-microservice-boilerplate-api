@@ -1,4 +1,11 @@
-import { CreatedModel, CreatedOrUpdateModel, DatabaseOperationCommand, RemovedModel, UpdatedModel } from './types';
+import {
+  CreatedModel,
+  CreatedOrUpdateModel,
+  DatabaseOperationCommand,
+  JoinType,
+  RemovedModel,
+  UpdatedModel
+} from './types';
 
 export abstract class IRepository<T> {
   abstract create<TOptions = unknown>(document: T, saveOptions?: TOptions): Promise<CreatedModel>;
@@ -82,4 +89,8 @@ export abstract class IRepository<T> {
     filter?: TQuery | null,
     options?: TOptions
   ): Promise<T[]>;
+
+  abstract findOneWithJoin<Filter = Partial<T>>(filter: Filter, joins?: JoinType<T>): Promise<T | null>;
+
+  abstract findAllWithJoin<Filter = Partial<T>>(filter?: Filter, joins?: JoinType<T>): Promise<T[]>;
 }

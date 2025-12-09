@@ -1,9 +1,25 @@
-import { BaseEntity, FindOneOptions, FindOptionsWhere, In, Raw, Repository, SaveOptions } from 'typeorm';
+import {
+  BaseEntity,
+  FindManyOptions,
+  FindOneOptions,
+  FindOptionsWhere,
+  In,
+  Raw,
+  Repository,
+  SaveOptions
+} from 'typeorm';
 
 import { IEntity } from '@/utils/entity';
 
 import { IRepository } from '../adapter';
-import { CreatedModel, CreatedOrUpdateModel, DatabaseOperationCommand, RemovedModel, UpdatedModel } from '../types';
+import {
+  CreatedModel,
+  CreatedOrUpdateModel,
+  DatabaseOperationCommand,
+  JoinType,
+  RemovedModel,
+  UpdatedModel
+} from '../types';
 
 export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEntity> implements IRepository<T> {
   constructor(readonly repository: Repository<T>) {}
@@ -227,6 +243,67 @@ export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEn
       where: filter as FindOptionsWhere<T>,
       select: this.excludeColumns(select) as (keyof T)[]
     });
+  }
+
+  async findOneWithJoin<Filter = Partial<T>>(filter: Filter, joins?: JoinType<T>): Promise<T | null> {
+    const { relations } = this.convertJoins(joins);
+
+    const options: FindOneOptions<T> = {
+      where: filter as FindOptionsWhere<T>
+    };
+
+    if (relations.length > 0) {
+      options.relations = relations;
+    }
+
+    return this.repository.findOne(options);
+  }
+
+  async findAllWithJoin<Filter = Partial<T>>(filter?: Filter, joins?: JoinType<T>): Promise<T[]> {
+    const { relations } = this.convertJoins(joins);
+
+    const where: FindOptionsWhere<T> = filter
+      ? ({ ...filter, deletedAt: null } as FindOptionsWhere<T>)
+      : ({ deletedAt: null } as unknown as FindOptionsWhere<T>);
+
+    const options: FindManyOptions<T> = {
+      where
+    };
+
+    if (relations.length > 0) {
+      options.relations = relations;
+    }
+
+    return this.repository.find(options);
+  }
+
+  private convertJoins(joins?: JoinType<T>): {
+    relations: string[];
+  } {
+    if (!joins) return { relations: [] };
+
+    const result = {
+      relations: [] as string[],
+      select: {} as Record<string, boolean>
+    };
+
+    for (const key in joins) {
+      if (!joins.hasOwnProperty(key)) continue;
+
+      const value = joins[`${key}` as keyof JoinType<T>];
+      const propertyKey = String(key);
+
+      if (value === true) {
+        result.relations.push(propertyKey);
+      } else if (Array.isArray(value)) {
+        result.relations.push(propertyKey);
+        value.forEach((field: string | number | symbol) => {
+          const selectKey = `${propertyKey}.${String(field)}`;
+          result.select[`${selectKey}`] = true;
+        });
+      }
+    }
+    return result;
   }
 
   private excludeColumns = (columnsToExclude: string[]): string[] =>

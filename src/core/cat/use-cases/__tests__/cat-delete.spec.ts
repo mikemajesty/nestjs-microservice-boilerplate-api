@@ -61,7 +61,7 @@ describe(CatDeleteUsecase.name, () => {
   });
 
   const mock = new ZodMockSchema(CatEntitySchema);
-  const input = mock.generate();
+  const input = mock.generate<CatEntity>();
 
   test('when cat deleted successfully, should expect a cat deleted', async () => {
     repository.findById = TestUtils.mockResolvedValue<CatEntity>(input);

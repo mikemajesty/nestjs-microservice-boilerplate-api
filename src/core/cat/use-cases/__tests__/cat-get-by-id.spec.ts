@@ -58,7 +58,7 @@ describe(CatGetByIdUsecase.name, () => {
   });
 
   const mock = new ZodMockSchema(CatEntitySchema);
-  const input = mock.generate();
+  const input = mock.generate<CatEntity>();
 
   test('when cat found, should expect a cat found', async () => {
     repository.findById = TestUtils.mockResolvedValue<CatEntity>(input);

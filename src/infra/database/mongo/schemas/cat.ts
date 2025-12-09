@@ -9,7 +9,9 @@ export type CatDocument = Document & CatEntity;
 @Schema({
   collection: 'cats',
   autoIndex: true,
-  timestamps: true
+  timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
 })
 export class Cat {
   @Prop({ type: String })

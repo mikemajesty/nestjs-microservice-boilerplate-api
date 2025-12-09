@@ -15,7 +15,14 @@ import { ApiBadRequestException, BaseException, MessageType, ParametersType } fr
 import { FilterQuery } from '@/utils/mongoose';
 
 import { IRepository } from '../adapter';
-import { CreatedModel, CreatedOrUpdateModel, DatabaseOperationCommand, RemovedModel, UpdatedModel } from '../types';
+import {
+  CreatedModel,
+  CreatedOrUpdateModel,
+  DatabaseOperationCommand,
+  JoinType,
+  RemovedModel,
+  UpdatedModel
+} from '../types';
 import { validateFindByCommandsFilter } from '../util';
 
 const handleDatabaseError = (error: unknown, context: string): ApiDatabaseException => {
@@ -333,6 +340,7 @@ export class MongoRepository<T extends Document = Document> implements IReposito
     }
   }
 
+  @ConvertMongoFilterToBaseRepository()
   async findAllWithSelectFields<TQuery = FilterQuery<T>, TOptions = FilterQuery<IEntity>>(
     includeProperties: Array<keyof T>,
     filter?: TQuery,
@@ -351,6 +359,44 @@ export class MongoRepository<T extends Document = Document> implements IReposito
     } catch (error) {
       throw handleDatabaseError(error, 'findAllWithSelectFields');
     }
+  }
+
+  @ConvertMongoFilterToBaseRepository()
+  async findOneWithJoin<Filter = Partial<T>>(filter: Filter, joins?: JoinType<T>): Promise<T | null> {
+    const populatePaths = this.getPopulatePaths(joins);
+
+    const query = this.model.findOne(filter as FilterQuery<T>);
+
+    const finalQuery = populatePaths.reduce((queryAccumulator, path) => queryAccumulator.populate(path), query);
+
+    const data = await finalQuery.exec();
+    if (!data) {
+      return null;
+    }
+    return data.toObject();
+  }
+
+  @ConvertMongoFilterToBaseRepository()
+  async findAllWithJoin<Filter = Partial<T>>(filter?: Filter, joins?: JoinType<T>): Promise<T[]> {
+    const populatePaths = this.getPopulatePaths(joins);
+
+    const query = this.model.find(filter ?? {});
+
+    const finalQuery = populatePaths.reduce((queryAccumulator, path) => queryAccumulator.populate(path), query);
+
+    const data = await finalQuery.exec();
+
+    if (!data.length) {
+      return [];
+    }
+
+    return data.map((d) => d.toObject());
+  }
+
+  private getPopulatePaths(joins?: JoinType<T>): string[] {
+    if (!joins) return [];
+
+    return Object.keys(joins).filter((key) => joins[key as keyof JoinType<T>] === true);
   }
 
   private buildCommandFilter(filterList: DatabaseOperationCommand<T>[]): FilterQuery<T> {
