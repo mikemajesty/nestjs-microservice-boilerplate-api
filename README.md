@@ -27,7 +27,6 @@
 - [Tech Stack](#-tech-stack)
 - [Prerequisites](#-prerequisites)
 - [Quick Start](#-quick-start)
-- [Configuration](#-configuration)
 - [Running the Application](#-running-the-application)
 - [Database Migrations](#-database-migrations)
 - [CRUD Scaffolding](#-crud-scaffolding)
