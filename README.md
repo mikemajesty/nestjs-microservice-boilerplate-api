@@ -147,7 +147,7 @@ Automatically generate complete CRUD operations in seconds:
 
 #### Distributed Tracing
 - **OpenTelemetry** integration
-- Jaeger for trace visualization
+- Zipkins for trace visualization
 - HTTP request tracing
 - Database query tracing
 - Inter-service call tracking
@@ -240,7 +240,7 @@ Automatically generate complete CRUD operations in seconds:
 ### Observability
 - **OpenTelemetry** - Distributed tracing
 - **Pino** - High-performance logging
-- **Jaeger** - Trace visualization
+- **Zipkins** - Trace visualization
 - **Prometheus** - Metrics collection
 
 ### Testing
@@ -315,7 +315,7 @@ npm install
 
 ### 4. Setup Infrastructure
 
-Start all required services (PostgreSQL, MongoDB, Redis, Jaeger, etc.):
+Start all required services (PostgreSQL, MongoDB, Redis, Zipkins, etc.):
 
 ```bash
 npm run setup
@@ -372,64 +372,6 @@ curl -X 'POST' \
     "password": "admin"
   }'
 ```
-
----
-
-## ⚙️ Configuration
-
-### Environment Variables
-
-Create a `.env` file in the root directory. Key variables include:
-
-```bash
-# Application
-NODE_ENV=development
-PORT=4000
-API_PREFIX=api/v1
-
-# Database - PostgreSQL
-POSTGRES_HOST=localhost
-POSTGRES_PORT=5432
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=postgres
-POSTGRES_DB=microservice
-
-# Database - MongoDB
-MONGO_URL=mongodb://localhost:27017/microservice
-
-# Cache - Redis
-REDIS_HOST=localhost
-REDIS_PORT=6379
-REDIS_PASSWORD=
-
-# JWT
-JWT_SECRET=your-super-secret-key
-JWT_EXPIRATION=3600
-JWT_REFRESH_SECRET=your-refresh-secret
-JWT_REFRESH_EXPIRATION=86400
-
-# Email
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=your-email@gmail.com
-SMTP_PASSWORD=your-password
-SMTP_FROM=noreply@yourdomain.com
-
-# Tracing
-JAEGER_AGENT_HOST=localhost
-JAEGER_AGENT_PORT=6831
-JAEGER_SERVICE_NAME=microservice-api
-
-# Logging
-LOG_LEVEL=debug
-LOG_PRETTY=true
-
-# Security
-CORS_ORIGIN=http://localhost:3000
-RATE_LIMIT_TTL=60
-RATE_LIMIT_MAX=100
-```
-
 ### Configuration Files
 
 - **`nest-cli.json`** - NestJS CLI configuration
@@ -931,9 +873,9 @@ export class UserController {
 
 ### Distributed Tracing
 
-#### Jaeger UI
+#### Zipkins UI
 
-Access Jaeger for distributed tracing:
+Access Zipkins for distributed tracing:
 
 ```
 http://localhost:16686
@@ -1653,7 +1595,7 @@ Thanks to all contributors who have helped make this project better!
 
 ### Observability
 - [OpenTelemetry](https://opentelemetry.io/)
-- [Jaeger Tracing](https://www.jaegertracing.io/)
+- [Zipkins Tracing](https://www.Zipkinstracing.io/)
 - [Prometheus](https://prometheus.io/)
 
 ---
