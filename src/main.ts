@@ -21,7 +21,7 @@ import { name } from '../package.json';
 import { AppModule } from './app.module';
 import { ErrorType } from './infra/logger';
 import { CryptoUtils } from './utils/crypto';
-import { changeLanguage, initI18n, LocaleInput } from './utils/validator';
+import { changeLanguage, initI18n, normalizeLocale } from './utils/validator'; // Removemos LocaleInput
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -44,17 +44,29 @@ async function bootstrap() {
     ]
   });
 
-  await initI18n();
+  // Inicializa com locale padrão 'en-US'
+  await initI18n('en-US');
 
   app.use(async (req: Request, res: Response, next: NextFunction) => {
-    const languegeQuery = req.query.lang;
+    const languegeQuery = req.query.lang as string;
     const acceptLanguage = req.headers['accept-language'];
 
-    const locale = [languegeQuery, (acceptLanguage || '').split(',')[0].split(';')[0], 'en'].find(Boolean);
-    await changeLanguage(locale as LocaleInput);
+    const rawLocale = [languegeQuery, (acceptLanguage || '').split(',')[0].split(';')[0], 'en-US'].find(
+      Boolean
+    ) as string;
+
+    const locale = normalizeLocale(rawLocale);
+
+    try {
+      await changeLanguage(locale as 'en-US' | 'pt-BR' | 'es-ES');
+    } catch (error) {
+      loggerService.warn({ message: `Failed to change language to ${locale}`, obj: { originalError: error } });
+    }
+
     if (req.originalUrl && req.originalUrl.split('/').pop() === 'favicon.ico') {
       return res.sendStatus(204);
     }
+
     const nonce = CryptoUtils.generateRandomBase64();
     res.locals.nonce = nonce;
     res.setHeader('X-Content-Security-Policy-Nonce', nonce);
@@ -137,4 +149,5 @@ async function bootstrap() {
   loggerService.log(`⚪ Zipkin[${bold('Tracing')}] listening at ${bold(ZIPKIN_URL)}`);
   loggerService.log(`⚪ Promethues[${bold('Metrics')}] listening at ${bold(PROMETHUES_URL)}\n`);
 }
+
 bootstrap();

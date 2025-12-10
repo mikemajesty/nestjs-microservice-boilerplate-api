@@ -33,6 +33,6 @@ export class RoleEntity extends BaseEntity<RoleEntity>() {
   constructor(entity: Role) {
     super(RoleEntitySchema);
     this.validate(entity);
-    this.assignIDWhenMissing();
+    this.ensureID();
   }
 }

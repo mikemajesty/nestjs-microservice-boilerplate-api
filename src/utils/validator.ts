@@ -5,196 +5,172 @@ import { zodI18nMap } from 'zod-i18n-map';
 
 import { LoggerService } from '@/infra/logger';
 
-const languageRegionMap: Record<string, LocaleInput> = {
-  'ar-SA': 'ar',
-  'cs-CZ': 'cs',
+const SUPPORTED_LOCALES = {
   'en-US': 'en',
-  'fa-IR': 'fa',
-  'fr-FR': 'fr',
-  'hr-HR': 'hr-HR',
-  'is-IS': 'is',
-  'ja-JP': 'ja',
-  'lt-LT': 'lt',
-  'nl-NL': 'nl',
   'pt-BR': 'pt',
-  'ru-RU': 'ru',
-  'sv-SE': 'sv',
-  'uk-UA': 'uk-UA',
-  'zh-CN': 'zh-CN',
-  'bg-BG': 'bg',
-  'de-DE': 'de',
-  'es-ES': 'es',
-  'fi-FI': 'fi',
-  'he-IL': 'he',
-  'id-ID': 'id',
-  'it-IT': 'it',
-  'ko-KR': 'ko',
-  'nb-NO': 'nb',
-  'pl-PL': 'pl',
-  'ro-RO': 'ro',
-  'sk-SK': 'sk',
-  'tr-TR': 'tr',
-  'uz-UZ': 'uz',
-  'zh-TW': 'zh-TW'
-};
+  'es-ES': 'es'
+} as const;
 
-const languageRegionMapCache: Record<string, ResourceLanguage> = {};
+type SupportedLocale = keyof typeof SUPPORTED_LOCALES;
 
-export async function loadTranslations() {
-  const translationPromises = Object.entries(languageRegionMap).map(async ([region, language]) => {
-    try {
-      const translationModule = await import(`zod-i18n-map/locales/${language}/zod.json`);
-      languageRegionMapCache[`${region}`] = translationModule.default;
-    } catch (error) {
-      console.error(`Error loading translation for ${region}:`, error);
+const translationCache = new Map<string, ResourceLanguage>();
+
+async function loadTranslation(language: string): Promise<ResourceLanguage> {
+  if (translationCache.has(language)) {
+    return translationCache.get(language)!;
+  }
+
+  try {
+    const module = await import(`zod-i18n-map/locales/${language}/zod.json`);
+    translationCache.set(language, module.default);
+    return module.default;
+  } catch {
+    LoggerService.log(`Translation for ${language} not found, using English fallback`);
+
+    const en = await import('zod-i18n-map/locales/en/zod.json');
+    translationCache.set(language, en.default);
+    return en.default;
+  }
+}
+
+async function preloadCommonTranslations() {
+  const commonLanguages = ['en', 'pt', 'es'];
+  await Promise.allSettled(commonLanguages.map((lang) => loadTranslation(lang)));
+}
+
+export const initI18n = async (defaultLocale: SupportedLocale = 'en-US') => {
+  const defaultLanguage = SUPPORTED_LOCALES[`${defaultLocale}`];
+
+  const defaultTranslation = await loadTranslation(defaultLanguage);
+
+  await i18next.init({
+    lng: defaultLanguage,
+    fallbackLng: 'en',
+    resources: {
+      [`${defaultLanguage}`]: { zod: defaultTranslation }
     }
   });
 
-  await Promise.all(translationPromises);
-  LoggerService.log('All translations have been loaded.');
-}
+  z.config(zodI18nMap as z.core.$ZodConfig);
 
-export const initI18n = async (defaultLocale = 'en-US') => {
-  await loadTranslations();
-
-  const resources = Object.entries(languageRegionMapCache).reduce(
-    (acc, [region, translation]) => {
-      const language = languageRegionMap[`${region}`];
-      if (language) {
-        acc[`${language}`] = { zod: translation };
-      }
-      return acc;
-    },
-    {} as Record<string, { zod: ResourceLanguage }>
-  );
-
-  await i18next.init({
-    lng: languageRegionMap[`${defaultLocale}`],
-    fallbackLng: 'en',
-    resources
+  preloadCommonTranslations().then(() => {
+    LoggerService.log('Common translations preloaded');
   });
 
-  z.config(zodI18nMap as z.core.$ZodConfig);
+  LoggerService.log(`i18n initialized with ${defaultLocale}`);
 };
 
-export const changeLanguage = async (locale: string) => {
-  const language = languageRegionMap[`${locale}`];
+export const changeLanguage = async (locale: SupportedLocale) => {
+  const language = SUPPORTED_LOCALES[`${locale}`];
 
-  if (language) {
-    await i18next.changeLanguage(language);
-    z.config(zodI18nMap as z.core.$ZodConfig);
-  } else {
-    console.error(`Language for region ${locale} not found.`);
+  if (!language) {
+    LoggerService.log(`Locale ${locale} not supported, keeping current language`);
+    return;
   }
+
+  await loadTranslation(language);
+  await i18next.changeLanguage(language);
+  z.config(zodI18nMap as z.core.$ZodConfig);
 };
 
 const validateRG = (rg: string): boolean => {
   const cleanedRG = rg.replace(/\D/g, '');
-  return cleanedRG.length === 9;
+  return cleanedRG.length >= 7 && cleanedRG.length <= 9;
 };
 
-const validateCPF = (cpf: string): boolean => {
-  return validatorBrasil.isCPF(cpf);
-};
-
-const validateCNPJ = (cnpj: string): boolean => {
-  return validatorBrasil.isCNPJ(cnpj);
-};
-
-const validatePhone = (telefone: string): boolean => {
+const validatePhoneBR = (telefone: string): boolean => {
   const phone = telefone.replace(/\D/g, '');
-  return phone.length >= 10 && phone.length <= 11;
+
+  if (phone.length === 11) {
+    return /^[1-9]{2}9[0-9]{8}$/.test(phone);
+  }
+
+  if (phone.length === 10) {
+    return /^[1-9]{2}[2-5][0-9]{7}$/.test(phone);
+  }
+
+  return false;
 };
 
-const validateCEP = (cep: string): boolean => {
-  return validatorBrasil.isCEP(cep);
+const createBrazilValidator = <T extends string>(validator: (value: string) => boolean, format: T) => {
+  return z
+    .string()
+    .min(1, 'Required field')
+    .transform((val) => val.replace(/\D/g, ''))
+    .refine(validator, {
+      message: `Invalid ${format}`
+    })
+    .meta({ format });
 };
 
 export const InputValidator = {
   ...z,
-  cpf: () =>
-    z
-      .string()
-      .transform((val) => val.replace(/\D/g, ''))
-      .refine(validateCPF, {
-        message: 'invalid CPF'
-      })
-      .meta({ format: 'cpf' }),
-  rg: () =>
-    z
-      .string()
-      .transform((val) => val.replace(/\D/g, ''))
-      .refine(validateRG, {
-        message: 'invalid RG'
-      })
-      .meta({ format: 'rg' }),
-  cnpj: () =>
-    z
-      .string()
-      .transform((val) => val.replace(/\D/g, ''))
-      .refine(validateCNPJ, {
-        message: 'invalid CNPJ'
-      })
-      .meta({ format: 'cnpj' }),
+  cpf: () => createBrazilValidator(validatorBrasil.isCPF, 'cpf'),
+  cnpj: () => createBrazilValidator(validatorBrasil.isCNPJ, 'cnpj'),
+  rg: () => createBrazilValidator(validateRG, 'rg'),
+  phoneBR: () => createBrazilValidator(validatePhoneBR, 'phoneBR'),
+  cep: () => createBrazilValidator(validatorBrasil.isCEP, 'cep'),
 
-  phoneBR: () =>
+  phone: () =>
     z
       .string()
       .transform((val) => val.replace(/\D/g, ''))
-      .refine(validatePhone, {
-        message: 'Phone must have 10 or 11 digits'
+      .refine((val) => val.length >= 8 && val.length <= 15, {
+        message: 'Invalid phone number'
       })
-      .meta({ format: 'phoneBR' }),
-
-  cep: () =>
-    z
-      .string()
-      .transform((val) => val.replace(/\D/g, ''))
-      .refine(validateCEP, {
-        message: 'invalid CEP'
-      })
-      .meta({ format: 'cep' })
+      .meta({ format: 'phone' })
 };
 
-export type LocaleInput =
-  | 'ar'
-  | 'cs'
-  | 'en'
-  | 'fa'
-  | 'fr'
-  | 'hr-HR'
-  | 'is'
-  | 'ja'
-  | 'lt'
-  | 'nl'
-  | 'pt'
-  | 'ru'
-  | 'sv'
-  | 'uk-UA'
-  | 'zh-CN'
-  | 'bg'
-  | 'de'
-  | 'es'
-  | 'fi'
-  | 'he'
-  | 'id'
-  | 'it'
-  | 'ko'
-  | 'nb'
-  | 'pl'
-  | 'ro'
-  | 'sk'
-  | 'tr'
-  | 'uz'
-  | 'zh-TW';
+export const normalizeLocale = (locale: string): string => {
+  const localeMap: Record<string, string> = {
+    en: 'en-US',
+    pt: 'pt-BR',
+    es: 'es-ES',
+    'pt-BR': 'pt-BR',
+    'en-US': 'en-US',
+    'es-ES': 'es-ES'
+  };
+
+  return localeMap[`${locale}`] || 'en-US';
+};
 
 export type Infer<T extends z.ZodType> = z.infer<T>;
-
 export type ZodException = z.ZodError;
 export type ZodExceptionIssue = z.core.$ZodIssue;
 
 export type ZodOptionalType<T> = z.ZodOptional<z.ZodType<NonNullable<T>>>;
 
-export type ZodOptionalPipeline<T> = z.core.$ZodPipe<z.ZodOptional<z.ZodType<unknown>>, z.ZodType<T>>;
-
-export type ZodSchema<T> = z.ZodType<T> | z.core.$ZodPipe<z.ZodType<unknown>, z.ZodType<T>>;
+export type {
+  ZodType as BaseZodType,
+  ZodAny,
+  ZodArray,
+  ZodBigInt,
+  ZodBoolean,
+  ZodCatch,
+  ZodDate,
+  ZodDefault,
+  ZodDiscriminatedUnion,
+  ZodEnum,
+  ZodFunction,
+  ZodIntersection,
+  ZodLazy,
+  ZodLiteral,
+  ZodMap,
+  ZodNaN,
+  ZodNever,
+  ZodNull,
+  ZodNullable,
+  ZodNumber,
+  ZodObject,
+  ZodOptional,
+  ZodPromise,
+  ZodRecord,
+  ZodSet,
+  ZodString,
+  ZodSymbol,
+  ZodTuple,
+  ZodUndefined,
+  ZodUnion,
+  ZodUnknown,
+  ZodVoid
+} from 'zod';

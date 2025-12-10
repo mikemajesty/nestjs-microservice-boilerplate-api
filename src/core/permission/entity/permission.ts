@@ -32,6 +32,6 @@ export class PermissionEntity extends BaseEntity<PermissionEntity>() {
   constructor(entity: Permission) {
     super(PermissionEntitySchema);
     this.validate(entity);
-    this.assignIDWhenMissing();
+    this.ensureID();
   }
 }

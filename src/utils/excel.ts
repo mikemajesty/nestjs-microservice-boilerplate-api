@@ -10,39 +10,42 @@ type GenerateExcelV2ConfigInput = {
   config?: Cell;
 };
 
-type GenerateExcelV2DataInput = { data: { [key: string]: string | number | Date | boolean }[]; sheetName?: string };
+type GenerateExcelV2DataInput = {
+  data: { [key: string]: string | number | Date | boolean }[];
+  sheetName?: string;
+};
 
 export class ExcelUtils {
+  private static readonly MAX_SYNC_LIMIT = 10000;
+
   static getExcelBuffer = async (
     { data, sheetName }: GenerateExcelV2DataInput,
     configList: GenerateExcelV2ConfigInput[]
   ): Promise<Buffer> => {
-    const MAX_SYNC_LIMIT = 10000;
-    if (data.length > MAX_SYNC_LIMIT) {
-      throw new ApiBadRequestException(`limit: ${MAX_SYNC_LIMIT} was reached`);
+    if (data.length > this.MAX_SYNC_LIMIT) {
+      throw new ApiBadRequestException(`limit: ${this.MAX_SYNC_LIMIT} was reached`);
     }
 
     const HEADER_ROW: Row = configList.map((l) => ({ value: l.header }));
 
-    const DATA_ROWS: Row[] = [];
+    const DATA_ROWS: Row[] = new Array(data.length);
 
-    for (const line of data) {
-      const DATA_ROW = [];
+    for (let i = 0; i < data.length; i++) {
+      const line = data[`${i}`];
+      const row = new Array(configList.length);
 
-      for (const key in line) {
-        const value = line[`${key}`];
-        const row = configList.find((c) => c.property === key);
-        if (!row) {
-          throw new ApiBadRequestException(`property: ${key} not found`);
-        }
-        DATA_ROW.push({ value, format: row.config?.format, type: row.type });
+      for (let j = 0; j < configList.length; j++) {
+        const config = configList[`${j}`];
+        row[`${j}`] = {
+          value: line[config.property],
+          type: config.type,
+          ...config.config
+        };
       }
 
-      DATA_ROWS.push(DATA_ROW as Row);
+      DATA_ROWS[`${i}`] = row;
     }
 
-    const excelData = [HEADER_ROW, ...DATA_ROWS];
-
-    return await writeXlsxFile(excelData, { buffer: true, sheet: sheetName ?? 'default' });
+    return await writeXlsxFile([HEADER_ROW, ...DATA_ROWS], { buffer: true, sheet: sheetName ?? 'default' });
   };
 }

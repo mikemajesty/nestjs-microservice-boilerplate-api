@@ -31,6 +31,6 @@ export class CatEntity extends BaseEntity<CatEntity>() {
   constructor(entity: Cat) {
     super(CatEntitySchema);
     this.validate(entity);
-    this.assignIDWhenMissing();
+    this.ensureID();
   }
 }

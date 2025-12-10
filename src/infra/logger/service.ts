@@ -41,7 +41,7 @@ export class LoggerService implements ILoggerAdapter {
         {
           level: 'info',
           stream: lokiTransport({
-            host: 'http://localhost:3100',
+            host: process.env.LOKI_URL as string,
             labels: { job: 'nestjs' },
             interval: 5
           })

@@ -12,7 +12,7 @@ export class MongoUtils {
     return false;
   };
 
-  static skipParentheses = (filter: string | string[]): string | string[] => {
+  static escapeParentheses = (filter: string | string[]): string | string[] => {
     if (typeof filter === 'string') {
       return filter?.replace('(', '\\(')?.replace(')', '\\)');
     }
@@ -53,15 +53,24 @@ export class MongoUtils {
   };
 
   static createRegexFilterText = (text: string | string[]): string | string[] => {
-    return this.diacriticSensitiveRegex(this.skipParentheses(text));
+    return this.diacriticSensitiveRegex(this.escapeParentheses(text));
+  };
+
+  static toObjectId = (id: string | Types.ObjectId): Types.ObjectId => {
+    return typeof id === 'string' ? new Types.ObjectId(id) : id;
+  };
+
+  static toObjectIdArray = (ids: (string | Types.ObjectId)[]): Types.ObjectId[] => {
+    return ids.map((id) => this.toObjectId(id));
   };
 }
 
 export type MongoRepositoryModelSessionType<T> = T & { connection?: Connection };
 
-export type MongoRepositorySession = {
-  abortTransaction: () => Promise<{ [key: string]: unknown }>;
-  commitTransaction: () => Promise<{ [key: string]: unknown }>;
+export type MongoSession = {
+  abortTransaction: () => Promise<void>;
+  commitTransaction: () => Promise<void>;
+  endSession: () => void;
 };
 
 type MongoOperators<T> = {

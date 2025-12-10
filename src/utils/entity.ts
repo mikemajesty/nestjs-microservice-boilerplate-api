@@ -6,18 +6,15 @@ import { DateUtils } from './date';
 import { ApiUnprocessableEntityException } from './exception';
 import { IDGeneratorType, IDGeneratorTypes, IDGeneratorUtils } from './id-generator';
 
-export const setEntityID = (entity: { _id?: string; id?: string }) => {
+export const normalizeID = (entity: { _id?: string; id?: string }) => {
   Object.assign(entity, { id: [entity?.id, entity?._id, null].find(Boolean) });
   return entity;
 };
 
 export interface IEntity {
   id: string;
-
   createdAt?: Date | null | undefined;
-
   updatedAt?: Date | null | undefined;
-
   deletedAt?: Date | null | undefined;
 }
 
@@ -30,48 +27,58 @@ export const BaseEntity = <T>() => {
     }
 
     readonly id!: string;
-
     readonly createdAt?: Date | null | undefined;
-
     readonly updatedAt?: Date | null | undefined;
-
     deletedAt?: Date | null | undefined;
 
     static nameOf = <D = keyof T>(name: keyof T) => name as D;
 
-    deactivated() {
-      this.deletedAt = DateUtils.getJSDate();
+    isActive(): boolean {
+      return !this.deletedAt;
     }
 
-    activated() {
-      Object.assign(this, { deletedAt: null });
+    isDeleted(): boolean {
+      return !!this.deletedAt;
+    }
+
+    deactivate(): this {
+      this.deletedAt = DateUtils.getJSDate();
+      return this;
+    }
+
+    activate(): this {
+      this.deletedAt = null;
+      return this;
     }
 
     validate<T>(entity: T): T {
-      setEntityID(entity as IEntity);
+      normalizeID(entity as IEntity);
       const parsed = this._schema.parse(entity) as T;
       Object.assign(this, parsed);
       return parsed;
     }
 
-    assignIDWhenMissing(type?: IDGeneratorType, options?: IDGeneratorTypes) {
+    ensureID(type?: IDGeneratorType, options?: IDGeneratorTypes) {
       if (!this.id) {
         const id = IDGeneratorUtils.generators[type || 'uuid'](options);
         Object.assign(this, { id });
       }
     }
 
-    toObject() {
+    toObject(): T {
       return this._schema.safeParse(this).data as T;
-    }
-
-    toJson() {
-      return JSON.stringify(this.toObject());
     }
 
     clone(): this {
       const obj = this.toObject();
-      return new (this.constructor as new (entity: T) => this)(obj);
+      const Constructor = this.constructor as new (entity: T) => this;
+      return new Constructor(obj as T);
+    }
+
+    merge(partial: Partial<T>): this {
+      const current = this.toObject();
+      const merged = { ...current, ...partial };
+      return new (this.constructor as new (entity: T) => this)(merged as T);
     }
   }
 
