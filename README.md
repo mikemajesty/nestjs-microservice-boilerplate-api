@@ -24,7 +24,6 @@
 - [Overview](#-overview)
 - [Architecture](#-architecture)
 - [Key Features](#-key-features)
-- [Tech Stack](#-tech-stack)
 - [Prerequisites](#-prerequisites)
 - [Quick Start](#-quick-start)
 - [Running the Application](#-running-the-application)
