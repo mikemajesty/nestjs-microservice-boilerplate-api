@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/v1.0.1...v1.1.0) (2025-12-09)
+
+
+### Features
+
+* **repository:** add joins methods ([ecdaba5](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/ecdaba5d2ecc09d46bdd853c1cc148b391913870))
+
 ## [1.0.1](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/v1.0.0...v1.0.1) (2025-12-08)
 
 # 1.0.0 (2025-11-30)
