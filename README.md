@@ -358,7 +358,7 @@ The API will be available at: `http://localhost:4000`
 
 Open your browser and navigate to:
 ```
-http://localhost:4000/api/docs
+http://localhost:4000/api-docs
 ```
 
 ### 8. Test the API
@@ -721,7 +721,7 @@ Interactive API documentation is available via Swagger UI.
 #### Access Swagger UI
 
 ```
-http://localhost:4000/api/docs
+http://localhost:4000/api-docs
 ```
 
 #### OpenAPI Specification
@@ -729,7 +729,7 @@ http://localhost:4000/api/docs
 Download the OpenAPI spec:
 
 ```
-http://localhost:4000/api/docs-json
+http://localhost:4000/api-docs-json
 ```
 
 ### API Endpoints Overview
