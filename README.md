@@ -22,13 +22,13 @@
 ## 📑 Table of Contents
 
 - [Overview](#-overview)
-- [Architecture](#-architecture)
+- [Architecture](#️-architecture)
 - [Key Features](#-key-features)
-- [Tech Stack](#-tech-stack)
+- [Tech Stack](#️-tech-stack)
 - [Prerequisites](#-prerequisites)
 - [Quick Start](#-quick-start)
 - [Running the Application](#-running-the-application)
-- [Database Migrations](#-database-migrations)
+- [Database Migrations](#️-database-migrations)
 - [CRUD Scaffolding](#-crud-scaffolding)
 - [Testing](#-testing)
 - [API Documentation](#-api-documentation)
@@ -1094,7 +1094,7 @@ Only lints files staged for commit:
 
 ### Commit Message Convention
 
-Follows [Conventional Commits](https://www.conventionalcommits.org/):
+This project uses a **hybrid approach** based on [Conventional Commits](https://www.conventionalcommits.org/) with **mandatory scopes** enforced by Commitlint.
 
 ```
 <type>(<scope>): <subject>
@@ -1103,6 +1103,8 @@ Follows [Conventional Commits](https://www.conventionalcommits.org/):
 
 <footer>
 ```
+
+**Important**: The `<scope>` is **mandatory** and must be one of the allowed values.
 
 #### Types
 
@@ -1117,16 +1119,67 @@ Follows [Conventional Commits](https://www.conventionalcommits.org/):
 - `ci`: CI/CD changes
 - `chore`: Other changes
 
+#### Allowed Scopes
+
+Scopes are **dynamically generated** from the project structure (`src/` directories) plus the following fixed scopes:
+
+**Project Structure Scopes**: Automatically includes all directory names from:
+- `src/core/*` - Core domain modules (user, role, permission, cat, etc.)
+- `src/infra/*` - Infrastructure components (database, cache, http, email, etc.)
+- `src/libs/*` - Shared libraries (token, event, i18n, etc.)
+- `src/modules/*` - Application modules
+- `src/utils/*` - Utility directories
+
+**Fixed Scopes**:
+- `remove` - Removing files or features
+- `revert` - Reverting previous commits
+- `conflict` - Resolving merge conflicts
+- `config` - Configuration changes
+- `entity` - Entity-related changes
+- `utils` - Utility functions
+- `deps` - Dependency updates
+- `modules` - Module-level changes
+- `test` - Test files
+- `migration` - Database migrations
+- `core` - Core layer changes
+- `swagger` - API documentation
+- `usecases` - Use case implementations
+
+#### Scope Validation
+
+The scope is validated on commit using Commitlint configuration in [commitlint.config.js](commitlint.config.js). Invalid scopes will **reject the commit**.
+
+To see all available scopes, check the project structure or run:
+```bash
+node -e "console.log(require('./commitlint.config.js').rules['scope-enum'][2])"
+```
+
 #### Examples
 
 ```bash
-feat(user): add email verification
+feat(user): add email verification feature
 
 fix(auth): resolve token refresh issue
 
-docs: update API documentation
+docs(readme): update API documentation section
 
-test(user): add unit tests for user creation
+test(user): add unit tests for user creation use case
+
+refactor(database): optimize connection pooling
+
+chore(deps): update nestjs to version 11.x
+```
+
+#### Invalid Examples ❌
+
+```bash
+# Missing scope
+feat: add new feature
+
+# Invalid scope
+feat(invalid-scope): add new feature
+
+# These will be rejected by Commitlint
 ```
 
 ### Continuous Integration
@@ -1498,7 +1551,7 @@ Contributions are welcome! Please follow these guidelines:
 
 ### Commit Message Guidelines
 
-Follow [Conventional Commits](https://www.conventionalcommits.org/):
+Follow [Conventional Commits](./commitlint.config.js):
 - Use `feat:` for new features
 - Use `fix:` for bug fixes
 - Use `docs:` for documentation
