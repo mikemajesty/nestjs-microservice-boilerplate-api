@@ -32,6 +32,7 @@
 - [CRUD Scaffolding](#-crud-scaffolding)
 - [Testing](#-testing)
 - [API Documentation](#-api-documentation)
+- [Documentation](#-documentation)
 - [Observability](#-observability)
 - [Code Quality](#-code-quality)
 - [Project Structure](#-project-structure)
