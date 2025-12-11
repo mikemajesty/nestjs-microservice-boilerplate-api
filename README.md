@@ -720,27 +720,65 @@ Ensures tests run in isolation with clean state.
 
 ### Writing Tests
 
-Example use case test:
+This project follows best practices for test data generation using **ZodMockSchema** to automatically generate type-safe mock data from Zod schemas.
+
+#### Automatic Mock Generation (Recommended)
+
+Use `ZodMockSchema` to generate test data automatically from your entity schemas:
 
 ```typescript
-describe('ProductCreateUseCase', () => {
-  let useCase: ProductCreateUseCase;
-  let repository: jest.Mocked<IProductRepository>;
+import { ZodMockSchema } from '@mikemajesty/zod-mock-schema';
+import { CatEntitySchema } from '../../entity/cat';
+
+describe('CatCreateUseCase', () => {
+  let useCase: CatCreateUseCase;
+  let repository: jest.Mocked<ICatRepository>;
 
   beforeEach(() => {
     repository = createMockRepository();
-    useCase = new ProductCreateUseCase(repository);
+    useCase = new CatCreateUseCase(repository);
   });
 
-  it('should create a product successfully', async () => {
-    const input = { name: 'Test Product', price: 99.99 };
-    const result = await useCase.execute(input);
+  // Generate mock data automatically from schema
+  const mock = new ZodMockSchema(CatEntitySchema);
+  const input = mock.generate();
+
+  it('should create a cat successfully', async () => {
+    repository.create = jest.fn().mockResolvedValue(input);
     
-    expect(result).toMatchObject(input);
+    const result = await useCase.execute(input, mockTracing);
+    
+    expect(result).toEqual(input);
     expect(repository.create).toHaveBeenCalledWith(
       expect.objectContaining(input)
     );
   });
+});
+```
+
+**Why use ZodMockSchema?**
+
+✅ **Type Safety**: Generates data that matches your Zod schemas  
+✅ **Automatic Updates**: Mock data updates when schema changes  
+✅ **Consistency**: Same data structure across all tests  
+✅ **Less Boilerplate**: No need to manually create test fixtures  
+✅ **Valid Data**: Generated data always passes schema validation  
+
+**Documentation**: For advanced usage and customization, see [ZodMockSchema Documentation](https://github.com/mikemajesty/zod-mock-schema)
+
+#### Manual Test Data (Alternative)
+
+For specific test cases where you need custom data:
+
+```typescript
+it('should create a product successfully', async () => {
+  const input = { name: 'Test Product', price: 99.99 };
+  const result = await useCase.execute(input);
+  
+  expect(result).toMatchObject(input);
+  expect(repository.create).toHaveBeenCalledWith(
+    expect.objectContaining(input)
+  );
 });
 ```
 
@@ -870,33 +908,61 @@ curl -X 'POST' \
 
 #### Success Response
 
+Success responses return the data directly from use cases without additional wrapping:
+
 ```json
 {
-  "data": { ... },
-  "metadata": {
-    "timestamp": "2024-12-08T00:00:00.000Z",
-    "path": "/api/v1/users",
-    "version": "1.0.0"
-  }
+  "id": "123e4567-e89b-12d3-a456-426614174000",
+  "name": "John Doe",
+  "email": "john@example.com",
+  "createdAt": "2024-12-08T00:00:00.000Z"
+}
+```
+
+For list endpoints with pagination:
+
+```json
+{
+  "docs": [
+    {
+      "id": "123e4567-e89b-12d3-a456-426614174000",
+      "name": "John Doe",
+      "email": "john@example.com"
+    }
+  ],
+  "page": 1,
+  "limit": 10,
+  "total": 100
 }
 ```
 
 #### Error Response
 
+Error responses follow a standardized structure:
+
 ```json
 {
-  "statusCode": 400,
-  "message": "Validation failed",
-  "errors": [
-    {
-      "field": "email",
-      "message": "Invalid email format"
-    }
-  ],
-  "timestamp": "2024-12-08T00:00:00.000Z",
-  "path": "/api/v1/users"
+  "error": {
+    "code": 400,
+    "traceid": "abc-def-123",
+    "context": "UserModule",
+    "message": [
+      "email: Invalid email format",
+      "name: String must contain at least 1 character(s)"
+    ],
+    "timestamp": "08/12/2024 10:30:45",
+    "path": "/api/v1/users"
+  }
 }
 ```
+
+**Error Response Fields:**
+- `code` - HTTP status code
+- `traceid` - Request trace ID for debugging
+- `context` - Module/context where the error occurred
+- `message` - Array of error messages
+- `timestamp` - Error timestamp in configured format
+- `path` - Request path where error occurred
 
 ---
 
