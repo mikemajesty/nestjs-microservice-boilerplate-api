@@ -130,6 +130,8 @@ The codebase is organized in concentric layers where dependencies point inward:
 
 #### MongoDB (Mongoose)
 - Document-based storage
+- **3-node Replica Set** for high availability
+- Automatic failover and data redundancy
 - Flexible schema design
 - Built-in pagination
 - Text search capabilities
@@ -352,13 +354,13 @@ npm run start:debug
 npm run start
 ```
 
-The API will be available at: `http://localhost:4000`
+The API will be available at: `http://localhost:5000`
 
 ### 7. Access Swagger Documentation
 
 Open your browser and navigate to:
 ```
-http://localhost:4000/api-docs
+http://localhost:5000/api-docs
 ```
 
 ### 8. Test the API
@@ -367,7 +369,7 @@ Login with default credentials:
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:4000/api/v1/login' \
+  'http://localhost:5000/api/v1/login' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -383,6 +385,42 @@ curl -X 'POST' \
 - **`eslint.config.mjs`** - Linting rules
 - **`.prettierrc`** - Code formatting rules
 - **`docker-compose-infra.yml`** - Infrastructure services
+
+### Infrastructure Services
+
+After running `npm run setup`, the following services will be available:
+
+#### Databases
+
+| Service | URL | Credentials | Description |
+|---------|-----|-------------|-------------|
+| **PostgreSQL** | `localhost:5432` | User: `admin`<br>Password: `admin` | Primary relational database |
+| **MongoDB Replica Set** | `localhost:27017` (Primary)<br>`localhost:27018` (Secondary)<br>`localhost:27019` (Tertiary) | User: `admin`<br>Password: `admin123` | 3-node MongoDB replica set for high availability |
+| **Redis** | `localhost:6379` | Password: `redis123` | In-memory cache and session store |
+
+#### Database Management Tools
+
+| Service | URL | Credentials | Description |
+|---------|-----|-------------|-------------|
+| **PgAdmin** | `http://localhost:16543` | Email: `pgadmin@gmail.com`<br>Password: `PgAdmin2019!` | PostgreSQL administration |
+| **Mongo Express** | `http://localhost:8081` | - | MongoDB web interface |
+
+#### Observability Stack
+
+| Service | URL | Credentials | Description |
+|---------|-----|-------------|-------------|
+| **Zipkin** | `http://localhost:9411` | - | Distributed tracing UI |
+| **Prometheus** | `http://localhost:9090` | - | Metrics collection and querying |
+| **Grafana** | `http://localhost:3000` | User: `admin`<br>Password: `grafana123` | Metrics visualization and dashboards |
+| **Loki** | `http://localhost:3100` | - | Log aggregation system |
+| **AlertManager** | `http://localhost:9093` | - | Alert management and routing |
+
+#### Supporting Services
+
+| Service | Ports | Description |
+|---------|-------|-------------|
+| **OpenTelemetry Collector** | `4317` (gRPC)<br>`4318` (HTTP)<br>`9464` (Prometheus) | Receives, processes and exports telemetry data |
+| **Promtail** | - | Ships logs to Loki |
 
 ---
 
@@ -714,25 +752,35 @@ Coverage badges are automatically generated and updated in the README after runn
 
 ## 📚 API Documentation
 
-### Swagger/OpenAPI
+### Interactive API Documentation
 
-Interactive API documentation is available via Swagger UI.
+This project uses **TypeSpec** to generate OpenAPI specifications, providing interactive API documentation via Swagger UI.
 
 #### Access Swagger UI
 
+Open your browser and navigate to:
+
 ```
-http://localhost:4000/api-docs
+http://localhost:5000/api-docs
 ```
+
+The Swagger UI provides:
+- Interactive endpoint testing
+- Request/response schemas
+- Authentication flows
+- Real-time API exploration
 
 #### OpenAPI Specification
 
-Download the OpenAPI spec:
+The OpenAPI 3.0 specification is auto-generated from TypeSpec definitions and available at:
 
-```
-http://localhost:4000/api-docs-json
+```yaml
+docs/tsp-output/@typespec/openapi3/openapi.api.1.0.yaml
 ```
 
 ### API Endpoints Overview
+
+All API endpoints follow a versioned structure: `/api/{version}/resource`
 
 #### Authentication
 
@@ -740,7 +788,6 @@ http://localhost:4000/api-docs-json
 |--------|----------|-------------|
 | POST | `/api/v1/login` | User login |
 | POST | `/api/v1/logout` | User logout |
-| POST | `/api/v1/refresh-token` | Refresh access token |
 | POST | `/api/v1/forgot-password` | Request password reset |
 | POST | `/api/v1/reset-password` | Reset password with token |
 
@@ -753,7 +800,6 @@ http://localhost:4000/api-docs-json
 | POST | `/api/v1/users` | Create new user |
 | PUT | `/api/v1/users/:id` | Update user |
 | DELETE | `/api/v1/users/:id` | Delete user (soft) |
-| PATCH | `/api/v1/users/:id/password` | Change password |
 
 #### Roles
 
@@ -764,8 +810,6 @@ http://localhost:4000/api-docs-json
 | POST | `/api/v1/roles` | Create role |
 | PUT | `/api/v1/roles/:id` | Update role |
 | DELETE | `/api/v1/roles/:id` | Delete role |
-| POST | `/api/v1/roles/:id/permissions` | Add permission to role |
-| DELETE | `/api/v1/roles/:id/permissions/:permissionId` | Remove permission |
 
 #### Permissions
 
@@ -787,11 +831,23 @@ http://localhost:4000/api-docs-json
 
 ### Request Examples
 
+#### Login
+
+```bash
+curl -X 'POST' \
+  'http://localhost:5000/api/v1/login' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "email": "admin@admin.com",
+    "password": "admin"
+  }'
+```
+
 #### List Users with Pagination
 
 ```bash
 curl -X 'GET' \
-  'http://localhost:4000/api/v1/users?limit=10&offset=0&sort=createdAt:desc' \
+  'http://localhost:5000/api/v1/users?limit=10&offset=0&sort=createdAt:desc' \
   -H 'Authorization: Bearer YOUR_TOKEN'
 ```
 
@@ -799,7 +855,7 @@ curl -X 'GET' \
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:4000/api/v1/users' \
+  'http://localhost:5000/api/v1/users' \
   -H 'Content-Type: application/json' \
   -H 'Authorization: Bearer YOUR_TOKEN' \
   -d '{
@@ -808,14 +864,6 @@ curl -X 'POST' \
     "password": "securePassword123",
     "roles": ["user"]
   }'
-```
-
-#### Search Users
-
-```bash
-curl -X 'GET' \
-  'http://localhost:4000/api/v1/users?search=john&limit=10' \
-  -H 'Authorization: Bearer YOUR_TOKEN'
 ```
 
 ### Response Format
@@ -850,25 +898,227 @@ curl -X 'GET' \
 }
 ```
 
-### Swagger Decorators
+---
 
-Document your endpoints with Swagger decorators:
+## 📖 Documentation
+
+This project uses **TypeSpec** as a modern, type-safe way to define API contracts and generate OpenAPI specifications.
+
+### What is TypeSpec?
+
+TypeSpec is a language for describing cloud service APIs and generating other API description languages, client and service code, documentation, and other assets. It provides excellent IDE support with auto-completion and type checking.
+
+### Documentation Structure
+
+```
+docs/
+├── README.md              # Documentation overview
+├── package.json           # TypeSpec dependencies
+├── tspconfig.yaml         # TypeSpec configuration
+├── docker-compose.yml     # Documentation services
+├── src/
+│   ├── main.tsp          # Main TypeSpec entry point
+│   ├── modules/          # API module specifications
+│   │   ├── cat/          # Example: Cat module
+│   │   │   ├── controller.tsp
+│   │   │   ├── model.tsp
+│   │   │   └── exception.tsp
+│   │   ├── user/
+│   │   ├── role/
+│   │   ├── permission/
+│   │   ├── login/
+│   │   ├── logout/
+│   │   ├── reset-password/
+│   │   └── health/
+│   └── utils/
+│       ├── exceptions.tsp    # Common exceptions
+│       ├── model.tsp         # Common models
+│       └── versioning.tsp    # API versioning
+└── tsp-output/           # Generated OpenAPI specs
+    └── @typespec/
+        └── openapi3/
+            └── openapi.api.1.0.yaml
+```
+
+### Working with TypeSpec Documentation
+
+#### 1. Install Dependencies
+
+```bash
+cd docs
+npm install
+# or
+yarn doc:install
+```
+
+#### 2. Start Documentation Development Server
+
+This starts a live-reload documentation server:
+
+```bash
+yarn start
+```
+
+This will:
+- Compile TypeSpec files on changes
+- Serve Swagger UI with live reload
+- Watch for file changes automatically
+
+#### 3. Compile TypeSpec to OpenAPI
+
+To manually compile TypeSpec specifications:
+
+```bash
+cd docs
+yarn doc:compiler
+```
+
+Generated files will be in `docs/tsp-output/@typespec/openapi3/`
+
+### Adding New API Documentation
+
+#### Step 1: Create Module Structure
+
+For a new module (e.g., `product`), create these files in `docs/src/modules/product/`:
+
+**controller.tsp** - Defines the API endpoints
 
 ```typescript
-@ApiTags('users')
-@ApiBearerAuth()
-@Controller('users')
-export class UserController {
-  @Get()
-  @ApiOperation({ summary: 'List all users' })
-  @ApiResponse({ status: 200, description: 'Users retrieved successfully' })
-  @ApiQuery({ name: 'limit', required: false, type: Number })
-  @ApiQuery({ name: 'offset', required: false, type: Number })
-  async list(@Query() query: ListQueryDTO) {
-    // ...
-  }
+import "@typespec/http";
+import "@typespec/rest";
+import "@typespec/openapi3";
+import "../../utils/model.tsp";
+import "./model.tsp";
+import "./exception.tsp";
+
+using TypeSpec.Http;
+using Utils.Model;
+
+namespace api.Product;
+
+@tag("Product")
+@route("api/{version}/products")
+@useAuth(BearerAuth)
+interface ProductController {
+  @post
+  @doc("Create product")
+  @returnsDoc("Product created successfully")
+  create(
+    ...VersionParams,
+    @body body: CreateInput
+  ): CreateOutput | CreateValidationException;
+
+  @get
+  @doc("List products")
+  @returnsDoc("Products retrieved successfully")
+  list(
+    ...VersionParams,
+    ...ListQueryInput
+  ): ListOutput;
 }
 ```
+
+**model.tsp** - Defines data models
+
+```typescript
+import "../../utils/model.tsp";
+
+using Utils.Model;
+
+namespace api.Product;
+
+model CreateInput {
+  name: string;
+  price: decimal;
+  description?: string;
+}
+
+model CreateOutput {
+  id: string;
+  name: string;
+  price: decimal;
+  description?: string;
+  createdAt: utcDateTime;
+}
+
+model ListOutput is PaginatedResponse<CreateOutput>;
+```
+
+**exception.tsp** - Defines error responses
+
+```typescript
+import "../../utils/exceptions.tsp";
+
+using Utils.Exceptions;
+
+namespace api.Product;
+
+model CreateValidationException is Exception<400, "Validation failed">;
+model NotFoundException is Exception<404, "Product not found">;
+```
+
+#### Step 2: Import in Main File
+
+Add your module to `docs/src/main.tsp`:
+
+```typescript
+import "./modules/product/controller.tsp";
+```
+
+#### Step 3: Compile and Test
+
+```bash
+cd docs
+yarn doc:compiler
+```
+
+Check the generated OpenAPI spec in `docs/tsp-output/@typespec/openapi3/openapi.api.1.0.yaml`
+
+### TypeSpec Best Practices
+
+#### Consistency
+- Follow the existing module structure
+- Use consistent naming conventions (PascalCase for models, camelCase for properties)
+- Leverage common models from `utils/model.tsp`
+- Reuse exception definitions from `utils/exceptions.tsp`
+
+#### Type Safety
+- Define explicit types for all properties
+- Use TypeSpec's built-in types (`string`, `int32`, `decimal`, `utcDateTime`)
+- Leverage models for request/response validation
+- Use unions for multiple possible responses
+
+#### Documentation
+- Add `@doc` decorator for endpoint descriptions
+- Use `@returnsDoc` for response descriptions
+- Include `@example` for complex models
+- Add `@summary` for concise endpoint summaries
+
+#### Versioning
+- All endpoints use the `{version}` path parameter
+- Leverage the `VersionParams` model from `utils/versioning.tsp`
+- Follow semantic versioning for API changes
+
+### TypeSpec vs Swagger Decorators
+
+Why TypeSpec instead of NestJS Swagger decorators?
+
+✅ **Type Safety**: TypeSpec provides compile-time type checking  
+✅ **Separation of Concerns**: API contracts separated from implementation  
+✅ **Better DX**: Superior IDE support with IntelliSense  
+✅ **Reusability**: Shared models and types across endpoints  
+✅ **Tooling**: Auto-generation of clients, mocks, and documentation  
+✅ **Standard**: OpenAPI 3.0 compliant output  
+✅ **Maintainability**: Single source of truth for API contracts  
+
+### Additional Resources
+
+- [TypeSpec Official Documentation](https://typespec.io/docs)
+- [TypeSpec Playground](https://typespec.io/playground)
+- [OpenAPI 3.0 Specification](https://swagger.io/specification/)
+- [TypeSpec REST Library](https://typespec.io/docs/libraries/rest)
+- [TypeSpec HTTP Library](https://typespec.io/docs/libraries/http)
+- [TypeSpec Versioning](https://typespec.io/docs/libraries/versioning)
 
 ---
 
@@ -876,12 +1126,12 @@ export class UserController {
 
 ### Distributed Tracing
 
-#### Zipkins UI
+#### Zipkin UI
 
-Access Zipkins for distributed tracing:
+Access Zipkin for distributed tracing:
 
 ```
-http://localhost:16686
+http://localhost:9411
 ```
 
 #### Tracing Features
@@ -969,13 +1219,43 @@ pm2 logs microservice-api
 docker-compose logs -f microservice-api
 ```
 
+#### Loki for Log Aggregation
+
+Logs are automatically shipped to Loki for centralized log aggregation:
+
+```
+http://localhost:3100
+```
+
+View logs in Grafana with Loki data source pre-configured.
+
 ### Metrics
 
 Metrics are exposed in Prometheus format:
 
 ```
-http://localhost:4000/metrics
+http://localhost:5000/metrics
 ```
+
+#### Prometheus UI
+
+Access Prometheus for metrics visualization:
+
+```
+http://localhost:9090
+```
+
+#### Grafana Dashboard
+
+Access Grafana for advanced monitoring dashboards:
+
+```
+http://localhost:3000
+```
+
+Default credentials:
+- Username: `admin`
+- Password: `grafana123`
 
 #### Available Metrics
 
@@ -1005,7 +1285,7 @@ http://localhost:4000/metrics
 #### Liveness Probe
 
 ```bash
-curl http://localhost:4000/health
+curl http://localhost:5000/health
 ```
 
 Response:

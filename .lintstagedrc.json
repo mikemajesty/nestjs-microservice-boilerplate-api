@@ -1,7 +1,9 @@
 {
-  "*.{js,ts,jsx}": [
-    "npm run lint --fix",
-    "npm run prettier",
-    "npm run test -- --verbose --findRelatedTests --passWithNoTests --forceExit"
+  "*.{ts,js}": [
+    "eslint --fix",
+    "prettier --write"
+  ],
+  "*.{ts,js}": [
+    "npm run test -- --findRelatedTests --passWithNoTests --bail"
   ]
 }
