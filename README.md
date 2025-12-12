@@ -158,9 +158,8 @@ The codebase is organized in concentric layers where dependencies point inward:
 - Input/Output DTOs with validation
 - Pagination, search, and soft delete support
 
-> 💡 **Pro tip**: Install the CLI globally for use across all your projects!
 > ```bash
-> npm install -g @mikemajesty/microservice-crud
+> npm run scaffold
 > ```
 
 ### 📊 Observability Stack
