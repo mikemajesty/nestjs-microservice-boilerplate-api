@@ -1,8 +1,8 @@
-import { Module } from '@nestjs/common';
-import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
+import { Module } from '@nestjs/common'
+import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter'
 
-import { IEventAdapter } from './adapter';
-import { EventService } from './service';
+import { IEventAdapter } from './adapter'
+import { EventService } from './service'
 
 @Module({
   imports: [EventEmitterModule.forRoot()],

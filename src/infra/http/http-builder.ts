@@ -1,6 +1,6 @@
-import { AxiosInstance, AxiosRequestConfig } from 'axios';
+import { AxiosInstance, AxiosRequestConfig } from 'axios'
 
-import { CustomAxiosError } from '@/utils/axios';
+import { CustomAxiosError } from '@/utils/axios'
 import {
   ApiBadRequestException,
   ApiConflictException,
@@ -11,20 +11,20 @@ import {
   ApiUnauthorizedException,
   ApiUnprocessableEntityException,
   BaseException
-} from '@/utils/exception';
+} from '@/utils/exception'
 
-import { IHttpBuilder } from './adapter';
-import { HttpData, HttpMethod, HttpResponse } from './types';
+import { IHttpBuilder } from './adapter'
+import { HttpData, HttpMethod, HttpResponse } from './types'
 
 export class HttpBuilder implements IHttpBuilder {
   private requestConfig: {
-    method: HttpMethod;
-    url: string;
-    data?: HttpData;
-    headers: Record<string, string>;
-    axiosConfig: AxiosRequestConfig;
-    retries: number;
-  };
+    method: HttpMethod
+    url: string
+    data?: HttpData
+    headers: Record<string, string>
+    axiosConfig: AxiosRequestConfig
+    retries: number
+  }
 
   constructor(private readonly axiosInstance: AxiosInstance) {
     this.requestConfig = {
@@ -33,51 +33,51 @@ export class HttpBuilder implements IHttpBuilder {
       headers: {},
       axiosConfig: {},
       retries: 0
-    };
+    }
   }
 
   method(method: HttpMethod): this {
-    this.requestConfig.method = method;
-    return this;
+    this.requestConfig.method = method
+    return this
   }
 
   url(url: string): this {
-    this.requestConfig.url = url;
-    return this;
+    this.requestConfig.url = url
+    return this
   }
 
   body<Request extends HttpData = HttpData>(data: Request): this {
-    this.requestConfig.data = data;
-    return this;
+    this.requestConfig.data = data
+    return this
   }
 
   headers(headers: Record<string, string>): this {
-    this.requestConfig.headers = { ...this.requestConfig.headers, ...headers };
-    return this;
+    this.requestConfig.headers = { ...this.requestConfig.headers, ...headers }
+    return this
   }
 
   header(key: string, value: string): this {
-    this.requestConfig.headers[`${key}`] = value;
-    return this;
+    this.requestConfig.headers[`${key}`] = value
+    return this
   }
 
   config(config: AxiosRequestConfig): this {
-    this.requestConfig.axiosConfig = { ...this.requestConfig.axiosConfig, ...config };
-    return this;
+    this.requestConfig.axiosConfig = { ...this.requestConfig.axiosConfig, ...config }
+    return this
   }
 
   timeout(ms: number): this {
-    this.requestConfig.axiosConfig.timeout = ms;
-    return this;
+    this.requestConfig.axiosConfig.timeout = ms
+    return this
   }
 
   retry(retries: number): this {
-    this.requestConfig.retries = retries;
-    return this;
+    this.requestConfig.retries = retries
+    return this
   }
 
   async execute<Response = unknown>(): Promise<Response> {
-    const startTime = Date.now();
+    const startTime = Date.now()
 
     try {
       const response = await this.axiosInstance({
@@ -86,17 +86,17 @@ export class HttpBuilder implements IHttpBuilder {
         data: this.requestConfig.data,
         headers: this.requestConfig.headers,
         ...this.requestConfig.axiosConfig
-      });
+      })
 
-      return response.data;
+      return response.data
     } catch (error) {
-      const duration = Date.now() - startTime;
-      throw this.convertToApiException(error, duration);
+      const duration = Date.now() - startTime
+      throw this.convertToApiException(error, duration)
     }
   }
 
   async safeExecute<Response = unknown>(): Promise<HttpResponse<Response>> {
-    const startTime = Date.now();
+    const startTime = Date.now()
 
     try {
       const response = await this.axiosInstance({
@@ -105,7 +105,7 @@ export class HttpBuilder implements IHttpBuilder {
         data: this.requestConfig.data,
         headers: this.requestConfig.headers,
         ...this.requestConfig.axiosConfig
-      });
+      })
 
       return {
         data: response.data,
@@ -114,10 +114,10 @@ export class HttpBuilder implements IHttpBuilder {
         status: response.status,
         success: true,
         duration: Date.now() - startTime
-      };
+      }
     } catch (error) {
-      const duration = Date.now() - startTime;
-      const apiError = this.convertToApiException(error, duration);
+      const duration = Date.now() - startTime
+      const apiError = this.convertToApiException(error, duration)
 
       return {
         data: null,
@@ -126,14 +126,14 @@ export class HttpBuilder implements IHttpBuilder {
         status: (error as CustomAxiosError)?.response?.status || 500,
         success: false,
         duration
-      };
+      }
     }
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private convertToApiException(error: any, duration: number): BaseException {
-    const status = (error as CustomAxiosError)?.response?.status || 500;
-    const message = (error as CustomAxiosError)?.response?.data?.message || error.message;
+    const status = (error as CustomAxiosError)?.response?.status || 500
+    const message = (error as CustomAxiosError)?.response?.data?.message || error.message
 
     const parameters = {
       context: 'HttpBuilder',
@@ -141,25 +141,25 @@ export class HttpBuilder implements IHttpBuilder {
       url: this.requestConfig.url,
       method: this.requestConfig.method,
       originalError: error
-    };
+    }
 
     switch (status) {
       case 400:
-        return new ApiBadRequestException(message, parameters);
+        return new ApiBadRequestException(message, parameters)
       case 401:
-        return new ApiUnauthorizedException(message, parameters);
+        return new ApiUnauthorizedException(message, parameters)
       case 403:
-        return new ApiForbiddenException(message, parameters);
+        return new ApiForbiddenException(message, parameters)
       case 404:
-        return new ApiNotFoundException(message, parameters);
+        return new ApiNotFoundException(message, parameters)
       case 408:
-        return new ApiTimeoutException(message, parameters);
+        return new ApiTimeoutException(message, parameters)
       case 409:
-        return new ApiConflictException(message, parameters);
+        return new ApiConflictException(message, parameters)
       case 422:
-        return new ApiUnprocessableEntityException(message, parameters);
+        return new ApiUnprocessableEntityException(message, parameters)
       default:
-        return new ApiInternalServerException(message, parameters);
+        return new ApiInternalServerException(message, parameters)
     }
   }
 }

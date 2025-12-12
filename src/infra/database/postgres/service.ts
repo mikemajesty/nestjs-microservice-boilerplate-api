@@ -1,8 +1,8 @@
-import { TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { TypeOrmModuleOptions } from '@nestjs/typeorm'
 
-import { name } from '../../../../package.json';
-import { IDataBaseAdapter } from '../adapter';
-import { ConnectionType } from '../types';
+import { name } from '../../../../package.json'
+import { IDataBaseAdapter } from '../adapter'
+import { ConnectionType } from '../types'
 
 export class PostgresService implements Partial<IDataBaseAdapter> {
   getConnection<TOpt = TypeOrmModuleOptions & { url: string }>({ URI }: ConnectionType): TOpt {
@@ -10,6 +10,6 @@ export class PostgresService implements Partial<IDataBaseAdapter> {
       type: 'postgres',
       url: URI,
       database: name
-    } as TOpt;
+    } as TOpt
   }
 }

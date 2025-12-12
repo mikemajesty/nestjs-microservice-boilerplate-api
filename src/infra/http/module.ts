@@ -1,9 +1,9 @@
-import { Module } from '@nestjs/common';
+import { Module } from '@nestjs/common'
 
-import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
+import { ILoggerAdapter, LoggerModule } from '@/infra/logger'
 
-import { IHttpAdapter } from './adapter';
-import { HttpService } from './service';
+import { IHttpAdapter } from './adapter'
+import { HttpService } from './service'
 
 @Module({
   imports: [LoggerModule],
@@ -11,7 +11,7 @@ import { HttpService } from './service';
     {
       provide: IHttpAdapter,
       useFactory: (logger: ILoggerAdapter) => {
-        return new HttpService(logger);
+        return new HttpService(logger)
       },
       inject: [ILoggerAdapter]
     }

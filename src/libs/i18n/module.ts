@@ -1,9 +1,9 @@
-import { Module } from '@nestjs/common';
-import { AcceptLanguageResolver, I18nModule, QueryResolver } from 'nestjs-i18n';
-import path from 'path';
+import { Module } from '@nestjs/common'
+import { AcceptLanguageResolver, I18nModule, QueryResolver } from 'nestjs-i18n'
+import path from 'path'
 
-import { II18nAdapter } from './adapter';
-import { I18nService } from './service';
+import { II18nAdapter } from './adapter'
+import { I18nService } from './service'
 
 @Module({
   imports: [

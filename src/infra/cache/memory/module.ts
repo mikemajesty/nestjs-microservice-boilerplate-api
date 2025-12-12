@@ -1,9 +1,9 @@
-import { Module } from '@nestjs/common';
+import { Module } from '@nestjs/common'
 
-import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
+import { ILoggerAdapter, LoggerModule } from '@/infra/logger'
 
-import { ICacheAdapter } from '../adapter';
-import { MemoryCacheService } from './service';
+import { ICacheAdapter } from '../adapter'
+import { MemoryCacheService } from './service'
 
 @Module({
   imports: [LoggerModule],
@@ -11,9 +11,9 @@ import { MemoryCacheService } from './service';
     {
       provide: ICacheAdapter,
       useFactory: async (logger: ILoggerAdapter) => {
-        const cacheService = new MemoryCacheService(logger);
-        cacheService.connect();
-        return cacheService;
+        const cacheService = new MemoryCacheService(logger)
+        cacheService.connect()
+        return cacheService
       },
       inject: [ILoggerAdapter]
     }

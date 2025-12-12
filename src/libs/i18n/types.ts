@@ -2,13 +2,13 @@ export type TranslateOptions = {
   args?:
     | (
         | {
-            [k: string]: unknown;
+            [k: string]: unknown
           }
         | string
       )[]
     | {
-        [k: string]: unknown;
-      };
-  defaultValue?: string;
-  debug?: boolean;
-};
+        [k: string]: unknown
+      }
+  defaultValue?: string
+  debug?: boolean
+}

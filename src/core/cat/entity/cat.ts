@@ -1,13 +1,13 @@
-import { BaseEntity } from '@/utils/entity';
-import { Infer, InputValidator } from '@/utils/validator';
+import { BaseEntity } from '@/utils/entity'
+import { Infer, InputValidator } from '@/utils/validator'
 
-const ID = InputValidator.uuid();
-const Name = InputValidator.string().trim().min(1).max(200);
-const Breed = InputValidator.string().trim().min(1).max(200);
-const Age = InputValidator.int().min(0).max(30);
-const CreatedAt = InputValidator.date().nullish();
-const UpdatedAt = InputValidator.date().nullish();
-const DeletedAt = InputValidator.date().nullish();
+const ID = InputValidator.uuid()
+const Name = InputValidator.string().trim().min(1).max(200)
+const Breed = InputValidator.string().trim().min(1).max(200)
+const Age = InputValidator.int().min(0).max(30)
+const CreatedAt = InputValidator.date().nullish()
+const UpdatedAt = InputValidator.date().nullish()
+const DeletedAt = InputValidator.date().nullish()
 
 export const CatEntitySchema = InputValidator.object({
   id: ID,
@@ -17,20 +17,20 @@ export const CatEntitySchema = InputValidator.object({
   createdAt: CreatedAt,
   updatedAt: UpdatedAt,
   deletedAt: DeletedAt
-});
+})
 
-type Cat = Infer<typeof CatEntitySchema>;
+type Cat = Infer<typeof CatEntitySchema>
 
 export class CatEntity extends BaseEntity<CatEntity>() {
-  name!: Cat['name'];
+  name!: Cat['name']
 
-  breed!: Cat['breed'];
+  breed!: Cat['breed']
 
-  age!: Cat['age'];
+  age!: Cat['age']
 
   constructor(entity: Cat) {
-    super(CatEntitySchema);
-    this.validate(entity);
-    this.ensureID();
+    super(CatEntitySchema)
+    this.validate(entity)
+    this.ensureID()
   }
 }

@@ -1,10 +1,10 @@
-import { Module } from '@nestjs/common';
-import nodemailer from 'nodemailer';
+import { Module } from '@nestjs/common'
+import nodemailer from 'nodemailer'
 
-import { ILoggerAdapter, LoggerModule } from '../logger';
-import { ISecretsAdapter, SecretsModule } from '../secrets';
-import { IEmailAdapter } from './adapter';
-import { EmailService } from './service';
+import { ILoggerAdapter, LoggerModule } from '../logger'
+import { ISecretsAdapter, SecretsModule } from '../secrets'
+import { IEmailAdapter } from './adapter'
+import { EmailService } from './service'
 
 @Module({
   imports: [SecretsModule, LoggerModule],
@@ -19,8 +19,8 @@ import { EmailService } from './service';
             user: secret.EMAIL.USER,
             pass: secret.EMAIL.PASS
           }
-        });
-        return new EmailService(secret, logger, transporter);
+        })
+        return new EmailService(secret, logger, transporter)
       },
       inject: [ISecretsAdapter, ILoggerAdapter]
     }

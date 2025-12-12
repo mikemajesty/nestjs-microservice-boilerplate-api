@@ -1,18 +1,18 @@
-import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import path from 'path';
-import { DataSource, DataSourceOptions } from 'typeorm';
-import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
+import { Module } from '@nestjs/common'
+import { TypeOrmModule } from '@nestjs/typeorm'
+import path from 'path'
+import { DataSource, DataSourceOptions } from 'typeorm'
+import { SnakeNamingStrategy } from 'typeorm-naming-strategies'
 
-import { ISecretsAdapter, SecretsModule } from '@/infra/secrets';
+import { ISecretsAdapter, SecretsModule } from '@/infra/secrets'
 
-import { name } from '../../../../package.json';
-import { PostgresService } from './service';
+import { name } from '../../../../package.json'
+import { PostgresService } from './service'
 @Module({
   imports: [
     TypeOrmModule.forRootAsync({
       useFactory: ({ POSTGRES: { POSTGRES_URL }, IS_LOCAL }: ISecretsAdapter) => {
-        const conn = new PostgresService().getConnection({ URI: POSTGRES_URL });
+        const conn = new PostgresService().getConnection({ URI: POSTGRES_URL })
         return {
           ...conn,
           timeout: 5000,
@@ -31,11 +31,11 @@ import { PostgresService } from './service';
             max: 90,
             min: 10
           }
-        };
+        }
       },
       async dataSourceFactory(options) {
-        const dataSource = new DataSource(options as DataSourceOptions);
-        return dataSource.initialize();
+        const dataSource = new DataSource(options as DataSourceOptions)
+        return dataSource.initialize()
       },
       imports: [SecretsModule],
       inject: [ISecretsAdapter]

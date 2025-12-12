@@ -1,17 +1,17 @@
-import { RoleEntity, RoleEntitySchema } from '@/core/role/entity/role';
-import { BaseEntity } from '@/utils/entity';
-import { Infer, InputValidator } from '@/utils/validator';
+import { RoleEntity, RoleEntitySchema } from '@/core/role/entity/role'
+import { BaseEntity } from '@/utils/entity'
+import { Infer, InputValidator } from '@/utils/validator'
 
-import { UserPasswordEntity, UserPasswordEntitySchema } from './user-password';
+import { UserPasswordEntity, UserPasswordEntitySchema } from './user-password'
 
-const ID = InputValidator.uuid();
-const Email = InputValidator.email();
-const Name = InputValidator.string();
-const Password = UserPasswordEntitySchema;
-const Role = RoleEntitySchema;
-const CreatedAt = InputValidator.date().nullish();
-const UpdatedAt = InputValidator.date().nullish();
-const DeletedAt = InputValidator.date().nullish();
+const ID = InputValidator.uuid()
+const Email = InputValidator.email()
+const Name = InputValidator.string()
+const Password = UserPasswordEntitySchema
+const Role = RoleEntitySchema
+const CreatedAt = InputValidator.date().nullish()
+const UpdatedAt = InputValidator.date().nullish()
+const DeletedAt = InputValidator.date().nullish()
 
 export const UserEntitySchema = InputValidator.object({
   id: ID,
@@ -22,22 +22,22 @@ export const UserEntitySchema = InputValidator.object({
   createdAt: CreatedAt,
   updatedAt: UpdatedAt,
   deletedAt: DeletedAt
-});
+})
 
-type User = Infer<typeof UserEntitySchema>;
+type User = Infer<typeof UserEntitySchema>
 
 export class UserEntity extends BaseEntity<UserEntity>() {
-  name!: User['name'];
+  name!: User['name']
 
-  email!: User['email'];
+  email!: User['email']
 
-  roles!: RoleEntity[];
+  roles!: RoleEntity[]
 
-  password!: UserPasswordEntity;
+  password!: UserPasswordEntity
 
   constructor(entity: User) {
-    super(UserEntitySchema);
-    this.validate(entity);
-    this.ensureID();
+    super(UserEntitySchema)
+    this.validate(entity)
+    this.ensureID()
   }
 }

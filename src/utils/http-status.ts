@@ -16,4 +16,4 @@ export const DefaultErrorMessage: { [key: string]: string } = {
   504: 'Gateway Timeout',
   507: 'Insufficient Storage',
   508: 'Loop Detected'
-};
+}

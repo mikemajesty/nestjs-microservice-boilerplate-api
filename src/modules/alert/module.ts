@@ -1,8 +1,8 @@
-import { Module } from '@nestjs/common';
+import { Module } from '@nestjs/common'
 
-import { LoggerModule } from '@/infra/logger';
+import { LoggerModule } from '@/infra/logger'
 
-import { AlertController } from './controller';
+import { AlertController } from './controller'
 
 @Module({
   imports: [LoggerModule],

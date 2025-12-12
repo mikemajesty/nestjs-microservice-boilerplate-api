@@ -1,12 +1,12 @@
-import { BaseException } from '@/utils/exception';
+import { BaseException } from '@/utils/exception'
 
 export type MessageInputType = {
-  message: string;
-  context?: string;
-  obj?: object;
-};
+  message: string
+  context?: string
+  obj?: object
+}
 
-export type ErrorType = Error & BaseException;
+export type ErrorType = Error & BaseException
 
 export enum LogLevelEnum {
   fatal = 'fatal',

@@ -1,28 +1,28 @@
-import { ObjectId } from 'mongoose';
+import { ObjectId } from 'mongoose'
 
 export type UpdatedModel = {
-  matchedCount: number;
-  modifiedCount: number;
-  acknowledged: boolean;
-  upsertedId: unknown | ObjectId;
-  upsertedCount: number;
-};
+  matchedCount: number
+  modifiedCount: number
+  acknowledged: boolean
+  upsertedId: unknown | ObjectId
+  upsertedCount: number
+}
 
 export type RemovedModel = {
-  deletedCount: number;
-  deleted: boolean;
-};
+  deletedCount: number
+  deleted: boolean
+}
 
 export type CreatedModel = {
-  id: string;
-  created: boolean;
-};
+  id: string
+  created: boolean
+}
 
 export type CreatedOrUpdateModel = {
-  id: string;
-  created: boolean;
-  updated: boolean;
-};
+  id: string
+  created: boolean
+  updated: boolean
+}
 
 export enum DatabaseOperationEnum {
   EQUAL = 'equal',
@@ -32,10 +32,10 @@ export enum DatabaseOperationEnum {
 }
 
 export type DatabaseOperationCommand<T> = {
-  property: keyof T;
-  value: unknown[];
-  command: DatabaseOperationEnum;
-};
+  property: keyof T
+  value: unknown[]
+  command: DatabaseOperationEnum
+}
 
 export type JoinType<T> = {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
@@ -51,5 +51,5 @@ export type JoinType<T> = {
         ? boolean | (keyof U)[]
         : T[K] extends object
           ? boolean | (keyof T[K])[]
-          : never;
-};
+          : never
+}

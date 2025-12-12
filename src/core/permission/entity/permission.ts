@@ -1,17 +1,17 @@
-import { RoleEntity } from '@/core/role/entity/role';
-import { BaseEntity } from '@/utils/entity';
-import { Infer, InputValidator } from '@/utils/validator';
+import { RoleEntity } from '@/core/role/entity/role'
+import { BaseEntity } from '@/utils/entity'
+import { Infer, InputValidator } from '@/utils/validator'
 
-const ID = InputValidator.uuid();
+const ID = InputValidator.uuid()
 const Name = InputValidator.string()
   .transform((value) => value.trim().replace(/ /g, '_').toLowerCase())
   .refine((val) => val.includes(':'), {
     message: "permission must contains ':'"
-  });
-const CreatedAt = InputValidator.date().nullish().optional();
-const UpdatedAt = InputValidator.date().nullish().optional();
-const DeletedAt = InputValidator.date().nullish().optional();
-const Roles = InputValidator.array(InputValidator.unknown()).optional();
+  })
+const CreatedAt = InputValidator.date().nullish().optional()
+const UpdatedAt = InputValidator.date().nullish().optional()
+const DeletedAt = InputValidator.date().nullish().optional()
+const Roles = InputValidator.array(InputValidator.unknown()).optional()
 
 export const PermissionEntitySchema = InputValidator.object({
   id: ID,
@@ -20,18 +20,18 @@ export const PermissionEntitySchema = InputValidator.object({
   createdAt: CreatedAt,
   updatedAt: UpdatedAt,
   deletedAt: DeletedAt
-});
+})
 
-type Permission = Infer<typeof PermissionEntitySchema>;
+type Permission = Infer<typeof PermissionEntitySchema>
 
 export class PermissionEntity extends BaseEntity<PermissionEntity>() {
-  name!: Permission['name'];
+  name!: Permission['name']
 
-  roles?: RoleEntity[];
+  roles?: RoleEntity[]
 
   constructor(entity: Permission) {
-    super(PermissionEntitySchema);
-    this.validate(entity);
-    this.ensureID();
+    super(PermissionEntitySchema)
+    this.validate(entity)
+    this.ensureID()
   }
 }

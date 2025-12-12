@@ -1,29 +1,29 @@
-import { SearchInput } from './search';
-import { SortInput } from './sort';
-import { Infer, InputValidator } from './validator';
+import { SearchInput } from './search'
+import { SortInput } from './sort'
+import { Infer, InputValidator } from './validator'
 
-const maxLimit = (limit: number) => (limit > 100 ? 100 : limit);
+const maxLimit = (limit: number) => (limit > 100 ? 100 : limit)
 
 export const PaginationSchema = InputValidator.object({
   page: InputValidator.union([InputValidator.number(), InputValidator.string(), InputValidator.nan()]).default(1),
   limit: InputValidator.union([InputValidator.number(), InputValidator.string(), InputValidator.nan()]).default(10)
 })
   .transform((pagination) => {
-    let limit = Number(pagination.limit);
-    let page = Number(pagination.page);
+    let limit = Number(pagination.limit)
+    let page = Number(pagination.page)
 
     if (isNaN(limit)) {
-      limit = 10;
+      limit = 10
     }
 
     if (isNaN(page)) {
-      page = 1;
+      page = 1
     }
 
     return {
       page: page > 0 ? page : 1,
       limit: limit > 0 ? maxLimit(limit) : 10
-    };
+    }
   })
   .refine((pagination) => Number.isInteger(pagination.page), {
     path: ['page'],
@@ -32,17 +32,17 @@ export const PaginationSchema = InputValidator.object({
   .refine((pagination) => Number.isInteger(pagination.limit), {
     path: ['limit'],
     message: 'invalidInteger'
-  });
+  })
 
 export class PaginationUtils {
   static calculateSkip = (input: Infer<typeof PaginationSchema>) => {
-    return (input.page - 1) * input.limit;
-  };
+    return (input.page - 1) * input.limit
+  }
 
   static calculateTotalPages = ({ limit, total }: { limit: number; total: number }) => {
-    return Number(Math.ceil(total / limit));
-  };
+    return Number(Math.ceil(total / limit))
+  }
 }
 
-export type PaginationInput<T> = Infer<typeof PaginationSchema> & SortInput & SearchInput<Partial<T>>;
-export type PaginationOutput<T> = Infer<typeof PaginationSchema> & { total: number; docs: T[]; totalPages?: number };
+export type PaginationInput<T> = Infer<typeof PaginationSchema> & SortInput & SearchInput<Partial<T>>
+export type PaginationOutput<T> = Infer<typeof PaginationSchema> & { total: number; docs: T[]; totalPages?: number }

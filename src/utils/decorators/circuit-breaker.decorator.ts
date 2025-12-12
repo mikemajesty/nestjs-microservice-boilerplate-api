@@ -1,13 +1,13 @@
-import OpossumCircuitBreaker, { Options } from 'opossum';
+import OpossumCircuitBreaker, { Options } from 'opossum'
 
-const events = new Map<string, Map<string, Map<string, string>>>();
-const breakerInstances = new Map<string, OpossumCircuitBreaker>();
+const events = new Map<string, Map<string, Map<string, string>>>()
+const breakerInstances = new Map<string, OpossumCircuitBreaker>()
 
-const ERROR_THRESHOLD_PERCENTAGE = 20; // O circuito abre quando 20% das requisições falham
-const VOLUME_THRESHOLD = 5; // Exige pelo menos 5 requisições para abrir o circuito
-const ROLLING_COUNT_TIMEOUT = 5000; // Contagem das falhas durante 5 segundos
-const RESET_TIMEOUT = 2500; // Tempo de reset do circuito (2.5 segundos)
-const ALLOW_WARM_UP = true; // Permite falhas sem abrir o circuito durante o aquecimento
+const ERROR_THRESHOLD_PERCENTAGE = 20 // O circuito abre quando 20% das requisições falham
+const VOLUME_THRESHOLD = 5 // Exige pelo menos 5 requisições para abrir o circuito
+const ROLLING_COUNT_TIMEOUT = 5000 // Contagem das falhas durante 5 segundos
+const RESET_TIMEOUT = 2500 // Tempo de reset do circuito (2.5 segundos)
+const ALLOW_WARM_UP = true // Permite falhas sem abrir o circuito durante o aquecimento
 /**
  * Main Circuit Breaker decorator. It initializes a circuit breaker for each method it decorates and handles its events.
  */
@@ -21,46 +21,46 @@ export function CircuitBreaker(params: CircuitBreakerInput = { options: {}, circ
       resetTimeout: params?.options?.resetTimeout ?? RESET_TIMEOUT,
       allowWarmUp: params?.options?.allowWarmUp ?? ALLOW_WARM_UP,
       group: params?.circuitGroup ?? 'default'
-    };
+    }
 
-    const originalMethod = descriptor.value;
+    const originalMethod = descriptor.value
 
     descriptor.value = async function (...args: unknown[]) {
-      const className = target.constructor.name;
-      const instanceKey = `${className}:${opt.group}`;
+      const className = target.constructor.name
+      const instanceKey = `${className}:${opt.group}`
 
       if (!breakerInstances.has(instanceKey)) {
-        const breaker = new OpossumCircuitBreaker(originalMethod.bind(this), opt);
-        breakerInstances.set(instanceKey, breaker);
+        const breaker = new OpossumCircuitBreaker(originalMethod.bind(this), opt)
+        breakerInstances.set(instanceKey, breaker)
 
-        const classEvents = events.get(className) || new Map();
-        const circuitEvents = classEvents.get(opt.group) || new Map();
+        const classEvents = events.get(className) || new Map()
+        const circuitEvents = classEvents.get(opt.group) || new Map()
 
         for (const [eventName, methodName] of circuitEvents) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           if (eventName !== 'fallback' && typeof (this as any)[`${methodName}`] === 'function') {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            breaker.on(eventName as any, (this as any)[`${methodName}`].bind(this));
+            breaker.on(eventName as any, (this as any)[`${methodName}`].bind(this))
           }
         }
 
-        const fallbackMethod = circuitEvents.get('fallback');
+        const fallbackMethod = circuitEvents.get('fallback')
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (fallbackMethod && typeof (this as any)[`${fallbackMethod}`] === 'function') {
           breaker.fallback(async (args: unknown, error: Error) => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            return await (this as any)[`${fallbackMethod}`]({ input: args, err: error });
-          });
+            return await (this as any)[`${fallbackMethod}`]({ input: args, err: error })
+          })
         }
       }
 
       try {
-        return await breakerInstances.get(instanceKey)!.fire(...args);
+        return await breakerInstances.get(instanceKey)!.fire(...args)
       } catch (error) {
-        throw error;
+        throw error
       }
-    };
-  };
+    }
+  }
 }
 
 /**
@@ -69,20 +69,20 @@ export function CircuitBreaker(params: CircuitBreakerInput = { options: {}, circ
  */
 export function onEvent({ eventName, circuitGroup = 'default' }: OnEventInput) {
   return function (target: object, propertyKey: string | symbol): void {
-    const className = target.constructor.name;
+    const className = target.constructor.name
 
     if (!events.has(className)) {
-      events.set(className, new Map());
+      events.set(className, new Map())
     }
 
-    const classEvents = events.get(className)!;
+    const classEvents = events.get(className)!
     if (!classEvents.has(circuitGroup)) {
-      classEvents.set(circuitGroup, new Map());
+      classEvents.set(circuitGroup, new Map())
     }
 
-    const circuitEvents = classEvents.get(circuitGroup)!;
-    circuitEvents.set(eventName, propertyKey.toString());
-  };
+    const circuitEvents = classEvents.get(circuitGroup)!
+    circuitEvents.set(eventName, propertyKey.toString())
+  }
 }
 
 /**
@@ -92,14 +92,14 @@ export type CircuitBreakerInput = {
   /**
    * Optional configuration options for the Circuit Breaker.
    */
-  options?: Options;
+  options?: Options
 
   /**
    * An optional identifier for grouping multiple Circuit Breakers.
    * This allows differentiation between different Circuit Breakers within the same class.
    */
-  circuitGroup?: string;
-};
+  circuitGroup?: string
+}
 
 /**
  * Input data for an event triggered by the Circuit Breaker.
@@ -108,14 +108,14 @@ export type OnEventInput = {
   /**
    * The name of the event being triggered.
    */
-  eventName: EventType;
+  eventName: EventType
 
   /**
    * An optional identifier for grouping multiple Circuit Breakers.
    * This ensures that the event is associated with the correct Circuit Breaker instance.
    */
-  circuitGroup?: string;
-};
+  circuitGroup?: string
+}
 
 /**
  * Input data for the `onHalfOpen` event.
@@ -125,8 +125,8 @@ export type OnHalfOpenInput = {
   /**
    * The time (in milliseconds) to wait before attempting to re-close the circuit breaker.
    */
-  resetTimeout: number;
-};
+  resetTimeout: number
+}
 
 /**
  * Input data for the `onFire` event.
@@ -136,8 +136,8 @@ export type OnFireInput = {
   /**
    * The arguments passed to the original method when the request is fired.
    */
-  args: unknown[];
-};
+  args: unknown[]
+}
 
 /**
  * Input data for the `onSuccess` event.
@@ -148,13 +148,13 @@ export type OnSuccessInput<T = any> = {
   /**
    * The input data that was passed to the original method.
    */
-  input: T;
+  input: T
 
   /**
    * The time (in milliseconds) it took for the request to execute.
    */
-  latencyMs: number;
-};
+  latencyMs: number
+}
 
 /**
  * Input data for the `onFallback` event.
@@ -165,13 +165,13 @@ export type OnFallbackInput<T = any> = {
   /**
    * The input data that was passed to the original method.
    */
-  input: T;
+  input: T
 
   /**
    * The error that caused the fallback to trigger.
    */
-  err: Error;
-};
+  err: Error
+}
 
 /**
  * Input data for the `onFailure` event.
@@ -181,18 +181,18 @@ export type OnFailureInput = {
   /**
    * The error that caused the failure of the request.
    */
-  err: Error;
+  err: Error
 
   /**
    * The time (in milliseconds) it took before the request failed.
    */
-  latencyMs: number;
+  latencyMs: number
 
   /**
    * The arguments passed to the original method when the request failed.
    */
-  args: unknown[];
-};
+  args: unknown[]
+}
 
 /**
  * Supported events for the Circuit Breaker (Opossum).
@@ -256,4 +256,4 @@ type EventType =
    * - `params`: an object containing the original `args` and `latencyMs` (in ms), representing the time it took for the request to fail.
    * - `err`: the error that caused the failure.
    */
-  | 'failure';
+  | 'failure'

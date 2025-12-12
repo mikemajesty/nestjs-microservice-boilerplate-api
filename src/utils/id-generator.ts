@@ -1,7 +1,7 @@
-import { randomBytes, UUID } from 'crypto';
-import { v1 as uuidV1, v3 as uuidV3, v4 as uuidV4, v5 as uuidV5, validate } from 'uuid';
+import { randomBytes, UUID } from 'crypto'
+import { v1 as uuidV1, v3 as uuidV3, v4 as uuidV4, v5 as uuidV5, validate } from 'uuid'
 
-import { ApiUnauthorizedException } from './exception';
+import { ApiUnauthorizedException } from './exception'
 
 /**
  * ID Generator Utility Class
@@ -42,37 +42,37 @@ export class IDGeneratorUtils {
    * ```
    */
   static uuid(options: UUIDOptions = {}): string {
-    const { prefix = '', suffix = '', version = 4, namespace } = options;
+    const { prefix = '', suffix = '', version = 4, namespace } = options
 
     if (version === 4) {
-      return `${prefix}${uuidV4()}${suffix}`;
+      return `${prefix}${uuidV4()}${suffix}`
     }
 
     if (version === 1) {
-      return `${prefix}${uuidV1()}${suffix}`;
+      return `${prefix}${uuidV1()}${suffix}`
     }
 
     if (version === 3) {
       if (!namespace) {
-        throw new ApiUnauthorizedException('Namespace is required for UUID version 3');
+        throw new ApiUnauthorizedException('Namespace is required for UUID version 3')
       }
       if (!validate(namespace)) {
-        throw new ApiUnauthorizedException('Invalid namespace UUID for UUID version 3');
+        throw new ApiUnauthorizedException('Invalid namespace UUID for UUID version 3')
       }
-      return `${prefix}${uuidV3(uuidV4(), namespace)}${suffix}`;
+      return `${prefix}${uuidV3(uuidV4(), namespace)}${suffix}`
     }
 
     if (version === 5) {
       if (!namespace) {
-        throw new ApiUnauthorizedException('Namespace is required for UUID version 5');
+        throw new ApiUnauthorizedException('Namespace is required for UUID version 5')
       }
       if (!validate(namespace)) {
-        throw new ApiUnauthorizedException('Invalid namespace UUID for UUID version 5');
+        throw new ApiUnauthorizedException('Invalid namespace UUID for UUID version 5')
       }
-      return `${prefix}${uuidV5(uuidV4(), namespace)}${suffix}`;
+      return `${prefix}${uuidV5(uuidV4(), namespace)}${suffix}`
     }
 
-    throw new ApiUnauthorizedException(`unsupported UUID version: ${version}`);
+    throw new ApiUnauthorizedException(`unsupported UUID version: ${version}`)
   }
 
   /**
@@ -112,21 +112,21 @@ export class IDGeneratorUtils {
    * ```
    */
   static ulid(options: ULIDOptions = {}): string {
-    const { prefix = '', suffix = '', timestamp = Date.now(), lowercase = false } = options;
+    const { prefix = '', suffix = '', timestamp = Date.now(), lowercase = false } = options
 
     // Encode timestamp (10 chars)
-    const timePart = timestamp.toString(32).padStart(10, '0');
+    const timePart = timestamp.toString(32).padStart(10, '0')
 
     // Generate random part (16 chars)
-    const randomBytes = Array.from({ length: 16 }, () => Math.floor(Math.random() * 32).toString(32)).join('');
+    const randomBytes = Array.from({ length: 16 }, () => Math.floor(Math.random() * 32).toString(32)).join('')
 
-    let id = (timePart + randomBytes).toUpperCase();
+    let id = (timePart + randomBytes).toUpperCase()
 
     if (lowercase) {
-      id = id.toLowerCase();
+      id = id.toLowerCase()
     }
 
-    return `${prefix}${id}${suffix}`;
+    return `${prefix}${id}${suffix}`
   }
 
   /**
@@ -174,22 +174,22 @@ export class IDGeneratorUtils {
       suffix = '',
       length = 21,
       alphabet = 'useandom-26T198340PX75pxJACKVERYMINDBUSHWOLF_GQZbfghjklqvwyzrict'
-    } = options;
+    } = options
 
-    const bytes = randomBytes(length);
+    const bytes = randomBytes(length)
 
     const output: { id: string; prefix: string; suffix: string } = {
       id: '',
       prefix,
       suffix
-    };
-
-    for (let i = 0; i < length; i++) {
-      const byte = bytes[`${i}`] % alphabet.length;
-      output.id += alphabet[`${byte}`];
     }
 
-    return `${output.prefix}${output.id}${output.suffix}`;
+    for (let i = 0; i < length; i++) {
+      const byte = bytes[`${i}`] % alphabet.length
+      output.id += alphabet[`${byte}`]
+    }
+
+    return `${output.prefix}${output.id}${output.suffix}`
   }
 
   /**
@@ -240,16 +240,16 @@ export class IDGeneratorUtils {
       machineId = randomBytes(3),
       processId = process.pid % 0xffff,
       counter = Math.floor(Math.random() * 0xffffff)
-    } = options;
+    } = options
 
     // Convert to hex strings
-    const timestampHex = timestamp.toString(16).padStart(8, '0');
-    const machineHex = machineId.toString('hex');
-    const processHex = processId.toString(16).padStart(4, '0');
-    const counterHex = counter.toString(16).padStart(6, '0');
+    const timestampHex = timestamp.toString(16).padStart(8, '0')
+    const machineHex = machineId.toString('hex')
+    const processHex = processId.toString(16).padStart(4, '0')
+    const counterHex = counter.toString(16).padStart(6, '0')
 
-    const id = timestampHex + machineHex + processHex + counterHex;
-    return `${prefix}${id}${suffix}`;
+    const id = timestampHex + machineHex + processHex + counterHex
+    return `${prefix}${id}${suffix}`
   }
   /**
    * Map of ID generation methods
@@ -260,7 +260,7 @@ export class IDGeneratorUtils {
     ulid: (options?: ULIDOptions) => IDGeneratorUtils.ulid(options),
     nanoid: (options?: NanoIdOptions) => IDGeneratorUtils.nanoid(options),
     objectid: (options?: ObjectIdOptions) => IDGeneratorUtils.objectid(options)
-  };
+  }
 
   /**
    * Generates an ID based on type
@@ -278,7 +278,7 @@ export class IDGeneratorUtils {
             ? ObjectIdOptions
             : never
   ): string {
-    return this.generators[`${type}`](options);
+    return this.generators[`${type}`](options)
   }
 }
 
@@ -289,12 +289,12 @@ export type IDGeneratorType =
   | 'uuid' // Universally Unique Identifier (RFC 4122)
   | 'ulid' // Universally Unique Lexicographically Sortable ID
   | 'nanoid' // Small, secure, URL-friendly unique ID
-  | 'objectid'; // MongoDB ObjectId format
+  | 'objectid' // MongoDB ObjectId format
 
 /**
  * Union type for all ID generation options
  */
-export type IDGeneratorTypes = UUIDOptions | ULIDOptions | NanoIdOptions | ObjectIdOptions;
+export type IDGeneratorTypes = UUIDOptions | ULIDOptions | NanoIdOptions | ObjectIdOptions
 
 /**
  * Base configuration options for ID generation
@@ -304,14 +304,14 @@ type IDGeneratorBaseType = {
    * Optional prefix to prepend to the generated ID
    * @example 'user_', 'order_', 'doc_'
    */
-  prefix?: string;
+  prefix?: string
 
   /**
    * Optional suffix to append to the generated ID
    * @example '_id', '_key', '_ref'
    */
-  suffix?: string;
-};
+  suffix?: string
+}
 
 /**
  * UUID-specific generation options
@@ -322,14 +322,14 @@ type UUIDOptions = IDGeneratorBaseType & {
    * - v4: Random (most common, cryptographically secure)
    * @default 4
    */
-  version?: 1 | 3 | 4 | 5;
+  version?: 1 | 3 | 4 | 5
 
   /**
    * Namespace for UUID v3 and v5
    * Note: Not implemented in this simplified version
    */
-  namespace?: UUID; // Required for v3 and v5, but not implemented here
-};
+  namespace?: UUID // Required for v3 and v5, but not implemented here
+}
 
 /**
  * ULID-specific generation options
@@ -340,15 +340,15 @@ type ULIDOptions = IDGeneratorBaseType & {
    * Useful for generating consistent IDs in tests
    * @default Date.now()
    */
-  timestamp?: number;
+  timestamp?: number
 
   /**
    * Whether to make the ID lowercase
    * ULID specification recommends uppercase, but lowercase is sometimes preferred
    * @default false (uppercase)
    */
-  lowercase?: boolean;
-};
+  lowercase?: boolean
+}
 
 /**
  * NanoID-specific generation options
@@ -359,15 +359,15 @@ type NanoIdOptions = IDGeneratorBaseType & {
    * Recommended: 21 characters for low collision probability (1% collision after 1 billion IDs)
    * @default 21
    */
-  length?: number;
+  length?: number
 
   /**
    * Custom alphabet for ID generation
    * Default includes uppercase, lowercase, numbers, and URL-safe symbols
    * @default 'useandom-26T198340PX75pxJACKVERYMINDBUSHWOLF_GQZbfghjklqvwyzrict'
    */
-  alphabet?: string;
-};
+  alphabet?: string
+}
 
 /**
  * MongoDB ObjectId-specific generation options
@@ -377,23 +377,23 @@ type ObjectIdOptions = IDGeneratorBaseType & {
    * Custom timestamp (seconds since Unix epoch)
    * @default Math.floor(Date.now() / 1000)
    */
-  timestamp?: number;
+  timestamp?: number
 
   /**
    * Machine identifier (3 bytes)
    * Helps ensure uniqueness across different machines
    */
-  machineId?: Buffer;
+  machineId?: Buffer
 
   /**
    * Process identifier (2 bytes)
    * Helps ensure uniqueness across different processes on the same machine
    */
-  processId?: number;
+  processId?: number
 
   /**
    * Counter starting value (3 bytes)
    * Increments with each ID generated in the same process and second
    */
-  counter?: number;
-};
+  counter?: number
+}

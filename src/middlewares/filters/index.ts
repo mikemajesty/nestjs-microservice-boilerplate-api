@@ -1,1 +1,1 @@
-export * from './exception-handler.filter';
+export * from './exception-handler.filter'

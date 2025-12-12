@@ -1,13 +1,13 @@
-import { Infer, InputValidator } from './validator';
+import { Infer, InputValidator } from './validator'
 
-export type SearchInput<T> = { search: T | null };
+export type SearchInput<T> = { search: T | null }
 
 export const SearchHttpSchema = InputValidator.string()
   .optional()
   .refine(
     (check) => {
-      if (!check) return true;
-      return [!check.startsWith(':'), check.includes(':')].every(Boolean);
+      if (!check) return true
+      return [!check.startsWith(':'), check.includes(':')].every(Boolean)
     },
     {
       message: 'invalidSearchFormat'
@@ -15,39 +15,39 @@ export const SearchHttpSchema = InputValidator.string()
   )
   .refine(
     (search) => {
-      if (!search) return true;
+      if (!search) return true
 
       return String(search)
         .split(',')
         .every((s) => {
-          const [value] = s.split(':').reverse();
+          const [value] = s.split(':').reverse()
 
-          if (!value) return false;
-          return true;
-        });
+          if (!value) return false
+          return true
+        })
     },
     {
       message: 'searchMustBe: value'
     }
   )
   .transform((searchString) => {
-    if (!searchString) return null;
-    const search: { [key: string]: unknown } = {};
+    if (!searchString) return null
+    const search: { [key: string]: unknown } = {}
 
     searchString.split(',').forEach((s) => {
-      const [field, value] = s.split(':');
-      const finalValue = value.split('|').map((v) => v.trim());
+      const [field, value] = s.split(':')
+      const finalValue = value.split('|').map((v) => v.trim())
       if (finalValue.length > 1) {
-        search[`${field}`] = value.split('|').map((v) => v.trim());
-        return;
+        search[`${field}`] = value.split('|').map((v) => v.trim())
+        return
       }
-      search[`${field}`] = value.trim();
-    });
+      search[`${field}`] = value.trim()
+    })
 
-    return search;
-  });
+    return search
+  })
 
-export type SearchHttpSchemaInput = Infer<typeof SearchHttpSchema>;
+export type SearchHttpSchemaInput = Infer<typeof SearchHttpSchema>
 
 export const SearchSchema = InputValidator.object({
   search: InputValidator.record(
@@ -56,4 +56,4 @@ export const SearchSchema = InputValidator.object({
   )
     .nullable()
     .default({})
-});
+})

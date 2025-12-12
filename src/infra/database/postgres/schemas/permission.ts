@@ -8,28 +8,28 @@ import {
   ManyToMany,
   Relation,
   UpdateDateColumn
-} from 'typeorm';
+} from 'typeorm'
 
-import { RoleSchema } from './role';
+import { RoleSchema } from './role'
 
 @Entity({ name: 'permissions' })
 export class PermissionSchema extends BaseEntity {
   @Column({ type: 'uuid', primary: true })
-  id!: string;
+  id!: string
 
   @Column('text', { unique: true })
-  name!: string;
+  name!: string
 
   @ManyToMany(() => RoleSchema)
   @JoinTable({ name: 'permissions_roles' })
-  roles!: Relation<RoleSchema[]>;
+  roles!: Relation<RoleSchema[]>
 
   @CreateDateColumn()
-  createdAt!: Date;
+  createdAt!: Date
 
   @UpdateDateColumn()
-  updatedAt!: Date;
+  updatedAt!: Date
 
   @DeleteDateColumn({ nullable: true })
-  deletedAt!: Date;
+  deletedAt!: Date
 }

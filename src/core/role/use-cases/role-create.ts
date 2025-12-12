@@ -1,16 +1,16 @@
-import { ILoggerAdapter } from '@/infra/logger';
-import { CreatedModel } from '@/infra/repository';
-import { ValidateSchema } from '@/utils/decorators';
-import { IDGeneratorUtils } from '@/utils/id-generator';
-import { IUsecase } from '@/utils/usecase';
-import { Infer } from '@/utils/validator';
+import { ILoggerAdapter } from '@/infra/logger'
+import { CreatedModel } from '@/infra/repository'
+import { ValidateSchema } from '@/utils/decorators'
+import { IDGeneratorUtils } from '@/utils/id-generator'
+import { IUsecase } from '@/utils/usecase'
+import { Infer } from '@/utils/validator'
 
-import { IRoleRepository } from '../repository/role';
-import { RoleEntity, RoleEntitySchema } from './../entity/role';
+import { IRoleRepository } from '../repository/role'
+import { RoleEntity, RoleEntitySchema } from './../entity/role'
 
 export const RoleCreateSchema = RoleEntitySchema.pick({
   name: true
-}).strict();
+}).strict()
 
 export class RoleCreateUsecase implements IUsecase {
   constructor(
@@ -20,15 +20,15 @@ export class RoleCreateUsecase implements IUsecase {
 
   @ValidateSchema(RoleCreateSchema)
   async execute(input: RoleCreateInput): Promise<RoleCreateOutput> {
-    const entity = new RoleEntity({ id: IDGeneratorUtils.uuid(), ...input });
+    const entity = new RoleEntity({ id: IDGeneratorUtils.uuid(), ...input })
 
-    const role = await this.roleRepository.create(entity.toObject());
+    const role = await this.roleRepository.create(entity.toObject())
 
-    this.loggerService.info({ message: 'role created.', obj: { role } });
+    this.loggerService.info({ message: 'role created.', obj: { role } })
 
-    return role;
+    return role
   }
 }
 
-export type RoleCreateInput = Infer<typeof RoleCreateSchema>;
-export type RoleCreateOutput = CreatedModel;
+export type RoleCreateInput = Infer<typeof RoleCreateSchema>
+export type RoleCreateOutput = CreatedModel

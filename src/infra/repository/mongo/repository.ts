@@ -1,4 +1,4 @@
-import { HttpStatus } from '@nestjs/common';
+import { HttpStatus } from '@nestjs/common'
 import {
   Document,
   InsertManyOptions,
@@ -7,14 +7,14 @@ import {
   SaveOptions,
   UpdateQuery,
   UpdateWithAggregationPipeline
-} from 'mongoose';
+} from 'mongoose'
 
-import { ConvertMongoFilterToBaseRepository } from '@/utils/decorators';
-import { IEntity } from '@/utils/entity';
-import { ApiBadRequestException, BaseException, MessageType, ParametersType } from '@/utils/exception';
-import { FilterQuery } from '@/utils/mongoose';
+import { ConvertMongoFilterToBaseRepository } from '@/utils/decorators'
+import { IEntity } from '@/utils/entity'
+import { ApiBadRequestException, BaseException, MessageType, ParametersType } from '@/utils/exception'
+import { FilterQuery } from '@/utils/mongoose'
 
-import { IRepository } from '../adapter';
+import { IRepository } from '../adapter'
 import {
   CreatedModel,
   CreatedOrUpdateModel,
@@ -22,28 +22,28 @@ import {
   JoinType,
   RemovedModel,
   UpdatedModel
-} from '../types';
-import { validateFindByCommandsFilter } from '../util';
+} from '../types'
+import { validateFindByCommandsFilter } from '../util'
 
 const handleDatabaseError = (error: unknown, context: string): ApiDatabaseException => {
   return new ApiDatabaseException((error as Error).message ?? String(error), {
     originalError: error,
     context: `${MongoRepository.name}/${context}`
-  });
-};
+  })
+}
 
 export class MongoRepository<T extends Document = Document> implements IRepository<T> {
   constructor(private readonly model: Model<T>) {}
 
   private toObject(document: T, options: { virtuals?: boolean } = { virtuals: true }): T {
-    return document.toObject({ virtuals: options.virtuals });
+    return document.toObject({ virtuals: options.virtuals })
   }
 
   async insertMany<TOptions>(documents: T[], saveOptions?: TOptions): Promise<void> {
     try {
-      await this.model.insertMany(documents, saveOptions as InsertManyOptions);
+      await this.model.insertMany(documents, saveOptions as InsertManyOptions)
     } catch (error) {
-      handleDatabaseError(error, 'insertMany');
+      handleDatabaseError(error, 'insertMany')
     }
   }
 
@@ -52,11 +52,11 @@ export class MongoRepository<T extends Document = Document> implements IReposito
       const createdEntity = new this.model({
         ...document,
         _id: document._id || (document as { id?: string })?.['id']
-      });
-      const savedResult = await createdEntity.save(saveOptions as SaveOptions);
-      return { id: savedResult._id.toString(), created: !!savedResult._id };
+      })
+      const savedResult = await createdEntity.save(saveOptions as SaveOptions)
+      return { id: savedResult._id.toString(), created: !!savedResult._id }
     } catch (error) {
-      throw handleDatabaseError(error, 'create');
+      throw handleDatabaseError(error, 'create')
     }
   }
 
@@ -65,92 +65,84 @@ export class MongoRepository<T extends Document = Document> implements IReposito
     options?: unknown
   ): Promise<CreatedOrUpdateModel> {
     try {
-      const doc = document as { id: string | number };
+      const doc = document as { id: string | number }
       if (!doc['id']) {
-        throw new ApiBadRequestException('id is required');
+        throw new ApiBadRequestException('id is required')
       }
 
-      const exists = await this.findById(doc['id']);
+      const exists = await this.findById(doc['id'])
 
       if (!exists) {
-        const createdEntity = new this.model({ ...document, _id: doc['id'] });
-        const savedResult = await createdEntity.save(options as SaveOptions);
-        return { id: savedResult._id.toString(), created: true, updated: false };
+        const createdEntity = new this.model({ ...document, _id: doc['id'] })
+        const savedResult = await createdEntity.save(options as SaveOptions)
+        return { id: savedResult._id.toString(), created: true, updated: false }
       }
 
       await this.model.updateOne(
         { _id: doc['id'] },
         { $set: document as unknown as T },
         options as MongooseUpdateQueryOptions<IEntity>
-      );
+      )
 
-      return { id: doc['id'].toString(), created: false, updated: true };
+      return { id: doc['id'].toString(), created: false, updated: true }
     } catch (error) {
-      throw handleDatabaseError(error, 'createOrUpdate');
+      throw handleDatabaseError(error, 'createOrUpdate')
     }
   }
 
   @ConvertMongoFilterToBaseRepository()
   async find<TFil = FilterQuery<T>, TOptions = FilterQuery<IEntity>>(filter: TFil, options?: TOptions): Promise<T[]> {
     try {
-      const defaultOptions = { ...options };
-      const results = await this.model.find(
-        filter as FilterQuery<T>,
-        undefined,
-        defaultOptions as FilterQuery<IEntity>
-      );
-      return results.map((d) => this.toObject(d));
+      const defaultOptions = { ...options }
+      const results = await this.model.find(filter as FilterQuery<T>, undefined, defaultOptions as FilterQuery<IEntity>)
+      return results.map((d) => this.toObject(d))
     } catch (error) {
-      throw handleDatabaseError(error, 'find');
+      throw handleDatabaseError(error, 'find')
     }
   }
 
   async findById(id: string | number): Promise<T | null> {
     try {
-      const model = await this.model.findById(id);
-      return model ? this.toObject(model) : null;
+      const model = await this.model.findById(id)
+      return model ? this.toObject(model) : null
     } catch (error) {
-      throw handleDatabaseError(error, 'findById');
+      throw handleDatabaseError(error, 'findById')
     }
   }
 
   @ConvertMongoFilterToBaseRepository()
   async findOne<TFil = FilterQuery<T>, TQue = FilterQuery<IEntity>>(filter: TFil, options?: TQue): Promise<T | null> {
     try {
-      const defaultOptions = { ...options };
-      const data = await this.model.findOne(
-        filter as FilterQuery<T>,
-        undefined,
-        defaultOptions as FilterQuery<IEntity>
-      );
-      return data ? this.toObject(data) : null;
+      const defaultOptions = { ...options }
+      const data = await this.model.findOne(filter as FilterQuery<T>, undefined, defaultOptions as FilterQuery<IEntity>)
+      return data ? this.toObject(data) : null
     } catch (error) {
-      throw handleDatabaseError(error, 'findOne');
+      throw handleDatabaseError(error, 'findOne')
     }
   }
 
   @ConvertMongoFilterToBaseRepository()
   async findAll<TFil = FilterQuery<T>, TOpt = FilterQuery<IEntity>>(filter?: TFil, options?: TOpt): Promise<T[]> {
     try {
-      const defaultOptions = { ...options };
+      const defaultOptions = { ...options }
       const modelList = await this.model.find(
         filter as FilterQuery<T>,
         undefined,
         defaultOptions as FilterQuery<IEntity>
-      );
-      return modelList.map((d) => this.toObject(d));
+      )
+      return modelList.map((d) => this.toObject(d))
     } catch (error) {
-      throw handleDatabaseError(error, 'findAll');
+      throw handleDatabaseError(error, 'findAll')
     }
   }
 
   @ConvertMongoFilterToBaseRepository()
   async remove<TQuery = FilterQuery<T>, TOpt = unknown>(filter: TQuery, options?: TOpt): Promise<RemovedModel> {
     try {
-      const { deletedCount } = await this.model.deleteOne(filter as FilterQuery<T>, options || {});
-      return { deletedCount: deletedCount || 0, deleted: !!deletedCount };
+      const { deletedCount } = await this.model.deleteOne(filter as FilterQuery<T>, options || {})
+      return { deletedCount: deletedCount || 0, deleted: !!deletedCount }
     } catch (error) {
-      throw handleDatabaseError(error, 'remove');
+      throw handleDatabaseError(error, 'remove')
     }
   }
 
@@ -165,9 +157,9 @@ export class MongoRepository<T extends Document = Document> implements IReposito
         filter as FilterQuery<T>,
         { $set: Object.assign({}, updated) },
         options as MongooseUpdateQueryOptions
-      );
+      )
     } catch (error) {
-      throw handleDatabaseError(error, 'updateOne');
+      throw handleDatabaseError(error, 'updateOne')
     }
   }
 
@@ -178,17 +170,17 @@ export class MongoRepository<T extends Document = Document> implements IReposito
     options: unknown = {}
   ): Promise<T | null> {
     try {
-      const updateOptions = { ...(options as FilterQuery<IEntity>), new: true };
+      const updateOptions = { ...(options as FilterQuery<IEntity>), new: true }
 
       const model = await this.model.findOneAndUpdate(
         filter as FilterQuery<T>,
         { $set: updated as UpdateWithAggregationPipeline | UpdateQuery<T> },
         updateOptions
-      );
+      )
 
-      return model ? this.toObject(model) : null;
+      return model ? this.toObject(model) : null
     } catch (error) {
-      throw handleDatabaseError(error, 'findOneAndUpdate');
+      throw handleDatabaseError(error, 'findOneAndUpdate')
     }
   }
 
@@ -203,9 +195,9 @@ export class MongoRepository<T extends Document = Document> implements IReposito
         filter as FilterQuery<T>,
         { $set: updated as UpdateWithAggregationPipeline | UpdateQuery<T> },
         options as MongooseUpdateQueryOptions
-      );
+      )
     } catch (error) {
-      throw handleDatabaseError(error, 'updateMany');
+      throw handleDatabaseError(error, 'updateMany')
     }
   }
 
@@ -216,17 +208,17 @@ export class MongoRepository<T extends Document = Document> implements IReposito
     try {
       const where: FilterQuery<IEntity> = {
         deletedAt: null
-      };
-
-      for (const key of Object.keys(input)) {
-        where[key === 'id' ? '_id' : key] = { $in: (input as { [key: string]: unknown })[`${key}`] };
       }
 
-      const defaultOptions = { ...options };
-      const data = await this.model.find(where, undefined, defaultOptions as FilterQuery<IEntity>);
-      return data.map((d) => this.toObject(d));
+      for (const key of Object.keys(input)) {
+        where[key === 'id' ? '_id' : key] = { $in: (input as { [key: string]: unknown })[`${key}`] }
+      }
+
+      const defaultOptions = { ...options }
+      const data = await this.model.find(where, undefined, defaultOptions as FilterQuery<IEntity>)
+      return data.map((d) => this.toObject(d))
     } catch (error) {
-      throw handleDatabaseError(error, 'findIn');
+      throw handleDatabaseError(error, 'findIn')
     }
   }
 
@@ -237,18 +229,18 @@ export class MongoRepository<T extends Document = Document> implements IReposito
   ): Promise<T[]> {
     try {
       const filter = propertyList.map((key) => {
-        return { [key === 'id' ? '_id' : key]: value };
-      });
+        return { [key === 'id' ? '_id' : key]: value }
+      })
 
-      const defaultOptions = { ...options };
+      const defaultOptions = { ...options }
       const data = await this.model.find(
         { $or: filter as FilterQuery<T>[], deletedAt: null } as FilterQuery<IEntity>,
         undefined,
         defaultOptions as FilterQuery<IEntity>
-      );
-      return data.map((d) => this.toObject(d));
+      )
+      return data.map((d) => this.toObject(d))
     } catch (error) {
-      throw handleDatabaseError(error, 'findOr');
+      throw handleDatabaseError(error, 'findOr')
     }
   }
 
@@ -257,12 +249,12 @@ export class MongoRepository<T extends Document = Document> implements IReposito
     options?: TOptions
   ): Promise<T | null> {
     try {
-      const searchList = this.buildCommandFilter(filterList);
-      const defaultOptions = { ...options };
-      const data = await this.model.findOne(searchList, undefined, defaultOptions as FilterQuery<IEntity>);
-      return data ? this.toObject(data) : null;
+      const searchList = this.buildCommandFilter(filterList)
+      const defaultOptions = { ...options }
+      const data = await this.model.findOne(searchList, undefined, defaultOptions as FilterQuery<IEntity>)
+      return data ? this.toObject(data) : null
     } catch (error) {
-      throw handleDatabaseError(error, 'findOneByCommands');
+      throw handleDatabaseError(error, 'findOneByCommands')
     }
   }
 
@@ -271,12 +263,12 @@ export class MongoRepository<T extends Document = Document> implements IReposito
     options?: TOptions
   ): Promise<T[]> {
     try {
-      const searchList = this.buildCommandFilter(filterList);
-      const defaultOptions = { ...options };
-      const data = await this.model.find(searchList, undefined, defaultOptions as FilterQuery<IEntity>);
-      return data.map((d) => this.toObject(d));
+      const searchList = this.buildCommandFilter(filterList)
+      const defaultOptions = { ...options }
+      const data = await this.model.find(searchList, undefined, defaultOptions as FilterQuery<IEntity>)
+      return data.map((d) => this.toObject(d))
     } catch (error) {
-      throw handleDatabaseError(error, 'findByCommands');
+      throw handleDatabaseError(error, 'findByCommands')
     }
   }
 
@@ -287,16 +279,16 @@ export class MongoRepository<T extends Document = Document> implements IReposito
     options?: TOptions
   ): Promise<T | null> {
     try {
-      const exclude = excludeProperties.map((e) => `-${e.toString()}`);
-      const defaultOptions = { ...options };
+      const exclude = excludeProperties.map((e) => `-${e.toString()}`)
+      const defaultOptions = { ...options }
 
       const data = await this.model
         .findOne(filter as FilterQuery<T>, undefined, defaultOptions as FilterQuery<IEntity>)
-        .select(exclude.join(' '));
+        .select(exclude.join(' '))
 
-      return data ? this.toObject(data) : null;
+      return data ? this.toObject(data) : null
     } catch (error) {
-      throw handleDatabaseError(error, 'findOneWithExcludeFields');
+      throw handleDatabaseError(error, 'findOneWithExcludeFields')
     }
   }
 
@@ -306,17 +298,17 @@ export class MongoRepository<T extends Document = Document> implements IReposito
     options?: TOptions
   ): Promise<T[]> {
     try {
-      const exclude = excludeProperties.map((e) => `-${e.toString()}`);
-      const processedFilter = this.applyFilterWhenFilterParameterIsNotFirstOption(filter as FilterQuery<T>);
-      const defaultOptions = { ...options };
+      const exclude = excludeProperties.map((e) => `-${e.toString()}`)
+      const processedFilter = this.applyFilterWhenFilterParameterIsNotFirstOption(filter as FilterQuery<T>)
+      const defaultOptions = { ...options }
 
       const data = await this.model
         .find(processedFilter, undefined, defaultOptions as FilterQuery<IEntity>)
-        .select(exclude.join(' '));
+        .select(exclude.join(' '))
 
-      return data.map((d) => this.toObject(d));
+      return data.map((d) => this.toObject(d))
     } catch (error) {
-      throw handleDatabaseError(error, 'findAllWithExcludeFields');
+      throw handleDatabaseError(error, 'findAllWithExcludeFields')
     }
   }
 
@@ -327,16 +319,16 @@ export class MongoRepository<T extends Document = Document> implements IReposito
     options?: TOptions
   ): Promise<T | null> {
     try {
-      const include = includeProperties.map((e) => `${e.toString()}`);
-      const defaultOptions = { ...options };
+      const include = includeProperties.map((e) => `${e.toString()}`)
+      const defaultOptions = { ...options }
 
       const data = await this.model
         .findOne(filter as FilterQuery<T>, undefined, defaultOptions as FilterQuery<IEntity>)
-        .select(include.join(' '));
+        .select(include.join(' '))
 
-      return data ? this.toObject(data) : null;
+      return data ? this.toObject(data) : null
     } catch (error) {
-      throw handleDatabaseError(error, 'findOneWithSelectFields');
+      throw handleDatabaseError(error, 'findOneWithSelectFields')
     }
   }
 
@@ -347,56 +339,56 @@ export class MongoRepository<T extends Document = Document> implements IReposito
     options?: TOptions
   ): Promise<T[]> {
     try {
-      const include = includeProperties.map((e) => `${e.toString()}`);
-      const processedFilter = this.applyFilterWhenFilterParameterIsNotFirstOption(filter as FilterQuery<T>);
-      const defaultOptions = { ...options };
+      const include = includeProperties.map((e) => `${e.toString()}`)
+      const processedFilter = this.applyFilterWhenFilterParameterIsNotFirstOption(filter as FilterQuery<T>)
+      const defaultOptions = { ...options }
 
       const data = await this.model
         .find(processedFilter, undefined, defaultOptions as FilterQuery<IEntity>)
-        .select(include.join(' '));
+        .select(include.join(' '))
 
-      return data.map((d) => this.toObject(d));
+      return data.map((d) => this.toObject(d))
     } catch (error) {
-      throw handleDatabaseError(error, 'findAllWithSelectFields');
+      throw handleDatabaseError(error, 'findAllWithSelectFields')
     }
   }
 
   @ConvertMongoFilterToBaseRepository()
   async findOneWithJoin<Filter = Partial<T>>(filter: Filter, joins?: JoinType<T>): Promise<T | null> {
-    const populatePaths = this.getPopulatePaths(joins);
+    const populatePaths = this.getPopulatePaths(joins)
 
-    const query = this.model.findOne(filter as FilterQuery<T>);
+    const query = this.model.findOne(filter as FilterQuery<T>)
 
-    const finalQuery = populatePaths.reduce((queryAccumulator, path) => queryAccumulator.populate(path), query);
+    const finalQuery = populatePaths.reduce((queryAccumulator, path) => queryAccumulator.populate(path), query)
 
-    const data = await finalQuery.exec();
+    const data = await finalQuery.exec()
     if (!data) {
-      return null;
+      return null
     }
-    return data.toObject();
+    return data.toObject()
   }
 
   @ConvertMongoFilterToBaseRepository()
   async findAllWithJoin<Filter = Partial<T>>(filter?: Filter, joins?: JoinType<T>): Promise<T[]> {
-    const populatePaths = this.getPopulatePaths(joins);
+    const populatePaths = this.getPopulatePaths(joins)
 
-    const query = this.model.find(filter ?? {});
+    const query = this.model.find(filter ?? {})
 
-    const finalQuery = populatePaths.reduce((queryAccumulator, path) => queryAccumulator.populate(path), query);
+    const finalQuery = populatePaths.reduce((queryAccumulator, path) => queryAccumulator.populate(path), query)
 
-    const data = await finalQuery.exec();
+    const data = await finalQuery.exec()
 
     if (!data.length) {
-      return [];
+      return []
     }
 
-    return data.map((d) => d.toObject());
+    return data.map((d) => d.toObject())
   }
 
   private getPopulatePaths(joins?: JoinType<T>): string[] {
-    if (!joins) return [];
+    if (!joins) return []
 
-    return Object.keys(joins).filter((key) => joins[key as keyof JoinType<T>] === true);
+    return Object.keys(joins).filter((key) => joins[key as keyof JoinType<T>] === true)
   }
 
   private buildCommandFilter(filterList: DatabaseOperationCommand<T>[]): FilterQuery<T> {
@@ -405,56 +397,56 @@ export class MongoRepository<T extends Document = Document> implements IReposito
       not_equal: { type: '$nin', like: false },
       not_contains: { type: '$nin', like: true },
       contains: { type: '$in', like: true }
-    };
+    }
 
-    const searchList: Record<string, unknown> = {};
+    const searchList: Record<string, unknown> = {}
 
-    validateFindByCommandsFilter(filterList);
+    validateFindByCommandsFilter(filterList)
 
     for (const filter of filterList) {
-      const command = mongoSearch[filter.command];
+      const command = mongoSearch[filter.command]
 
       if (command.like) {
         Object.assign(searchList, {
           [filter.property === 'id' ? '_id' : (filter.property as string)]: {
             [command.type]: filter.value.map((value) => new RegExp(`^${value}`, 'i'))
           }
-        });
-        continue;
+        })
+        continue
       }
 
       Object.assign(searchList, {
         [filter.property === 'id' ? '_id' : (filter.property as string)]: { [command.type]: filter.value }
-      });
+      })
     }
 
-    Object.assign(searchList, { deletedAt: null });
-    return searchList as FilterQuery<T>;
+    Object.assign(searchList, { deletedAt: null })
+    return searchList as FilterQuery<T>
   }
 
   private applyFilterWhenFilterParameterIsNotFirstOption(filter?: FilterQuery<T>): FilterQuery<T> {
     if (!filter) {
-      return { deletedAt: null } as unknown as FilterQuery<T>;
+      return { deletedAt: null } as unknown as FilterQuery<T>
     }
 
-    const processedFilter = { ...filter } as Record<string, unknown>;
+    const processedFilter = { ...filter } as Record<string, unknown>
 
     if (processedFilter.id) {
-      processedFilter._id = processedFilter.id;
-      delete processedFilter.id;
+      processedFilter._id = processedFilter.id
+      delete processedFilter.id
     }
 
     if (!processedFilter.deletedAt) {
-      processedFilter.deletedAt = null;
+      processedFilter.deletedAt = null
     }
 
-    return processedFilter as FilterQuery<T>;
+    return processedFilter as FilterQuery<T>
   }
 }
 
 class ApiDatabaseException extends BaseException {
-  static STATUS = HttpStatus.INTERNAL_SERVER_ERROR;
+  static STATUS = HttpStatus.INTERNAL_SERVER_ERROR
   constructor(message: MessageType, parameters: ParametersType) {
-    super(message, ApiDatabaseException.STATUS, parameters);
+    super(message, ApiDatabaseException.STATUS, parameters)
   }
 }

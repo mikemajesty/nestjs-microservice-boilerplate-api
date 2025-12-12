@@ -1,16 +1,16 @@
-import { ILoggerAdapter } from '@/infra/logger';
-import { ValidateSchema } from '@/utils/decorators';
-import { ApiConflictException } from '@/utils/exception';
-import { IDGeneratorUtils } from '@/utils/id-generator';
-import { IUsecase } from '@/utils/usecase';
-import { Infer } from '@/utils/validator';
+import { ILoggerAdapter } from '@/infra/logger'
+import { ValidateSchema } from '@/utils/decorators'
+import { ApiConflictException } from '@/utils/exception'
+import { IDGeneratorUtils } from '@/utils/id-generator'
+import { IUsecase } from '@/utils/usecase'
+import { Infer } from '@/utils/validator'
 
-import { IPermissionRepository } from '../repository/permission';
-import { PermissionEntity, PermissionEntitySchema } from './../entity/permission';
+import { IPermissionRepository } from '../repository/permission'
+import { PermissionEntity, PermissionEntitySchema } from './../entity/permission'
 
 export const PermissionCreateSchema = PermissionEntitySchema.pick({
   name: true
-});
+})
 
 export class PermissionCreateUsecase implements IUsecase {
   constructor(
@@ -20,21 +20,21 @@ export class PermissionCreateUsecase implements IUsecase {
 
   @ValidateSchema(PermissionCreateSchema)
   async execute(input: PermissionCreateInput): Promise<PermissionCreateOutput> {
-    const permission = await this.permissionRepository.findOne({ name: input.name });
+    const permission = await this.permissionRepository.findOne({ name: input.name })
 
     if (permission) {
-      throw new ApiConflictException('permissionExists');
+      throw new ApiConflictException('permissionExists')
     }
 
-    const entity = new PermissionEntity({ id: IDGeneratorUtils.uuid(), ...input });
+    const entity = new PermissionEntity({ id: IDGeneratorUtils.uuid(), ...input })
 
-    await this.permissionRepository.create(entity.toObject());
+    await this.permissionRepository.create(entity.toObject())
 
-    this.loggerService.info({ message: 'permission created.', obj: { permission } });
+    this.loggerService.info({ message: 'permission created.', obj: { permission } })
 
-    return entity.toObject();
+    return entity.toObject()
   }
 }
 
-export type PermissionCreateInput = Infer<typeof PermissionCreateSchema>;
-export type PermissionCreateOutput = PermissionEntity;
+export type PermissionCreateInput = Infer<typeof PermissionCreateSchema>
+export type PermissionCreateOutput = PermissionEntity

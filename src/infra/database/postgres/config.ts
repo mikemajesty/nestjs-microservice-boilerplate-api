@@ -1,12 +1,12 @@
-import { config } from 'dotenv';
-import { DataSource } from 'typeorm';
-import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
-import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
+import { config } from 'dotenv'
+import { DataSource } from 'typeorm'
+import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions'
+import { SnakeNamingStrategy } from 'typeorm-naming-strategies'
 
-config();
+config()
 
-const entities = ['src/infra/database/postgres/schemas/*.{ts,js}'];
-const migrations = ['src/infra/database/postgres/migrations/*.{ts,js}'];
+const entities = ['src/infra/database/postgres/schemas/*.{ts,js}']
+const migrations = ['src/infra/database/postgres/migrations/*.{ts,js}']
 
 const dataSource = new DataSource({
   type: 'postgres',
@@ -35,6 +35,6 @@ const dataSource = new DataSource({
   entities,
   synchronize: false,
   metadataTableName: 'typeorm_metadata'
-} as PostgresConnectionOptions);
+} as PostgresConnectionOptions)
 
-export default dataSource;
+export default dataSource

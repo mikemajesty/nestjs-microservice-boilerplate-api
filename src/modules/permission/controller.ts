@@ -1,14 +1,14 @@
-import { Controller, Delete, Get, HttpCode, Post, Put, Req, Version } from '@nestjs/common';
+import { Controller, Delete, Get, HttpCode, Post, Put, Req, Version } from '@nestjs/common'
 
-import { PermissionCreateInput, PermissionCreateOutput } from '@/core/permission/use-cases/permission-create';
-import { PermissionDeleteInput, PermissionDeleteOutput } from '@/core/permission/use-cases/permission-delete';
-import { PermissionGetByIdInput, PermissionGetByIdOutput } from '@/core/permission/use-cases/permission-get-by-id';
-import { PermissionListInput, PermissionListOutput } from '@/core/permission/use-cases/permission-list';
-import { PermissionUpdateInput, PermissionUpdateOutput } from '@/core/permission/use-cases/permission-update';
-import { Permission } from '@/utils/decorators';
-import { ApiRequest } from '@/utils/request';
-import { SearchHttpSchema } from '@/utils/search';
-import { SortHttpSchema } from '@/utils/sort';
+import { PermissionCreateInput, PermissionCreateOutput } from '@/core/permission/use-cases/permission-create'
+import { PermissionDeleteInput, PermissionDeleteOutput } from '@/core/permission/use-cases/permission-delete'
+import { PermissionGetByIdInput, PermissionGetByIdOutput } from '@/core/permission/use-cases/permission-get-by-id'
+import { PermissionListInput, PermissionListOutput } from '@/core/permission/use-cases/permission-list'
+import { PermissionUpdateInput, PermissionUpdateOutput } from '@/core/permission/use-cases/permission-update'
+import { Permission } from '@/utils/decorators'
+import { ApiRequest } from '@/utils/request'
+import { SearchHttpSchema } from '@/utils/search'
+import { SortHttpSchema } from '@/utils/sort'
 
 import {
   IPermissionCreateAdapter,
@@ -16,7 +16,7 @@ import {
   IPermissionGetByIdAdapter,
   IPermissionListAdapter,
   IPermissionUpdateAdapter
-} from './adapter';
+} from './adapter'
 
 @Controller('permissions')
 export class PermissionController {
@@ -33,21 +33,21 @@ export class PermissionController {
   @Permission('permission:create')
   @HttpCode(201)
   async create(@Req() { body }: ApiRequest): Promise<PermissionCreateOutput> {
-    return await this.createUsecase.execute(body as PermissionCreateInput);
+    return await this.createUsecase.execute(body as PermissionCreateInput)
   }
 
   @Put(':id')
   @Version('1')
   @Permission('permission:update')
   async update(@Req() { body, params }: ApiRequest): Promise<PermissionUpdateOutput> {
-    return await this.updateUsecase.execute({ ...body, id: params.id } as PermissionUpdateInput);
+    return await this.updateUsecase.execute({ ...body, id: params.id } as PermissionUpdateInput)
   }
 
   @Get(':id')
   @Version('1')
   @Permission('permission:getbyid')
   async getById(@Req() { params }: ApiRequest): Promise<PermissionGetByIdOutput> {
-    return await this.getByIdUsecase.execute(params as PermissionGetByIdInput);
+    return await this.getByIdUsecase.execute(params as PermissionGetByIdInput)
   }
 
   @Get()
@@ -59,15 +59,15 @@ export class PermissionController {
       search: SearchHttpSchema.parse(query.search),
       limit: Number(query.limit),
       page: Number(query.page)
-    };
+    }
 
-    return await this.listUsecase.execute(input);
+    return await this.listUsecase.execute(input)
   }
 
   @Delete(':id')
   @Version('1')
   @Permission('permission:delete')
   async delete(@Req() { params }: ApiRequest): Promise<PermissionDeleteOutput> {
-    return await this.deleteUsecase.execute(params as PermissionDeleteInput);
+    return await this.deleteUsecase.execute(params as PermissionDeleteInput)
   }
 }

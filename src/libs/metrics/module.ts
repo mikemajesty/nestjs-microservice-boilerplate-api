@@ -1,8 +1,8 @@
-import { Module } from '@nestjs/common';
-import { MetricService, OpenTelemetryModule } from 'nestjs-otel';
+import { Module } from '@nestjs/common'
+import { MetricService, OpenTelemetryModule } from 'nestjs-otel'
 
-import { IMetricsAdapter } from './adapter';
-import { MetricsService } from './service';
+import { IMetricsAdapter } from './adapter'
+import { MetricsService } from './service'
 
 const OpenTelemetryModuleConfig = OpenTelemetryModule.forRoot({
   metrics: {
@@ -13,7 +13,7 @@ const OpenTelemetryModuleConfig = OpenTelemetryModule.forRoot({
       ignoreUndefinedRoutes: false
     }
   }
-});
+})
 
 @Module({
   imports: [OpenTelemetryModuleConfig],

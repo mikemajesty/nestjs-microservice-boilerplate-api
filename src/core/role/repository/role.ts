@@ -1,8 +1,8 @@
-import { IRepository } from '@/infra/repository';
+import { IRepository } from '@/infra/repository'
 
-import { RoleEntity } from '../entity/role';
-import { RoleListInput, RoleListOutput } from '../use-cases/role-list';
+import { RoleEntity } from '../entity/role'
+import { RoleListInput, RoleListOutput } from '../use-cases/role-list'
 
 export abstract class IRoleRepository extends IRepository<RoleEntity> {
-  abstract paginate(input: RoleListInput): Promise<RoleListOutput>;
+  abstract paginate(input: RoleListInput): Promise<RoleListOutput>
 }

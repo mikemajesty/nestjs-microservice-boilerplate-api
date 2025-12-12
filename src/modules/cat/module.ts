@@ -1,30 +1,24 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { getConnectionToken } from '@nestjs/mongoose';
-import mongoose, { Connection, PaginateModel, Schema } from 'mongoose';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common'
+import { getConnectionToken } from '@nestjs/mongoose'
+import mongoose, { Connection, PaginateModel, Schema } from 'mongoose'
 
-import { ICatRepository } from '@/core/cat/repository/cat';
-import { CatCreateUsecase } from '@/core/cat/use-cases/cat-create';
-import { CatDeleteUsecase } from '@/core/cat/use-cases/cat-delete';
-import { CatGetByIdUsecase } from '@/core/cat/use-cases/cat-get-by-id';
-import { CatListUsecase } from '@/core/cat/use-cases/cat-list';
-import { CatUpdateUsecase } from '@/core/cat/use-cases/cat-update';
-import { RedisCacheModule } from '@/infra/cache/redis';
-import { ConnectionName } from '@/infra/database/enum';
-import { Cat, CatDocument, CatSchema } from '@/infra/database/mongo/schemas/cat';
-import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
-import { TokenLibModule } from '@/libs/token';
-import { AuthenticationMiddleware } from '@/middlewares/middlewares';
-import { MongoRepositoryModelSessionType } from '@/utils/mongoose';
+import { ICatRepository } from '@/core/cat/repository/cat'
+import { CatCreateUsecase } from '@/core/cat/use-cases/cat-create'
+import { CatDeleteUsecase } from '@/core/cat/use-cases/cat-delete'
+import { CatGetByIdUsecase } from '@/core/cat/use-cases/cat-get-by-id'
+import { CatListUsecase } from '@/core/cat/use-cases/cat-list'
+import { CatUpdateUsecase } from '@/core/cat/use-cases/cat-update'
+import { RedisCacheModule } from '@/infra/cache/redis'
+import { ConnectionName } from '@/infra/database/enum'
+import { Cat, CatDocument, CatSchema } from '@/infra/database/mongo/schemas/cat'
+import { ILoggerAdapter, LoggerModule } from '@/infra/logger'
+import { TokenLibModule } from '@/libs/token'
+import { AuthenticationMiddleware } from '@/middlewares/middlewares'
+import { MongoRepositoryModelSessionType } from '@/utils/mongoose'
 
-import {
-  ICatCreateAdapter,
-  ICatDeleteAdapter,
-  ICatGetByIdAdapter,
-  ICatListAdapter,
-  ICatUpdateAdapter
-} from './adapter';
-import { CatController } from './controller';
-import { CatRepository } from './repository';
+import { ICatCreateAdapter, ICatDeleteAdapter, ICatGetByIdAdapter, ICatListAdapter, ICatUpdateAdapter } from './adapter'
+import { CatController } from './controller'
+import { CatRepository } from './repository'
 
 @Module({
   imports: [TokenLibModule, LoggerModule, RedisCacheModule],
@@ -33,15 +27,15 @@ import { CatRepository } from './repository';
     {
       provide: ICatRepository,
       useFactory: async (connection: Connection) => {
-        type Model = mongoose.PaginateModel<CatDocument>;
+        type Model = mongoose.PaginateModel<CatDocument>
 
         //  use if you want transaction
         const repository: MongoRepositoryModelSessionType<PaginateModel<CatDocument>> = connection.model<
           CatDocument,
           Model
-        >(Cat.name, CatSchema as Schema);
+        >(Cat.name, CatSchema as Schema)
 
-        repository.connection = connection;
+        repository.connection = connection
 
         // use if you not want transaction
         // const repository: PaginateModel<UserDocument> = connection.model<UserDocument, Model>(
@@ -49,7 +43,7 @@ import { CatRepository } from './repository';
         //   UserSchema as Schema
         // );
 
-        return new CatRepository(repository);
+        return new CatRepository(repository)
       },
       inject: [getConnectionToken(ConnectionName.CATS)]
     },
@@ -83,6 +77,6 @@ import { CatRepository } from './repository';
 })
 export class CatModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(AuthenticationMiddleware).forRoutes(CatController);
+    consumer.apply(AuthenticationMiddleware).forRoutes(CatController)
   }
 }

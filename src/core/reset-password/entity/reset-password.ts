@@ -1,13 +1,13 @@
-import { UserEntity, UserEntitySchema } from '@/core/user/entity/user';
-import { BaseEntity } from '@/utils/entity';
-import { Infer, InputValidator } from '@/utils/validator';
+import { UserEntity, UserEntitySchema } from '@/core/user/entity/user'
+import { BaseEntity } from '@/utils/entity'
+import { Infer, InputValidator } from '@/utils/validator'
 
-const ID = InputValidator.string().uuid();
-const Token = InputValidator.string().min(1).trim();
-const User = UserEntitySchema;
-const CreatedAt = InputValidator.date().nullish();
-const UpdatedAt = InputValidator.date().nullish();
-const DeletedAt = InputValidator.date().nullish();
+const ID = InputValidator.string().uuid()
+const Token = InputValidator.string().min(1).trim()
+const User = UserEntitySchema
+const CreatedAt = InputValidator.date().nullish()
+const UpdatedAt = InputValidator.date().nullish()
+const DeletedAt = InputValidator.date().nullish()
 
 export const ResetPasswordEntitySchema = InputValidator.object({
   id: ID,
@@ -16,18 +16,18 @@ export const ResetPasswordEntitySchema = InputValidator.object({
   createdAt: CreatedAt,
   updatedAt: UpdatedAt,
   deletedAt: DeletedAt
-});
+})
 
-type ResetPassword = Infer<typeof ResetPasswordEntitySchema>;
+type ResetPassword = Infer<typeof ResetPasswordEntitySchema>
 
 export class ResetPasswordEntity extends BaseEntity<ResetPasswordEntity>() {
-  token!: ResetPassword['token'];
+  token!: ResetPassword['token']
 
-  user!: UserEntity;
+  user!: UserEntity
 
   constructor(entity: ResetPassword) {
-    super(ResetPasswordEntitySchema);
-    this.validate(entity);
-    this.ensureID();
+    super(ResetPasswordEntitySchema)
+    this.validate(entity)
+    this.ensureID()
   }
 }

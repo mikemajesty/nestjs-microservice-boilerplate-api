@@ -1,11 +1,11 @@
-import { Controller, Get } from '@nestjs/common';
-import os from 'os';
+import { Controller, Get } from '@nestjs/common'
+import os from 'os'
 
-import { ILoggerAdapter } from '@/infra/logger';
+import { ILoggerAdapter } from '@/infra/logger'
 
-import { version } from '../../../package.json';
-import { IHealthAdapter } from './adapter';
-import { HealthOutput, HealthStatus } from './types';
+import { version } from '../../../package.json'
+import { IHealthAdapter } from './adapter'
+import { HealthOutput, HealthStatus } from './types'
 
 @Controller()
 export class HealthController {
@@ -16,20 +16,20 @@ export class HealthController {
 
   @Get(['/health', '/'])
   async getHealth(): Promise<HealthOutput> {
-    const memory = this.service.getMemoryUsageInMB();
+    const memory = this.service.getMemoryUsageInMB()
 
-    const numCpus = os.cpus().length;
-    const [lastMinute, lastFiveMinutes, lastFifteenMinutes] = os.loadavg();
+    const numCpus = os.cpus().length
+    const [lastMinute, lastFiveMinutes, lastFifteenMinutes] = os.loadavg()
 
-    const mongoState = this.service.getMongoStatus();
-    const postgresState = await this.service.getPostgresStatus();
-    const redisState = await this.service.getRedisStatus();
+    const mongoState = this.service.getMongoStatus()
+    const postgresState = await this.service.getPostgresStatus()
+    const redisState = await this.service.getRedisStatus()
 
-    const cpuList = await this.service.getCPUCore();
+    const cpuList = await this.service.getCPUCore()
 
-    const cpuStatus = [];
+    const cpuStatus = []
     for (const [index, core] of cpuList.cpus.entries()) {
-      cpuStatus.push({ core: index + 1, load: `${core.load.toFixed(2)}%` });
+      cpuStatus.push({ core: index + 1, load: `${core.load.toFixed(2)}%` })
     }
 
     const cpu = {
@@ -40,16 +40,16 @@ export class HealthController {
         lastFifteenMinutes: this.service.getLoadAvarage(lastFifteenMinutes, numCpus)
       },
       cores: cpuStatus
-    };
+    }
 
-    const mongoConnections = await this.service.getMongoConnections();
-    const mongoMemory = await this.service.getMongoMemory();
+    const mongoConnections = await this.service.getMongoConnections()
+    const mongoMemory = await this.service.getMongoMemory()
 
-    const postgresMemory = await this.service.getPostgresMemory();
-    const postgresConnections = await this.service.getPostgresConnections();
+    const postgresMemory = await this.service.getPostgresMemory()
+    const postgresConnections = await this.service.getPostgresConnections()
 
-    const latency = await this.service.getLatency();
-    const connections = await this.service.getActiveConnections();
+    const latency = await this.service.getLatency()
+    const connections = await this.service.getActiveConnections()
 
     const output = {
       server: HealthStatus.UP,
@@ -71,10 +71,10 @@ export class HealthController {
       },
       memory,
       cpu
-    };
+    }
 
-    this.logger.info({ message: 'Server Up!', context: HealthController.name, obj: output });
+    this.logger.info({ message: 'Server Up!', context: HealthController.name, obj: output })
 
-    return output;
+    return output
   }
 }

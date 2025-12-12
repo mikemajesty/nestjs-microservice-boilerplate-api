@@ -1,6 +1,6 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post } from '@nestjs/common'
 
-import { ILoggerAdapter } from '@/infra/logger';
+import { ILoggerAdapter } from '@/infra/logger'
 
 @Controller('alert')
 export class AlertController {
@@ -8,7 +8,7 @@ export class AlertController {
 
   @Post()
   handleAlert(@Body() body: unknown) {
-    this.logger.warn({ message: '🔔 Alerta received:\n' + JSON.stringify(body, null, 2) });
-    return { status: 'ok' };
+    this.logger.warn({ message: '🔔 Alerta received:\n' + JSON.stringify(body, null, 2) })
+    return { status: 'ok' }
   }
 }

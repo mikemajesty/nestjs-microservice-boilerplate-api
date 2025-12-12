@@ -1,20 +1,20 @@
-import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { PaginateModel } from 'mongoose';
+import { Injectable } from '@nestjs/common'
+import { InjectModel } from '@nestjs/mongoose'
+import { PaginateModel } from 'mongoose'
 
-import { CatEntity } from '@/core/cat/entity/cat';
-import { ICatRepository } from '@/core/cat/repository/cat';
-import { CatListInput, CatListOutput } from '@/core/cat/use-cases/cat-list';
-import { Cat, CatDocument } from '@/infra/database/mongo/schemas/cat';
-import { MongoRepository } from '@/infra/repository';
-import { ConvertMongooseFilter, SearchTypeEnum, ValidateDatabaseSortAllowed } from '@/utils/decorators';
-import { IEntity } from '@/utils/entity';
-import { FilterQuery, MongoRepositoryModelSessionType } from '@/utils/mongoose';
+import { CatEntity } from '@/core/cat/entity/cat'
+import { ICatRepository } from '@/core/cat/repository/cat'
+import { CatListInput, CatListOutput } from '@/core/cat/use-cases/cat-list'
+import { Cat, CatDocument } from '@/infra/database/mongo/schemas/cat'
+import { MongoRepository } from '@/infra/repository'
+import { ConvertMongooseFilter, SearchTypeEnum, ValidateDatabaseSortAllowed } from '@/utils/decorators'
+import { IEntity } from '@/utils/entity'
+import { FilterQuery, MongoRepositoryModelSessionType } from '@/utils/mongoose'
 
 @Injectable()
 export class CatRepository extends MongoRepository<CatDocument> implements ICatRepository {
   constructor(@InjectModel(Cat.name) readonly entity: MongoRepositoryModelSessionType<PaginateModel<CatDocument>>) {
-    super(entity);
+    super(entity)
   }
 
   @ValidateDatabaseSortAllowed<CatEntity>({ name: 'createdAt' }, { name: 'breed' })
@@ -28,13 +28,13 @@ export class CatRepository extends MongoRepository<CatDocument> implements ICatR
       page,
       limit,
       sort: sort as object
-    });
+    })
 
     return {
       docs: cats.docs.map((u) => new CatEntity(u.toObject({ virtuals: true })).toObject()),
       limit,
       page,
       total: cats.totalDocs
-    };
+    }
   }
 }

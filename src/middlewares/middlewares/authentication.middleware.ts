@@ -1,14 +1,14 @@
-import { Injectable, NestMiddleware } from '@nestjs/common';
-import { SpanStatusCode } from '@opentelemetry/api';
-import { NextFunction, Request, Response } from 'express';
+import { Injectable, NestMiddleware } from '@nestjs/common'
+import { SpanStatusCode } from '@opentelemetry/api'
+import { NextFunction, Request, Response } from 'express'
 
-import { ICacheAdapter } from '@/infra/cache';
-import { ILoggerAdapter } from '@/infra/logger';
-import { ITokenAdapter } from '@/libs/token';
-import { IDGeneratorUtils } from '@/utils/id-generator';
-import { TracingType, UserRequest } from '@/utils/request';
+import { ICacheAdapter } from '@/infra/cache'
+import { ILoggerAdapter } from '@/infra/logger'
+import { ITokenAdapter } from '@/libs/token'
+import { IDGeneratorUtils } from '@/utils/id-generator'
+import { TracingType, UserRequest } from '@/utils/request'
 
-import { ApiUnauthorizedException } from '../../utils/exception';
+import { ApiUnauthorizedException } from '../../utils/exception'
 
 @Injectable()
 export class AuthenticationMiddleware implements NestMiddleware {
@@ -22,50 +22,50 @@ export class AuthenticationMiddleware implements NestMiddleware {
     response: Response,
     next: NextFunction
   ): Promise<void> {
-    const tokenHeader = request.headers.authorization;
+    const tokenHeader = request.headers.authorization
 
     if (!request.headers?.traceid) {
-      Object.assign(request.headers, { traceid: request['id'] ?? IDGeneratorUtils.uuid() });
+      Object.assign(request.headers, { traceid: request['id'] ?? IDGeneratorUtils.uuid() })
     }
 
     if (!tokenHeader) {
-      response.status(ApiUnauthorizedException.STATUS);
-      request.id = request.headers.traceid as string;
-      this.loggerService.logger(request, response);
-      this.finishTracing(request, ApiUnauthorizedException.STATUS, 'no token provided');
-      throw new ApiUnauthorizedException('no token provided');
+      response.status(ApiUnauthorizedException.STATUS)
+      request.id = request.headers.traceid as string
+      this.loggerService.logger(request, response)
+      this.finishTracing(request, ApiUnauthorizedException.STATUS, 'no token provided')
+      throw new ApiUnauthorizedException('no token provided')
     }
 
-    const token = tokenHeader?.split(' ')[1] || '';
+    const token = tokenHeader?.split(' ')[1] || ''
 
-    const expiredToken = await this.redisService.get(token);
+    const expiredToken = await this.redisService.get(token)
 
-    request.id = request.headers.traceid as string;
+    request.id = request.headers.traceid as string
 
     if (expiredToken) {
-      this.finishTracing(request, ApiUnauthorizedException.STATUS, 'you have been logged out');
-      next(new ApiUnauthorizedException('you have been logged out'));
+      this.finishTracing(request, ApiUnauthorizedException.STATUS, 'you have been logged out')
+      next(new ApiUnauthorizedException('you have been logged out'))
     }
 
     const userDecoded = (await this.tokenService.verify<UserRequest>(token).catch((error) => {
-      error.status = ApiUnauthorizedException.STATUS;
+      error.status = ApiUnauthorizedException.STATUS
       if (process.env.NODE_ENV !== 'test') {
-        this.loggerService?.logger(request, response);
+        this.loggerService?.logger(request, response)
       }
-      this.finishTracing(request, ApiUnauthorizedException.STATUS, 'invalidToken');
-      next(error);
-    })) as UserRequest;
+      this.finishTracing(request, ApiUnauthorizedException.STATUS, 'invalidToken')
+      next(error)
+    })) as UserRequest
 
-    request.user = userDecoded;
+    request.user = userDecoded
 
-    next();
+    next()
   }
 
   private finishTracing(request: { tracing?: TracingType }, status: number, message: string) {
     if (request?.tracing) {
-      request.tracing.addAttribute('http.status_code', status);
-      request.tracing.setStatus({ message, code: SpanStatusCode.ERROR });
-      request.tracing.finish();
+      request.tracing.addAttribute('http.status_code', status)
+      request.tracing.setStatus({ message, code: SpanStatusCode.ERROR })
+      request.tracing.finish()
     }
   }
 }

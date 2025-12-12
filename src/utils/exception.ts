@@ -1,100 +1,102 @@
-import { HttpException, HttpStatus } from '@nestjs/common';
+import { HttpException, HttpStatus } from '@nestjs/common'
 
 export class BaseException extends HttpException {
-  traceid!: string;
-  readonly context!: string;
-  readonly statusCode: number;
-  readonly code?: string;
-  readonly parameters!: ParametersType;
+  traceid!: string
+  readonly context!: string
+  readonly statusCode: number
+  readonly code?: string
+  readonly parameters!: ParametersType
 
   constructor(message: MessageType, status: HttpStatus, parameters?: ParametersType) {
-    super(message, status);
+    super(message, status)
 
-    const actualProto = new.target.prototype;
+    const actualProto = new.target.prototype
 
-    this.statusCode = status;
+    this.statusCode = status
 
     if (parameters) {
-      this.parameters = parameters;
+      this.parameters = parameters
     }
 
     if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, this.constructor);
+      Error.captureStackTrace(this, this.constructor)
     }
 
-    Object.setPrototypeOf(this, actualProto);
-    this.name = this.constructor.name;
+    Object.setPrototypeOf(this, actualProto)
+    this.name = this.constructor.name
   }
 }
 
 export class ApiInternalServerException extends BaseException {
-  static STATUS = HttpStatus.INTERNAL_SERVER_ERROR;
+  static STATUS = HttpStatus.INTERNAL_SERVER_ERROR
   constructor(message?: MessageType, parameters?: ParametersType) {
-    super(message ?? ApiInternalServerException.name, ApiInternalServerException.STATUS, parameters);
+    super(message ?? ApiInternalServerException.name, ApiInternalServerException.STATUS, parameters)
   }
 }
 
 export class ApiNotFoundException extends BaseException {
-  static STATUS = HttpStatus.NOT_FOUND;
+  static STATUS = HttpStatus.NOT_FOUND
   constructor(message?: MessageType, parameters?: ParametersType) {
-    super(message ?? ApiNotFoundException.name, ApiNotFoundException.STATUS, parameters);
+    super(message ?? ApiNotFoundException.name, ApiNotFoundException.STATUS, parameters)
   }
 }
 
 export class ApiConflictException extends BaseException {
-  static STATUS = HttpStatus.CONFLICT;
+  static STATUS = HttpStatus.CONFLICT
   constructor(message?: MessageType, parameters?: ParametersType) {
-    super(message ?? ApiConflictException.name, ApiConflictException.STATUS, parameters);
+    super(message ?? ApiConflictException.name, ApiConflictException.STATUS, parameters)
   }
 }
 
 export class ApiUnprocessableEntityException extends BaseException {
-  static STATUS = HttpStatus.UNPROCESSABLE_ENTITY;
+  static STATUS = HttpStatus.UNPROCESSABLE_ENTITY
   constructor(message?: MessageType, parameters?: ParametersType) {
-    super(message ?? ApiUnprocessableEntityException.name, ApiUnprocessableEntityException.STATUS, parameters);
+    super(message ?? ApiUnprocessableEntityException.name, ApiUnprocessableEntityException.STATUS, parameters)
   }
 }
 
 export class ApiUnauthorizedException extends BaseException {
-  static STATUS = HttpStatus.UNAUTHORIZED;
+  static STATUS = HttpStatus.UNAUTHORIZED
   constructor(message?: MessageType, parameters?: ParametersType) {
-    super(message ?? ApiUnauthorizedException.name, ApiUnauthorizedException.STATUS, parameters);
+    super(message ?? ApiUnauthorizedException.name, ApiUnauthorizedException.STATUS, parameters)
   }
 }
 
 export class ApiBadRequestException extends BaseException {
-  static STATUS = HttpStatus.BAD_REQUEST;
+  static STATUS = HttpStatus.BAD_REQUEST
   constructor(message?: MessageType, parameters?: ParametersType) {
-    super(message ?? ApiBadRequestException.name, ApiBadRequestException.STATUS, parameters);
+    super(message ?? ApiBadRequestException.name, ApiBadRequestException.STATUS, parameters)
   }
 }
 
 export class ApiForbiddenException extends BaseException {
-  static STATUS = HttpStatus.FORBIDDEN;
+  static STATUS = HttpStatus.FORBIDDEN
   constructor(message?: MessageType, parameters?: ParametersType) {
-    super(message ?? ApiForbiddenException.name, ApiForbiddenException.STATUS, parameters);
+    super(message ?? ApiForbiddenException.name, ApiForbiddenException.STATUS, parameters)
   }
 }
 
 export class ApiTimeoutException extends BaseException {
-  static STATUS = HttpStatus.REQUEST_TIMEOUT;
+  static STATUS = HttpStatus.REQUEST_TIMEOUT
   constructor(message?: MessageType, parameters?: ParametersType) {
-    super(message ?? ApiTimeoutException.name, ApiTimeoutException.STATUS, parameters);
+    super(message ?? ApiTimeoutException.name, ApiTimeoutException.STATUS, parameters)
   }
 }
 
 export type ApiErrorType = {
   error: {
-    code: string | number;
-    traceid: string;
-    context: string;
-    message: string[];
-    timestamp: string;
-    path: string;
-  };
-};
+    code: string | number
+    traceid: string
+    context: string
+    message: string[]
+    details?: unknown[]
+    name: string
+    timestamp: string
+    path: string
+  }
+}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type ParametersType = { [key: string]: any; context?: string };
+export type ParametersType = { [key: string]: any; context?: string; details?: unknown[]; stack?: string }
 
-export type MessageType = string | string[];
+export type MessageType = string

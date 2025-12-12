@@ -1,17 +1,17 @@
-import { ZodMockSchema } from '@mikemajesty/zod-mock-schema';
-import { Test } from '@nestjs/testing';
+import { ZodMockSchema } from '@mikemajesty/zod-mock-schema'
+import { Test } from '@nestjs/testing'
 
-import { RoleListInput, RoleListOutput, RoleListSchema, RoleListUsecase } from '@/core/role/use-cases/role-list';
-import { IRoleListAdapter } from '@/modules/role/adapter';
-import { TestUtils } from '@/utils/test/util';
-import { ZodExceptionIssue } from '@/utils/validator';
+import { RoleListInput, RoleListOutput, RoleListSchema, RoleListUsecase } from '@/core/role/use-cases/role-list'
+import { IRoleListAdapter } from '@/modules/role/adapter'
+import { TestUtils } from '@/utils/test/util'
+import { ZodExceptionIssue } from '@/utils/validator'
 
-import { IRoleRepository } from '../../repository/role';
-import { RoleEntity, RoleEntitySchema } from './../../entity/role';
+import { IRoleRepository } from '../../repository/role'
+import { RoleEntity, RoleEntitySchema } from './../../entity/role'
 
 describe(RoleListUsecase.name, () => {
-  let usecase: IRoleListAdapter;
-  let repository: IRoleRepository;
+  let usecase: IRoleListAdapter
+  let repository: IRoleRepository
 
   beforeEach(async () => {
     const app = await Test.createTestingModule({
@@ -23,16 +23,16 @@ describe(RoleListUsecase.name, () => {
         {
           provide: IRoleListAdapter,
           useFactory: (roleRepository: IRoleRepository) => {
-            return new RoleListUsecase(roleRepository);
+            return new RoleListUsecase(roleRepository)
           },
           inject: [IRoleRepository]
         }
       ]
-    }).compile();
+    }).compile()
 
-    usecase = app.get(IRoleListAdapter);
-    repository = app.get(IRoleRepository);
-  });
+    usecase = app.get(IRoleListAdapter)
+    repository = app.get(IRoleRepository)
+  })
 
   test('when sort input is specified, should expect an error', async () => {
     await TestUtils.expectZodError(
@@ -43,34 +43,34 @@ describe(RoleListUsecase.name, () => {
             message: 'Invalid input: expected string, received undefined',
             path: TestUtils.nameOf<RoleListInput>('search')
           }
-        ]);
+        ])
       }
-    );
-  });
+    )
+  })
 
   const input = new ZodMockSchema(RoleListSchema).generate()
-  const roleEntityMock = new ZodMockSchema(RoleEntitySchema);
+  const roleEntityMock = new ZodMockSchema(RoleEntitySchema)
   const roles: RoleEntity[] = roleEntityMock.generateMany<RoleEntity>(10, {
     overrides: {
       permissions: []
     }
-  });
+  })
   test('when role are found, should expect an role list', async () => {
-    const output: RoleListOutput = { docs: roles, page: 1, limit: 1, total: 1 };
-    repository.paginate = TestUtils.mockResolvedValue<RoleListOutput>(output);
+    const output: RoleListOutput = { docs: roles, page: 1, limit: 1, total: 1 }
+    repository.paginate = TestUtils.mockResolvedValue<RoleListOutput>(output)
 
     await expect(usecase.execute(input)).resolves.toEqual({
       docs: roles,
       page: 1,
       limit: 1,
       total: 1
-    });
-  });
+    })
+  })
 
   test('when role not found, should expect an empty list', async () => {
-    const output: RoleListOutput = { docs: [], page: 1, limit: 1, total: 1 };
-    repository.paginate = TestUtils.mockResolvedValue<RoleListOutput>(output);
+    const output: RoleListOutput = { docs: [], page: 1, limit: 1, total: 1 }
+    repository.paginate = TestUtils.mockResolvedValue<RoleListOutput>(output)
 
-    await expect(usecase.execute(input)).resolves.toEqual(output);
-  });
-});
+    await expect(usecase.execute(input)).resolves.toEqual(output)
+  })
+})

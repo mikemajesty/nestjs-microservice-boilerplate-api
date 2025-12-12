@@ -1,16 +1,16 @@
-import { Controller, HttpCode, Post, Put, Req, Version } from '@nestjs/common';
+import { Controller, HttpCode, Post, Put, Req, Version } from '@nestjs/common'
 
 import {
   ResetPasswordConfirmInput,
   ResetPasswordConfirmOutput
-} from '@/core/reset-password/use-cases/reset-password-confirm';
+} from '@/core/reset-password/use-cases/reset-password-confirm'
 import {
   ResetPasswordSendEmailInput,
   ResetPasswordSendEmailOutput
-} from '@/core/reset-password/use-cases/reset-password-send-email';
-import { ApiRequest } from '@/utils/request';
+} from '@/core/reset-password/use-cases/reset-password-send-email'
+import { ApiRequest } from '@/utils/request'
 
-import { IConfirmResetPasswordAdapter, ISendEmailResetPasswordAdapter } from './adapter';
+import { IConfirmResetPasswordAdapter, ISendEmailResetPasswordAdapter } from './adapter'
 
 @Controller('/reset-password')
 export class ResetPasswordController {
@@ -22,7 +22,7 @@ export class ResetPasswordController {
   @Post('send-email')
   @Version('1')
   async sendEmail(@Req() { body }: ApiRequest): Promise<ResetPasswordSendEmailOutput> {
-    return await this.sendEmailUsecase.execute(body as ResetPasswordSendEmailInput);
+    return await this.sendEmailUsecase.execute(body as ResetPasswordSendEmailInput)
   }
 
   @Put(':token')
@@ -32,6 +32,6 @@ export class ResetPasswordController {
     return await this.confirmResetPasswordUsecase.execute({
       token: params.token,
       ...body
-    } as ResetPasswordConfirmInput);
+    } as ResetPasswordConfirmInput)
   }
 }

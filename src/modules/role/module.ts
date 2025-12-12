@@ -1,24 +1,24 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { getRepositoryToken, TypeOrmModule } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common'
+import { getRepositoryToken, TypeOrmModule } from '@nestjs/typeorm'
+import { Repository } from 'typeorm'
 
-import { IPermissionRepository } from '@/core/permission/repository/permission';
-import { RoleEntity } from '@/core/role/entity/role';
-import { IRoleRepository } from '@/core/role/repository/role';
-import { RoleAddPermissionUsecase } from '@/core/role/use-cases/role-add-permission';
-import { RoleCreateUsecase } from '@/core/role/use-cases/role-create';
-import { RoleDeleteUsecase } from '@/core/role/use-cases/role-delete';
-import { RoleDeletePermissionUsecase } from '@/core/role/use-cases/role-delete-permission';
-import { RoleGetByIdUsecase } from '@/core/role/use-cases/role-get-by-id';
-import { RoleListUsecase } from '@/core/role/use-cases/role-list';
-import { RoleUpdateUsecase } from '@/core/role/use-cases/role-update';
-import { RedisCacheModule } from '@/infra/cache/redis';
-import { RoleSchema } from '@/infra/database/postgres/schemas/role';
-import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
-import { TokenLibModule } from '@/libs/token';
-import { AuthenticationMiddleware } from '@/middlewares/middlewares';
+import { IPermissionRepository } from '@/core/permission/repository/permission'
+import { RoleEntity } from '@/core/role/entity/role'
+import { IRoleRepository } from '@/core/role/repository/role'
+import { RoleAddPermissionUsecase } from '@/core/role/use-cases/role-add-permission'
+import { RoleCreateUsecase } from '@/core/role/use-cases/role-create'
+import { RoleDeleteUsecase } from '@/core/role/use-cases/role-delete'
+import { RoleDeletePermissionUsecase } from '@/core/role/use-cases/role-delete-permission'
+import { RoleGetByIdUsecase } from '@/core/role/use-cases/role-get-by-id'
+import { RoleListUsecase } from '@/core/role/use-cases/role-list'
+import { RoleUpdateUsecase } from '@/core/role/use-cases/role-update'
+import { RedisCacheModule } from '@/infra/cache/redis'
+import { RoleSchema } from '@/infra/database/postgres/schemas/role'
+import { ILoggerAdapter, LoggerModule } from '@/infra/logger'
+import { TokenLibModule } from '@/libs/token'
+import { AuthenticationMiddleware } from '@/middlewares/middlewares'
 
-import { PermissionModule } from '../permission/module';
+import { PermissionModule } from '../permission/module'
 import {
   IRoleAddPermissionAdapter,
   IRoleCreateAdapter,
@@ -27,9 +27,9 @@ import {
   IRoleGetByIdAdapter,
   IRoleListAdapter,
   IRoleUpdateAdapter
-} from './adapter';
-import { RoleController } from './controller';
-import { RoleRepository } from './repository';
+} from './adapter'
+import { RoleController } from './controller'
+import { RoleRepository } from './repository'
 
 @Module({
   imports: [TokenLibModule, LoggerModule, RedisCacheModule, TypeOrmModule.forFeature([RoleSchema]), PermissionModule],
@@ -38,7 +38,7 @@ import { RoleRepository } from './repository';
     {
       provide: IRoleRepository,
       useFactory: (repository: Repository<RoleSchema & RoleEntity>) => {
-        return new RoleRepository(repository);
+        return new RoleRepository(repository)
       },
       inject: [getRepositoryToken(RoleSchema)]
     },
@@ -84,6 +84,6 @@ import { RoleRepository } from './repository';
 })
 export class RoleModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(AuthenticationMiddleware).forRoutes(RoleController);
+    consumer.apply(AuthenticationMiddleware).forRoutes(RoleController)
   }
 }

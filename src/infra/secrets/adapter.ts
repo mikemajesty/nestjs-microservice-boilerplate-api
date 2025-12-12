@@ -1,56 +1,56 @@
 export abstract class ISecretsAdapter {
-  ENV!: string;
+  ENV!: string
 
-  PORT!: number | string;
+  PORT!: number | string
 
-  HOST!: string;
+  HOST!: string
 
-  LOG_LEVEL!: string;
+  LOG_LEVEL!: string
 
-  DATE_FORMAT!: string;
+  DATE_FORMAT!: string
 
-  TZ!: string;
+  TZ!: string
 
   MONGO!: {
-    MONGO_URL: string;
-    MONGO_DATABASE: string;
-    MONGO_EXPRESS_URL: string;
-  };
+    MONGO_URL: string
+    MONGO_DATABASE: string
+    MONGO_EXPRESS_URL: string
+  }
 
   POSTGRES!: {
-    POSTGRES_URL: string;
-    POSTGRES_PGADMIN_URL: string;
-  };
+    POSTGRES_URL: string
+    POSTGRES_PGADMIN_URL: string
+  }
 
   EMAIL!: {
-    HOST: string;
-    PORT: number;
-    USER: string;
-    PASS: string;
-    FROM: string;
-  };
+    HOST: string
+    PORT: number
+    USER: string
+    PASS: string
+    FROM: string
+  }
 
-  REDIS_URL!: string;
+  REDIS_URL!: string
 
-  ZIPKIN_URL!: string;
+  ZIPKIN_URL!: string
 
-  PROMETHUES_URL!: string;
-  GRAFANA_URL!: string;
+  PROMETHUES_URL!: string
+  GRAFANA_URL!: string
 
-  TOKEN_EXPIRATION!: number | string;
-  REFRESH_TOKEN_EXPIRATION!: number | string;
+  TOKEN_EXPIRATION!: number | string
+  REFRESH_TOKEN_EXPIRATION!: number | string
 
-  JWT_SECRET_KEY!: string;
+  JWT_SECRET_KEY!: string
 
-  IS_LOCAL!: boolean;
+  IS_LOCAL!: boolean
 
-  IS_PRODUCTION!: boolean;
+  IS_PRODUCTION!: boolean
 
   AUTH!: {
     GOOGLE: {
-      CLIENT_ID: string;
-      CLIENT_SECRET: string;
-      REDIRECT_URL: string;
-    };
-  };
+      CLIENT_ID: string
+      CLIENT_SECRET: string
+      REDIRECT_URL: string
+    }
+  }
 }

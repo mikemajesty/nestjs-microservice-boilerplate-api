@@ -1,40 +1,40 @@
-import './utils/tracing';
+import './utils/tracing'
 
-import { RequestMethod, VersioningType } from '@nestjs/common';
-import { NestFactory } from '@nestjs/core';
-import bodyParser from 'body-parser';
-import { bold } from 'colorette';
-import compression from 'compression';
-import { NextFunction, Request, Response } from 'express';
-import fs from 'fs';
-import helmet from 'helmet';
-import { IncomingMessage, ServerResponse } from 'http';
-import yaml from 'js-yaml';
-import path from 'path';
-import swagger from 'swagger-ui-express';
+import { RequestMethod, VersioningType } from '@nestjs/common'
+import { NestFactory } from '@nestjs/core'
+import bodyParser from 'body-parser'
+import { bold } from 'colorette'
+import compression from 'compression'
+import { NextFunction, Request, Response } from 'express'
+import fs from 'fs'
+import helmet from 'helmet'
+import { IncomingMessage, ServerResponse } from 'http'
+import yaml from 'js-yaml'
+import path from 'path'
+import swagger from 'swagger-ui-express'
 
-import { ILoggerAdapter } from '@/infra/logger/adapter';
-import { ISecretsAdapter } from '@/infra/secrets';
-import { ExceptionHandlerFilter } from '@/middlewares/filters';
+import { ILoggerAdapter } from '@/infra/logger/adapter'
+import { ISecretsAdapter } from '@/infra/secrets'
+import { ExceptionHandlerFilter } from '@/middlewares/filters'
 
-import { name } from '../package.json';
-import { AppModule } from './app.module';
-import { ErrorType } from './infra/logger';
-import { CryptoUtils } from './utils/crypto';
-import { changeLanguage, initI18n, normalizeLocale } from './utils/validator'; // Removemos LocaleInput
+import { name } from '../package.json'
+import { AppModule } from './app.module'
+import { ErrorType } from './infra/logger'
+import { CryptoUtils } from './utils/crypto'
+import { changeLanguage, initI18n, normalizeLocale } from './utils/validator' // Removemos LocaleInput
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true,
     cors: true
-  });
+  })
 
-  const loggerService = app.get(ILoggerAdapter);
+  const loggerService = app.get(ILoggerAdapter)
 
-  loggerService.setApplication(name);
-  app.useLogger(loggerService);
+  loggerService.setApplication(name)
+  app.useLogger(loggerService)
 
-  app.useGlobalFilters(new ExceptionHandlerFilter(loggerService));
+  app.useGlobalFilters(new ExceptionHandlerFilter(loggerService))
 
   app.setGlobalPrefix('api', {
     exclude: [
@@ -42,36 +42,36 @@ async function bootstrap() {
       { path: 'alert', method: RequestMethod.POST },
       { path: '/', method: RequestMethod.GET }
     ]
-  });
+  })
 
   // Inicializa com locale padrão 'en-US'
-  await initI18n('en-US');
+  await initI18n('en-US')
 
   app.use(async (req: Request, res: Response, next: NextFunction) => {
-    const languegeQuery = req.query.lang as string;
-    const acceptLanguage = req.headers['accept-language'];
+    const languegeQuery = req.query.lang as string
+    const acceptLanguage = req.headers['accept-language']
 
     const rawLocale = [languegeQuery, (acceptLanguage || '').split(',')[0].split(';')[0], 'en-US'].find(
       Boolean
-    ) as string;
+    ) as string
 
-    const locale = normalizeLocale(rawLocale);
+    const locale = normalizeLocale(rawLocale)
 
     try {
-      await changeLanguage(locale as 'en-US' | 'pt-BR' | 'es-ES');
+      await changeLanguage(locale as 'en-US' | 'pt-BR' | 'es-ES')
     } catch (error) {
-      loggerService.warn({ message: `Failed to change language to ${locale}`, obj: { originalError: error } });
+      loggerService.warn({ message: `Failed to change language to ${locale}`, obj: { originalError: error } })
     }
 
     if (req.originalUrl && req.originalUrl.split('/').pop() === 'favicon.ico') {
-      return res.sendStatus(204);
+      return res.sendStatus(204)
     }
 
-    const nonce = CryptoUtils.generateRandomBase64();
-    res.locals.nonce = nonce;
-    res.setHeader('X-Content-Security-Policy-Nonce', nonce);
-    next();
-  });
+    const nonce = CryptoUtils.generateRandomBase64()
+    res.locals.nonce = nonce
+    res.setHeader('X-Content-Security-Policy-Nonce', nonce)
+    next()
+  })
 
   app.use(
     helmet({
@@ -91,15 +91,15 @@ async function bootstrap() {
           scriptSrc: [
             "'self'",
             (req, res) => {
-              return `'nonce-${(res as ServerResponse<IncomingMessage> & { locals: { nonce: string } }).locals.nonce}'`;
+              return `'nonce-${(res as ServerResponse<IncomingMessage> & { locals: { nonce: string } }).locals.nonce}'`
             }
           ]
         }
       }
     })
-  );
+  )
 
-  app.use(compression());
+  app.use(compression())
 
   const {
     ENV,
@@ -111,43 +111,43 @@ async function bootstrap() {
     PROMETHUES_URL,
     GRAFANA_URL,
     IS_PRODUCTION
-  } = app.get(ISecretsAdapter);
+  } = app.get(ISecretsAdapter)
 
-  app.use(bodyParser.urlencoded({ extended: true }));
+  app.use(bodyParser.urlencoded({ extended: true }))
 
-  app.enableVersioning({ type: VersioningType.URI });
+  app.enableVersioning({ type: VersioningType.URI })
 
   process.on('uncaughtException', (error) => {
-    loggerService.error(error as ErrorType);
-  });
+    loggerService.error(error as ErrorType)
+  })
 
   process.on('unhandledRejection', (error) => {
-    loggerService.error(error as ErrorType);
-  });
+    loggerService.error(error as ErrorType)
+  })
 
   if (!IS_PRODUCTION) {
     const swaggerDocument = yaml.load(
       fs.readFileSync(path.join(__dirname, '../docs/tsp-output/@typespec/openapi3/openapi.api.1.0.yaml'), 'utf8')
-    );
-    app.use('/api-docs', swagger.serve, swagger.setup(swaggerDocument as swagger.SwaggerOptions));
+    )
+    app.use('/api-docs', swagger.serve, swagger.setup(swaggerDocument as swagger.SwaggerOptions))
   }
 
   await app.listen(PORT, () => {
-    loggerService.log(`🟢 ${name} listening at ${bold(PORT)} on ${bold(ENV?.toUpperCase())} 🟢`);
-    if (!IS_PRODUCTION) loggerService.log(`🟢 Swagger listening at ${bold(`${HOST}/api-docs`)} 🟢`);
-  });
+    loggerService.log(`🟢 ${name} listening at ${bold(PORT)} on ${bold(ENV?.toUpperCase())} 🟢`)
+    if (!IS_PRODUCTION) loggerService.log(`🟢 Swagger listening at ${bold(`${HOST}/api-docs`)} 🟢`)
+  })
 
-  loggerService.log(`🔵 Postgres listening at ${bold(POSTGRES_URL)}`);
+  loggerService.log(`🔵 Postgres listening at ${bold(POSTGRES_URL)}`)
   loggerService.log(
     `🔶 PgAdmin listening at ${bold(POSTGRES_PGADMIN_URL)} user: ${bold('pgadmin@gmail.com')} password: ${bold('PgAdmin2019!')}`
-  );
-  loggerService.log(`🔵 Mongo listening at ${bold(MONGO_URL)}`);
+  )
+  loggerService.log(`🔵 Mongo listening at ${bold(MONGO_URL)}`)
   loggerService.log(
     `🔶 Mongo express listening at ${bold(MONGO_EXPRESS_URL)} user: ${bold('admin')} password: ${bold('pass')}\n`
-  );
-  loggerService.log(`⚪ Grafana[${bold('Graphs')}] listening at ${bold(GRAFANA_URL)}`);
-  loggerService.log(`⚪ Zipkin[${bold('Tracing')}] listening at ${bold(ZIPKIN_URL)}`);
-  loggerService.log(`⚪ Promethues[${bold('Metrics')}] listening at ${bold(PROMETHUES_URL)}\n`);
+  )
+  loggerService.log(`⚪ Grafana[${bold('Graphs')}] listening at ${bold(GRAFANA_URL)}`)
+  loggerService.log(`⚪ Zipkin[${bold('Tracing')}] listening at ${bold(ZIPKIN_URL)}`)
+  loggerService.log(`⚪ Promethues[${bold('Metrics')}] listening at ${bold(PROMETHUES_URL)}\n`)
 }
 
-bootstrap();
+bootstrap()

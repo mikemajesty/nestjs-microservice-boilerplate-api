@@ -10,36 +10,36 @@ import {
   OneToOne,
   Relation,
   UpdateDateColumn
-} from 'typeorm';
+} from 'typeorm'
 
-import { RoleSchema } from './role';
-import { UserPasswordSchema } from './user-password';
+import { RoleSchema } from './role'
+import { UserPasswordSchema } from './user-password'
 
 @Entity({ name: 'users' })
 export class UserSchema extends BaseEntity {
   @Column({ type: 'uuid', primary: true })
-  id!: string;
+  id!: string
 
   @Column('text')
-  name!: string;
+  name!: string
 
   @Column('text')
-  email!: string;
+  email!: string
 
   @OneToOne(() => UserPasswordSchema, { cascade: ['insert', 'recover', 'update', 'remove', 'soft-remove'] })
   @JoinColumn()
-  password!: Relation<UserPasswordSchema>;
+  password!: Relation<UserPasswordSchema>
 
   @ManyToMany(() => RoleSchema, { eager: true, cascade: ['recover'] })
   @JoinTable({ name: 'users_roles' })
-  roles!: Relation<RoleSchema[]>;
+  roles!: Relation<RoleSchema[]>
 
   @CreateDateColumn()
-  createdAt!: Date;
+  createdAt!: Date
 
   @UpdateDateColumn()
-  updatedAt!: Date;
+  updatedAt!: Date
 
   @DeleteDateColumn({ nullable: true })
-  deletedAt!: Date;
+  deletedAt!: Date
 }
