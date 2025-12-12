@@ -154,7 +154,6 @@ The codebase is organized in concentric layers where dependencies point inward:
 - Complete use cases (Create, Read, Update, Delete, List)
 - Repository interface and implementation
 - REST Controller with all routes
-- Swagger documentation ready
 - Full unit test suite
 - Input/Output DTOs with validation
 - Pagination, search, and soft delete support
