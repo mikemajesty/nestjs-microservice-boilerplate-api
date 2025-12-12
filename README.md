@@ -161,6 +161,12 @@ The codebase is organized in concentric layers where dependencies point inward:
 > ```bash
 > npm run scaffold
 > ```
+(x) POSTGRES:CRUD
+( ) MONGO:CRUD
+( ) LIB
+( ) INFRA
+( ) MODULE
+( ) CORE
 
 ### 📊 Observability Stack
 
