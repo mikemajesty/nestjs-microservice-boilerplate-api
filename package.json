@@ -32,7 +32,7 @@
   },
   "dependencies": {
     "@faker-js/faker": "^10.1.0",
-    "@mikemajesty/zod-mock-schema": "1.0.13",
+    "@mikemajesty/zod-mock-schema": "1.0.14",
     "@nestjs/common": "^11.1.9",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.1.9",

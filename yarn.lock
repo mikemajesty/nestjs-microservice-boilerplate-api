@@ -2651,10 +2651,10 @@
     prompt-sync "^4.2.0"
     rimraf "^6.0.1"
 
-"@mikemajesty/zod-mock-schema@1.0.13":
-  version "1.0.13"
-  resolved "https://registry.npmjs.org/@mikemajesty/zod-mock-schema/-/zod-mock-schema-1.0.13.tgz"
-  integrity sha512-pYr5dVxmd+rqfmZepTAfW8dimWQqhwWJ9ZWBB4gFBfLLg5Zh+AC3GBfTzYNGx0IoMh7BvIruwyjRaHc2t0DlRA==
+"@mikemajesty/zod-mock-schema@1.0.14":
+  version "1.0.14"
+  resolved "https://registry.npmjs.org/@mikemajesty/zod-mock-schema/-/zod-mock-schema-1.0.14.tgz"
+  integrity sha512-0x5vFLxebMZt5pw6c3dGC7bo3Oi++GoK79UkC8bttPuTpdSIRe6Q0kG98dDRtYVp1Jlw5xy95mM7KNvqyVyMSw==
   dependencies:
     "@faker-js/faker" "^10.1.0"
     randexp "^0.5.3"

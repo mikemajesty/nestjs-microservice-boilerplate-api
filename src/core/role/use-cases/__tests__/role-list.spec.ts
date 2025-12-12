@@ -1,7 +1,7 @@
 import { ZodMockSchema } from '@mikemajesty/zod-mock-schema';
 import { Test } from '@nestjs/testing';
 
-import { RoleListInput, RoleListOutput, RoleListUsecase } from '@/core/role/use-cases/role-list';
+import { RoleListInput, RoleListOutput, RoleListSchema, RoleListUsecase } from '@/core/role/use-cases/role-list';
 import { IRoleListAdapter } from '@/modules/role/adapter';
 import { TestUtils } from '@/utils/test/util';
 import { ZodExceptionIssue } from '@/utils/validator';
@@ -48,8 +48,7 @@ describe(RoleListUsecase.name, () => {
     );
   });
 
-  const input: RoleListInput = { limit: 1, page: 1, search: {}, sort: { createdAt: -1 } };
-
+  const input = new ZodMockSchema(RoleListSchema).generate()
   const roleEntityMock = new ZodMockSchema(RoleEntitySchema);
   const roles: RoleEntity[] = roleEntityMock.generateMany<RoleEntity>(10, {
     overrides: {

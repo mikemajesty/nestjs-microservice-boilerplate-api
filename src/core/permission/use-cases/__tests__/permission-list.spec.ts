@@ -4,6 +4,7 @@ import { Test } from '@nestjs/testing';
 import {
   PermissionListInput,
   PermissionListOutput,
+  PermissionListSchema,
   PermissionListUsecase
 } from '@/core/permission/use-cases/permission-list';
 import { IPermissionListAdapter } from '@/modules/permission/adapter';
@@ -52,7 +53,7 @@ describe(PermissionListUsecase.name, () => {
     );
   });
 
-  const input: PermissionListInput = { limit: 1, page: 1, search: {}, sort: { createdAt: -1 } };
+  const input = new ZodMockSchema(PermissionListSchema).generate()
 
   const permissionEntityMock = new ZodMockSchema(PermissionEntitySchema);
   const permissions = permissionEntityMock.generateMany<PermissionEntity>(5, {

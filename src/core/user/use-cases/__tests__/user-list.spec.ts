@@ -8,7 +8,7 @@ import { ZodExceptionIssue } from '@/utils/validator';
 
 import { UserEntity, UserEntitySchema } from '../../entity/user';
 import { IUserRepository } from '../../repository/user';
-import { UserListInput, UserListOutput, UserListUsecase } from '../user-list';
+import { UserListInput, UserListOutput, UserListSchema, UserListUsecase } from '../user-list';
 
 describe(UserListUsecase.name, () => {
   let usecase: IUserListAdapter;
@@ -64,11 +64,12 @@ describe(UserListUsecase.name, () => {
     }
   });
 
+  const input = new ZodMockSchema(UserListSchema).generate()
   test('when users are found, should expect an user list', async () => {
     const output: UserListOutput = { docs: users, page: 1, limit: 1, total: 1 };
     repository.paginate = TestUtils.mockResolvedValue<UserListOutput>(output);
 
-    await expect(usecase.execute({ limit: 1, page: 1, search: {}, sort: { createdAt: -1 } })).resolves.toEqual({
+    await expect(usecase.execute(input)).resolves.toEqual({
       docs: users,
       page: 1,
       limit: 1,
@@ -80,6 +81,6 @@ describe(UserListUsecase.name, () => {
     const output: UserListOutput = { docs: [], page: 1, limit: 1, total: 1 };
     repository.paginate = TestUtils.mockResolvedValue<UserListOutput>(output);
 
-    await expect(usecase.execute({ limit: 1, page: 1, search: {}, sort: { createdAt: -1 } })).resolves.toEqual(output);
+    await expect(usecase.execute(input)).resolves.toEqual(output);
   });
 });

@@ -1,7 +1,7 @@
 import { ZodMockSchema } from '@mikemajesty/zod-mock-schema';
 import { Test } from '@nestjs/testing';
 
-import { CatListInput, CatListOutput, CatListUsecase } from '@/core/cat/use-cases/cat-list';
+import { CatListInput, CatListOutput, CatListSchema, CatListUsecase } from '@/core/cat/use-cases/cat-list';
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger';
 import { ICatListAdapter } from '@/modules/cat/adapter';
 import { TestUtils } from '@/utils/test/util';
@@ -57,11 +57,12 @@ describe(CatListUsecase.name, () => {
     }
   });
 
+  const input = new ZodMockSchema(CatListSchema).generate()
   test('when cats are found, should expect an user list', async () => {
     const output = { docs: docs as CatEntity[], page: 1, limit: 1, total: 1 };
     repository.paginate = TestUtils.mockResolvedValue<CatListOutput>(output);
 
-    await expect(usecase.execute({ limit: 1, page: 1, search: {}, sort: { createdAt: -1 } })).resolves.toEqual({
+    await expect(usecase.execute(input)).resolves.toEqual({
       docs: output.docs,
       page: 1,
       limit: 1,
@@ -73,6 +74,6 @@ describe(CatListUsecase.name, () => {
     const output = { docs: docs as CatEntity[], page: 1, limit: 1, total: 1 };
     repository.paginate = TestUtils.mockResolvedValue<CatListOutput>(output);
 
-    await expect(usecase.execute({ limit: 1, page: 1, search: {}, sort: { createdAt: -1 } })).resolves.toEqual(output);
+    await expect(usecase.execute(input)).resolves.toEqual(output);
   });
 });

@@ -20,7 +20,6 @@ import { ErrorType, MessageInputType } from './types';
 export class LoggerService implements ILoggerAdapter {
   static log(message: string) {
     const timestamp = DateUtils.getDateStringWithFormat();
-    // eslint-disable-next-line no-console
     console.log(`${gray('TRACE')} [${timestamp}]: [${blue(name)}] ${green(message)}`);
   }
 
@@ -88,7 +87,7 @@ export class LoggerService implements ILoggerAdapter {
 
     const response =
       error instanceof BaseException
-        ? { statusCode: error.statusCode, message: error?.message, ...error?.parameters }
+        ? { statusCode: error.statusCode, message: error?.message, ...this.toPlainObject(error?.parameters) }
         : errorResponse?.value();
 
     const type =
@@ -105,14 +104,14 @@ export class LoggerService implements ILoggerAdapter {
     const typeError = [type, error?.name === 'ZodError' ? ApiBadRequestException.name : error?.name].find(Boolean);
     this.logger.logger.error(
       {
-        ...response,
+        ...this.toPlainObject(response),
         context: error?.context,
         type,
         traceid: this.getTraceId(error),
         createdAt: DateUtils.getISODateString(),
         application: this.app,
         stack: error.stack?.replace(/\n/g, ''),
-        ...error?.parameters,
+        ...this.toPlainObject(error?.parameters),
         message: this.getMessage(messages)
       },
       typeError
@@ -160,16 +159,10 @@ export class LoggerService implements ILoggerAdapter {
       ignore: 'pid,hostname',
       messageFormat: (log: LogDescriptor, messageKey: string) => {
         const message = log[String(messageKey)];
-        if (this.app) {
-          return `[${blue(this.app)}] ${message}`;
-        }
-
-        return message;
+        return this.app ? `[${blue(this.app)}] ${message}` : message;
       },
       customPrettifiers: {
-        time: () => {
-          return `[${DateUtils.getDateStringWithFormat()}]`;
-        }
+        time: () => `[${DateUtils.getDateStringWithFormat()}]`
       }
     };
   }
@@ -225,20 +218,15 @@ export class LoggerService implements ILoggerAdapter {
         };
       },
       customLogLevel: (req: IncomingMessage, res: ServerResponse, error?: Error): pino.LevelWithSilent => {
-        if ([res.statusCode >= 400, error].some(Boolean)) {
-          return 'error';
-        }
-
-        if ([res.statusCode >= 300, res.statusCode <= 400].every(Boolean)) {
-          return 'silent';
-        }
-
-        return 'info';
+        return [res.statusCode >= 400, error].some(Boolean)
+          ? 'error'
+          : [res.statusCode >= 300, res.statusCode <= 400].every(Boolean)
+            ? 'silent'
+            : 'info';
       }
     };
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private getErrorResponse(error: ErrorType): any {
     const isFunction = typeof error?.getResponse === 'function';
     return [
@@ -266,7 +254,75 @@ export class LoggerService implements ILoggerAdapter {
   }
 
   private getTraceId(error: string | { traceid: string }): string {
-    if (typeof error === 'string') return IDGeneratorUtils.uuid();
-    return [error.traceid, this.logger.logger.bindings()?.traceid].find(Boolean);
+    return typeof error === 'string'
+      ? IDGeneratorUtils.uuid()
+      : [error.traceid, this.logger.logger.bindings()?.traceid].find(Boolean);
+  }
+
+  private toPlainObject(value: any): Record<string, any> {
+    const isNullish = value === null || value === undefined;
+    const isArray = Array.isArray(value);
+    const isPlain = this.isPlainObject(value);
+
+    return isNullish
+      ? {}
+      : isArray
+        ? { collection: value }
+        : isPlain
+          ? value
+          : this.serializeToPlainObject(value);
+  }
+
+  private serializeToPlainObject(value: any): Record<string, any> {
+    try {
+      const seen = new WeakSet();
+      const serialized = JSON.stringify(value, (key, val) => {
+        const isObject = typeof val === 'object' && val !== null;
+
+        return isObject && seen.has(val)
+          ? '[Circular]'
+          : isObject
+            ? (seen.add(val), this.serializeValue(val))
+            : val;
+      });
+
+      const parsed = JSON.parse(serialized);
+      const parsedIsArray = Array.isArray(parsed);
+      const parsedIsObject = typeof parsed === 'object' && parsed !== null;
+
+      return parsedIsArray
+        ? { collection: parsed }
+        : parsedIsObject
+          ? parsed
+          : { _value: parsed };
+    } catch {
+      return {
+        _serialization_error: 'Could not serialize object',
+        _type: value?.constructor?.name || typeof value
+      };
+    }
+  }
+
+  private serializeValue(val: any): any {
+    return val instanceof Map
+      ? Object.fromEntries(val)
+      : val instanceof Set
+        ? Array.from(val)
+        : val instanceof Date
+          ? val.toISOString()
+          : typeof val === 'function'
+            ? '[Function]'
+            : typeof val === 'symbol'
+              ? val.toString()
+              : val;
+  }
+
+  private isPlainObject(value: any): boolean {
+    const isObject = typeof value === 'object' && value !== null;
+    const isArray = Array.isArray(value);
+    const prototype = isObject ? Object.getPrototypeOf(value) : null;
+    const isPlainPrototype = prototype === null || prototype === Object.prototype;
+
+    return isObject && !isArray && isPlainPrototype;
   }
 }
