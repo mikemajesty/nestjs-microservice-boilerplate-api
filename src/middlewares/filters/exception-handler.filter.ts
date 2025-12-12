@@ -1,4 +1,4 @@
-import { ArgumentsHost, Catch, ExceptionFilter as AppExceptionFilter, HttpException } from '@nestjs/common'
+import { ExceptionFilter as AppExceptionFilter, ArgumentsHost, Catch, HttpException } from '@nestjs/common'
 import { AxiosError } from 'axios'
 import { ZodError } from 'zod'
 
@@ -6,13 +6,6 @@ import { ILoggerAdapter } from '@/infra/logger/adapter'
 import { DateUtils } from '@/utils/date'
 import { ApiBadRequestException, ApiErrorType, ApiInternalServerException, BaseException } from '@/utils/exception'
 import { DefaultErrorMessage } from '@/utils/http-status'
-
-interface ZodUnrecognizedKeysIssue {
-  code: 'unrecognized_keys'
-  keys: string[]
-  path: (string | number)[]
-  message: string
-}
 
 @Catch()
 export class ExceptionHandlerFilter implements AppExceptionFilter {
@@ -129,4 +122,11 @@ export class ExceptionHandlerFilter implements AppExceptionFilter {
 
     return exception['status'] || ApiInternalServerException.STATUS
   }
+}
+
+type ZodUnrecognizedKeysIssue = {
+  code: 'unrecognized_keys'
+  keys: string[]
+  path: (string | number)[]
+  message: string
 }
