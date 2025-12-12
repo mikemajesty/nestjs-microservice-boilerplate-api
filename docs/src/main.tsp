@@ -26,6 +26,6 @@ using TypeSpec.Versioning;
     url: "https://opensource.org/license/mit",
   },
 })
-@server("http://localhost:4000/")
+@server("http://localhost:5000/")
 @versioned(DocVersionVersion)
 namespace api;

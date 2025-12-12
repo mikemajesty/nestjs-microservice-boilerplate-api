@@ -55,7 +55,7 @@
     "class-validator": "^0.14.2",
     "colorette": "^2.0.20",
     "compression": "^1.8.1",
-    "convert-pino-request-to-curl": "^1.0.9",
+    "convert-pino-request-to-curl": "^1.0.11",
     "handlebars": "^4.7.8",
     "helmet": "^8.1.0",
     "i18next": "^25.6.3",

@@ -7466,10 +7466,10 @@ convert-hrtime@^5.0.0:
   resolved "https://registry.npmjs.org/convert-hrtime/-/convert-hrtime-5.0.0.tgz"
   integrity sha512-lOETlkIeYSJWcbbcvjRKGxVMXJR+8+OQb/mTPbA4ObPMytYIsUbuOE0Jzy60hjARYszq1id0j8KgVhC+WGZVTg==
 
-convert-pino-request-to-curl@^1.0.9:
-  version "1.0.9"
-  resolved "https://registry.npmjs.org/convert-pino-request-to-curl/-/convert-pino-request-to-curl-1.0.9.tgz"
-  integrity sha512-SOAS4CguICV5ITwbBci6MchWYYaqeV+iCE4Ehe8TpDxOv/00C6tn1nCW5CQrfHI+lD3aN0BYxRbnN8BV8o6kqg==
+convert-pino-request-to-curl@^1.0.11:
+  version "1.0.11"
+  resolved "https://registry.npmjs.org/convert-pino-request-to-curl/-/convert-pino-request-to-curl-1.0.11.tgz"
+  integrity sha512-uqRgOg5dkpxmJIFiO+m3J3+zmWeqTgZsLOG/6N93wyuV78i4+xHsI2+icGq5dY+cE6v99Jy3emLVlhrN4Bv7xw==
 
 convert-source-map@^2.0.0:
   version "2.0.0"
