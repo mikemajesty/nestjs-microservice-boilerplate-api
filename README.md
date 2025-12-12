@@ -139,14 +139,30 @@ The codebase is organized in concentric layers where dependencies point inward:
 
 ### 🚀 CRUD Scaffolding
 
-Automatically generate complete CRUD operations in seconds:
-- Entity generation with validation
-- Use cases (Create, Read, Update, Delete, List)
-- Repository implementation
-- Controller with routes
-- Swagger documentation
-- Unit tests (100% coverage)
-- Input/Output DTOs
+**⚡ Supercharged by our powerful CLI tool** - Generate complete, production-ready CRUD modules in seconds!
+
+✨ **What makes it incredible:**
+- 🎯 **6 different templates**: CRUD (Postgres/Mongo), Library, Infrastructure, Module, Core
+- 🔄 **Auto-import magic**: Automatically registers modules in the right places
+- 🏗️ **Clean Architecture**: Follows all architectural patterns out of the box
+- 🧪 **100% Test Coverage**: Complete test suites generated automatically
+- 📝 **Smart naming**: Handles kebab-case, spaces, special characters automatically
+- 🚫 **Zero manual work**: From scaffolding to registration, fully automated
+
+**Generated features:**
+- Entity with Zod validation schemas
+- Complete use cases (Create, Read, Update, Delete, List)
+- Repository interface and implementation
+- REST Controller with all routes
+- Swagger documentation ready
+- Full unit test suite
+- Input/Output DTOs with validation
+- Pagination, search, and soft delete support
+
+> 💡 **Pro tip**: Install the CLI globally for use across all your projects!
+> ```bash
+> npm install -g @mikemajesty/microservice-crud
+> ```
 
 ### 📊 Observability Stack
 
@@ -552,7 +568,34 @@ npm run migration:run
 
 ## 🎨 CRUD Scaffolding
 
-Generate a complete, production-ready CRUD module in seconds!
+> 🌟 **Powered by [@mikemajesty/microservice-crud](https://www.npmjs.com/package/@mikemajesty/microservice-crud)** - The most powerful NestJS CRUD generator!
+
+Generate a complete, production-ready CRUD module in seconds with our intelligent CLI tool!
+
+### 🚀 Why This CLI is Incredible
+
+- ⚡ **Lightning Fast**: Complete CRUD in <5 seconds
+- 🎯 **6 Template Types**: CRUD (Postgres/Mongo), Library, Infrastructure, Module, Core
+- 🔄 **Auto-Import**: Automatically registers modules in `app.module.ts`, `libs/module.ts`, or `infra/module.ts`
+- 🏗️ **Clean Architecture**: Generates code following Clean Architecture, DDD, and Hexagonal patterns
+- 🧪 **100% Coverage**: Every generated module includes complete test suites
+- 📝 **Smart Naming**: Handles spaces, underscores, special characters - converts everything to kebab-case
+- 🔒 **Type Safe**: Full TypeScript with Zod validation schemas
+- 📚 **Zero Config**: Works out of the box, no configuration needed
+- 🎨 **Customizable**: All templates are in `src/templates/` - modify to match your patterns
+
+### Installation
+
+**Local (project-specific):**
+```bash
+npm run scaffold
+```
+
+**Global (use anywhere):**
+```bash
+npm install -g @mikemajesty/microservice-crud
+microservice-crud
+```
 
 ### Usage
 
@@ -629,10 +672,35 @@ Each CRUD module includes:
 
 ### Example
 
-After generation, follow the instructions in the CLI output to:
-1. Import the module in `app.module.ts`
-2. Run migrations if database schema was created
-3. Access the new endpoints in Swagger
+After generation, the CLI automatically:
+1. ✅ Registers the module in the appropriate file (`app.module.ts`, `libs/module.ts`, or `infra/module.ts`)
+2. ✅ Creates all necessary directories and files
+3. ✅ Generates database schemas with proper indexes
+4. ✅ Sets up complete test infrastructure
+
+**Next steps:**
+1. Run migrations if database schema was created
+2. Access the new endpoints in Swagger UI
+3. Run tests to verify everything works: `npm test`
+
+### 📦 CLI Package
+
+The CRUD generator is available as a standalone NPM package:
+
+🔗 **[@mikemajesty/microservice-crud](https://www.npmjs.com/package/@mikemajesty/microservice-crud)**
+
+- Use it in any NestJS project
+- Fully documented with examples
+- Active maintenance and updates
+- Open source (MIT License)
+
+**Features highlight:**
+- ⚡ 6 different generation templates
+- 🔄 Auto-registration in module files
+- 🧪 Complete test suite generation
+- 📝 Intelligent name sanitization
+- 🏗️ Clean Architecture compliant
+- 🎯 Zero configuration needed
 
 <img loading="lazy" src="ohmy.gif" width="150" height="150"/>
 
