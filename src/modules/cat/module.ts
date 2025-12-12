@@ -73,7 +73,14 @@ import { CatRepository } from './repository'
       inject: [ICatRepository]
     }
   ],
-  exports: []
+  exports: [
+    ICatRepository,
+    ICatCreateAdapter,
+    ICatUpdateAdapter,
+    ICatGetByIdAdapter,
+    ICatListAdapter,
+    ICatDeleteAdapter
+  ]
 })
 export class CatModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
