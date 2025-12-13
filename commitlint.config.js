@@ -24,7 +24,10 @@ scopes.push(
   'migration',
   'core',
   'swagger',
-  `usecases`
+  'usecases',
+  'ci',
+  'github',
+  'workflow'
 );
 
 module.exports = {
