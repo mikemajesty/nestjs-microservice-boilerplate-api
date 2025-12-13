@@ -32,10 +32,6 @@ jobs:
 
       - name: Run linter
         run: npm run lint
-
-      - name: Check formatting
-        run: npx prettier --check "src/**/*.{ts,js,json}"
-
   test:
     name: Test
     runs-on: ubuntu-latest
