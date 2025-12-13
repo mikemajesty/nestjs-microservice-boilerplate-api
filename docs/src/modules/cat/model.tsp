@@ -19,13 +19,13 @@ model CatEntity {
   deletedAt: string | null = null;
 }
 
-// ## CREATE ## //
+// CREATE //
 @doc("cat create input")
 model CreateInput extends PickProperties<CatEntity, "name" | "breed" | "age"> {}
 @doc("cat create output")
 model CreateOutput extends CatEntity {}
 
-// ## UPDATE ## //
+// UPDATE //
 model UpdateParamInput {
   @doc("cat id")
   @path
@@ -36,7 +36,7 @@ model UpdateInput extends PickProperties<CatEntity, "name" | "breed" | "age"> {}
 @doc("cat update output")
 model UpdateOutput extends CatEntity {}
 
-// ## GET BY ID ## //
+// GET BY ID //
 model GetByIdParamInput {
   @doc("cat id")
   @path
@@ -45,12 +45,12 @@ model GetByIdParamInput {
 @doc("cat get by id input")
 model GetByIdOutput extends CatEntity {}
 
-// ## LIST ## //
+// LIST //
 model ListQueryInput extends ApiPaginationInput {}
 @doc("cat list output")
 model ListOutput extends ApiPaginationOutput<CatEntity> {}
 
-// ## DELETE ## //
+// DELETE //
 model DeleteParamInput {
   @doc("cat id")
   @path

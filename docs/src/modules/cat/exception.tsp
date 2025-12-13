@@ -11,7 +11,7 @@ using Utils.Versioning;
 
 namespace api.Cat;
 
-// ## CREATE ## //
+// CREATE //
 @doc("When input is invalid")
 @error
 model CreateValidationError extends ApiBadRequestException<"name: Required, breed: Required, age: Required"> {
@@ -20,7 +20,7 @@ model CreateValidationError extends ApiBadRequestException<"name: Required, bree
 
 alias CreateValidationException = CreateValidationError;
 
-// ## UPDATE ## //
+// UPDATE //
 @doc("When input is invalid")
 @error
 model UpdateValidationError extends ApiBadRequestException<"id: Required"> {
@@ -37,7 +37,7 @@ model UpdateCatNotFoundError extends ApiNotFoundException<"catNotFound"> {
 
 alias UpdateNotFoundException = UpdateCatNotFoundError;
 
-// ## GET BY ID ## //
+// GET BY ID //
 @doc("When input is invalid")
 @error
 model GetByIdValidationError extends ApiBadRequestException<"id: Required"> {
@@ -54,7 +54,7 @@ model GetByIdCatNotFoundError extends ApiNotFoundException<"catNotFound"> {
 
 alias GetByIdNotFoundException = GetByIdCatNotFoundError;
 
-// ## DELETE ## //
+// DELETE //
 @doc("When input is invalid")
 @error
 model DeleteValidationError extends ApiBadRequestException<"id: Required"> {

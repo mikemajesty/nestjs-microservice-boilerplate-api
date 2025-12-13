@@ -3,25 +3,30 @@
   "version": "0.1.0",
   "type": "commonjs",
   "scripts": {
-    "doc:install": "npx tsp install",
-    "doc:init": "npx tsp init",
-    "doc:compiler": "npx tsp compile ./src --watch",
-    "doc:start": "browser-sync start --proxy 'localhost:8080' --files './tsp-output/@typespec/openapi3/openapi.api.1.0.yaml' ",
-    "start": "concurrently \"yarn doc:start\" \"yarn doc:compiler\"",
-    "infra": "docker-compose down --volumes && docker-compose up --build --remove-orphans"
+    "tsp:install": "npx tsp install",
+    "init": "npx tsp init",
+    "compile": "npx tsp compile ./src",
+    "compile:watch": "npx tsp compile ./src --watch",
+    "serve": "browser-sync start --proxy 'localhost:8080' --files './tsp-output/@typespec/openapi3/openapi.api.1.0.yaml'",
+    "dev": "concurrently \"yarn serve\" \"yarn compile:watch\"",
+    "start": "yarn dev",
+    "setup": "docker-compose up --build --remove-orphans",
+    "setup:down": "docker-compose down --volumes",
+    "setup:restart": "yarn setup:down && yarn setup"
   },
   "peerDependencies": {
-    "@typespec/compiler": "latest",
-    "@typespec/http": "latest",
-    "@typespec/openapi3": "latest",
-    "@typespec/rest": "latest",
-    "@typespec/versioning": "latest"
+    "@typespec/compiler": "^1.7.0",
+    "@typespec/http": "^1.7.0",
+    "@typespec/openapi3": "^1.7.0",
+    "@typespec/rest": "^0.77.0",
+    "@typespec/versioning": "^0.77.0"
   },
   "devDependencies": {
-    "@typespec/compiler": "latest",
-    "@typespec/http": "latest",
-    "@typespec/openapi3": "latest",
-    "@typespec/rest": "latest",
+    "@typespec/compiler": "^1.7.0",
+    "@typespec/http": "^1.7.0",
+    "@typespec/openapi3": "^1.7.0",
+    "@typespec/rest": "^0.77.0",
+    "@typespec/versioning": "^0.77.0",
     "browser-sync": "^3.0.3",
     "concurrently": "^9.1.2"
   },

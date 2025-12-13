@@ -4,7 +4,7 @@ using api.Utils.Model;
 
 namespace api.Logout;
 
-// ## LOGOUT ## //
+// LOGOUT //
 @doc("logout input")
 model LogoutInput {
   token: string;

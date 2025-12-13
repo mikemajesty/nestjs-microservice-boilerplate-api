@@ -1,24 +1,56 @@
 # Documentation
 
-### Building and Running the documentaion
+### Building and Running the Documentation
 
 Documentation:
-[documentation](https://typespec.io/)
+[TypeSpec Documentation](https://typespec.io/)
 
 ---
 
-- install dependencies
-  ```
-  $ yarn doc:install
-  ```
-- running infra
-  ```
-  $ yarn setup
-  ```
-- starting doc
-  ```
-  $ yarn start
-  ```
+## Available Commands
+
+### Installation
+```bash
+$ yarn install
+```
+
+### Development
+```bash
+# Start development mode (compile + serve with watch)
+$ yarn dev
+# or
+$ yarn start
+
+# Compile TypeSpec files
+$ yarn compile
+
+# Compile with watch mode
+$ yarn compile:watch
+
+# Serve documentation with browser-sync
+$ yarn serve
+```
+
+### Infrastructure
+```bash
+# Start infrastructure
+$ yarn setup
+
+# Stop infrastructure
+$ yarn setup:down
+
+# Restart infrastructure
+$ yarn setup:restart
+```
+
+### TypeSpec
+```bash
+# Initialize TypeSpec project
+$ npm run init
+
+# Install TypeSpec dependencies
+$ npm run tsp:install
+```
 
 ---
 

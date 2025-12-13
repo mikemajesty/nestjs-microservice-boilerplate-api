@@ -24,7 +24,7 @@ model UserEntity {
   deletedAt?: string | null = null;
 }
 
-// ## CREATE ## //
+// CREATE //
 @doc("user create input")
 model CreateInput extends OmitProperties<UserEntity, "id" | "createdAt" | "updateAt" | "deletedAt"> {
   password: string;
@@ -32,7 +32,7 @@ model CreateInput extends OmitProperties<UserEntity, "id" | "createdAt" | "updat
 @doc("user created input")
 model CreateOutput extends ApiCreatedOutput {}
 
-// ## UPDATE ## //
+// UPDATE //
 @doc("user update params input")
 model UpdateParamsInput {
   @doc("user id")
@@ -44,17 +44,17 @@ model UpdateInput extends OmitProperties<UserEntity, "id" | "createdAt" | "updat
 @doc("user update output")
 model UpdateOutput extends UserEntity {}
 
-// ## ME ## //
+// ME //
 @doc("user logged output")
 model MeOutput extends PickProperties<UserEntity, "id" | "name" | "email"> {}
 
-// ## LIST ## //
+// LIST //
 @doc("user list query input")
 model ListQueryInput extends ApiPaginationInput {}
 @doc("user list output")
 model ListOutput extends ApiPaginationOutput<UserEntity> {}
 
-// ## GET BY ID ## //
+// GET BY ID //
 @doc("get user by id params input")
 model GetByIdParamsInput {
   @doc("user id")
@@ -64,7 +64,7 @@ model GetByIdParamsInput {
 @doc("get user by id output")
 model GetByIdOutput extends UserEntity {}
 
-// ## CHANGE PASSWORD ## //
+// CHANGE PASSWORD //
 @doc("user change password params input")
 model ChangePasswordParamsInput {
   @doc("user id")
@@ -78,7 +78,7 @@ model ChangePasswordInput {
   confirmPassword: string;
 }
 
-// ## DELETE ## //
+// DELETE //
 @doc("user delete params input")
 model DeleteParamsInput {
   @doc("user id")

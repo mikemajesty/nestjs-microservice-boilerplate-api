@@ -6,7 +6,7 @@ using api.Utils.Exception;
 
 namespace api.User;
 
-// ## CREATE ## //
+// CREATE //
 @doc("When user role not found")
 @error
 model CreateNotFoundError extends ApiNotFoundException<"roleNotFound"> {
@@ -32,7 +32,7 @@ model CreateExistConflictError extends ApiConflictException<"userExists"> {
 
 alias CreateConflictException = CreateExistConflictError;
 
-// ## UPDATE ## //
+// UPDATE //
 @doc("When user not found")
 @error
 model UpdateUserNotFoundError extends ApiNotFoundException<"userNotFound"> {
@@ -63,7 +63,7 @@ model UpdateExistConflictError extends ApiConflictException<"userExists"> {
 
 alias UpdateConflictException = UpdateExistConflictError;
 
-// ## GET BY ID ## //
+// GET BY ID //
 @doc("When user not found")
 @error
 model GetByIdUserNotFoundError extends ApiNotFoundException<"userNotFound"> {
@@ -80,7 +80,7 @@ model GetByIdParamsValidationError extends ApiBadRequestException<"id: Required"
 
 alias GetByIdValidationException = GetByIdParamsValidationError;
 
-// ## CHANGE PASSWORD ## //
+// CHANGE PASSWORD //
 @doc("When user not found")
 @error
 model ChangePasswordUserNotFoundError extends ApiNotFoundException<"userNotFound"> {
@@ -118,7 +118,7 @@ model ChangePasswordBodyValidationError
 
 alias ChangePasswordValidationException = ChangePasswordParamsValidationError | ChangePasswordBodyValidationError;
 
-// ## DELETE ## //
+// DELETE //
 @doc("When user not found")
 @error
 model DeleteUserNotFoundError extends ApiNotFoundException<"userNotFound"> {

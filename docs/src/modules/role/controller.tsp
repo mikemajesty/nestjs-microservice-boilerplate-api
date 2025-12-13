@@ -15,9 +15,7 @@ using OpenAPI;
 using Utils.Versioning;
 using Utils.Exception;
 
-@service({
-  title: "Role",
-})
+@service(#{ title: "Role" })
 namespace api.Role;
 
 @tag("Role")

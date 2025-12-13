@@ -15,9 +15,7 @@ using Utils.Versioning;
 using Utils.Exception;
 using Utils.Model;
 
-@service({
-  title: "Logout",
-})
+@service(#{ title: "Logout" })
 namespace api.Logout;
 
 @tag("Logout")

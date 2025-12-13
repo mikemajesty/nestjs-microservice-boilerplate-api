@@ -4270,7 +4270,7 @@ components:
   securitySchemes:
     BearerAuth:
       type: http
-      scheme: bearer
+      scheme: Bearer
 servers:
   - url: http://localhost:5000/
     variables: {}

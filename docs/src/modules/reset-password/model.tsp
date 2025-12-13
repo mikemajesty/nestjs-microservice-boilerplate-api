@@ -11,13 +11,13 @@ model ResetPasswordEntity {
   token: string;
 }
 
-// ## SEND EMAIL ## //
+// SEND EMAIL //
 @doc("reset password send email input")
 model SendEmailInput {
   email: string;
 }
 
-// ## Confirm Reset Password ## //
+// Confirm Reset Password //
 @doc("confirm reset password input")
 model ConfirmResetPasswordInput {
   password: string;

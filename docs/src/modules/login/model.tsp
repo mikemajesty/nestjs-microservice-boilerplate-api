@@ -1,6 +1,6 @@
 namespace api.Login;
 
-// ## LOGIN ## //
+// LOGIN //
 @doc("login input")
 model LoginInput {
   email: string;
@@ -13,7 +13,7 @@ model LoginOutput {
   refreshToken: string;
 }
 
-// ## REFRESH TOKEN ## //
+// REFRESH TOKEN //
 @doc("login refresh token input")
 model RefreshTokenInput {
   refreshToken: string;

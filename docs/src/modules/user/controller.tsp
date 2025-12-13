@@ -15,9 +15,7 @@ using OpenAPI;
 using Utils.Versioning;
 using Utils.Exception;
 
-@service({
-  title: "User",
-})
+@service(#{ title: "User" })
 namespace api.User;
 
 @tag("User")

@@ -12,9 +12,7 @@ using OpenAPI;
 using Utils.Model;
 using Utils.Versioning;
 
-@service({
-  title: "Cat",
-})
+@service(#{ title: "Cat" })
 namespace api.Cat;
 
 @tag("Cat")

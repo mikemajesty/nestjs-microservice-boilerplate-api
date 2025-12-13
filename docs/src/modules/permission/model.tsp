@@ -17,13 +17,13 @@ model PermisisonEntity {
   deletedAt: string | null = null;
 }
 
-// ## CREATE ## //
+// CREATE //
 @doc("permission create input")
 model CreateInput extends PickProperties<PermisisonEntity, "name"> {}
 @doc("permission create output")
 model CreateOutput extends PermisisonEntity {}
 
-// ## UPDATE ## //
+// UPDATE //
 model UpdateParamsInput {
   @doc("permission id")
   @path
@@ -34,13 +34,13 @@ model UpdateInput extends PickProperties<PermisisonEntity, "name"> {}
 @doc("permission update output")
 model UpdateOutput extends PermisisonEntity {}
 
-// ## LIST ## //
+// LIST //
 @doc("permission list input")
 model ListQueryInput extends ApiPaginationInput {}
 @doc("permission list output")
 model ListOutput extends ApiPaginationOutput<PermisisonEntity> {}
 
-// ## DELETE ## //
+// DELETE //
 model DeleteParamsInput {
   @doc("permission id")
   @path
@@ -51,7 +51,7 @@ model DeleteOutput extends OmitProperties<PermisisonEntity, "deletedAt"> {
   deletedAt: utcDateTime;
 }
 
-// ## GET BY ID ## //
+// GET BY ID //
 model GetByIdParamsInput {
   @doc("permission id")
   @path

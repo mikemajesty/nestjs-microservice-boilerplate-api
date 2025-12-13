@@ -15,9 +15,7 @@ using OpenAPI;
 using Utils.Versioning;
 using Utils.Exception;
 
-@service({
-  title: "Reset password",
-})
+@service(#{ title: "Reset password" })
 namespace api.ResetPassword;
 
 @tag("Reset password")

@@ -14,9 +14,7 @@ using Utils.Versioning;
 using Utils.Exception;
 using Utils.Model;
 
-@service({
-  title: "Login",
-})
+@service(#{ title: "Login" })
 namespace api.Login;
 
 @tag("Login")

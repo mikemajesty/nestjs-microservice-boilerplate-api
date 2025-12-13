@@ -6,7 +6,7 @@ using api.Utils.Exception;
 
 namespace api.Role;
 
-// ## CREATE ## //
+// CREATE //
 @doc("When input body is invalid")
 @error
 model CreateBodyValidationError extends ApiBadRequestException<"name: Required"> {
@@ -15,7 +15,7 @@ model CreateBodyValidationError extends ApiBadRequestException<"name: Required">
 
 alias CreateValidationException = CreateBodyValidationError;
 
-// ## UPDATE ## //
+// UPDATE //
 @doc("When input params is invalid")
 @error
 model UpdateParamsValidationError extends ApiBadRequestException<"id: Required"> {
@@ -32,7 +32,7 @@ model UpdateRoleNotFoundError extends ApiNotFoundException<"roleNotFound"> {
 
 alias UpdateNotFoundException = UpdateRoleNotFoundError;
 
-// ## GET BY ID ## //
+// GET BY ID //
 @doc("When input params is invalid")
 @error
 model GetByIdParamsValidationError extends ApiBadRequestException<"id: Required"> {
@@ -49,7 +49,7 @@ model GetByIdRoleNotFoundError extends ApiNotFoundException<"roleNotFound"> {
 
 alias GetByIdNotFoundException = GetByIdRoleNotFoundError;
 
-// ## DELETE ## //
+// DELETE //
 @doc("When roles has association with permission")
 @error
 model DeleteHasAssociationError extends ApiConflictException<"roleHasAssociationWithPermission: [permission]"> {
@@ -66,7 +66,7 @@ model DeleteRoleNotFoundError extends ApiNotFoundException<"roleNotFound"> {
 
 alias DeleteNotFoundException = DeleteRoleNotFoundError;
 
-// ## ADD PERMISSION ## //
+// ADD PERMISSION //
 @doc("When role not found")
 @error
 model AddPermissionRoleNotFoundError extends ApiNotFoundException<"roleNotFound"> {
@@ -75,7 +75,7 @@ model AddPermissionRoleNotFoundError extends ApiNotFoundException<"roleNotFound"
 
 alias AddPermissionNotFoundException = AddPermissionRoleNotFoundError;
 
-// ## REMOVE PERMISSION ## //
+// REMOVE PERMISSION //
 @doc("When role not found")
 @error
 model RemovePermissionRoleNotFoundError extends ApiNotFoundException<"roleNotFound"> {

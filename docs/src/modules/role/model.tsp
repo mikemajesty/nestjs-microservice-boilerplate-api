@@ -14,13 +14,13 @@ model RoleEntity {
   updatedAt: string;
   deletedAt: string | null = null;
 }
-// ## CREATE ## //
+// CREATE //
 @doc("role create output")
 model CreateOutput extends RoleEntity {}
 @doc("role create input")
 model CreateInput extends PickProperties<RoleEntity, "name"> {}
 
-// ## UPDATE ## //
+// UPDATE //
 @doc("role update params input")
 model UpdateParamsInput {
   @doc("role id")
@@ -32,7 +32,7 @@ model UpdateOutput extends RoleEntity {}
 @doc("role update input")
 model UpdateInput extends PickProperties<RoleEntity, "name"> {}
 
-// ## GET BY ID ## //
+// GET BY ID //
 @doc("role get by id params input")
 model GetByIdParamsInput {
   @doc("role id")
@@ -42,13 +42,13 @@ model GetByIdParamsInput {
 @doc("role get by id")
 model GetByIdOutput extends RoleEntity {}
 
-// ## LIST ## //
+// LIST //
 @doc("list query input")
 model ListQueryInput extends ApiPaginationInput {}
 @doc("list output")
 model ListOutput extends ApiPaginationOutput<RoleEntity> {}
 
-// ## DELETE ## //
+// DELETE //
 @doc("role delete params input")
 model DeleteParamsInput {
   @doc("role id")
@@ -60,7 +60,7 @@ model DeleteOutput extends OmitProperties<RoleEntity, "deletedAt"> {
   deletedAt: utcDateTime;
 }
 
-// ## ADD PERMISSI0N ## //
+// ADD PERMISSI0N //
 @doc("role add permission input")
 model AddPermissionParamsInput {
   @doc("role id")
@@ -74,7 +74,7 @@ model AddPermissionInput {
 @doc("role add permission output")
 model AddPermissionOutput extends RoleEntity {}
 
-// ## REMOVE PERMISSION ## //
+// REMOVE PERMISSION //
 @doc("role add permission input")
 model RemovePermissionParamsInput {
   @doc("role id")
