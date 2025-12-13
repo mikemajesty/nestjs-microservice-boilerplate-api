@@ -5,6 +5,9 @@
   "author": "mike.rodrigues.lima@gmail.com",
   "private": true,
   "license": "MIT",
+  "overrides": {
+    "@opentelemetry/api": "^1.8.0"
+  },
   "scripts": {
     "prepare": "husky",
     "build": "nest build",
