@@ -1,3 +1,15 @@
+## [1.1.1](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/v1.1.0...v1.1.1) (2025-12-13)
+
+
+### Bug Fixes
+
+* **ci:** add fallback to npm install when npm ci fails ([cf89629](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/cf8962951cd2c98a04acd2da677b95ec52765896))
+* **ci:** rebuild swc native bindings for linux compatibility ([9bd3806](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/9bd3806a783af53428d0a5d34ff1aeac636b62ea))
+* **modules:** fix cat exports ([27e5f9d](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/27e5f9de3be5c5d63bb98ad0cdeb3218a81ccd05))
+* update Node.js version to 20.x in release workflow for @swc/core compatibility ([86fa3c4](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/86fa3c4e7d0b72fcce13b5555b308b26834a2846))
+* **usecases:** fix error handler ([f5de973](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/f5de973e879210968b85744e76b5f60b8360b1ba))
+* **usecases:** fix error handler ([f141095](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/f141095c6a05b65e79a18cfa494413df26b47a18))
+
 # [1.1.0](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/v1.0.1...v1.1.0) (2025-12-09)
 
 
