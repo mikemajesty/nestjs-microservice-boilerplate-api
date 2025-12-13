@@ -2636,10 +2636,10 @@
   resolved "https://registry.npmjs.org/@lukeed/csprng/-/csprng-1.1.0.tgz"
   integrity sha512-Z7C/xXCiGWsg0KuKsHTKJxbWhpI3Vs5GwLfOean7MGyVFGqdRgBbAjOCh6u4bbjPc/8MJ2pZmK/0DLdCbivLDA==
 
-"@mikemajesty/microservice-crud@7.1.0":
-  version "7.1.0"
-  resolved "https://registry.npmjs.org/@mikemajesty/microservice-crud/-/microservice-crud-7.1.0.tgz"
-  integrity sha512-vpYcJNKZMkv/j4xq0yqsvc+8HqtoorjnUxa8YcSGc988GWKvrSxALCSIgpTEgNPjsn7tATwSE/Ult06AfZ0mkg==
+"@mikemajesty/microservice-crud@7.1.1":
+  version "7.1.1"
+  resolved "https://registry.npmjs.org/@mikemajesty/microservice-crud/-/microservice-crud-7.1.1.tgz"
+  integrity sha512-arpNSaYPnVucqANCRNIrtdCh3QtgLgNMwhDjCRwfLGrsmKunFailLziQwNMBtp6xFrP2PvochrM2UpUGzTmPlQ==
   dependencies:
     arg "^5.0.2"
     chmod "^0.2.1"
