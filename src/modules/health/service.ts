@@ -42,19 +42,26 @@ export class HealthService implements IHealthAdapter {
 
   async getMongoMemory(): Promise<DatabaseMemoryOutput> {
     try {
-      if (this.mongo.readyState !== 1) {
-        throw new ApiInternalServerException('mongo down')
+      if (this.mongo.readyState !== 1 || !this.mongo.db) {
+        return { ramUsed: "N/A", reservedMemory: "N/A" }
       }
 
-      if (this.mongo.db) {
-        const status = await this.mongo.db.command({ serverStatus: 1 })
+      const status = await this.mongo.db.command({ serverStatus: 1 })
 
-        return {
-          ramUsed: `${(status.mem.resident / (1024 * 1024)).toFixed(2)} MB`,
-          reservedMemory: `${(status.mem.virtual / (1024 * 1024)).toFixed(2)} MB`
-        }
+      const cache = status.wiredTiger?.cache
+      if (!cache) {
+        throw new Error('WiredTiger cache not available - check MongoDB version/config')
       }
-      return { ramUsed: 0, reservedMemory: 0 }
+
+      const memory = {
+        used: cache['bytes currently in the cache'] || 0,
+        max: cache['maximum bytes configured'] || 0
+      }
+
+      return {
+        ramUsed: `${(memory.used / 1024 / 1024).toFixed(2)} MB`,
+        reservedMemory: `${(memory.max / 1024 / 1024).toFixed(2)} MB`
+      }
     } catch (error) {
       error = this.buildError(error, `${HealthService.name}/getMongoMemory`)
       this.logger.error(error as ErrorType)
@@ -100,7 +107,7 @@ export class HealthService implements IHealthAdapter {
         active: Number(current[0].count)
       }
     } catch (error) {
-      error = this.buildError(error, `${HealthService.name}/getMongoConnections`)
+      error = this.buildError(error, `${HealthService.name}/getPostgresConnections`)
       this.logger.error(error as ErrorType)
       return {
         current: 0,
@@ -131,11 +138,24 @@ export class HealthService implements IHealthAdapter {
   }
 
   getLoadAvarage(time: number, numCpus: number): Load {
-    const STATUS = time < numCpus ? 'healthy 🟢' : 'overloaded 🔴'
-    if (STATUS === 'overloaded 🔴') {
-      this.logger.warn({ message: `CPU ${STATUS} `, context: HealthService.name })
+    const getStatus = (percentage: number) => {
+      const thresholds = [
+        { limit: 60, status: 'healthy 🟢' },
+        { limit: 80, status: 'warning ⚠️' },
+        { limit: Infinity, status: 'overloaded 🔴' }
+      ]
+      return thresholds.find(t => percentage < t.limit)?.status || 'overloaded 🔴'
     }
-    return { load: time, status: STATUS }
+
+    const percentage = (time / numCpus) * 100
+    const status = getStatus(percentage)
+
+    status !== 'healthy 🟢' && this.logger.warn({
+      message: `CPU ${status} - Load: ${time.toFixed(2)}, CPUs: ${numCpus}, Usage: ${percentage.toFixed(1)}%`,
+      context: HealthService.name
+    })
+
+    return { load: time, status }
   }
 
   getActiveConnections() {
@@ -216,7 +236,7 @@ export class HealthService implements IHealthAdapter {
     if (typeof error === 'string') {
       error = new ApiInternalServerException(error)
     }
-    ;(error as { context: string }).context = context
+    Object.assign(error as object, { context })
     return error
   }
 

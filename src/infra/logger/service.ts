@@ -229,7 +229,7 @@ export class LoggerService implements ILoggerAdapter {
           return 'error'
         }
 
-        if ([res.statusCode >= 300, res.statusCode <= 400].every(Boolean)) {
+        if (res.statusCode >= 300 && res.statusCode < 400) {
           return 'silent'
         }
 

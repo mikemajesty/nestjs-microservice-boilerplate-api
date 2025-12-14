@@ -32,7 +32,18 @@ export class Cat {
 
 const CatSchema = SchemaFactory.createForClass(Cat)
 
+// Index para busca por nome em cats não deletados (query mais comum)
 CatSchema.index({ name: 1 }, { partialFilterExpression: { deletedAt: { $eq: null } } })
+
+// Index para filtrar por deletedAt (usado em todas as queries de listagem)
+CatSchema.index({ deletedAt: 1 })
+
+// Index composto para ordenação por createdAt/updatedAt em cats não deletados
+CatSchema.index({ deletedAt: 1, createdAt: -1 })
+CatSchema.index({ deletedAt: 1, updatedAt: -1 })
+
+// Index para paginação eficiente com ordenação
+CatSchema.index({ deletedAt: 1, createdAt: -1, _id: 1 })
 
 CatSchema.plugin(paginate)
 

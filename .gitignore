@@ -27,3 +27,7 @@ lerna-debug.log*
 *.launch
 .settings/
 *.sublime-workspace
+
+# Artillery generated files
+.artillery/output.yaml
+.artillery/OUTPUT.md

@@ -4,6 +4,7 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  Index,
   JoinTable,
   ManyToMany,
   Relation,
@@ -13,6 +14,8 @@ import {
 import { RoleSchema } from './role'
 
 @Entity({ name: 'permissions' })
+@Index('idx_permissions_name_trgm', ['name'])
+@Index('idx_permissions_deleted_name_created', ['deletedAt', 'name', 'createdAt'])
 export class PermissionSchema extends BaseEntity {
   @Column({ type: 'uuid', primary: true })
   id!: string

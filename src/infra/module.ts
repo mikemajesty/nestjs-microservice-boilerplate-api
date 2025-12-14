@@ -19,6 +19,16 @@ import { SecretsModule } from './secrets'
     RedisCacheModule,
     MemoryCacheModule,
     EmailModule
+  ],
+  exports: [
+    SecretsModule,
+    MongoDatabaseModule,
+    PostgresDatabaseModule,
+    LoggerModule,
+    HttpModule,
+    RedisCacheModule,
+    MemoryCacheModule,
+    EmailModule
   ]
 })
 export class InfraModule {}

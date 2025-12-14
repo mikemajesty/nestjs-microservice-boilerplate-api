@@ -42,9 +42,16 @@ import { MongoService } from './service'
             return connection
           },
           uri: connection.uri,
-          minPoolSize: 10,
+          minPoolSize: 5,
+          maxPoolSize: 25,
+          maxIdleTimeMS: 300000,
           serverSelectionTimeoutMS: 5000,
-          socketTimeoutMS: 5000,
+          socketTimeoutMS: 30000,
+          connectTimeoutMS: 10000,
+          heartbeatFrequencyMS: 10000,
+          maxConnecting: 5,
+          retryWrites: true,
+          retryReads: true,
           readPreference: 'primaryPreferred',
           appName: name
         }

@@ -52,4 +52,4 @@ mongod --shutdown
 
 # Start MongoDB with replicaset
 echo "🚀 Starting MongoDB with replicaset..."
-exec mongod --bind_ip_all --replSet app --keyFile /etc/mongo/keyfile --auth
+exec mongod --bind_ip_all --replSet rs0 --keyFile /etc/mongo/keyfile --auth

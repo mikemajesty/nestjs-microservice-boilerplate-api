@@ -1,5 +1,6 @@
 export abstract class ISecretsAdapter {
   ENV!: string
+  TIMEOUT!: number
 
   PORT!: number | string
 

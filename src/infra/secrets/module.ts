@@ -22,6 +22,7 @@ import { EnvEnum } from './types'
       useFactory: (config: ConfigService) => {
         const SecretsSchema = InputValidator.object<ZodInferSchema<ISecretsAdapter>>({
           ENV: InputValidator.enum(EnvEnum),
+          TIMEOUT: InputValidator.number().or(InputValidator.string()).transform((p) => Number(p)),
           HOST: InputValidator.string(),
           IS_LOCAL: InputValidator.boolean(),
           IS_PRODUCTION: InputValidator.boolean(),

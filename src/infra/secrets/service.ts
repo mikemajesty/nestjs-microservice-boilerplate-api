@@ -8,6 +8,8 @@ import { EnvEnum } from './types'
 export class SecretsService implements ISecretsAdapter {
   constructor(private readonly config: ConfigService) {}
 
+  TIMEOUT = this.config.get<number>('TIMEOUT') as number
+
   IS_LOCAL = this.config.get<EnvEnum>('NODE_ENV') === EnvEnum.LOCAL
 
   IS_PRODUCTION = this.config.get<EnvEnum>('NODE_ENV') === EnvEnum.PRD

@@ -1,7 +1,6 @@
 import { Controller, Get } from '@nestjs/common'
 import os from 'os'
 
-import { ILoggerAdapter } from '@/infra/logger'
 
 import { version } from '../../../package.json'
 import { IHealthAdapter } from './adapter'
@@ -11,7 +10,6 @@ import { HealthOutput, HealthStatus } from './types'
 export class HealthController {
   constructor(
     private readonly service: IHealthAdapter,
-    private readonly logger: ILoggerAdapter
   ) {}
 
   @Get(['/health', '/'])
@@ -21,11 +19,29 @@ export class HealthController {
     const numCpus = os.cpus().length
     const [lastMinute, lastFiveMinutes, lastFifteenMinutes] = os.loadavg()
 
-    const mongoState = this.service.getMongoStatus()
-    const postgresState = await this.service.getPostgresStatus()
-    const redisState = await this.service.getRedisStatus()
-
-    const cpuList = await this.service.getCPUCore()
+    const [
+      mongoState,
+      postgresState,
+      redisState,
+      cpuList,
+      mongoConnections,
+      mongoMemory,
+      postgresMemory,
+      postgresConnections,
+      latency,
+      connections
+    ] = await Promise.all([
+      this.service.getMongoStatus(),
+      this.service.getPostgresStatus(),
+      this.service.getRedisStatus(),
+      this.service.getCPUCore(),
+      this.service.getMongoConnections(),
+      this.service.getMongoMemory(),
+      this.service.getPostgresMemory(),
+      this.service.getPostgresConnections(),
+      this.service.getLatency(),
+      this.service.getActiveConnections()
+    ])
 
     const cpuStatus = []
     for (const [index, core] of cpuList.cpus.entries()) {
@@ -41,15 +57,6 @@ export class HealthController {
       },
       cores: cpuStatus
     }
-
-    const mongoConnections = await this.service.getMongoConnections()
-    const mongoMemory = await this.service.getMongoMemory()
-
-    const postgresMemory = await this.service.getPostgresMemory()
-    const postgresConnections = await this.service.getPostgresConnections()
-
-    const latency = await this.service.getLatency()
-    const connections = await this.service.getActiveConnections()
 
     const output = {
       server: HealthStatus.UP,
@@ -72,8 +79,6 @@ export class HealthController {
       memory,
       cpu
     }
-
-    this.logger.info({ message: 'Server Up!', context: HealthController.name, obj: output })
 
     return output
   }

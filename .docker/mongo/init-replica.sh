@@ -36,7 +36,7 @@ for i in 1 2 3 4 5; do
       } catch(e) {
         print('⚙️ Initializing ReplicaSet...');
         rs.initiate({
-          _id: 'app',
+          _id: 'rs0',
           members: [
             {_id: 0, host: 'nestjs-microservice-primary:27017', priority: 3},
             {_id: 1, host: 'nestjs-microservice-secondary:27017', priority: 2},
@@ -91,7 +91,7 @@ for i in 1 2 3 4 5; do
         } catch(e) {
           print('⚙️ Initializing ReplicaSet...');
           rs.initiate({
-            _id: 'app',
+            _id: 'rs0',
             members: [
               {_id: 0, host: 'nestjs-microservice-primary:27017', priority: 3},
               {_id: 1, host: 'nestjs-microservice-secondary:27017', priority: 2},

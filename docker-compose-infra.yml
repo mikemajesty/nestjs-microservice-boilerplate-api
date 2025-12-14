@@ -49,7 +49,7 @@ services:
         chown mongodb:mongodb /etc/mongo/keyfile
         
         echo '🚀 Iniciando MongoDB secondary...'
-        exec mongod --bind_ip_all --replSet app --keyFile /etc/mongo/keyfile
+        exec mongod --bind_ip_all --replSet rs0 --keyFile /etc/mongo/keyfile
     volumes:
       - mongo-secondary-data:/data/db
       - mongo-keyfile:/keyfile-source
@@ -86,7 +86,7 @@ services:
         chown mongodb:mongodb /etc/mongo/keyfile
         
         echo '🚀 Starting MongoDB tertiary...'
-        exec mongod --bind_ip_all --replSet app --keyFile /etc/mongo/keyfile
+        exec mongod --bind_ip_all --replSet rs0 --keyFile /etc/mongo/keyfile
     volumes:
       - mongo-tertiary-data:/data/db
       - mongo-keyfile:/keyfile-source

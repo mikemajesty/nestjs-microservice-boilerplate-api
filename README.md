@@ -31,6 +31,7 @@
 - [Database Migrations](#️-database-migrations)
 - [CRUD Scaffolding](#-crud-scaffolding)
 - [Testing](#-testing)
+- [Load Testing](#-load-testing)
 - [API Documentation](#-api-documentation)
 - [Documentation](#-documentation)
 - [Observability](#-observability)
@@ -776,6 +777,75 @@ npm run test -- --watch
 - **Cache Tests**: Redis integration testing
 
 ### Test Utilities
+
+#### Test Configuration
+
+```typescript
+// test/initialization.ts
+import { TestHelper } from '@/utils/test';
+import { TestContainersHelper } from '@/utils/test/containers';
+
+export const setupTestEnvironment = async () => {
+  await TestContainersHelper.startContainers();
+  await TestHelper.seedDatabase();
+};
+```
+---
+
+## 🎯 Load Testing
+
+Comprehensive load testing system using [Artillery.io](.artillery/README.md) for performance validation and capacity planning.
+
+### Quick Start
+
+```bash
+# Smoke test (quick validation)
+make artillery-smoke
+
+# Full load test
+make artillery-local
+
+# Production testing
+make artillery-prod-quick
+```
+
+### Features
+
+- **Environment-specific configurations** for different testing scenarios
+- **Realistic user flow simulation** with authentication
+- **Secure credential management** via environment variables
+- **Template-based config generation** for maintainability
+
+### Configuration
+
+```bash
+# Environment variables (.env)
+ARTILLERY_TARGET=http://localhost:8080
+ARTILLERY_ENV=local
+ARTILLERY_TEST_EMAIL=test@example.com
+ARTILLERY_TEST_PASSWORD=password123
+```
+
+### Test Environments
+
+| Environment | Use Case | Target |
+|-------------|----------|--------|
+| `local` | Development testing | `http://localhost:8080` |
+| `dev` | Development environment | Development server |
+| `preprod` | Pre-production validation | Staging server |
+| `prod` | Production capacity testing | Production server |
+
+### Documentation
+
+📚 **Complete guide**: [Artillery Load Testing Documentation](.artillery/README.md)
+
+- Load test configuration and setup
+- Environment-specific testing scenarios  
+- Security best practices
+- Performance monitoring and metrics
+- Troubleshooting and advanced usage
+
+---
 
 Located in `src/utils/tests.ts`:
 - Mock factories

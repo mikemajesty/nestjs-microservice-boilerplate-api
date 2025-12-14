@@ -1,0 +1,70 @@
+config:
+  target: '${ARTILLERY_TARGET}'
+  processor: './user-flow.mjs'
+  ${ARTILLERY_PHASES}
+
+scenarios:
+  - weight: 100
+    name: "${ARTILLERY_SCENARIO_NAME}"
+    flow:
+      # 1. Login
+      - post:
+          url: "/api/v1/login"
+          json:
+            email: "{{ email }}"
+            password: "{{ password }}"
+          beforeRequest: "generateLoginCredentials"
+          capture:
+            - json: "$.accessToken"
+              as: "authToken"
+          expect:
+            - statusCode: [200, 201]
+      
+      # 2. Think time
+      - think: ${ARTILLERY_THINK_TIME}
+      
+      # 3. List cats (50% dos usuários)
+      - get:
+          url: "/api/v1/cats"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          weight: 50
+          expect:
+            - statusCode: [200, 201]
+      
+      # 4. Create new cat (30% dos usuários)
+      - post:
+          url: "/api/v1/cats"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          beforeRequest: "generateCatData"
+          json:
+            name: "{{ catName }}"
+            age: "{{ catAge }}"
+            breed: "{{ catBreed }}"
+          weight: 30
+          expect:
+            - statusCode: [200, 201]
+      
+      # 5. List users (20% dos usuários)  
+      - get:
+          url: "/api/v1/users"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          weight: 20
+          expect:
+            - statusCode: [200, 201]
+      
+      # 6. Think time  
+      - think: ${ARTILLERY_THINK_TIME}
+      
+      # 7. Additional cat operations (for more realistic load)
+      - get:
+          url: "/api/v1/cats"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          weight: 25
+          expect:
+            - statusCode: [200, 201]
+
+${ARTILLERY_PHASES}

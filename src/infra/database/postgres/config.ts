@@ -1,7 +1,7 @@
 import { config } from 'dotenv'
 import { DataSource } from 'typeorm'
-import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions'
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies'
+import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions'
 
 config()
 
@@ -21,12 +21,23 @@ const dataSource = new DataSource({
   ssl:
     process.env.POSTGRES_SSL === 'true'
       ? {
-          rejectUnauthorized: false
-        }
+        rejectUnauthorized: false
+      }
       : false,
   extra: {
     max: 20,
-    connectionTimeoutMillis: 10000
+    min: 2,
+    connectionTimeoutMillis: 10000,
+    idleTimeoutMillis: 300000,
+    query_timeout: 5000,
+    statement_timeout: 30000,
+    application_name: 'nestjs-api',
+    acquireTimeoutMillis: 10000,
+    createTimeoutMillis: 10000,
+    reapIntervalMillis: 1000,
+    createRetryIntervalMillis: 500,
+    keepAlive: true,
+    keepAliveInitialDelayMillis: 10000
   },
   migrationsTableName: 'migrations',
   migrations,
