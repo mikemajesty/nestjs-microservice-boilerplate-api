@@ -89,7 +89,7 @@ describe(RoleDeletePermissionUsecase.name, () => {
 
   const role = new RoleEntity({ id: IDGeneratorUtils.uuid(), name: RoleEnum.USER, permissions })
 
-  test('when some permisson, should expect an error', async () => {
+  test('when some permission does not exist, should expect an error', async () => {
     repository.findOne = TestUtils.mockResolvedValue<RoleEntity>(role)
     permissionRepository.findIn = TestUtils.mockResolvedValue<PermissionEntity[]>(permissions)
     repository.create = TestUtils.mockResolvedValue<CreatedModel>(null)

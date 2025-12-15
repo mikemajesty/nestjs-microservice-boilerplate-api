@@ -51,7 +51,7 @@ describe(UserGetByIdUsecase.name, () => {
     )
   })
 
-  test('when user not found, should expect an errror', async () => {
+  test('when user not found, should expect an error', async () => {
     repository.findOne = TestUtils.mockResolvedValue<UserEntity>(null)
 
     await expect(usecase.execute({ id: TestUtils.getMockUUID() })).rejects.toThrow(ApiNotFoundException)

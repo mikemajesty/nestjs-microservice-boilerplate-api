@@ -45,21 +45,23 @@ paths:
   /api/{version}/login/google:
     get:
       operationId: LoginController_loginGoogle
+      description: Google OAuth login redirect
       parameters:
         - $ref: '#/components/parameters/api.Utils.Versioning.VersionParams'
       responses:
         '204':
-          description: 'There is no content to send for this request, but the headers may be useful. '
+          description: Redirects to Google OAuth
       tags:
         - Login
   /api/{version}/login/google/callback:
     get:
       operationId: LoginController_loginGoogleCallback
+      description: Google OAuth callback
       parameters:
         - $ref: '#/components/parameters/api.Utils.Versioning.VersionParams'
       responses:
         '204':
-          description: 'There is no content to send for this request, but the headers may be useful. '
+          description: Handles Google OAuth callback
       tags:
         - Login
   /api/{version}/refresh:

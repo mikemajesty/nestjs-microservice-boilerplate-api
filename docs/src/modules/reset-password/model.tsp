@@ -1,7 +1,6 @@
 import "../../utils/model.tsp";
 import "@typespec/http";
 
-using Utils.Model;
 using TypeSpec.Http;
 
 namespace api.ResetPassword;
@@ -11,13 +10,11 @@ model ResetPasswordEntity {
   token: string;
 }
 
-// SEND EMAIL //
 @doc("reset password send email input")
 model SendEmailInput {
   email: string;
 }
 
-// Confirm Reset Password //
 @doc("confirm reset password input")
 model ConfirmResetPasswordInput {
   password: string;

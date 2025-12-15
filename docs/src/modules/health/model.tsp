@@ -1,9 +1,6 @@
 import "../../utils/model.tsp";
 import "@typespec/http";
 
-using TypeSpec.Http;
-using api.Utils.Model;
-
 namespace api.Health;
 
 @doc("health output")
@@ -136,4 +133,46 @@ model DatabaseStatus {
     @doc("The total amount of virtual memory reserved by database in megabytes (MB).")
     reservedMemory: string;
   };
+}
+
+@doc("Liveness probe response model")
+model LivenessOutput {
+  @doc("Application status: **UP** | **DOWN**")
+  status: string;
+
+  @doc("Timestamp of the health check")
+  timestamp: string;
+
+  @doc("Application uptime in seconds")
+  uptime: decimal;
+}
+
+@doc("Startup probe response model")
+model StartupOutput {
+  @doc("Application startup status: **UP** | **DOWN**")
+  status: string;
+
+  @doc("Timestamp of the health check")
+  timestamp: string;
+
+  @doc("Health check phase identifier")
+  phase: string;
+
+  @doc("Basic connection status for each service")
+  connections: {
+    @doc("MongoDB connection status")
+    mongo: string;
+
+    @doc("PostgreSQL initialization status")
+    postgres: string;
+
+    @doc("Redis client ready status")
+    redis: string;
+  };
+
+  @doc("Human-readable status message")
+  message: string;
+
+  @doc("Optional error message if startup fails")
+  error?: string;
 }

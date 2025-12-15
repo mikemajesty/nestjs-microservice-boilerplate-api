@@ -3,6 +3,7 @@ info:
   title: Microservice API
   version: '1.0'
 tags:
+  - name: Alert
   - name: Login
   - name: User
   - name: Role
@@ -14,18 +15,37 @@ tags:
 paths:
   /:
     get:
-      operationId: HealthController_health1
-      description: app health
+      operationId: RootHealthController_root
+      description: Liveness probe (root) - checks if application process is alive
       parameters: []
       responses:
         '200':
-          description: app health successfully
+          description: Simple status indicating if the application process is running
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Health.HealthOuput'
+                $ref: '#/components/schemas/Health.LivenessOutput'
       tags:
         - Health
+  /alert:
+    post:
+      operationId: AlertController_handleAlert
+      description: Handle alert webhook
+      parameters: []
+      responses:
+        '200':
+          description: Alert received successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Alert.AlertOutput'
+      tags:
+        - Alert
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {}
   /api/{version}/cats:
     post:
       operationId: CatController_create
@@ -57,7 +77,7 @@ paths:
         - BearerAuth: []
     get:
       operationId: CatController_list
-      description: list cat
+      description: list cats
       parameters:
         - $ref: '#/components/parameters/Utils.Versioning.VersionParams'
         - $ref: '#/components/parameters/Utils.Model.ApiPaginationInput.page'
@@ -66,7 +86,7 @@ paths:
         - $ref: '#/components/parameters/Utils.Model.ApiPaginationInput.search'
       responses:
         '200':
-          description: list cat successfully
+          description: list cats successfully
           content:
             application/json:
               schema:
@@ -78,7 +98,7 @@ paths:
   /api/{version}/cats/{id}:
     put:
       operationId: CatController_update
-      description: create update
+      description: update cat
       parameters:
         - $ref: '#/components/parameters/Utils.Versioning.VersionParams'
         - $ref: '#/components/parameters/Cat.UpdateParamInput'
@@ -209,21 +229,23 @@ paths:
   /api/{version}/login/google:
     get:
       operationId: LoginController_loginGoogle
+      description: Google OAuth login redirect
       parameters:
         - $ref: '#/components/parameters/Utils.Versioning.VersionParams'
       responses:
         '204':
-          description: 'There is no content to send for this request, but the headers may be useful. '
+          description: Redirects to Google OAuth
       tags:
         - Login
   /api/{version}/login/google/callback:
     get:
       operationId: LoginController_loginGoogleCallback
+      description: Google OAuth callback
       parameters:
         - $ref: '#/components/parameters/Utils.Versioning.VersionParams'
       responses:
         '204':
-          description: 'There is no content to send for this request, but the headers may be useful. '
+          description: Handles Google OAuth callback
       tags:
         - Login
   /api/{version}/logout:
@@ -795,7 +817,7 @@ paths:
   /api/{version}/users/me:
     get:
       operationId: UserController_me
-      description: list user
+      description: get logged user
       parameters:
         - $ref: '#/components/parameters/Utils.Versioning.VersionParams'
       responses:
@@ -911,18 +933,60 @@ paths:
         - User
       security:
         - BearerAuth: []
-  /health:
+  /health/:
     get:
-      operationId: HealthController_health
-      description: app health
+      operationId: HealthController_healthRoot
+      description: Liveness probe (health root) - checks if application process is alive
       parameters: []
       responses:
         '200':
-          description: app health successfully
+          description: Simple status indicating if the application process is running
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health.LivenessOutput'
+      tags:
+        - Health
+  /health/live:
+    get:
+      operationId: HealthController_liveness
+      description: Liveness probe - checks if application process is alive
+      parameters: []
+      responses:
+        '200':
+          description: Simple status indicating if the application process is running
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health.LivenessOutput'
+      tags:
+        - Health
+  /health/ready:
+    get:
+      operationId: HealthController_readiness
+      description: Readiness probe - checks if application can handle requests
+      parameters: []
+      responses:
+        '200':
+          description: Complete system health status with dependencies and metrics
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Health.HealthOuput'
+      tags:
+        - Health
+  /health/startup:
+    get:
+      operationId: HealthController_startup
+      description: Startup probe - checks if application has finished initializing
+      parameters: []
+      responses:
+        '200':
+          description: Basic connection status without heavy I/O operations
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health.StartupOutput'
       tags:
         - Health
 components:
@@ -1084,6 +1148,15 @@ components:
       schema:
         $ref: '#/components/schemas/Utils.Versioning.ApiVersion'
   schemas:
+    Alert.AlertOutput:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          description: Status of alert handling
+      description: Alert response
     Cat.CatEntity:
       type: object
       required:
@@ -1752,6 +1825,66 @@ components:
           type: string
           description: load avererage status **healthy** | **overloaded**
       description: load avererage
+    Health.LivenessOutput:
+      type: object
+      required:
+        - status
+        - timestamp
+        - uptime
+      properties:
+        status:
+          type: string
+          description: 'Application status: **UP** | **DOWN**'
+        timestamp:
+          type: string
+          description: Timestamp of the health check
+        uptime:
+          type: number
+          format: decimal
+          description: Application uptime in seconds
+      description: Liveness probe response model
+    Health.StartupOutput:
+      type: object
+      required:
+        - status
+        - timestamp
+        - phase
+        - connections
+        - message
+      properties:
+        status:
+          type: string
+          description: 'Application startup status: **UP** | **DOWN**'
+        timestamp:
+          type: string
+          description: Timestamp of the health check
+        phase:
+          type: string
+          description: Health check phase identifier
+        connections:
+          type: object
+          properties:
+            mongo:
+              type: string
+              description: MongoDB connection status
+            postgres:
+              type: string
+              description: PostgreSQL initialization status
+            redis:
+              type: string
+              description: Redis client ready status
+          required:
+            - mongo
+            - postgres
+            - redis
+          description: Basic connection status for each service
+        message:
+          type: string
+          description: Human-readable status message
+        error:
+          type: string
+          description: Optional error message if startup fails
+      description: Startup probe response model
     Login.LoginInput:
       type: object
       required:

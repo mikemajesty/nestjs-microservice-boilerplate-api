@@ -9,10 +9,7 @@ import "./model.tsp";
 import "./exception.tsp";
 
 using TypeSpec.Http;
-using TypeSpec.Versioning;
-using OpenAPI;
 using Utils.Versioning;
-using Utils.Exception;
 using Utils.Model;
 
 @service(#{ title: "Logout" })

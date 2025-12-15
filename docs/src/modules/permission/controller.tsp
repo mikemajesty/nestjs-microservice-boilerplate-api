@@ -8,11 +8,8 @@ import "../../utils/model.tsp";
 import "./model.tsp";
 import "./exception.tsp";
 
-using Utils.Model;
 using Utils.Versioning;
 using TypeSpec.Http;
-using TypeSpec.Versioning;
-using OpenAPI;
 
 @service(#{ title: "Permission" })
 namespace api.Permission;

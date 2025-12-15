@@ -10,10 +10,7 @@ import "./exception.tsp";
 
 using api.Utils.Model;
 using TypeSpec.Http;
-using TypeSpec.Versioning;
-using OpenAPI;
 using Utils.Versioning;
-using Utils.Exception;
 
 @service(#{ title: "User" })
 namespace api.User;
@@ -32,6 +29,7 @@ interface UserController {
     | CreateValidationException;
 
   @put
+  @route("{id}")
   @doc("update user")
   @returnsDoc("user updated successfully")
   update(...VersionParams, ...UpdateParamsInput, @body input: UpdateInput):
@@ -46,12 +44,13 @@ interface UserController {
   list(...VersionParams, ...ListQueryInput): DefaultSuccessResponse<ListOutput, 200>;
 
   @get
-  @doc("list user")
-  @returnsDoc("get user logged successfully")
   @route("me")
+  @doc("get logged user")
+  @returnsDoc("get user logged successfully")
   me(...VersionParams): DefaultSuccessResponse<MeOutput, 200>;
 
   @get
+  @route("{id}")
   @doc("get user by id")
   @returnsDoc("get user by id successfully")
   getById(...VersionParams, ...GetByIdParamsInput): DefaultSuccessResponse<
@@ -60,8 +59,8 @@ interface UserController {
   > | GetByIdUserNotFoundException | GetByIdValidationException;
 
   @put
+  @route("change-password/{id}")
   @doc("change password")
-  @route("change-password")
   @returnsDoc("password updated successfully")
   changePassword(...VersionParams, ...ChangePasswordParamsInput, @body body: ChangePasswordInput):
     | DefaultSuccessResponse<void, 200>
@@ -70,6 +69,7 @@ interface UserController {
     | ChangePasswordValidationException;
 
   @delete
+  @route("{id}")
   @doc("delete user")
   @returnsDoc("delete user successfully")
   delete(...VersionParams, ...DeleteParamsInput): DefaultSuccessResponse<

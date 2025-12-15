@@ -6,7 +6,6 @@ using api.Utils.Exception;
 
 namespace api.Logout;
 
-// LOGOUT //
 @doc("When input is invalid")
 @error
 model LogoutValidationError extends ApiBadRequestException<"token: Required"> {

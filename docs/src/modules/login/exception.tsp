@@ -6,7 +6,6 @@ using api.Utils.Exception;
 
 namespace api.Login;
 
-// LOGIN //
 @doc("When user not found")
 @error
 model LoginUserNotFoundError extends ApiNotFoundException<"userNotFound"> {

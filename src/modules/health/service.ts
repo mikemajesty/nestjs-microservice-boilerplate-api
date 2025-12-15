@@ -43,7 +43,7 @@ export class HealthService implements IHealthAdapter {
   async getMongoMemory(): Promise<DatabaseMemoryOutput> {
     try {
       if (this.mongo.readyState !== 1 || !this.mongo.db) {
-        return { ramUsed: "N/A", reservedMemory: "N/A" }
+        return { ramUsed: 'N/A', reservedMemory: 'N/A' }
       }
 
       const status = await this.mongo.db.command({ serverStatus: 1 })
@@ -144,16 +144,18 @@ export class HealthService implements IHealthAdapter {
         { limit: 80, status: 'warning ⚠️' },
         { limit: Infinity, status: 'overloaded 🔴' }
       ]
-      return thresholds.find(t => percentage < t.limit)?.status || 'overloaded 🔴'
+      return thresholds.find((t) => percentage < t.limit)?.status || 'overloaded 🔴'
     }
 
     const percentage = (time / numCpus) * 100
     const status = getStatus(percentage)
 
-    status !== 'healthy 🟢' && this.logger.warn({
-      message: `CPU ${status} - Load: ${time.toFixed(2)}, CPUs: ${numCpus}, Usage: ${percentage.toFixed(1)}%`,
-      context: HealthService.name
-    })
+    if (status !== 'healthy 🟢') {
+      this.logger.warn({
+        message: `CPU ${status} - Load: ${time.toFixed(2)}, CPUs: ${numCpus}, Usage: ${percentage.toFixed(1)}%`,
+        context: HealthService.name
+      })
+    }
 
     return { load: time, status }
   }

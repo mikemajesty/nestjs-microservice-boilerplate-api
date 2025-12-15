@@ -88,7 +88,7 @@ describe(RoleAddPermissionUsecase.name, () => {
     }
   })
 
-  test('when delete permission with associated permission successfully, should expect an update permission', async () => {
+  test('when adding permission with associated permission successfully, should expect an updated permission', async () => {
     repository.findOne = TestUtils.mockResolvedValue<RoleEntity>(role)
     permissionRepository.findIn = TestUtils.mockResolvedValue<PermissionEntity[]>(permissions)
     repository.create = TestUtils.mockResolvedValue<CreatedModel>()
@@ -97,7 +97,7 @@ describe(RoleAddPermissionUsecase.name, () => {
     expect(repository.create).toHaveBeenCalled()
   })
 
-  test('when delete permission without associated permission successfully, should expect an update permission', async () => {
+  test('when adding permission without associated permission successfully, should expect an updated permission', async () => {
     repository.findOne = TestUtils.mockResolvedValue<RoleEntity>({
       ...role,
       permissions: role.permissions.filter((p) => p.name !== 'user:create')

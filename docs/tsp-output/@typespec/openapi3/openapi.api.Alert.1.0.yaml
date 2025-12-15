@@ -1,0 +1,37 @@
+openapi: 3.0.0
+info:
+  title: Alert
+  version: '1.0'
+tags:
+  - name: Alert
+paths:
+  /alert:
+    post:
+      operationId: AlertController_handleAlert
+      description: Handle alert webhook
+      parameters: []
+      responses:
+        '200':
+          description: Alert received successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlertOutput'
+      tags:
+        - Alert
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {}
+components:
+  schemas:
+    AlertOutput:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          description: Status of alert handling
+      description: Alert response

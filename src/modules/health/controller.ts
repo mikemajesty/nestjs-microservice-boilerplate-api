@@ -1,19 +1,16 @@
 import { Controller, Get } from '@nestjs/common'
 import os from 'os'
 
-
 import { version } from '../../../package.json'
 import { IHealthAdapter } from './adapter'
 import { HealthOutput, HealthStatus } from './types'
 
-@Controller()
+@Controller(`health`)
 export class HealthController {
-  constructor(
-    private readonly service: IHealthAdapter,
-  ) {}
+  constructor(private readonly service: IHealthAdapter) {}
 
-  @Get(['/health', '/'])
-  async getHealth(): Promise<HealthOutput> {
+  @Get(['ready'])
+  async getReadiness(): Promise<HealthOutput> {
     const memory = this.service.getMemoryUsageInMB()
 
     const numCpus = os.cpus().length
@@ -81,5 +78,47 @@ export class HealthController {
     }
 
     return output
+  }
+
+  @Get(['live', '/health', '/'])
+  async getLiveness() {
+    return {
+      status: HealthStatus.UP,
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime()
+    }
+  }
+
+  @Get('startup')
+  async getStartup() {
+    try {
+      const isMongoConnected = this.service.mongo.readyState === 1
+
+      const isPostgresInitialized = this.service.postgres.isInitialized
+
+      const isRedisClientReady = !!this.service.redis
+
+      const basicSystemsConnected = isMongoConnected && isPostgresInitialized && isRedisClientReady
+
+      return {
+        status: basicSystemsConnected ? HealthStatus.UP : HealthStatus.DOWN,
+        timestamp: new Date().toISOString(),
+        phase: 'startup',
+        connections: {
+          mongo: isMongoConnected ? 'connected' : 'disconnected',
+          postgres: isPostgresInitialized ? 'initialized' : 'not-initialized',
+          redis: isRedisClientReady ? 'client-ready' : 'no-client'
+        },
+        message: basicSystemsConnected ? 'All basic connections established' : 'Missing basic connections'
+      }
+    } catch {
+      return {
+        status: HealthStatus.DOWN,
+        timestamp: new Date().toISOString(),
+        phase: 'startup',
+        error: 'Startup check failed - initialization incomplete',
+        message: 'Application still initializing'
+      }
+    }
   }
 }

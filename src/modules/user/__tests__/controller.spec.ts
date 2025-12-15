@@ -16,7 +16,7 @@ import { TestPostgresContainer, TestRedisContainer } from '@/utils/test/containe
 import { UserModule } from '../module'
 import { UserRepository } from '../repository'
 
-describe('User', () => {
+describe('UserController', () => {
   let app: INestApplication
 
   const redisContainer = new TestRedisContainer()

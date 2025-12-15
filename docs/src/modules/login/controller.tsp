@@ -8,19 +8,17 @@ import "./model.tsp";
 import "./exception.tsp";
 
 using TypeSpec.Http;
-using TypeSpec.Versioning;
-using OpenAPI;
 using Utils.Versioning;
-using Utils.Exception;
 using Utils.Model;
 
 @service(#{ title: "Login" })
 namespace api.Login;
 
 @tag("Login")
+@route("api/{version}")
 interface LoginController {
   @post
-  @route("/api/{version}/login")
+  @route("/login")
   @doc("user login")
   @returnsDoc("login successfully")
   login(...VersionParams, @body login: LoginInput): DefaultSuccessResponse<
@@ -29,16 +27,20 @@ interface LoginController {
   > | LoginNotFoundException | LoginInputException;
 
   @post
-  @route("/api/{version}/refresh")
+  @route("/refresh")
   @doc("get user refresh token")
   @returnsDoc("login refresh token successfully")
   refresh(...VersionParams, @body login: RefreshTokenInput): RefreshTokenOutput;
 
   @get
-  @route("/api/{version}/login/google")
+  @route("/login/google")
+  @doc("Google OAuth login redirect")
+  @returnsDoc("Redirects to Google OAuth")
   loginGoogle(...VersionParams): void;
 
   @get
-  @route("/api/{version}/login/google/callback")
+  @route("/login/google/callback")
+  @doc("Google OAuth callback")
+  @returnsDoc("Handles Google OAuth callback")
   loginGoogleCallback(...VersionParams): void;
 }

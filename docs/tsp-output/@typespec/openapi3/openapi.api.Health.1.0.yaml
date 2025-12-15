@@ -7,30 +7,72 @@ tags:
 paths:
   /:
     get:
-      operationId: HealthController_health1
-      description: app health
+      operationId: RootHealthController_root
+      description: Liveness probe (root) - checks if application process is alive
       parameters: []
       responses:
         '200':
-          description: app health successfully
+          description: Simple status indicating if the application process is running
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LivenessOutput'
+      tags:
+        - Health
+  /health/:
+    get:
+      operationId: HealthController_healthRoot
+      description: Liveness probe (health root) - checks if application process is alive
+      parameters: []
+      responses:
+        '200':
+          description: Simple status indicating if the application process is running
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LivenessOutput'
+      tags:
+        - Health
+  /health/live:
+    get:
+      operationId: HealthController_liveness
+      description: Liveness probe - checks if application process is alive
+      parameters: []
+      responses:
+        '200':
+          description: Simple status indicating if the application process is running
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LivenessOutput'
+      tags:
+        - Health
+  /health/ready:
+    get:
+      operationId: HealthController_readiness
+      description: Readiness probe - checks if application can handle requests
+      parameters: []
+      responses:
+        '200':
+          description: Complete system health status with dependencies and metrics
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HealthOuput'
       tags:
         - Health
-  /health:
+  /health/startup:
     get:
-      operationId: HealthController_health
-      description: app health
+      operationId: HealthController_startup
+      description: Startup probe - checks if application has finished initializing
       parameters: []
       responses:
         '200':
-          description: app health successfully
+          description: Basic connection status without heavy I/O operations
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HealthOuput'
+                $ref: '#/components/schemas/StartupOutput'
       tags:
         - Health
 components:
@@ -247,3 +289,63 @@ components:
           type: string
           description: load avererage status **healthy** | **overloaded**
       description: load avererage
+    LivenessOutput:
+      type: object
+      required:
+        - status
+        - timestamp
+        - uptime
+      properties:
+        status:
+          type: string
+          description: 'Application status: **UP** | **DOWN**'
+        timestamp:
+          type: string
+          description: Timestamp of the health check
+        uptime:
+          type: number
+          format: decimal
+          description: Application uptime in seconds
+      description: Liveness probe response model
+    StartupOutput:
+      type: object
+      required:
+        - status
+        - timestamp
+        - phase
+        - connections
+        - message
+      properties:
+        status:
+          type: string
+          description: 'Application startup status: **UP** | **DOWN**'
+        timestamp:
+          type: string
+          description: Timestamp of the health check
+        phase:
+          type: string
+          description: Health check phase identifier
+        connections:
+          type: object
+          properties:
+            mongo:
+              type: string
+              description: MongoDB connection status
+            postgres:
+              type: string
+              description: PostgreSQL initialization status
+            redis:
+              type: string
+              description: Redis client ready status
+          required:
+            - mongo
+            - postgres
+            - redis
+          description: Basic connection status for each service
+        message:
+          type: string
+          description: Human-readable status message
+        error:
+          type: string
+          description: Optional error message if startup fails
+      description: Startup probe response model

@@ -55,7 +55,7 @@ describe(RoleListUsecase.name, () => {
       permissions: []
     }
   })
-  test('when role are found, should expect an role list', async () => {
+  test('when roles are found, should expect a role list', async () => {
     const output: RoleListOutput = { docs: roles, page: 1, limit: 1, total: 1 }
     repository.paginate = TestUtils.mockResolvedValue<RoleListOutput>(output)
 
@@ -67,7 +67,7 @@ describe(RoleListUsecase.name, () => {
     })
   })
 
-  test('when role not found, should expect an empty list', async () => {
+  test('when roles not found, should expect an empty list', async () => {
     const output: RoleListOutput = { docs: [], page: 1, limit: 1, total: 1 }
     repository.paginate = TestUtils.mockResolvedValue<RoleListOutput>(output)
 

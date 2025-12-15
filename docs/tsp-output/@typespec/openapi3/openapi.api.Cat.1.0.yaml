@@ -36,7 +36,7 @@ paths:
         - BearerAuth: []
     get:
       operationId: CatController_list
-      description: list cat
+      description: list cats
       parameters:
         - $ref: '#/components/parameters/api.Utils.Versioning.VersionParams'
         - $ref: '#/components/parameters/api.Utils.Model.ApiPaginationInput.page'
@@ -45,7 +45,7 @@ paths:
         - $ref: '#/components/parameters/api.Utils.Model.ApiPaginationInput.search'
       responses:
         '200':
-          description: list cat successfully
+          description: list cats successfully
           content:
             application/json:
               schema:
@@ -57,7 +57,7 @@ paths:
   /api/{version}/cats/{id}:
     put:
       operationId: CatController_update
-      description: create update
+      description: update cat
       parameters:
         - $ref: '#/components/parameters/api.Utils.Versioning.VersionParams'
         - $ref: '#/components/parameters/UpdateParamInput'

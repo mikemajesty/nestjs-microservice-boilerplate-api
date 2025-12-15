@@ -106,7 +106,7 @@ describe(UserChangePasswordUsecase.name, () => {
     await expect(usecase.execute({ ...input, password: 'wrongPassword' })).rejects.toThrow(ApiBadRequestException)
   })
 
-  test('when user password are not equal, should expect an error', async () => {
+  test('when user passwords are not equal, should expect an error', async () => {
     repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(user)
 
     await expect(usecase.execute({ ...input, confirmPassword: 'wrongPassword' })).rejects.toThrow(

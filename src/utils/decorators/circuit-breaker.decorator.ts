@@ -4,16 +4,15 @@ import OpossumCircuitBreaker, { Options } from 'opossum'
 const events = new Map<string, Map<string, Map<string, string>>>()
 const breakerInstances = new Map<string, OpossumCircuitBreaker>()
 const instanceConfigs = new Map<string, Options>() // 📊 Store configurations for metrics
-const lastLogTime = new Map<string, number>() // 🛡️ Log throttling
 
 // 🎯 Single optimized configuration for production
 const CIRCUIT_CONFIG = {
-  ERROR_THRESHOLD_PERCENTAGE: 15,   // 15% - conservative for production
-  VOLUME_THRESHOLD: 20,             // 20 minimum requests
-  ROLLING_COUNT_TIMEOUT: 10000,     // 10s - analysis window  
-  RESET_TIMEOUT: 30000,             // 30s - time to attempt recovery
-  ALLOW_WARM_UP: true,              // Allow initial warmup
-  LOG_THROTTLE_MS: 60000           // 1 min - avoid log spam
+  ERROR_THRESHOLD_PERCENTAGE: 15, // 15% - conservative for production
+  VOLUME_THRESHOLD: 20, // 20 minimum requests
+  ROLLING_COUNT_TIMEOUT: 10000, // 10s - analysis window
+  RESET_TIMEOUT: 30000, // 30s - time to attempt recovery
+  ALLOW_WARM_UP: true, // Allow initial warmup
+  LOG_THROTTLE_MS: 60000 // 1 min - avoid log spam
 }
 /**
  * Main Circuit Breaker decorator. It initializes a circuit breaker for each method it decorates and handles its events.
@@ -46,15 +45,15 @@ export function CircuitBreaker(params: CircuitBreakerInput = { options: {}, circ
 
         // 📊 Basic events without verbose logs
         breaker.on('open', () => {
-          console.warn(`🚨 Circuit breaker OPENED: ${instanceKey}`)
+          console.error(`🚨 Circuit breaker OPENED: ${instanceKey}`)
         })
 
         breaker.on('close', () => {
-          console.info(`✅ Circuit breaker CLOSED: ${instanceKey}`)
+          console.error(`✅ Circuit breaker CLOSED: ${instanceKey}`)
         })
 
         breaker.on('halfOpen', () => {
-          console.info(`🟡 Circuit breaker HALF-OPEN: ${instanceKey}`)
+          console.error(`🟡 Circuit breaker HALF-OPEN: ${instanceKey}`)
         })
 
         // No failure logs to avoid spam
@@ -74,7 +73,7 @@ export function CircuitBreaker(params: CircuitBreakerInput = { options: {}, circ
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (fallbackMethod && typeof (this as any)[`${fallbackMethod}`] === 'function') {
           breaker.fallback(async (args: unknown, error: Error) => {
-            console.warn(`🔄 Circuit breaker FALLBACK triggered: ${instanceKey}`, {
+            console.error(`🔄 Circuit breaker FALLBACK triggered: ${instanceKey}`, {
               className,
               method: methodName,
               group: opt.group,
@@ -106,7 +105,27 @@ export function CircuitBreaker(params: CircuitBreakerInput = { options: {}, circ
  * 📊 Utility function to get metrics from all circuit breakers
  */
 export function getCircuitBreakerMetrics() {
-  const metrics = new Map<string, any>()
+  const metrics = new Map<
+    string,
+    {
+      state: string
+      stats: {
+        fires: number
+        failures: number
+        fallbacks: number
+        latencyMean: number
+        percentiles: Record<string, number>
+      }
+      config: {
+        errorThresholdPercentage?: number
+        volumeThreshold?: number
+        resetTimeout?: number
+        rollingCountTimeout?: number
+      }
+      isOpen: boolean
+      isHalfOpen: boolean
+    }
+  >()
 
   for (const [key, breaker] of breakerInstances.entries()) {
     const stats = breaker.stats
@@ -121,12 +140,14 @@ export function getCircuitBreakerMetrics() {
         latencyMean: stats.latencyMean || 0,
         percentiles: stats.percentiles || {}
       },
-      config: config ? {
-        errorThresholdPercentage: config.errorThresholdPercentage,
-        volumeThreshold: config.volumeThreshold,
-        resetTimeout: config.resetTimeout,
-        rollingCountTimeout: config.rollingCountTimeout
-      } : {},
+      config: config
+        ? {
+            errorThresholdPercentage: config.errorThresholdPercentage,
+            volumeThreshold: config.volumeThreshold,
+            resetTimeout: config.resetTimeout,
+            rollingCountTimeout: config.rollingCountTimeout
+          }
+        : {},
       isOpen: breaker.opened,
       isHalfOpen: breaker.halfOpen
     })
@@ -144,7 +165,7 @@ export function resetCircuitBreaker(className: string, methodName: string, group
 
   if (breaker) {
     breaker.close()
-    console.info(`🔄 Circuit breaker manually reset: ${instanceKey}`)
+    console.error(`🔄 Circuit breaker manually reset: ${instanceKey}`)
     return true
   }
 
@@ -164,7 +185,7 @@ export function cleanupCircuitBreakers(): number {
     cleanedCount++
   }
 
-  console.info(`🧹 Manually cleaned ${cleanedCount} circuit breaker instances`)
+  console.error(`🧹 Manually cleaned ${cleanedCount} circuit breaker instances`)
   return cleanedCount
 }
 

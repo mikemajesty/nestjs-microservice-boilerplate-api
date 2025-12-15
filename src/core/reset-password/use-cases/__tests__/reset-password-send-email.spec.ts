@@ -110,14 +110,14 @@ describe(ResetPasswordSendEmailUsecase.name, () => {
     }
   })
 
-  test('when token was founded, should expect void', async () => {
+  test('when token was found, should expect void', async () => {
     userRepository.findOne = TestUtils.mockResolvedValue<UserEntity>(user)
     repository.findByIdUserId = TestUtils.mockResolvedValue<ResetPasswordEntity>(resetPassword)
 
     await expect(usecase.execute(input)).resolves.toBeUndefined()
   })
 
-  test('when token was not founded, should expect void', async () => {
+  test('when token was not found, should expect void', async () => {
     userRepository.findOne = TestUtils.mockResolvedValue<UserEntity>(user)
     repository.findByIdUserId = TestUtils.mockResolvedValue<ResetPasswordEntity>(null)
     repository.create = TestUtils.mockResolvedValue<CreatedModel>()

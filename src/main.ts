@@ -1,32 +1,32 @@
-import './utils/tracing';
+import './utils/tracing'
 
-import { RequestMethod, VersioningType } from '@nestjs/common';
-import { NestFactory } from '@nestjs/core';
-import bodyParser from 'body-parser';
-import { bold } from 'colorette';
-import compression from 'compression';
-import { NextFunction, Request, Response } from 'express';
-import fs from 'fs';
-import helmet from 'helmet';
-import { IncomingMessage, ServerResponse } from 'http';
-import yaml from 'js-yaml';
-import path from 'path';
-import swagger from 'swagger-ui-express';
+import { RequestMethod, VersioningType } from '@nestjs/common'
+import { NestFactory } from '@nestjs/core'
+import bodyParser from 'body-parser'
+import { bold } from 'colorette'
+import compression from 'compression'
+import { NextFunction, Request, Response } from 'express'
+import fs from 'fs'
+import helmet from 'helmet'
+import { IncomingMessage, ServerResponse } from 'http'
+import yaml from 'js-yaml'
+import path from 'path'
+import swagger from 'swagger-ui-express'
 
-import { ILoggerAdapter } from '@/infra/logger/adapter';
-import { ISecretsAdapter } from '@/infra/secrets';
-import { ExceptionHandlerFilter } from '@/middlewares/filters';
+import { ILoggerAdapter } from '@/infra/logger/adapter'
+import { ISecretsAdapter } from '@/infra/secrets'
+import { ExceptionHandlerFilter } from '@/middlewares/filters'
 
-import { name } from '../package.json';
-import { AppModule } from './app.module';
-import { ErrorType } from './infra/logger';
-import { CryptoUtils } from './utils/crypto';
-import { changeLanguage, initI18n, normalizeLocale } from './utils/validator'; // Removemos LocaleInput
+import { name } from '../package.json'
+import { AppModule } from './app.module'
+import { ErrorType } from './infra/logger'
+import { CryptoUtils } from './utils/crypto'
+import { changeLanguage, initI18n, normalizeLocale } from './utils/validator' // Removemos LocaleInput
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true,
-    cors: true,
+    cors: true
   })
 
   const loggerService = app.get(ILoggerAdapter)
@@ -38,13 +38,12 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api', {
     exclude: [
-      { path: 'health', method: RequestMethod.GET },
+      { path: 'health/*', method: RequestMethod.GET },
       { path: 'alert', method: RequestMethod.POST },
       { path: '/', method: RequestMethod.GET }
     ]
   })
 
-  // Inicializa com locale padrão 'en-US'
   await initI18n('en-US')
 
   app.use(async (req: Request, res: Response, next: NextFunction) => {
@@ -114,7 +113,7 @@ async function bootstrap() {
     IS_PRODUCTION
   } = app.get(ISecretsAdapter)
 
-  setTimeout();
+  setTimeout()
 
   app.use(bodyParser.urlencoded({ extended: true }))
 
@@ -153,8 +152,8 @@ async function bootstrap() {
   })
 
   function setTimeout() {
-    const httpServer = app.getHttpServer();
-    httpServer.timeout = TIMEOUT + 1000;
+    const httpServer = app.getHttpServer()
+    httpServer.timeout = TIMEOUT + 1000
     httpServer.keepAliveTimeout = 60000
     httpServer.headersTimeout = 61000
   }

@@ -63,7 +63,7 @@ describe(PermissionListUsecase.name, () => {
     }
   })
 
-  test('when permission are found, should expect an permission list', async () => {
+  test('when permissions are found, should expect a permission list', async () => {
     const output: PermissionListOutput = { docs: permissions, page: 1, limit: 1, total: 1 }
     repository.paginate = TestUtils.mockResolvedValue<PermissionListOutput>(output)
 
@@ -75,7 +75,7 @@ describe(PermissionListUsecase.name, () => {
     })
   })
 
-  test('when permission not found, should expect an empty list', async () => {
+  test('when permissions not found, should expect an empty list', async () => {
     const output: PermissionListOutput = { docs: [], page: 1, limit: 1, total: 1 }
     repository.paginate = TestUtils.mockResolvedValue<PermissionListOutput>(output)
 

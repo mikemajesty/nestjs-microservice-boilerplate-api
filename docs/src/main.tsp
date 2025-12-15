@@ -3,6 +3,7 @@ import "@typespec/rest";
 import "@typespec/openapi3";
 import "@typespec/versioning";
 import "./utils/versioning.tsp";
+import "./modules/alert/controller.tsp";
 import "./modules/login/controller.tsp";
 import "./modules/user/controller.tsp";
 import "./modules/role/controller.tsp";

@@ -91,7 +91,7 @@ describe(ResetPasswordConfirmUsecase.name, () => {
     )
   })
 
-  test('when password are differents, should expect an error', async () => {
+  test('when passwords are different, should expect an error', async () => {
     await expect(usecase.execute({ confirmPassword: '123456', password: '1234567', token: '111' })).rejects.toThrow(
       ApiBadRequestException
     )

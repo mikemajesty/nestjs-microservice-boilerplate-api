@@ -15,7 +15,7 @@ import { TestMongoContainer, TestRedisContainer } from '@/utils/test/containers'
 import { CatModule } from '../module'
 import { CatRepository } from '../repository'
 
-describe('Cats', () => {
+describe('CatController', () => {
   let app: INestApplication
   let repository: ICatRepository
 

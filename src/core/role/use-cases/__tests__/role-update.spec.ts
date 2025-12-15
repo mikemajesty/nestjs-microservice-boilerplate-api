@@ -73,7 +73,7 @@ describe(RoleUpdateUsecase.name, () => {
     }
   })
 
-  test('when role updated successfully, should expect an role updated', async () => {
+  test('when role updated successfully, should expect a role updated', async () => {
     repository.findById = TestUtils.mockResolvedValue<RoleEntity>(role)
     repository.create = TestUtils.mockResolvedValue<CreatedModel>(null)
 

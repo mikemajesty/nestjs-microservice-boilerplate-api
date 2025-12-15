@@ -18,17 +18,17 @@ import { UserPasswordSchema } from './user-password'
 
 @Entity({ name: 'users' })
 @Index('idx_users_email_not_deleted', ['email'], {
-  where: '"deleted_at" IS NULL',
+  where: '"deleted_at" IS NULL'
 })
 @Index('idx_users_email_deleted_at', ['email', 'deletedAt'])
 @Index('idx_users_name_trgm', ['name'])
 @Index('idx_users_name_lower', ['name'], {
-  where: '"deleted_at" IS NULL',
+  where: '"deleted_at" IS NULL'
 })
 @Index('idx_users_deleted_name_created', ['deletedAt', 'name', 'createdAt'])
 @Index('idx_users_deleted_created_id', ['deletedAt', 'createdAt', 'id'])
 @Index('idx_users_active_all', ['id', 'name', 'email', 'createdAt'], {
-  where: '"deleted_at" IS NULL',
+  where: '"deleted_at" IS NULL'
 })
 export class UserSchema extends BaseEntity {
   @Column({ type: 'uuid', primary: true })

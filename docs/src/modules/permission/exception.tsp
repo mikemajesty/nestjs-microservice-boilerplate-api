@@ -6,7 +6,6 @@ using api.Utils.Exception;
 
 namespace api.Permission;
 
-// CREATE //
 @doc("When input is invalid")
 @error
 model CreateValidationError extends ApiBadRequestException<"name: Required"> {
@@ -23,7 +22,6 @@ model ConflictPermissionExistsError extends ApiConflictException<"permissionExis
 
 alias CreateConflictException = ConflictPermissionExistsError;
 
-// UPDATE //
 @doc("When input is invalid")
 @error
 model UpdateValidationError extends ApiBadRequestException<"id: Required"> {
@@ -48,7 +46,6 @@ model UpdatePermissionAlreadyExistsError extends ApiNotFoundException<"permissio
 
 alias UpdateConflictException = UpdatePermissionAlreadyExistsError;
 
-// GET BY ID //
 @doc("When input is invalid")
 @error
 model GetByIdValidationError extends ApiBadRequestException<"id: Required"> {
@@ -65,7 +62,6 @@ model GeyByIdPermissionNotFoundError extends ApiNotFoundException<"permissionNot
 
 alias GeyByIdNotFoundException = GeyByIdPermissionNotFoundError;
 
-// DELETE //
 @doc("When input is invalid")
 @error
 model DeleteValidationError extends ApiBadRequestException<"id: Required"> {

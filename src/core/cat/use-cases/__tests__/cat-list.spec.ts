@@ -58,7 +58,7 @@ describe(CatListUsecase.name, () => {
   })
 
   const input = new ZodMockSchema(CatListSchema).generate()
-  test('when cats are found, should expect an user list', async () => {
+  test('when cats are found, should expect a cat list', async () => {
     const output = { docs: docs as CatEntity[], page: 1, limit: 1, total: 1 }
     repository.paginate = TestUtils.mockResolvedValue<CatListOutput>(output)
 

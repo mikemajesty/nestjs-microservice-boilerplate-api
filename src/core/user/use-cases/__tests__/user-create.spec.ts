@@ -123,7 +123,7 @@ describe(UserCreateUsecase.name, () => {
     await expect(usecase.execute(input, TestUtils.getMockTracing())).rejects.toThrow(ApiConflictException)
   })
 
-  test('when user created successfully, should expect an user', async () => {
+  test('when user created successfully, should expect a user', async () => {
     roleRepository.findIn = TestUtils.mockResolvedValue<RoleEntity[]>(roles)
     repository.findOne = TestUtils.mockResolvedValue<UserEntity>(null)
     const createOutput = { created: true, id: TestUtils.getMockUUID() }

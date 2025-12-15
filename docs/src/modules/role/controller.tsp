@@ -10,10 +10,7 @@ import "./exception.tsp";
 
 using api.Utils.Model;
 using TypeSpec.Http;
-using TypeSpec.Versioning;
-using OpenAPI;
 using Utils.Versioning;
-using Utils.Exception;
 
 @service(#{ title: "Role" })
 namespace api.Role;

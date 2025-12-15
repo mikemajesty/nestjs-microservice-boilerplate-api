@@ -92,14 +92,14 @@ describe(UserUpdateUsecase.name, () => {
     await expect(usecase.execute(input, TestUtils.getMockTracing())).rejects.toThrow(ApiConflictException)
   })
 
-  test('when nole not found, should expect an error', async () => {
+  test('when role not found, should expect an error', async () => {
     repository.findOne = TestUtils.mockResolvedValue<UserEntity>(user)
     roleRepository.findIn = TestUtils.mockResolvedValue<RoleEntity[]>([])
 
     await expect(usecase.execute(input, TestUtils.getMockTracing())).rejects.toThrow(ApiNotFoundException)
   })
 
-  test('when user updated successfully, should expect an user updated', async () => {
+  test('when user updated successfully, should expect a user updated', async () => {
     repository.findOne = TestUtils.mockResolvedValue<UserEntity>(user)
     repository.existsOnUpdate = TestUtils.mockResolvedValue<boolean>(false)
     roleRepository.findIn = TestUtils.mockResolvedValue<RoleEntity[]>([role])
@@ -108,7 +108,7 @@ describe(UserUpdateUsecase.name, () => {
     await expect(usecase.execute(input, TestUtils.getMockTracing())).resolves.toEqual(user)
   })
 
-  test('when user role not provided, should use user role, then should expect an user updated', async () => {
+  test('when user role not provided, should use user role, then should expect a user updated', async () => {
     repository.findOne = TestUtils.mockResolvedValue<UserEntity>(user)
     repository.existsOnUpdate = TestUtils.mockResolvedValue<boolean>(false)
     roleRepository.findIn = TestUtils.mockResolvedValue<RoleEntity[]>([role])

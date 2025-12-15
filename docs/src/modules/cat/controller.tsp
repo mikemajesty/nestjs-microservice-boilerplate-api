@@ -7,9 +7,6 @@ import "./model.tsp";
 import "./exception.tsp";
 
 using TypeSpec.Http;
-using TypeSpec.Versioning;
-using OpenAPI;
-using Utils.Model;
 using Utils.Versioning;
 
 @service(#{ title: "Cat" })
@@ -25,7 +22,8 @@ interface CatController {
   create(...VersionParams, @body body: CreateInput): CreateOutput | CreateValidationException;
 
   @put
-  @doc("create update")
+  @route("{id}")
+  @doc("update cat")
   @returnsDoc("cat updated successfully")
   update(
     ...VersionParams,
@@ -34,6 +32,7 @@ interface CatController {
   ): UpdateOutput | UpdateValidationException | UpdateNotFoundException;
 
   @get
+  @route("{id}")
   @doc("get cat by id")
   @returnsDoc("get cat by id successfully")
   getById(
@@ -42,11 +41,12 @@ interface CatController {
   ): GetByIdOutput | GetByIdValidationException | GetByIdNotFoundException;
 
   @get
-  @doc("list cat")
-  @returnsDoc("list cat successfully")
+  @doc("list cats")
+  @returnsDoc("list cats successfully")
   list(...VersionParams, ...ListQueryInput): ListOutput;
 
   @delete
+  @route("{id}")
   @doc("delete cat")
   @returnsDoc("cat deleted successfully")
   delete(...VersionParams, ...DeleteParamInput): DeleteOutput | DeleteValidationException | DeleteNotFoundException;

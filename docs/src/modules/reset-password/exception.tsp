@@ -7,7 +7,6 @@ using api.Utils.Model;
 
 namespace api.ResetPassword;
 
-// Confirm Reset Password //
 @doc("When password are differents")
 @error
 model ConfirmResetPasswordPasswordAreDifferentError extends ApiBadRequestException<"passwords are different"> {
@@ -32,7 +31,6 @@ model ConfirmResetPasswordTokenWasExpiredError extends ApiUnauthorizedException<
 
 alias ConfirmResetPasswordUnauthorizedException = ConfirmResetPasswordTokenWasExpiredError;
 
-// SEND EMAIL //
 @doc("When user not found")
 @error
 model SendEmailUserNotFoundError extends ApiNotFoundException<"user not found"> {
