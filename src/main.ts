@@ -21,7 +21,7 @@ import { name } from '../package.json'
 import { AppModule } from './app.module'
 import { ErrorType } from './infra/logger'
 import { CryptoUtils } from './utils/crypto'
-import { changeLanguage, initI18n, normalizeLocale } from './utils/validator' // Removemos LocaleInput
+import { changeLanguage, initI18n, normalizeLocale } from './utils/validator'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -129,7 +129,7 @@ async function bootstrap() {
 
   if (!IS_PRODUCTION) {
     const swaggerDocument = yaml.load(
-      fs.readFileSync(path.join(__dirname, '../docs/tsp-output/@typespec/openapi3/openapi.api.1.0.yaml'), 'utf8')
+      fs.readFileSync(path.join(__dirname, '../api-spec/tsp-output/@typespec/openapi3/openapi.api.1.0.yaml'), 'utf8')
     )
     app.use('/api-docs', swagger.serve, swagger.setup(swaggerDocument as swagger.SwaggerOptions))
   }

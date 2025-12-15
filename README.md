@@ -957,7 +957,7 @@ The Swagger UI provides:
 The OpenAPI 3.0 specification is auto-generated from TypeSpec definitions and available at:
 
 ```yaml
-docs/tsp-output/@typespec/openapi3/openapi.api.1.0.yaml
+api-spec/tsp-output/@typespec/openapi3/openapi.api.1.0.yaml
 ```
 
 ### API Endpoints Overview
@@ -1118,11 +1118,11 @@ This project uses **TypeSpec** as a modern, type-safe way to define API contract
 
 TypeSpec is a language for describing cloud service APIs and generating other API description languages, client and service code, documentation, and other assets. It provides excellent IDE support with auto-completion and type checking.
 
-### Documentation Structure
+### API Specification Structure
 
 ```
-docs/
-├── README.md              # Documentation overview
+api-spec/
+├── README.md              # TypeSpec documentation overview
 ├── package.json           # TypeSpec dependencies
 ├── tspconfig.yaml         # TypeSpec configuration
 ├── docker-compose.yml     # Documentation services
@@ -1183,13 +1183,13 @@ cd docs
 yarn doc:compiler
 ```
 
-Generated files will be in `docs/tsp-output/@typespec/openapi3/`
+Generated files will be in `api-spec/tsp-output/@typespec/openapi3/`
 
 ### Adding New API Documentation
 
 #### Step 1: Create Module Structure
 
-For a new module (e.g., `product`), create these files in `docs/src/modules/product/`:
+For a new module (e.g., `product`), create these files in `api-spec/src/modules/product/`:
 
 **controller.tsp** - Defines the API endpoints
 
@@ -1269,7 +1269,7 @@ model NotFoundException is Exception<404, "Product not found">;
 
 #### Step 2: Import in Main File
 
-Add your module to `docs/src/main.tsp`:
+Add your module to `api-spec/src/main.tsp`:
 
 ```typescript
 import "./modules/product/controller.tsp";
@@ -1282,7 +1282,7 @@ cd docs
 yarn doc:compiler
 ```
 
-Check the generated OpenAPI spec in `docs/tsp-output/@typespec/openapi3/openapi.api.1.0.yaml`
+Check the generated OpenAPI spec in `api-spec/tsp-output/@typespec/openapi3/openapi.api.1.0.yaml`
 
 ### TypeSpec Best Practices
 
@@ -1695,7 +1695,7 @@ nestjs-microservice-boilerplate-api/
 ├── .github/                    # GitHub Actions workflows
 ├── .husky/                     # Git hooks
 ├── .vscode/                    # VS Code settings
-├── docs/                       # Additional documentation
+├── api-spec/                   # API specifications (TypeSpec)
 ├── scripts/                    # Utility scripts
 ├── src/
 │   ├── core/                   # 🎯 Business Logic Layer
@@ -1781,7 +1781,7 @@ nestjs-microservice-boilerplate-api/
 │   │   │   ├── role.decorator.ts
 │   │   │   ├── validate-schema.decorator.ts
 │   │   │   └── request-timeout.decorator.ts
-│   │   ├── docs/               # Documentation utilities
+│   │   ├── api-spec/           # API specification utilities
 │   │   │   ├── swagger.ts
 │   │   │   └── data/           # Swagger example data
 │   │   ├── entity.ts           # Base entity class
@@ -2120,7 +2120,7 @@ Thanks to all contributors who have helped make this project better!
 
 ## 📞 Support
 
-- **Documentation**: [docs/README.md](docs/README.md)
+- **API Specifications**: [api-spec/README.md](api-spec/README.md)
 - **Issues**: [GitHub Issues](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/discussions)
 
