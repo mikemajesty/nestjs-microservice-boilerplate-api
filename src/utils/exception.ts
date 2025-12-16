@@ -100,3 +100,33 @@ export type ApiErrorType = {
 export type ParametersType = { [key: string]: any; context?: string; details?: unknown[]; stack?: string }
 
 export type MessageType = string
+
+export const createExceptionFromStatus = (input: HttpStatusExceptionInput): BaseException => {
+  const ExceptionClass = HTTP_STATUS_EXCEPTION_MAP[input.status] ?? ApiInternalServerException
+
+  const exception = new ExceptionClass(input.message, input.parameters)
+
+  if (input.originalStack) {
+    exception.stack = `${exception.stack}\n--- Original Error ---\n${input.originalStack}`
+  }
+
+  return exception
+}
+
+export type HttpStatusExceptionInput = {
+  status: number
+  message: MessageType
+  originalStack?: string
+  parameters?: ParametersType
+}
+
+const HTTP_STATUS_EXCEPTION_MAP: Record<number, new (message?: MessageType, parameters?: ParametersType) => BaseException> = {
+  [ApiBadRequestException.STATUS]: ApiBadRequestException,
+  [ApiUnauthorizedException.STATUS]: ApiUnauthorizedException,
+  [ApiForbiddenException.STATUS]: ApiForbiddenException,
+  [ApiNotFoundException.STATUS]: ApiNotFoundException,
+  [ApiTimeoutException.STATUS]: ApiTimeoutException,
+  [ApiConflictException.STATUS]: ApiConflictException,
+  [ApiUnprocessableEntityException.STATUS]: ApiUnprocessableEntityException,
+  [ApiInternalServerException.STATUS]: ApiInternalServerException
+}

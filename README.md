@@ -44,6 +44,19 @@
 - [Support](#-support)
 - [Resources](#-resources)
 
+## 📚 Development Guides
+
+**🎯 Complete documentation for all custom utilities, decorators, and infrastructure components.**
+
+| Category | Description | Quick Access |
+|----------|-------------|--------------|
+| **🔧 Infrastructure** | Circuit breakers, HTTP clients, caching, logging | [📖 Browse](guides/infrastructure/) |
+| **🎭 Decorators** | @CircuitBreaker, @ValidateSchema, @Role, performance | [📖 Browse](guides/decorators/) |
+| **🧰 Utilities** | Collections, crypto, pagination, search, validation | [📖 Browse](guides/utilities/) |
+| **📚 Libraries** | Events, i18n, metrics, tokens | [📖 Browse](guides/libraries/) |
+
+**🚀 Start here:** [Complete Guide Index](guides/README.md)
+
 ---
 
 ## 🎯 Overview

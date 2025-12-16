@@ -3,6 +3,8 @@ import axiosRetry from 'axios-retry'
 import { AxiosConverter } from 'nestjs-convert-to-curl'
 
 import { ILoggerAdapter } from '@/infra/logger'
+import { ApiInternalServerException } from './exception'
+import { DefaultErrorMessage } from './http-status'
 
 export class AxiosUtils {
   static interceptAxiosResponseError = (error: CustomAxiosError): void => {
@@ -47,7 +49,7 @@ export class AxiosUtils {
       error.response?.data?.message,
       error.response?.statusText,
       error.message,
-      'Internal Server Error'
+      DefaultErrorMessage[ApiInternalServerException.STATUS]
     ]
 
     return messageCandidates.find(Boolean) as string

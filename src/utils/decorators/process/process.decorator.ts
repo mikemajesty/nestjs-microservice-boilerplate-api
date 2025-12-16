@@ -1,68 +1,106 @@
 import { ChildProcess, fork } from 'child_process'
 import { red } from 'colorette'
 
-import { ApiTimeoutException } from '@/utils/exception'
+import { ApiTimeoutException } from '../../exception'
 
 export function RunInNewProcess(timeout?: number) {
   return function (target: object, key: string, descriptor: PropertyDescriptor): PropertyDescriptor {
     const originalMethod = descriptor.value
 
-    descriptor.value = function (...args: unknown[]) {
-      const child: ChildProcess = fork(`${__dirname}/process.js`)
+    descriptor.value = async function (...args: unknown[]): Promise<unknown> {
+      return new Promise((resolve, reject) => {
+        // Support both ts-node and compiled JavaScript
+        const processFile = __filename.endsWith('.ts')
+          ? `${__dirname}/process.ts`
+          : `${__dirname}/process.js`
 
-      const functionCode = originalMethod.toString()
-      child.send({ functionCode, args })
+        const child: ChildProcess = __filename.endsWith('.ts')
+          ? fork(processFile, [], {
+            execArgv: ['-r', 'ts-node/register'],
+            silent: false
+          })
+          : fork(processFile)
+        let timeoutId: NodeJS.Timeout | null = null
+        let isResolved = false
 
-      let timeoutId: NodeJS.Timeout
+        const cleanup = () => {
+          if (timeoutId) {
+            clearTimeout(timeoutId)
+            timeoutId = null
+          }
+          if (!child.killed) {
+            child.kill('SIGTERM')
+          }
+        }
 
-      if (timeout) {
-        timeoutId = setTimeout(() => {
-          const className = target.constructor.name
-          const methodName = key
-          const error = new ApiTimeoutException('worker execution timed out.', { timeout })
-          Object.assign(error, { context: `${className}/${methodName}` })
-          console.error(error)
-          child.kill()
-        }, timeout)
-      }
+        const resolveOnce = (value: unknown) => {
+          if (!isResolved) {
+            isResolved = true
+            cleanup()
+            resolve(value)
+          }
+        }
 
-      child.on('message', (message: { error: Error; success: unknown }) => {
-        try {
-          if (timeoutId) clearTimeout(timeoutId)
+        const rejectOnce = (error: Error) => {
+          if (!isResolved) {
+            isResolved = true
+            cleanup()
+            reject(error)
+          }
+        }
 
+        const functionCode = originalMethod.toString()
+        child.send({ functionCode, args })
+
+        if (timeout) {
+          timeoutId = setTimeout(() => {
+            const className = target.constructor.name
+            const methodName = key
+            const error = new ApiTimeoutException('Process execution timed out.', { timeout })
+            Object.assign(error, { context: `${className}/${methodName}` })
+            rejectOnce(error)
+          }, timeout)
+        }
+
+        child.once('message', (message: { error?: unknown; success?: unknown }) => {
           if (message.error) {
-            child.kill(0)
-            return Promise.reject(message.error)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const errorObj = message.error as any
+            const error = new Error(errorObj.message || 'Process execution failed')
+            if (errorObj.stack) {
+              error.stack = errorObj.stack
+            }
+            rejectOnce(error)
+          } else {
+            resolveOnce(message.success)
           }
+        })
 
-          if (message.success) {
-            return Promise.resolve(message.success)
+        child.once('error', (error: Error) => {
+          if (error.name === 'ReferenceError') {
+            console.error(
+              red(
+                'Cannot use custom errors or objects as response - they do not exist in the new process.'
+              ),
+              error.message
+            )
+            rejectOnce(new Error('Reference error in child process: ' + error.message))
+          } else {
+            rejectOnce(error)
           }
+        })
 
-          return Promise.resolve(message)
-        } catch (error) {
-          child.kill()
-          throw error
-        }
-      })
+        child.once('exit', (code: number, signal: string) => {
+          if (code !== 0 && !isResolved) {
+            rejectOnce(new Error(`Child process exited with code ${code}${signal ? ` (signal: ${signal})` : ''}`))
+          }
+        })
 
-      child.on('error', (error: Error) => {
-        if (error.name === 'ReferenceError') {
-          console.error(
-            red(
-              'it is not possible to use custom errors or objects as a response because they do not exist in the new process.'
-            ),
-            error
-          )
-          return
-        }
-        console.error(red('error in child process: '), error)
-      })
-
-      child.on('exit', (code: number) => {
-        if (code !== 0) {
-          console.error(red(`child process exited ${code ?? `with code: code`}`))
-        }
+        child.once('disconnect', () => {
+          if (!isResolved) {
+            rejectOnce(new Error('Child process disconnected unexpectedly'))
+          }
+        })
       })
     }
 
