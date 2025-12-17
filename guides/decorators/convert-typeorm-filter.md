@@ -1,6 +1,6 @@
-# ConvertTypeOrmFilter Decorator
+# ConvertTypeOrmFilter Decorator (Repository Layer)
 
-Transforms **manual, complex TypeORM WHERE clause construction** into elegant, type-safe, automatic filter object generation with built-in type conversion, PostgreSQL optimizations, and security validations.
+Transforms **manual, complex TypeORM WHERE clause construction** into elegant, type-safe, automatic filter object generation for **Repository layer** with built-in type conversion, PostgreSQL optimizations, and security validations.
 
 ## The Problem: Manual TypeORM Filter Hell
 

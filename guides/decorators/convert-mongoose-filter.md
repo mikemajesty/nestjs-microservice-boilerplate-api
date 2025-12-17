@@ -1,8 +1,8 @@
-# ConvertMongoFilterToBaseRepository Decorator (Repository Layer)
+# ConvertMongoFilterToBaseRepository Decorator (Base Repository / Infra Layer)
 
 Transforms **nested filter objects** into **flattened MongoDB-compatible queries** for base repository operations, with automatic `id` → `_id` conversion and soft delete handling.
 
-> **Note:** This decorator is different from `ConvertMongooseFilter` (see [validate-mongoose-filter.md](validate-mongoose-filter.md)). Use **ConvertMongooseFilter** in Use Cases (builds $or/$and queries) and **ConvertMongoFilterToBaseRepository** in Repositories (flattens nested objects).
+> **Note:** This decorator is different from `ConvertMongooseFilter` (see [validate-mongoose-filter.md](validate-mongoose-filter.md)). Use **ConvertMongooseFilter** in Module Repositories (builds $or/$and queries) and **ConvertMongoFilterToBaseRepository** in Base Repository/Infra (flattens nested objects).
 
 ## The Problem: Nested Filter Objects in Repositories
 

@@ -1,4 +1,4 @@
-# ValidateDatabaseSortAllowed Decorator
+# ValidateDatabaseSortAllowed Decorator (Repository Layer)
 
 Transforms **manual, error-prone sorting validation** into elegant, type-safe, automatic sort object generation for repository pagination methods. This decorator ensures only **whitelisted properties** can be used for sorting and automatically **maps** them to the correct database field names.
 

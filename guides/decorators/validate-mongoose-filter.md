@@ -1,17 +1,17 @@
-# ConvertMongooseFilter Decorator (Use Case Layer)
+# ConvertMongooseFilter Decorator (Repository Layer)
 
-Transforms **manual, complex MongoDB query construction** into elegant, type-safe, automatic filter validation and query generation for **Use Case layer** with built-in regex optimization, case-insensitive search, and MongoDB-specific operators.
+Transforms **manual, complex MongoDB query construction** into elegant, type-safe, automatic filter validation and query generation for **Repository layer** with built-in regex optimization, case-insensitive search, and MongoDB-specific operators.
 
-> **Note:** This decorator is different from `ConvertMongoFilterToBaseRepository` (see [convert-mongoose-filter.md](convert-mongoose-filter.md)). Use **ConvertMongooseFilter** in Use Cases and **ConvertMongoFilterToBaseRepository** in Repositories.
+> **Note:** This decorator is different from `ConvertMongoFilterToBaseRepository` (see [convert-mongoose-filter.md](convert-mongoose-filter.md)). Use **ConvertMongooseFilter** in Module Repositories (builds $or/$and queries) and **ConvertMongoFilterToBaseRepository** in Base Repository/Infra (flattens nested objects).
 
-## The Problem: Manual MongoDB Filter Construction in Use Cases
+## The Problem: Manual MongoDB Filter Construction in Repositories
 
 ### ❌ **Without ConvertMongooseFilter - Manual Nightmare**
 
 ```typescript
-// UGLY: Manual MongoDB query construction at use case level
-export class CatListUsecase {
-  async execute(input: CatListInput): Promise<CatListOutput> {
+// UGLY: Manual MongoDB query construction at repository level
+export class CatRepository {
+  async paginate(input: CatListInput): Promise<CatListOutput> {
     const allowedFilterFields = ['name', 'breed', 'age']
     const where: FilterQuery<CatDocument> = { 
       $or: [],
@@ -82,15 +82,16 @@ export class CatListUsecase {
 ```typescript
 import { ConvertMongooseFilter, SearchTypeEnum } from '@/utils/decorators'
 
-export class CatListUsecase {
+export class CatRepository {
   @ConvertMongooseFilter<CatEntity>([
     { name: 'name', type: SearchTypeEnum.like },
     { name: 'breed', type: SearchTypeEnum.like },
     { name: 'age', type: SearchTypeEnum.equal, format: 'number' }
   ])
-  async execute(input: CatListInput): Promise<CatListOutput> {
+  async paginate(input: CatListInput): Promise<CatListOutput> {
     // ✅ Filters already validated and converted to MongoDB query!
-    return this.repository.paginate(input)
+    const cats = await this.entity.paginate(input.search, { page: input.page, limit: input.limit })
+    return { docs: cats.docs, total: cats.totalDocs, page: input.page, limit: input.limit }
   }
 }
 ```
@@ -129,14 +130,16 @@ interface AllowedFilter<T> {
 ### Example 1: User Search with Multiple Filters
 
 ```typescript
-@ConvertMongooseFilter<UserEntity>([
-  { name: 'name', type: SearchTypeEnum.like },
-  { name: 'email', type: SearchTypeEnum.like },
-  { name: 'status', type: SearchTypeEnum.equal },
-  { name: 'age', type: SearchTypeEnum.equal, format: 'number' }
-])
-async execute(input: UserListInput): Promise<UserListOutput> {
-  return this.userRepository.paginate(input)
+export class UserRepository {
+  @ConvertMongooseFilter<UserEntity>([
+    { name: 'name', type: SearchTypeEnum.like },
+    { name: 'email', type: SearchTypeEnum.like },
+    { name: 'status', type: SearchTypeEnum.equal },
+    { name: 'age', type: SearchTypeEnum.equal, format: 'number' }
+  ])
+  async paginate(input: UserListInput): Promise<UserListOutput> {
+    return this.entity.paginate(input.search, { page: input.page, limit: input.limit })
+  }
 }
 ```
 
@@ -164,12 +167,14 @@ async execute(input: UserListInput): Promise<UserListOutput> {
 ### Example 2: Multiple Values (OR condition)
 
 ```typescript
-@ConvertMongooseFilter<ProductEntity>([
-  { name: 'category', type: SearchTypeEnum.equal },
-  { name: 'brand', type: SearchTypeEnum.like }
-])
-async execute(input: ProductListInput): Promise<ProductListOutput> {
-  return this.productRepository.paginate(input)
+export class ProductRepository {
+  @ConvertMongooseFilter<ProductEntity>([
+    { name: 'category', type: SearchTypeEnum.equal },
+    { name: 'brand', type: SearchTypeEnum.like }
+  ])
+  async paginate(input: ProductListInput): Promise<ProductListOutput> {
+    return this.entity.paginate(input.search, { page: input.page, limit: input.limit })
+  }
 }
 ```
 
@@ -200,12 +205,14 @@ async execute(input: ProductListInput): Promise<ProductListOutput> {
 ### Example 3: Field Mapping
 
 ```typescript
-@ConvertMongooseFilter<OrderEntity>([
-  { name: 'customer', type: SearchTypeEnum.like, map: 'customer.name' },
-  { name: 'total', type: SearchTypeEnum.equal, format: 'number' }
-])
-async execute(input: OrderListInput): Promise<OrderListOutput> {
-  return this.orderRepository.paginate(input)
+export class OrderRepository {
+  @ConvertMongooseFilter<OrderEntity>([
+    { name: 'customer', type: SearchTypeEnum.like, map: 'customer.name' },
+    { name: 'total', type: SearchTypeEnum.equal, format: 'number' }
+  ])
+  async paginate(input: OrderListInput): Promise<OrderListOutput> {
+    return this.entity.paginate(input.search, { page: input.page, limit: input.limit })
+  }
 }
 ```
 
@@ -215,20 +222,23 @@ async execute(input: OrderListInput): Promise<OrderListOutput> {
 
 | Decorator | Layer | Purpose |
 |-----------|-------|---------|
-| **ValidateMongooseFilter** | Use Case | Validates filters, builds $or/$and, applies regex |
-| **ConvertMongoFilterToBaseRepository** | Repository | Flattens nested objects, handles id→_id |
+| **ConvertMongooseFilter** | Module Repository | Validates filters, builds $or/$and, applies regex |
+| **ConvertMongoFilterToBaseRepository** | Base Repository (Infra) | Flattens nested objects, handles id→_id |
 
 **Use both together:**
 
 ```typescript
-// Use Case - validates and builds query
-@ValidateMongooseFilter<CatEntity>([...])
-async execute(input) { ... }
+// Module Repository - validates and builds query
+export class CatRepository {
+  @ConvertMongooseFilter<CatEntity>([...])
+  async paginate(input) { ... }
+}
 
-// Repository - normalizes for MongoDB
-@ConvertMongoFilterToBaseRepository()
-async paginate(input) { ... }
-```
+// Base Repository (Infra) - normalizes for MongoDB
+export class MongoRepository {
+  @ConvertMongoFilterToBaseRepository()
+  async find(filter) { ... }
+}
 
 ---
 

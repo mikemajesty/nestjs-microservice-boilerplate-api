@@ -50,10 +50,10 @@ These decorators solve **real-world problems** by eliminating boilerplate code, 
 **Automatic TypeORM WHERE clause generation.** Transforms manual filter construction into elegant, type-safe PostgreSQL queries with unaccent support and automatic type conversion.
 
 #### **[ConvertMongooseFilter](validate-mongoose-filter.md)** | **[📄 Code](../../src/utils/decorators/database/mongo/validate-mongoose-filter.decorator.ts)**
-**MongoDB query builder automation (Use Case layer).** Automatic MongoDB filter generation with regex optimization, type conversion, and $or/$and structure for complex queries.
+**MongoDB query builder automation (Repository layer).** Automatic MongoDB filter generation with regex optimization, type conversion, and $or/$and structure for complex queries.
 
 #### **[ConvertMongoFilterToBaseRepository](convert-mongoose-filter.md)** | **[📄 Code](../../src/utils/decorators/database/mongo/convert-mongoose-filter.decorator.ts)**
-**MongoDB filter normalization (Repository layer).** Flattens nested filter objects, handles id→_id conversion, and prepares queries for base repository operations.
+**MongoDB filter normalization (Base Repository / Infra layer).** Flattens nested filter objects, handles id→_id conversion, and prepares queries for base repository operations.
 
 
 ---
