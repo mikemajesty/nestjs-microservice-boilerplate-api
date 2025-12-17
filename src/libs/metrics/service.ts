@@ -1,3 +1,7 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/libs/metrics.md
+ */
+
 import { Injectable } from '@nestjs/common'
 import {
   Attributes,

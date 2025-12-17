@@ -27,7 +27,8 @@ scopes.push(
   'usecases',
   'ci',
   'github',
-  'workflow'
+  'workflow',
+  'none'
 );
 
 module.exports = {

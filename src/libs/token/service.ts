@@ -1,3 +1,6 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/libs/token.md
+ */
 import { Injectable } from '@nestjs/common'
 import jwt from 'jsonwebtoken'
 

@@ -1,3 +1,6 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/libs/i18n.md
+ */
 import { Injectable } from '@nestjs/common'
 import { I18nContext, I18nService as Service } from 'nestjs-i18n'
 
