@@ -1,4 +1,4 @@
-import { RoleEnum } from '@/core/role/entity/role'
+import { RoleEntity, RoleEnum } from '@/core/role/entity/role'
 import { IRoleRepository } from '@/core/role/repository/role'
 import { ILoggerAdapter } from '@/infra/logger'
 import { ValidateSchema } from '@/utils/decorators'
@@ -13,9 +13,8 @@ import { IUserRepository } from '../repository/user'
 export const UserUpdateSchema = UserEntitySchema.pick({
   id: true
 })
-  .merge(UserEntitySchema.pick({ name: true, email: true, roles: true }).partial())
-  .merge(InputValidator.object({ roles: InputValidator.array(InputValidator.enum(RoleEnum)).optional() }))
-  .strict()
+  .and(UserEntitySchema.pick({ name: true, email: true }).partial())
+  .and(InputValidator.object({ roles: InputValidator.array(InputValidator.enum(RoleEnum)).optional() }))
 
 export class UserUpdateUsecase implements IUsecase {
   constructor(
@@ -32,9 +31,10 @@ export class UserUpdateUsecase implements IUsecase {
       throw new ApiNotFoundException('userNotFound')
     }
 
-    const roles = await this.getRoles(input)
+    const roles = await this.getRoles(input, user.roles as RoleEntity[])
 
-    const entity = new UserEntity({ ...user, ...input, roles: roles ?? user.roles })
+    const entity = new UserEntity(user)
+    entity.merge({ ...input, roles })
 
     const userExists = await this.userRepository.existsOnUpdate({ email: entity.email }, { id: entity.id })
 
@@ -55,7 +55,7 @@ export class UserUpdateUsecase implements IUsecase {
     return entityUpdated.toObject()
   }
 
-  private async getRoles(input: UserUpdateInput) {
+  private async getRoles(input: UserUpdateInput, currentRoles: RoleEntity[]): Promise<RoleEntity[]> {
     if (input.roles) {
       const roles = await this.roleRepository.findIn({ name: input.roles })
 
@@ -65,6 +65,8 @@ export class UserUpdateUsecase implements IUsecase {
 
       return roles
     }
+
+    return currentRoles
   }
 }
 

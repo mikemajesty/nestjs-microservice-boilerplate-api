@@ -11,7 +11,7 @@ import { ITokenAdapter } from './adapter'
 export const TokenGetSchema = UserEntitySchema.pick({
   email: true,
   roles: true
-}).merge(InputValidator.object({ password: InputValidator.string() }))
+}).and(InputValidator.object({ password: InputValidator.string() }))
 
 @Injectable()
 export class TokenService implements ITokenAdapter {

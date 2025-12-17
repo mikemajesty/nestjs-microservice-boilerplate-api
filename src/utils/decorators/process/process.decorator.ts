@@ -9,10 +9,7 @@ export function RunInNewProcess(timeout?: number) {
 
     descriptor.value = async function (...args: unknown[]): Promise<unknown> {
       return new Promise((resolve, reject) => {
-        // Support both ts-node and compiled JavaScript
-        const processFile = __filename.endsWith('.ts')
-          ? `${__dirname}/process.ts`
-          : `${__dirname}/process.js`
+        const processFile = __filename.endsWith('.ts') ? `${__dirname}/process.ts` : `${__dirname}/process.js`
 
         const child: ChildProcess = __filename.endsWith('.ts')
           ? fork(processFile, [], {
@@ -79,9 +76,7 @@ export function RunInNewProcess(timeout?: number) {
         child.once('error', (error: Error) => {
           if (error.name === 'ReferenceError') {
             console.error(
-              red(
-                'Cannot use custom errors or objects as response - they do not exist in the new process.'
-              ),
+              red('Cannot use custom errors or objects as response - they do not exist in the new process.'),
               error.message
             )
             rejectOnce(new Error('Reference error in child process: ' + error.message))

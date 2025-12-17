@@ -11,10 +11,7 @@ export function RunInNewThread(timeout?: number) {
       return new Promise((resolve, reject) => {
         const fnCode = originalMethod.toString()
 
-        // Support both ts-node and compiled JavaScript
-        const workerFile = __filename.endsWith('.ts')
-          ? `${__dirname}/thread.ts`
-          : `${__dirname}/thread.js`
+        const workerFile = __filename.endsWith('.ts') ? `${__dirname}/thread.ts` : `${__dirname}/thread.js`
 
         const worker = new Worker(workerFile, {
           execArgv: __filename.endsWith('.ts') ? ['-r', 'ts-node/register'] : []

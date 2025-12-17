@@ -4,6 +4,7 @@ import { ApiConflictException, ApiNotFoundException } from '@/utils/exception'
 import { IUsecase } from '@/utils/usecase'
 import { Infer } from '@/utils/validator'
 
+import { RoleEntity } from '@/core/role/entity/role'
 import { PermissionEntity, PermissionEntitySchema } from '../entity/permission'
 
 export const PermissionDeleteSchema = PermissionEntitySchema.pick({
@@ -23,7 +24,7 @@ export class PermissionDeleteUsecase implements IUsecase {
 
     if (permission.roles?.length) {
       throw new ApiConflictException(
-        `permissionHasAssociationWithRole: ${permission.roles.map((r) => r.name).join(', ')}`
+        `permissionHasAssociationWithRole: ${(permission.roles as RoleEntity[]).map((r) => r.name).join(', ')}`
       )
     }
 

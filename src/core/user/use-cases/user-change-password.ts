@@ -10,7 +10,7 @@ import { IUserRepository } from '../repository/user'
 
 export const UserChangePasswordSchema = UserEntitySchema.pick({
   id: true
-}).merge(
+}).and(
   InputValidator.object({
     password: InputValidator.string(),
     newPassword: InputValidator.string(),

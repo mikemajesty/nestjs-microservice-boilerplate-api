@@ -4,7 +4,7 @@ import { SearchSchema } from '@/utils/search'
 import { SortEnum, SortSchema } from '@/utils/sort'
 import { Infer, InputValidator } from '@/utils/validator'
 
-export const ListSchema = InputValidator.intersection(PaginationSchema, SortSchema.merge(SearchSchema))
+export const ListSchema = InputValidator.intersection(PaginationSchema, SortSchema.and(SearchSchema))
 
 type AllowedSort<T> = { name: keyof T; map?: string }
 

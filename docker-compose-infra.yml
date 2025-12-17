@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   nestjs-microservice-primary:
     container_name: nestjs-microservice-primary

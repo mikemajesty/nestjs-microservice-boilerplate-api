@@ -10,7 +10,7 @@ import { CatEntity, CatEntitySchema } from '../entity/cat'
 
 export const CatUpdateSchema = CatEntitySchema.pick({
   id: true
-}).merge(CatEntitySchema.omit({ id: true }).partial())
+}).and(CatEntitySchema.omit({ id: true }).partial())
 
 export class CatUpdateUsecase implements IUsecase {
   constructor(
@@ -26,7 +26,8 @@ export class CatUpdateUsecase implements IUsecase {
       throw new ApiNotFoundException()
     }
 
-    const entity = new CatEntity({ ...cat, ...input })
+    const entity = new CatEntity(cat)
+    entity.merge(input)
 
     await this.catRepository.updateOne({ id: entity.id }, entity.toObject())
 

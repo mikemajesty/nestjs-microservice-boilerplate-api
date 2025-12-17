@@ -9,9 +9,7 @@ import { RoleEntity, RoleEntitySchema } from './../entity/role'
 
 export const RoleUpdateSchema = RoleEntitySchema.pick({
   id: true
-})
-  .merge(RoleEntitySchema.pick({ name: true }).partial())
-  .strict()
+}).and(RoleEntitySchema.pick({ name: true }).partial())
 
 export class RoleUpdateUsecase implements IUsecase {
   constructor(
@@ -27,7 +25,8 @@ export class RoleUpdateUsecase implements IUsecase {
       throw new ApiNotFoundException('roleNotFound')
     }
 
-    const entity = new RoleEntity({ ...role, ...input })
+    const entity = new RoleEntity(role)
+    entity.merge(input)
 
     await this.roleRepository.create(entity.toObject())
 

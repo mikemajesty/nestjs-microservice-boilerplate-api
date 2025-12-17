@@ -3,6 +3,7 @@ import axiosRetry from 'axios-retry'
 import { AxiosConverter } from 'nestjs-convert-to-curl'
 
 import { ILoggerAdapter } from '@/infra/logger'
+
 import { ApiInternalServerException } from './exception'
 import { DefaultErrorMessage } from './http-status'
 

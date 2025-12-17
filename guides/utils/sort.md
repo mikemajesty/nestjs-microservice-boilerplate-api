@@ -68,7 +68,7 @@ export type SortInput = { sort: Record<string, SortEnum> }
 // Core layer - consistent across all domains
 export const UserListSchema = InputValidator.intersection(
   PaginationSchema, 
-  SortSchema.merge(SearchSchema)
+  SortSchema.and(SearchSchema)
 )
 
 // Combined type used in list operations

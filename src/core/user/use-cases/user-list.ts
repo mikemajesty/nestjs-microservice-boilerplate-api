@@ -8,7 +8,7 @@ import { InputValidator } from '@/utils/validator'
 import { UserEntity } from '../entity/user'
 import { IUserRepository } from '../repository/user'
 
-export const UserListSchema = InputValidator.intersection(PaginationSchema, SortSchema.merge(SearchSchema))
+export const UserListSchema = InputValidator.intersection(PaginationSchema, SortSchema.and(SearchSchema))
 
 export class UserListUsecase implements IUsecase {
   constructor(private readonly userRepository: IUserRepository) {}

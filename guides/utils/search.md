@@ -150,7 +150,7 @@ export type PaginationInput<T> = PaginationSchema & SortInput & SearchInput<Part
 
 export const UserListSchema = InputValidator.intersection(
   PaginationSchema, 
-  SortSchema.merge(SearchSchema)
+  SortSchema.and(SearchSchema)
 )
 
 export class UserListUsecase implements IUsecase {

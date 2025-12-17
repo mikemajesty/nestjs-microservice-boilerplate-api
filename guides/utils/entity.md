@@ -43,7 +43,7 @@ export class UserEntity extends BaseEntity<UserEntityProps>() {
     }
 
     // Business rule: email cannot be same as current
-    if (this.toObject().email === newEmail) {
+    if (this.email === newEmail) {
       throw new ApiUnprocessableEntityException('emailAlreadyCurrent')
     }
 
@@ -57,7 +57,7 @@ export class UserEntity extends BaseEntity<UserEntityProps>() {
     }
 
     // Business rule: already admin check
-    if (this.toObject().role === 'admin') {
+    if (this.role === 'admin') {
       throw new ApiUnprocessableEntityException('userAlreadyAdmin')
     }
 

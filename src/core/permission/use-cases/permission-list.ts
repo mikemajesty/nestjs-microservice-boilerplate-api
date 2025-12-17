@@ -8,7 +8,7 @@ import { InputValidator } from '@/utils/validator'
 
 import { IPermissionRepository } from '../repository/permission'
 
-export const PermissionListSchema = InputValidator.intersection(PaginationSchema, SortSchema.merge(SearchSchema))
+export const PermissionListSchema = InputValidator.intersection(PaginationSchema, SortSchema.and(SearchSchema))
 
 export class PermissionListUsecase implements IUsecase {
   constructor(private readonly permissionRepository: IPermissionRepository) {}

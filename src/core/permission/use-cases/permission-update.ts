@@ -9,7 +9,7 @@ import { PermissionEntity, PermissionEntitySchema } from './../entity/permission
 
 export const PermissionUpdateSchema = PermissionEntitySchema.pick({
   id: true
-}).merge(PermissionEntitySchema.omit({ id: true }).partial())
+}).and(PermissionEntitySchema.omit({ id: true }).partial())
 
 export class PermissionUpdateUsecase implements IUsecase {
   constructor(
@@ -36,7 +36,8 @@ export class PermissionUpdateUsecase implements IUsecase {
       }
     }
 
-    const entity = new PermissionEntity({ ...permission, ...input })
+    const entity = new PermissionEntity(permission)
+    entity.merge(input)
 
     await this.permissionRepository.updateOne({ id: entity.id }, entity.toObject())
 

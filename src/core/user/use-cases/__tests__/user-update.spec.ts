@@ -75,7 +75,11 @@ describe(UserUpdateUsecase.name, () => {
   })
 
   const userUpdateMock = new ZodMockSchema(UserUpdateSchema)
-  const input = userUpdateMock.generate()
+  const input = userUpdateMock.generate({
+    overrides: {
+      roles: [RoleEnum.USER] as RoleEnum[]
+    }
+  })
   test('when user not found, should expect an error', async () => {
     repository.findOne = TestUtils.mockResolvedValue<UserEntity>(null)
 

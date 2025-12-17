@@ -7,7 +7,7 @@ export enum RoleEnum {
   BACKOFFICE = 'BACKOFFICE'
 }
 
-const ID = InputValidator.string().uuid()
+const ID = InputValidator.uuid()
 const Name = InputValidator.string().transform((value) => value.trim().replace(/ /g, '_').toUpperCase())
 const Permissions = InputValidator.array(PermissionEntitySchema).optional()
 const CreatedAt = InputValidator.date().nullish()

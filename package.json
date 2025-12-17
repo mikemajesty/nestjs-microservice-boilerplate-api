@@ -19,7 +19,7 @@
     "test": "TS_NODE_PROJECT=tsconfig.json node -r ts-node/register node_modules/.bin/jest --config=jest.config.ts --verbose --detectOpenHandles --forceExit",
     "test:cov": "jest --config=\"./jest-coverage.config.ts\" --coverage --detectOpenHandles && npm run make-badges",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "setup": "docker-compose -f docker-compose-infra.yml down -v --remove-orphans && docker volume prune -f && docker-compose -f docker-compose-infra.yml up -d",
+    "setup": "docker-compose -f docker-compose-infra.yml down -v --remove-orphans && docker volume prune -f && docker network prune -f && docker-compose -f docker-compose-infra.yml up -d",
     "scaffold": "./node_modules/@mikemajesty/microservice-crud/bin/microservice-crud",
     "typeorm": "ts-node -r tsconfig-paths/register \"./node_modules/typeorm/cli.js\"",
     "migration-postgres:create": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:create ./src/infra/database/postgres/migrations/Name",

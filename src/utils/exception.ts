@@ -120,7 +120,10 @@ export type HttpStatusExceptionInput = {
   parameters?: ParametersType
 }
 
-const HTTP_STATUS_EXCEPTION_MAP: Record<number, new (message?: MessageType, parameters?: ParametersType) => BaseException> = {
+const HTTP_STATUS_EXCEPTION_MAP: Record<
+  number,
+  new (message?: MessageType, parameters?: ParametersType) => BaseException
+> = {
   [ApiBadRequestException.STATUS]: ApiBadRequestException,
   [ApiUnauthorizedException.STATUS]: ApiUnauthorizedException,
   [ApiForbiddenException.STATUS]: ApiForbiddenException,

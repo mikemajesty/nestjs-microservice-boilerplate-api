@@ -8,7 +8,7 @@ import { InputValidator } from '@/utils/validator'
 
 import { IRoleRepository } from '../repository/role'
 
-export const RoleListSchema = InputValidator.intersection(PaginationSchema, SortSchema.merge(SearchSchema))
+export const RoleListSchema = InputValidator.intersection(PaginationSchema, SortSchema.and(SearchSchema))
 
 export class RoleListUsecase implements IUsecase {
   constructor(private readonly roleRepository: IRoleRepository) {}

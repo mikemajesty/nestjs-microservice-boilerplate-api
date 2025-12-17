@@ -9,7 +9,7 @@ import { IRoleRepository } from '../repository/role'
 
 export const RoleDeletePermissionSchema = RoleEntitySchema.pick({
   id: true
-}).merge(InputValidator.object({ permissions: InputValidator.array(InputValidator.string()) }))
+}).and(InputValidator.object({ permissions: InputValidator.array(InputValidator.string()) }))
 
 export class RoleDeletePermissionUsecase implements IUsecase {
   constructor(
