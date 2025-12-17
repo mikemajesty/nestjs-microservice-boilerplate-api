@@ -1,4 +1,7 @@
-import { ArgumentsHost, Catch, ExceptionFilter as AppExceptionFilter, HttpException } from '@nestjs/common'
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/middlewares/exception-handler.filter.md
+ */
+import { ExceptionFilter as AppExceptionFilter, ArgumentsHost, Catch, HttpException } from '@nestjs/common'
 import { AxiosError } from 'axios'
 import { ZodError } from 'zod'
 

@@ -1,3 +1,6 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/middlewares/metrics.interceptor.md
+ */
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common'
 import { Counter, Histogram, Meter, metrics } from '@opentelemetry/api'
 import { catchError, Observable, tap, throwError } from 'rxjs'

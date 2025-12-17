@@ -1,3 +1,6 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/middlewares/exception-handler.interceptor.md
+ */
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common'
 import { SpanStatusCode } from '@opentelemetry/api'
 import { AxiosError } from 'axios'
@@ -31,9 +34,9 @@ export class ExceptionHandlerInterceptor implements NestInterceptor {
         }
 
         if (request?.tracing as TracingType) {
-          ;(request.tracing as TracingType).addAttribute('http.status_code', error.status)
-          ;(request.tracing as TracingType).setStatus({ message: error.message, code: SpanStatusCode.ERROR })
-          ;(request.tracing as TracingType).finish()
+          ; (request.tracing as TracingType).addAttribute('http.status_code', error.status)
+            ; (request.tracing as TracingType).setStatus({ message: error.message, code: SpanStatusCode.ERROR })
+            ; (request.tracing as TracingType).finish()
         }
 
         throw error
@@ -42,7 +45,7 @@ export class ExceptionHandlerInterceptor implements NestInterceptor {
   }
 
   private getStatusCode(
-    error: ZodError | AxiosError<{ code: string | number; error: { code: string | number } }>
+    error: ZodError | AxiosError<ExternalErrorResponse>
   ): number {
     if (error instanceof ZodError) {
       return ApiBadRequestException.STATUS
@@ -52,24 +55,37 @@ export class ExceptionHandlerInterceptor implements NestInterceptor {
       return ApiTimeoutException.STATUS
     }
 
-    return [
-      error.status,
-      error?.response?.status,
-      error?.response?.data?.code,
-      error?.response?.data?.error?.code,
-      ApiInternalServerException.STATUS
-    ].find(Boolean) as number
+    const data = error?.response?.data
+    const nested = data?.error
+
+    return nested?.code ?? data?.code ?? error?.response?.status ?? error.status ?? ApiInternalServerException.STATUS
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private sanitizeExternalError(error: any) {
-    if (typeof error?.response === 'object' && error?.isAxiosError) {
-      const status = [error?.response?.data?.code, error?.response?.data?.error?.code, error?.status].find(Boolean)
-      error.message = [error?.response?.data?.message, error?.response?.data?.error?.message, error.message].find(
-        Boolean
-      )
-      error['getResponse'] = () => [error?.response?.data?.error, error?.response?.data].find(Boolean)
-      error['getStatus'] = () => status
-    }
+  private sanitizeExternalError(error: AxiosError<ExternalErrorResponse> & SanitizedAxiosError) {
+    if (!error?.isAxiosError || typeof error?.response !== 'object') return
+
+    const data = error.response?.data
+    const nested = data?.error
+
+    const status = data?.code ?? nested?.code ?? error.status
+    const message = data?.message ?? nested?.message ?? error.message
+
+    error.message = message as string
+    error.getResponse = () => nested ?? data
+    error.getStatus = () => status
   }
+}
+
+type ExternalErrorResponse = {
+  code?: number
+  message?: string
+  error?: {
+    code?: number
+    message?: string
+  }
+}
+
+type SanitizedAxiosError = {
+  getResponse?: () => ExternalErrorResponse | ExternalErrorResponse['error']
+  getStatus?: () => number | undefined
 }
