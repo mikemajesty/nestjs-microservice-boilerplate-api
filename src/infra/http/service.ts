@@ -1,3 +1,6 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/infra/http.md
+ */
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios'
 import axiosBetterStacktrace from 'axios-better-stacktrace'
 import https from 'https'
@@ -7,7 +10,7 @@ import { TracingType } from '@/utils/request'
 
 import { ILoggerAdapter } from '../logger'
 import { IHttpAdapter, IHttpBuilder } from './adapter'
-import { HttpBuilder } from './http-builder' // Importa a implementação concreta
+import { HttpBuilder } from './http-builder'
 import { HttpData } from './types'
 
 export class HttpService implements IHttpAdapter<AxiosInstance> {
@@ -79,7 +82,6 @@ export class HttpService implements IHttpAdapter<AxiosInstance> {
   }
 
   request(): IHttpBuilder {
-    // ✅ Cria o HttpBuilder com a instância do axios
     return new HttpBuilder(this.axios)
   }
 }

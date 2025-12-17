@@ -1,7 +1,10 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/main/guides/infra/database.md
+ */
 import { config } from 'dotenv'
 import { DataSource } from 'typeorm'
-import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions'
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies'
+import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions'
 
 config()
 
@@ -21,8 +24,8 @@ const dataSource = new DataSource({
   ssl:
     process.env.POSTGRES_SSL === 'true'
       ? {
-          rejectUnauthorized: false
-        }
+        rejectUnauthorized: false
+      }
       : false,
   extra: {
     max: 20,

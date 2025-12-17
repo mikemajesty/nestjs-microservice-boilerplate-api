@@ -1,3 +1,6 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/main/guides/infra/email.md
+ */
 import { Injectable } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
 import fs from 'fs'
@@ -11,15 +14,6 @@ import { EventNameEnum } from '@/libs/event/types'
 import { ILoggerAdapter } from '../logger'
 import { ISecretsAdapter } from '../secrets'
 import { IEmailAdapter } from './adapter'
-
-export type SendEmailInput = {
-  subject: string
-  email: string
-  template: string
-  payload: object
-}
-
-export type SendEmailOutput = SMTPTransport.SentMessageInfo
 
 @Injectable()
 export class EmailService implements IEmailAdapter {
@@ -59,3 +53,13 @@ export class EmailService implements IEmailAdapter {
     this.logger.info({ message: 'email sended successfully.' })
   }
 }
+
+export type SendEmailInput = {
+  subject: string
+  email: string
+  template: string
+  payload: object
+}
+
+export type SendEmailOutput = SMTPTransport.SentMessageInfo
+

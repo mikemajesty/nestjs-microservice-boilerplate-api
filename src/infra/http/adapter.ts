@@ -1,3 +1,6 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/infra/http.md
+ */
 import { Axios, AxiosInstance, AxiosRequestConfig } from 'axios'
 
 import { TracingType } from '@/utils/request'

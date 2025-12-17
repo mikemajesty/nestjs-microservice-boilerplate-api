@@ -1,3 +1,6 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/infra/repository.md
+ */
 import { HttpStatus } from '@nestjs/common'
 import {
   Document,

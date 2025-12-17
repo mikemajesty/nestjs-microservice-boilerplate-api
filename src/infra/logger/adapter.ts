@@ -1,3 +1,6 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/infra/logger.md
+ */
 import { HttpLogger } from 'pino-http'
 
 import { ErrorType, LogLevelEnum, MessageInputType } from './types'

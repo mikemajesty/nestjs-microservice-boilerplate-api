@@ -1,3 +1,6 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/main/guides/infra/database.md
+ */
 import {
   BaseEntity,
   Column,
