@@ -4,7 +4,6 @@ parentPort?.on('message', async (data) => {
   try {
     const [fnCode, args] = data
 
-    // Better async removal with regex
     const cleanFnCode = (fnCode as string).replace(/^async\s+/, '').trim()
 
     const fn = new Function(`return async function ${cleanFnCode}`)() as (...args: unknown[]) => Promise<unknown>
@@ -12,7 +11,6 @@ parentPort?.on('message', async (data) => {
 
     parentPort?.postMessage({ success: result })
   } catch (error) {
-    // Proper error serialization
     const serializedError = {
       message: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,

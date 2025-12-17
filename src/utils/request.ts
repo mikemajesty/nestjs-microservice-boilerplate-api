@@ -1,3 +1,6 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/utils/request.md
+ */
 import { AttributeValue, Context, Span, SpanStatus, TimeInput, Tracer } from '@opentelemetry/api'
 import { AxiosInstance, AxiosRequestConfig } from 'axios'
 

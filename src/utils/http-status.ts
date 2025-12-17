@@ -1,3 +1,6 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/utils/http-status.md
+ */
 export const DefaultErrorMessage: { [key: string]: string } = {
   ECONNREFUSED: 'Connection Refused',
   403: 'You Shall Not Pass',

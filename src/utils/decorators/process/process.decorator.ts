@@ -1,3 +1,6 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/decorators/process.md
+ */
 import { ChildProcess, fork } from 'child_process'
 import { red } from 'colorette'
 

@@ -1,3 +1,6 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/utils/crypto.md
+ */
 import crypto from 'crypto'
 
 export class CryptoUtils {

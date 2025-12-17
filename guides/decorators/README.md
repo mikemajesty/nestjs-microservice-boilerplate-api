@@ -49,11 +49,12 @@ These decorators solve **real-world problems** by eliminating boilerplate code, 
 #### **[ConvertTypeOrmFilter](convert-typeorm-filter.md)** | **[📄 Code](../../src/utils/decorators/database/postgres/validate-typeorm-filter.decorator.ts)**
 **Automatic TypeORM WHERE clause generation.** Transforms manual filter construction into elegant, type-safe PostgreSQL queries with unaccent support and automatic type conversion.
 
-#### **[ConvertMongooseFilter](convert-mongoose-filter.md)** | **[📄 Code](../../src/utils/decorators/database/mongo/validate-mongoose-filter.decorator.ts)**
-**MongoDB query builder automation.** Automatic MongoDB filter generation with regex optimization, type conversion, and $or/$and structure for complex queries.
+#### **[ConvertMongooseFilter](validate-mongoose-filter.md)** | **[📄 Code](../../src/utils/decorators/database/mongo/validate-mongoose-filter.decorator.ts)**
+**MongoDB query builder automation (Use Case layer).** Automatic MongoDB filter generation with regex optimization, type conversion, and $or/$and structure for complex queries.
 
-#### **[ConvertMongoFilterToBaseRepository](convert-mongo-filter-to-base-repository.md)** | **[📄 Code](../../src/utils/decorators/database/mongo/convert-mongoose-filter.decorator.ts)**
-**Infrastructure layer filter normalization.** Low-level MongoDB filter conversion with object flattening, ID mapping, and soft delete protection for base repository methods.
+#### **[ConvertMongoFilterToBaseRepository](convert-mongoose-filter.md)** | **[📄 Code](../../src/utils/decorators/database/mongo/convert-mongoose-filter.decorator.ts)**
+**MongoDB filter normalization (Repository layer).** Flattens nested filter objects, handles id→_id conversion, and prepares queries for base repository operations.
+
 
 ---
 
@@ -84,7 +85,7 @@ These decorators solve **real-world problems** by eliminating boilerplate code, 
 |---------------------|------------------|----------------|
 | Manual validation hell | 50+ lines → 1 line | ValidateSchema, Permission |
 | TypeORM query construction | 100+ lines → 2 lines | ConvertTypeOrmFilter, ValidateDatabaseSortAllowed |
-| MongoDB filter building | 70+ lines → 2 lines | ConvertMongooseFilter, ConvertMongoFilterToBaseRepository |
+| MongoDB filter building | 70+ lines → 2 lines | ConvertMongooseFilter |
 | Worker/Process management | 150+ lines → 1 line | RunInNewThread, RunInNewProcess |
 | Circuit breaker setup | 80+ lines → 1 line | CircuitBreaker |
 | Performance monitoring | 20+ lines → 1 line | LogExecutionTime |

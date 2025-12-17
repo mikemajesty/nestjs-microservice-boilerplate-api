@@ -1,3 +1,6 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/utils/text.md
+ */
 export class TextUtils {
   static snakeCase = (text: string): string => {
     if (!text) return ''
@@ -18,9 +21,9 @@ export class TextUtils {
   static removeAccents = (text: string = ''): string => {
     return text
       ? text
-          .normalize('NFD')
-          .replace(/[\u0300-\u036f]/g, '')
-          .trim()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim()
       : text
   }
 

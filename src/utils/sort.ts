@@ -1,3 +1,6 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/utils/sort.md
+ */
 import { z } from 'zod'
 
 import { Infer, InputValidator } from './validator'

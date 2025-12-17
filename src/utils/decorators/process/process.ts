@@ -1,6 +1,5 @@
 process.on('message', async ({ functionCode, args }) => {
   try {
-    // Better async removal with regex
     const cleanFnCode = (functionCode as string).replace(/^async\s+/, '').trim()
 
     const fn = new Function(`return async function ${cleanFnCode}`)() as (...args: unknown[]) => Promise<unknown>

@@ -1,3 +1,6 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/decorators/circuit-breaker.md
+ */
 import OpossumCircuitBreaker, { Options } from 'opossum'
 
 // 🗂️ State management

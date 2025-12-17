@@ -1,3 +1,6 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/tests/containers.md
+ */
 import { MongoDBContainer, StartedMongoDBContainer } from '@testcontainers/mongodb';
 import { PostgreSqlContainer, StartedPostgreSqlContainer } from '@testcontainers/postgresql';
 import { RedisContainer, StartedRedisContainer } from '@testcontainers/redis';

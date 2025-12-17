@@ -1,3 +1,6 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/decorators/permission.md
+ */
 import { SetMetadata } from '@nestjs/common'
 
 import { ApiInternalServerException } from '../exception'

@@ -1,3 +1,6 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/decorators/validate-database-sort-allowed.md
+ */
 import { ApiBadRequestException } from '@/utils/exception'
 import { PaginationSchema } from '@/utils/pagination'
 import { SearchSchema } from '@/utils/search'

@@ -1,3 +1,6 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/utils/validator.md
+ */
 import i18next, { ResourceLanguage } from 'i18next'
 import * as validatorBrasil from 'validator-brasil'
 import { z } from 'zod'

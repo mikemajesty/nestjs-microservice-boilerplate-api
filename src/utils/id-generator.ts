@@ -1,3 +1,6 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/utils/id-generator.md
+ */
 import { randomBytes, UUID } from 'crypto'
 import { v1 as uuidV1, v3 as uuidV3, v4 as uuidV4, v5 as uuidV5, validate } from 'uuid'
 
@@ -271,12 +274,12 @@ export class IDGeneratorUtils {
     options?: T extends 'uuid'
       ? UUIDOptions
       : T extends 'ulid'
-        ? ULIDOptions
-        : T extends 'nanoid'
-          ? NanoIdOptions
-          : T extends 'objectid'
-            ? ObjectIdOptions
-            : never
+      ? ULIDOptions
+      : T extends 'nanoid'
+      ? NanoIdOptions
+      : T extends 'objectid'
+      ? ObjectIdOptions
+      : never
   ): string {
     return this.generators[`${type}`](options)
   }

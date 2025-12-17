@@ -1,3 +1,6 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/utils/tracing.md
+ */
 import { ClientRequest, IncomingMessage, RequestOptions, ServerResponse } from 'node:http'
 
 import { diag, DiagConsoleLogger, DiagLogLevel, Span } from '@opentelemetry/api'
@@ -228,9 +231,9 @@ const getTraceId = (request: IncomingMessage | ClientRequest) => {
 const setTraceId = (request: IncomingMessage | ClientRequest) => {
   const newTraceId = IDGeneratorUtils.uuid()
   if ('setHeader' in request) {
-    ;(request as ClientRequest).setHeader('traceid', newTraceId)
+    ; (request as ClientRequest).setHeader('traceid', newTraceId)
   }
-  ;(request as IncomingMessage).headers = {
+  ; (request as IncomingMessage).headers = {
     ...(request as IncomingMessage).headers,
     traceid: newTraceId
   }

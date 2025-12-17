@@ -1,3 +1,6 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/utils/excel.md
+ */
 import { Cell, Row } from 'write-excel-file'
 import writeXlsxFile from 'write-excel-file/node'
 

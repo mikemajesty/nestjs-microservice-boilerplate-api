@@ -1,0 +1,49 @@
+# Ideas para o Projeto
+# Gerado em: 16/12/2024
+
+================================================================================
+📚 DOCUMENTAÇÃO
+================================================================================
+
+#1 [Médio] guides/infra/
+   Documentar a camada de infraestrutura (database, cache, email, http, logger, secrets)
+
+#2 [Médio] guides/middlewares/
+   Documentar guards, filters, interceptors
+
+#3 [Alto] guides/modules/
+   Criar guia de como criar um novo módulo (CRUD completo)
+
+#4 [Médio] guides/architecture.md
+   Visão geral da arquitetura do projeto (camadas, fluxo)
+
+#5 [Baixo] API Spec (TypeSpec)
+   Documentar como usar a pasta api-spec/
+
+================================================================================
+🛠️ MELHORIA DE CÓDIGO
+================================================================================
+
+#6 [Baixo] createEntitySchema
+   Documentar o helper que criamos para dependências circulares no Zod
+
+#7 [Baixo] Docker
+   Adicionar health checks aos containers
+
+#8 [Alto] Tests
+   Aumentar cobertura de testes
+
+#9 [Médio] CI/CD
+   GitHub Actions para lint/test/build
+
+================================================================================
+📖 README
+================================================================================
+
+#10 [Baixo] README.md principal
+    Melhorar com badges, diagrama de arquitetura
+
+#11 [Baixo] CONTRIBUTING.md
+    Guia de contribuição
+
+================================================================================

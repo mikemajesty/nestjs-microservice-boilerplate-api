@@ -1,3 +1,6 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/utils/mongoose.md
+ */
 import { Connection, Types } from 'mongoose'
 
 export class MongoUtils {

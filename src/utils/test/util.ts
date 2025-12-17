@@ -1,3 +1,6 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/tests/util.md
+ */
 import { AttributeValue, SpanStatus, TimeInput } from '@opentelemetry/api';
 import { Types } from 'mongoose';
 

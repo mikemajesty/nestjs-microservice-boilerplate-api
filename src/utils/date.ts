@@ -1,3 +1,6 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/utils/date.md
+ */
 import { DateTime } from 'luxon'
 
 export class DateUtils {

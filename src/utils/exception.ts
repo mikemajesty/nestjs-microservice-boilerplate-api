@@ -1,3 +1,6 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/utils/exception.md
+ */
 import { HttpException, HttpStatus } from '@nestjs/common'
 
 export class BaseException extends HttpException {

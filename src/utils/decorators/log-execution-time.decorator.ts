@@ -1,3 +1,6 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/decorators/log-execution-time.md
+ */
 import { performance } from 'node:perf_hooks'
 
 import { yellow } from 'colorette'

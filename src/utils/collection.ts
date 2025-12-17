@@ -1,3 +1,6 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/utils/collection.md
+ */
 import { ApiInternalServerException } from './exception';
 import { SortEnum } from './sort';
 

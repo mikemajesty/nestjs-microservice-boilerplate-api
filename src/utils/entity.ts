@@ -1,3 +1,6 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/utils/entity.md
+ */
 import 'reflect-metadata'
 
 import z from 'zod'
