@@ -301,7 +301,8 @@ With this pattern, you can generate mocks in tests:
 
 ```typescript
 // The mock lib reads the Schema and generates valid test data
-const input = MockUtils.toJSON(CatDeleteSchema)
+const mock = new ZodMockSchema(CatDeleteSchema)
+const input = mock.generate()
 // { id: '550e8400-e29b-41d4-a716-446655440000' }
 ```
 
