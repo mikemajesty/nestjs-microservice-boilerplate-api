@@ -1,5 +1,5 @@
 /**
- * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/main/guides/infra/database.md
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/infra/database.md
  */
 import {
   BaseEntity,

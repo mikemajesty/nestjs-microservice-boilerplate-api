@@ -1,5 +1,5 @@
 /**
- * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/main/guides/infra/cache.md
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/infra/cache.md
  */
 import { MemoryCacheSetType } from './memory/types'
 import { RedisCacheKeyArgument, RedisCacheKeyValue, RedisCacheValueArgument } from './redis/types'

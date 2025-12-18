@@ -1,5 +1,5 @@
 /**
- * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/main/guides/core/test.md
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/core/test.md
  */
 import { ZodMockSchema } from '@mikemajesty/zod-mock-schema'
 import { Test } from '@nestjs/testing'

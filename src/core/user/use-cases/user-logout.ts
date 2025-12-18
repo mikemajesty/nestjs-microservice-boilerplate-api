@@ -1,5 +1,5 @@
 /**
- * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/main/guides/core/usecase.md
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/core/usecase.md
  */
 import { ICacheAdapter } from '@/infra/cache'
 import { ISecretsAdapter } from '@/infra/secrets'

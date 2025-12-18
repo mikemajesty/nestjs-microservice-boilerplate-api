@@ -1,5 +1,5 @@
 /**
- * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/main/guides/modules/adapter.md
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/modules/adapter.md
  */
 import {
   ResetPasswordConfirmInput,

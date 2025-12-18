@@ -1,5 +1,5 @@
 /**
- * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/main/guides/core/usecase.md
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/core/usecase.md
  */
 import { UserEntity, UserEntitySchema } from '@/core/user/entity/user'
 import { IUserRepository } from '@/core/user/repository/user'

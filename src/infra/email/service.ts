@@ -1,5 +1,5 @@
 /**
- * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/main/guides/infra/email.md
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/infra/email.md
  */
 import { Injectable } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'

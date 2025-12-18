@@ -28,7 +28,8 @@ scopes.push(
   'ci',
   'github',
   'workflow',
-  'none'
+  'none',
+  `docs`
 );
 
 module.exports = {
