@@ -5,6 +5,7 @@
   "author": "mike.rodrigues.lima@gmail.com",
   "private": true,
   "license": "MIT",
+  "docs": "https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/package.md",
   "overrides": {
     "@opentelemetry/api": "^1.8.0"
   },

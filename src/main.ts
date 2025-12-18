@@ -1,3 +1,6 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/main.md
+ */
 import './utils/tracing'
 
 import { RequestMethod, VersioningType } from '@nestjs/common'

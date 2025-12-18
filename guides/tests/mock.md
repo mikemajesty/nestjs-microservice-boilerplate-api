@@ -37,7 +37,8 @@ const userSchema = z.object({
   updatedAt: z.date().optional()
 })
 
-const mockUser = ZodMockSchema.generate(userSchema)
+const mock = new ZodMockSchema(userSchema)
+const mockUser = mock.generate()
 // Result: Perfect mock with ALL fields, realistic data types
 ```
 
@@ -79,7 +80,8 @@ const userEntitySchema = z.object({
 describe('UserService', () => {
   it('should process user data correctly', () => {
     // Generate perfect mock automatically
-    const mockUser = ZodMockSchema.generate(userEntitySchema)
+    const mock = new ZodMockSchema(userEntitySchema)
+    const mockUser = mock.generate()
     
     const userEntity = new UserEntity(mockUser)
     const result = userService.processUser(userEntity)
@@ -92,10 +94,10 @@ describe('UserService', () => {
 })
 ```
 
-### Custom Mock Options
+### Custom Values Override
 
 ```typescript
-import { ZodMockSchema, MockOptions } from '@/utils/test/mock'
+import { ZodMockSchema } from '@/utils/test/mock'
 
 describe('OrderService', () => {
   it('should handle high-value orders', async () => {
@@ -106,11 +108,13 @@ describe('OrderService', () => {
       currency: z.string().length(3)
     })
 
-    // Custom options for specific test scenarios
-    const mockOrder = ZodMockSchema.generate(orderSchema, {
-      amount: 50000,        // Specific high value for this test
-      currency: 'USD'       // Specific currency
-    } as MockOptions)
+    // Create mock instance
+    const mock = new ZodMockSchema(orderSchema)
+    const mockOrder = mock.generate()
+    
+    // Override specific values for this test scenario
+    mockOrder.amount = 50000     // Specific high value for this test
+    mockOrder.currency = 'USD'   // Specific currency
     
     const result = await orderService.processHighValueOrder(mockOrder)
     expect(result.requiresApproval).toBe(true)
@@ -140,7 +144,8 @@ const userSchema = z.object({
 })
 
 // Same test code, but now includes new fields automatically!
-const mockUser = ZodMockSchema.generate(userSchema)
+const mock = new ZodMockSchema(userSchema)
+const mockUser = mock.generate()
 // mockUser automatically has role, permissions with realistic data
 ```
 
@@ -153,7 +158,8 @@ import { ZodMockSchema } from '@/utils/test/mock'
 describe('UserRepository', () => {
   it('should save user entity', async () => {
     // Combine automatic mock generation with standardized IDs
-    const mockUser = ZodMockSchema.generate(userEntitySchema)
+    const mock = new ZodMockSchema(userEntitySchema)
+    const mockUser = mock.generate()
     mockUser.id = TestUtils.getMockUUID()           // Use standard UUID
     mockUser.createdAt = TestUtils.getMockDate()    // Use standard date
     

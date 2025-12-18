@@ -1,3 +1,6 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/husky.md
+ */
 const { readdirSync } = require('fs');
 
 const getDirectories = (source) =>

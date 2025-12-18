@@ -5,69 +5,18 @@
 ================================================================================
 📚 DOCUMENTAÇÃO
 ================================================================================
-
-#1 ✅ [CONCLUÍDO] guides/infra/
-   Documentar a camada de infraestrutura (database, cache, email, http, logger, secrets, repository)
-   → Criados: database.md, cache.md, email.md, http.md, logger.md, secrets.md, repository.md, README.md
-
-#2 ✅ [CONCLUÍDO] guides/middlewares/
-   Documentar guards, filters, interceptors
-   → Criados: authentication.middleware.md, authorization.guard.md, exception-handler.filter.md,
-     exception-handler.interceptor.md, http-logger.interceptor.md, metrics.interceptor.md,
-     request-timeout.interceptor.md, tracing.interceptor.md, README.md
-
-#3 ✅ [CONCLUÍDO] guides/modules/
-   Criar guia de como criar um novo módulo (CRUD completo)
-   → Criados: controller.md, adapter.md, module.md, repository.md, test.md, README.md
-
 #4 [Médio] guides/architecture.md
    Visão geral da arquitetura do projeto (camadas, fluxo)
 
 #5 [Baixo] API Spec (TypeSpec)
    Documentar como usar a pasta api-spec/
 
---- EXTRAS DOCUMENTADOS ---
-
-#12 ✅ [CONCLUÍDO] guides/core/
-   Documentar a camada de domínio (entidades, repositórios, use cases)
-   → Criados: entity.md, repository.md, usecase.md, test.md, README.md
-
-#13 ✅ [CONCLUÍDO] guides/decorators/
-   Documentar todos os decorators customizados
-   → Criados: circuit-breaker.md, convert-mongoose-filter.md, convert-typeorm-filter.md,
-     log-execution-time.md, permission.md, process.md, request-timeout.md, thread.md,
-     validate-database-sort-allowed.md, validate-mongoose-filter.md, validate-schema.md, README.md
-
-#14 ✅ [CONCLUÍDO] guides/utils/
-   Documentar utilitários do projeto
-   → Criados: axios.md, collection.md, crypto.md, date.md, entity.md, excel.md, exception.md,
-     http-status.md, id-generator.md, mongoose.md, pagination.md, request.md, search.md,
-     sort.md, text.md, tracing.md, types.md, usecase.md, validator.md, README.md
-
-#15 ✅ [CONCLUÍDO] guides/libs/
-   Documentar bibliotecas internas (event, i18n, metrics, token)
-   → Criados: event.md, i18n.md, metrics.md, token.md, README.md
-
-#16 ✅ [CONCLUÍDO] guides/tests/
-   Documentar utilitários de teste
-   → Criados: containers.md, mock.md, util.md, README.md
-
-#17 ✅ [CONCLUÍDO] @see links em arquivos fonte
-   Adicionar links para documentação em todos os arquivos .ts
-   → 166 arquivos atualizados com @see JSDoc
-
 ================================================================================
 🛠️ MELHORIA DE CÓDIGO
 ================================================================================
 
-#6 [Baixo] createEntitySchema
-   Documentar o helper que criamos para dependências circulares no Zod
-
 #7 [Baixo] Docker
    Adicionar health checks aos containers
-
-#8 [Alto] Tests
-   Aumentar cobertura de testes
 
 #9 [Médio] CI/CD
    GitHub Actions para lint/test/build
@@ -81,13 +30,3 @@
 
 #11 [Baixo] CONTRIBUTING.md
     Guia de contribuição
-
-================================================================================
-📝 PENDENTE (OPCIONAL)
-================================================================================
-
-- main.ts — bootstrap padrão NestJS (baixa prioridade)
-- app.module.ts — root module padrão (baixa prioridade)
-- src/infra/module.ts — apenas exports (baixa prioridade)
-- src/libs/module.ts — apenas exports (baixa prioridade)
-- guides/README.md — índice principal de toda documentação
