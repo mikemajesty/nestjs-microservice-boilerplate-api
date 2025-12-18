@@ -1,4 +1,4 @@
-# 🗃️ Cache
+# Cache
 
 ## Problem
 

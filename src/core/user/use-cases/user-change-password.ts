@@ -1,3 +1,6 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/main/guides/core/usecase.md
+ */
 import { CryptoUtils } from '@/utils/crypto'
 import { ValidateSchema } from '@/utils/decorators'
 import { ApiBadRequestException, ApiNotFoundException } from '@/utils/exception'

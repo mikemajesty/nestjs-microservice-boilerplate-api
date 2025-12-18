@@ -1,3 +1,6 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/main/guides/core/usecase.md
+ */
 import { ILoggerAdapter } from '@/infra/logger'
 import { CreatedModel } from '@/infra/repository'
 import { ValidateSchema } from '@/utils/decorators'

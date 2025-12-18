@@ -1,4 +1,4 @@
-# 🗄️ Database
+# Database
 
 ## Overview
 

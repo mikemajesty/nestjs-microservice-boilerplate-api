@@ -1,3 +1,6 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/main/guides/modules/module.md
+ */
 import { Module } from '@nestjs/common'
 import { getConnectionToken } from '@nestjs/mongoose'
 import { getDataSourceToken } from '@nestjs/typeorm'

@@ -1,3 +1,6 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/main/guides/modules/adapter.md
+ */
 import { LoginInput, LoginOutput } from '@/core/user/use-cases/user-login'
 import { RefreshTokenInput, RefreshTokenOutput } from '@/core/user/use-cases/user-refresh-token'
 import { ApiTrancingInput } from '@/utils/request'

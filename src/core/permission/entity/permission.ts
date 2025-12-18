@@ -1,3 +1,6 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/main/guides/core/entity.md
+ */
 import { RoleEntity, RoleEnum } from '@/core/role/entity/role'
 import { BaseEntity } from '@/utils/entity'
 import { Infer, InputValidator } from '@/utils/validator'

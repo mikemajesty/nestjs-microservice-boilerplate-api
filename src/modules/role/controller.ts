@@ -1,3 +1,6 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/main/guides/modules/controller.md
+ */
 import { Controller, Delete, Get, HttpCode, Post, Put, Req, Version } from '@nestjs/common'
 
 import { RoleAddPermissionInput, RoleAddPermissionOutput } from '@/core/role/use-cases/role-add-permission'

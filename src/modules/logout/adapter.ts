@@ -1,3 +1,6 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/main/guides/modules/adapter.md
+ */
 import { LogoutInput, LogoutOutput } from '@/core/user/use-cases/user-logout'
 import { ApiTrancingInput } from '@/utils/request'
 import { IUsecase } from '@/utils/usecase'

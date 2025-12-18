@@ -1,3 +1,6 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/main/guides/core/usecase.md
+ */
 import { CatEntity } from '@/core/cat/entity/cat'
 import { ValidateSchema } from '@/utils/decorators'
 import { PaginationInput, PaginationOutput, PaginationSchema } from '@/utils/pagination'

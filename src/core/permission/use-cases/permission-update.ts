@@ -1,3 +1,6 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/main/guides/core/usecase.md
+ */
 import { IPermissionRepository } from '@/core/permission/repository/permission'
 import { ILoggerAdapter } from '@/infra/logger'
 import { ValidateSchema } from '@/utils/decorators'

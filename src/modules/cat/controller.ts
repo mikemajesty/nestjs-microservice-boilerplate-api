@@ -1,3 +1,6 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/main/guides/modules/controller.md
+ */
 import { Controller, Delete, Get, HttpCode, Post, Put, Req, Version } from '@nestjs/common'
 
 import { CatCreateInput, CatCreateOutput } from '@/core/cat/use-cases/cat-create'

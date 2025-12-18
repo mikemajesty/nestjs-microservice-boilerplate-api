@@ -1,3 +1,6 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/main/guides/modules/controller.md
+ */
 import { Controller, Get, Post, Req, Res, Version } from '@nestjs/common'
 import { Request, Response } from 'express'
 

@@ -39,3 +39,29 @@ Each lib follows the pattern:
 - `adapter.ts` - Abstract interface (port)
 - `service.ts` - Concrete implementation
 - `module.ts` - NestJS module with DI setup
+
+---
+
+## Adding a New Lib
+
+### Using Scaffold (Recommended)
+
+The best practice is to use the scaffold command to create new libs:
+
+```bash
+npm run scaffold
+```
+
+Then select **LIB**:
+
+```
+Selecting template...
+( ) POSTGRES:CRUD
+( ) MONGO:CRUD
+(x) LIB
+( ) INFRA
+( ) MODULE
+( ) CORE
+```
+
+This generates the correct structure with all boilerplate code following the project patterns.

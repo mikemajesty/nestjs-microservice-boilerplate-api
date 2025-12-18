@@ -1,3 +1,6 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/main/guides/modules/adapter.md
+ */
 import { PermissionCreateInput, PermissionCreateOutput } from '@/core/permission/use-cases/permission-create'
 import { PermissionDeleteInput, PermissionDeleteOutput } from '@/core/permission/use-cases/permission-delete'
 import { PermissionGetByIdInput, PermissionGetByIdOutput } from '@/core/permission/use-cases/permission-get-by-id'

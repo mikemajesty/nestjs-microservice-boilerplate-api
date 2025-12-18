@@ -1,3 +1,6 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/main/guides/modules/module.md
+ */
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common'
 import { getConnectionToken } from '@nestjs/mongoose'
 import mongoose, { Connection, PaginateModel, Schema } from 'mongoose'

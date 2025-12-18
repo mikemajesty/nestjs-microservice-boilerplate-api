@@ -1,3 +1,6 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/main/guides/modules/controller.md
+ */
 import { Body, Controller, Post } from '@nestjs/common'
 
 import { ILoggerAdapter } from '@/infra/logger'

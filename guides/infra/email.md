@@ -1,4 +1,4 @@
-# 📧 Email Service
+# Email Service
 
 ## Problem
 

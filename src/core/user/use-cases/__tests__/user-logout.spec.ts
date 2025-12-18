@@ -1,3 +1,6 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/main/guides/core/test.md
+ */
 import { Test } from '@nestjs/testing'
 
 import { ICacheAdapter } from '@/infra/cache'

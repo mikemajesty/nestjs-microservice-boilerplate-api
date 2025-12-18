@@ -1,3 +1,6 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/main/guides/modules/controller.md
+ */
 import { Controller, Get } from '@nestjs/common'
 import os from 'os'
 

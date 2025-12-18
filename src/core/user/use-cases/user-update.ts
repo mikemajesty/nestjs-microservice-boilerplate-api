@@ -1,3 +1,6 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/main/guides/core/usecase.md
+ */
 import { RoleEntity, RoleEnum } from '@/core/role/entity/role'
 import { IRoleRepository } from '@/core/role/repository/role'
 import { ILoggerAdapter } from '@/infra/logger'

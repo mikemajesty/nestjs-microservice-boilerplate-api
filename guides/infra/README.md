@@ -30,7 +30,31 @@ src/infra/
 
 ## Adding a New Infra Module
 
-When creating a new infrastructure module, you **must** register it in `src/infra/module.ts`:
+### Using Scaffold (Recommended)
+
+The best practice is to use the scaffold command to create new infra modules:
+
+```bash
+npm run scaffold
+```
+
+Then select **INFRA**:
+
+```
+Selecting template...
+( ) POSTGRES:CRUD
+( ) MONGO:CRUD
+( ) LIB
+(x) INFRA
+( ) MODULE
+( ) CORE
+```
+
+This generates the correct structure with all boilerplate code.
+
+### Manual Registration
+
+After creating (via scaffold or manually), you **must** register it in `src/infra/module.ts`:
 
 ```typescript
 // src/infra/module.ts

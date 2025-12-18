@@ -1,3 +1,6 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/main/guides/core/usecase.md
+ */
 import { RoleEnum } from '@/core/role/entity/role'
 import { IRoleRepository } from '@/core/role/repository/role'
 import { SendEmailInput } from '@/infra/email'

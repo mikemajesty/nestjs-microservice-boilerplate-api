@@ -1,3 +1,6 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/main/guides/modules/controller.md
+ */
 import { Controller, HttpCode, Post, Req, Version } from '@nestjs/common'
 
 import { LogoutInput, LogoutOutput } from '@/core/user/use-cases/user-logout'
