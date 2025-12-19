@@ -5,7 +5,7 @@
   "author": "mike.rodrigues.lima@gmail.com",
   "private": true,
   "license": "MIT",
-  "docs": "https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/package.md",
+  "@see": "https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/setup/package.md",
   "overrides": {
     "@opentelemetry/api": "^1.8.0"
   },
@@ -20,7 +20,11 @@
     "test": "TS_NODE_PROJECT=tsconfig.json node -r ts-node/register node_modules/.bin/jest --config=jest.config.ts --verbose --detectOpenHandles --forceExit",
     "test:cov": "jest --config=\"./jest-coverage.config.ts\" --coverage --detectOpenHandles && npm run make-badges",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "setup": "docker-compose -f docker-compose-infra.yml down -v --remove-orphans && docker volume prune -f && docker network prune -f && docker-compose -f docker-compose-infra.yml up -d",
+    "setup": "docker-compose -f docker-compose-infra.yml down -v --remove-orphans && docker-compose -f docker-compose-infra.yml up -d",
+    "docker:build": "docker build -t nestjs-api .",
+    "docker:run": "docker run -p 5000:5000 --env-file .env --network host --name nestjs-api --rm nestjs-api",
+    "docker:stop": "docker stop nestjs-api 2>/dev/null || true",
+    "docker:start": "npm run docker:stop && npm run docker:build && npm run docker:run",
     "scaffold": "./node_modules/@mikemajesty/microservice-crud/bin/microservice-crud",
     "typeorm": "ts-node -r tsconfig-paths/register \"./node_modules/typeorm/cli.js\"",
     "migration-postgres:create": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:create ./src/infra/database/postgres/migrations/Name",

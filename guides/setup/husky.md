@@ -185,7 +185,7 @@ getDirectories('./src')  // → ['core', 'infra', 'libs', 'middlewares', 'module
 
 ```javascript
 /**
- * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/husky.md
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/setup/husky.md
  */
 module.exports = {
   extends: ['@commitlint/config-conventional'],

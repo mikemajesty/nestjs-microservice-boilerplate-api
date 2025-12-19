@@ -1,0 +1,164 @@
+# @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/setup/package.md
+name: Create Release Tag
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch_from:
+        description: 'Source branch for the tag'
+        type: string
+        required: true
+        default: 'master'
+      increment_type:
+        description: 'Version increment type'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+          - none
+        default: patch
+        required: true
+      merge_from_master:
+        description: 'Merge from master before creating tag? (preserves package.json version)'
+        type: boolean
+        required: true
+        default: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+env:
+  NODE_VERSION: '22'
+
+jobs:
+  create-release-tag:
+    name: Create Release Tag
+    runs-on: ubuntu-latest
+    outputs:
+      tag_name: ${{ steps.create_tag.outputs.tag_name }}
+      version: ${{ steps.create_tag.outputs.version }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch_from }}
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Smart Merge from Master
+        if: ${{ github.event.inputs.merge_from_master == 'true' && github.event.inputs.branch_from != 'master' }}
+        run: |
+          echo "📦 Saving current version..."
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          echo "Current version: $CURRENT_VERSION"
+
+          echo "🔄 Fetching and merging master..."
+          git fetch origin master
+
+          if git merge origin/master --no-edit; then
+            echo "✅ Auto-merge successful"
+          else
+            echo "⚠️ Merge conflicts detected, resolving..."
+            git checkout --theirs .
+            git add .
+            git commit -m "chore: resolve merge conflicts from master"
+          fi
+
+          echo "🔧 Restoring version in package.json..."
+          node -e "
+            const pkg = require('./package.json');
+            pkg.version = '$CURRENT_VERSION';
+            require('fs').writeFileSync('./package.json', JSON.stringify(pkg, null, 2) + '\n');
+          "
+
+          git add package.json
+          echo "✅ Smart merge completed"
+
+      - name: Increment Version
+        if: ${{ github.event.inputs.increment_type != 'none' }}
+        run: |
+          npm version ${{ github.event.inputs.increment_type }} --no-git-tag-version
+          echo "✅ Version incremented (${{ github.event.inputs.increment_type }})"
+
+      - name: Create Tag
+        id: create_tag
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          TAG_NAME="v${VERSION}"
+
+          echo "📋 Version: $VERSION"
+          echo "🏷️ Tag: $TAG_NAME"
+
+          # Commit version change if there are changes
+          if [ -n "$(git status --porcelain)" ]; then
+            git add package.json package-lock.json 2>/dev/null || git add package.json
+            git commit -m "chore(release): bump version to ${VERSION}"
+          fi
+
+          # Create annotated tag
+          git tag -a "$TAG_NAME" -m "Release ${TAG_NAME}"
+
+          # Set outputs
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
+
+      - name: Push Changes
+        run: |
+          git push origin HEAD:${{ github.event.inputs.branch_from }}
+          git push origin ${{ steps.create_tag.outputs.tag_name }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.create_tag.outputs.tag_name }}
+          name: Release ${{ steps.create_tag.outputs.tag_name }}
+          draft: true
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Workflow Summary
+        run: |
+          TAG_NAME="${{ steps.create_tag.outputs.tag_name }}"
+          VERSION="${{ steps.create_tag.outputs.version }}"
+          BRANCH="${{ github.event.inputs.branch_from }}"
+          INCREMENT="${{ github.event.inputs.increment_type }}"
+          MERGED="${{ github.event.inputs.merge_from_master }}"
+
+          cat >> $GITHUB_STEP_SUMMARY << EOF
+          ## 🚀 Release Tag Created Successfully!
+
+          ### 🏷️ Tag Details
+
+          | Property | Value |
+          |----------|-------|
+          | **Tag** | \`$TAG_NAME\` |
+          | **Version** | \`$VERSION\` |
+          | **Branch** | \`$BRANCH\` |
+          | **Increment** | \`$INCREMENT\` |
+          | **Merged from master** | \`$MERGED\` |
+
+          ### 🔗 Links
+
+          - 📖 [View Release](https://github.com/${{ github.repository }}/releases/tag/$TAG_NAME)
+          - 🏷️ [View Tag](https://github.com/${{ github.repository }}/tree/$TAG_NAME)
+
+          ### 📝 Next Steps
+
+          1. ✅ Tag \`$TAG_NAME\` created successfully
+          2. 📦 Draft release created with auto-generated notes
+          3. 🔍 Review and publish the release when ready
+          EOF

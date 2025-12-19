@@ -8,15 +8,9 @@
 #4 [Médio] guides/architecture.md
    Visão geral da arquitetura do projeto (camadas, fluxo)
 
-#5 [Baixo] API Spec (TypeSpec)
-   Documentar como usar a pasta api-spec/
-
 ================================================================================
 🛠️ MELHORIA DE CÓDIGO
 ================================================================================
-
-#7 [Baixo] Docker
-   Adicionar health checks aos containers
 
 #9 [Médio] CI/CD
    GitHub Actions para lint/test/build
@@ -30,3 +24,8 @@
 
 #11 [Baixo] CONTRIBUTING.md
     Guia de contribuição
+
+
+prerequisito, camadas
+
+

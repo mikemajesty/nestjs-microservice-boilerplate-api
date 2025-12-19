@@ -10,6 +10,10 @@ Complete reference for all npm scripts available in this project.
 | `npm run start:dev` | Development with hot-reload |
 | `npm run test` | Run unit tests |
 | `npm run setup` | Setup infrastructure (Docker) |
+| `npm run docker:build` | Build Docker image |
+| `npm run docker:run` | Run Docker container |
+| `npm run docker:stop` | Stop Docker container |
+| `npm run docker:start` | Stop + Build + Run (all-in-one) |
 | `npm run scaffold` | Generate CRUD module |
 
 ---
@@ -209,23 +213,94 @@ npm run migration-mongo:undo
 npm run setup
 ```
 
-**What it does (in order):**
+**What it does:**
 1. `docker-compose -f docker-compose-infra.yml down -v --remove-orphans`
-   - Stops all containers
+   - Stops all containers from this compose
    - Removes volumes (`-v`) - **⚠️ DELETES ALL DATA**
    - Removes orphan containers
-2. `docker volume prune -f` - Removes unused volumes
-3. `docker network prune -f` - Removes unused networks
-4. `docker-compose -f docker-compose-infra.yml up -d` - Starts fresh containers
+2. `docker-compose -f docker-compose-infra.yml up -d` - Starts fresh containers
 
 **Services started:**
-- PostgreSQL
-- MongoDB
+- PostgreSQL (+ PgAdmin)
+- MongoDB Replica Set (Primary + Secondary + Tertiary + Mongo Express)
 - Redis
 - Zipkin (tracing)
-- Grafana + Loki (logging)
+- Prometheus + Alertmanager (metrics)
+- Grafana + Loki + Promtail (logging)
+- OpenTelemetry Collector
 
-**⚠️ Warning:** This command **destroys all data**. Use only for fresh setup.
+**⚠️ Warning:** This command **destroys all infrastructure data**. Use only for fresh setup.
+
+**Note:** This command only affects containers/volumes from `docker-compose-infra.yml`. Other Docker resources are not affected.
+
+---
+
+## 🐳 Docker Scripts
+
+> **📖 See also:** [Docker Reference](docker.md) for detailed Dockerfile and docker-compose documentation.
+
+### Build Docker Image
+
+```bash
+npm run docker:build
+```
+
+**What it does:**
+- Builds production Docker image using multi-stage build
+- Image name: `nestjs-api`
+- Uses `Dockerfile` with:
+  - **Build stage**: Full Node.js image (for SWC compilation)
+  - **Production stage**: Alpine image (smaller footprint)
+
+---
+
+### Run Docker Container
+
+```bash
+npm run docker:run
+```
+
+**What it does:**
+- Runs the `nestjs-api` container
+- Uses `--network host` to access local infrastructure (MongoDB, Redis, etc.)
+- Loads environment variables from `.env`
+- Container is removed when stopped (`--rm`)
+
+**Prerequisites:**
+- Run `npm run setup` first to start infrastructure
+- Run `npm run docker:build` to create the image
+
+---
+
+### Stop Docker Container
+
+```bash
+npm run docker:stop
+```
+
+**What it does:**
+- Stops the running `nestjs-api` container
+- Silently succeeds if container is not running (safe to call anytime)
+- Uses error suppression (`2>/dev/null || true`) for clean output
+
+---
+
+### Build and Run (All-in-One)
+
+```bash
+npm run docker:start
+```
+
+**What it does:**
+1. Stops any existing container (`docker:stop`)
+2. Builds the Docker image (`docker:build`)
+3. Runs the container (`docker:run`)
+
+**Typical workflow:**
+```bash
+npm run setup         # Start infrastructure (first time or reset)
+npm run docker:start  # Build and run the API
+```
 
 ---
 

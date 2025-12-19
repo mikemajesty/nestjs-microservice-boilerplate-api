@@ -1,4 +1,4 @@
-# @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/husky.md
+# @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/setup/husky.md
 npx lint-staged
 
 echo '\nI Know What You Did Last Commit\n'

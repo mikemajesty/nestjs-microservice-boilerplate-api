@@ -249,6 +249,15 @@ The repository provides comprehensive guidance on:
 
 ---
 
+## Related Guides
+
+- [Environment Variables](environment.md) - All `.env` configuration options
+- [Package Scripts](package.md) - npm scripts reference
+- [Docker](docker.md) - Container and infrastructure setup
+- [Husky](husky.md) - Git hooks configuration
+
+---
+
 ## Related Links
 
 - [Node.js Best Practices Repository](https://github.com/goldbergyoni/nodebestpractices)

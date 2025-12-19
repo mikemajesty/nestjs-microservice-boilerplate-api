@@ -1,4 +1,4 @@
-# @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/husky.md
+# @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/setup/husky.md
 npm run test
 npx npm run build
 npm run make-badges
