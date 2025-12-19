@@ -89,10 +89,10 @@ jobs:
       - name: Install dependencies
         run: npm ci || npm install
 
-      - name: Fix SWC native binding
+      - name: Fix SWC native binding for Linux
         run: |
-          npm uninstall @swc/core @swc/jest 2>/dev/null || true
-          npm install -D @swc/core @swc/jest
+          npm install -D @swc/core-linux-x64-gnu @swc/core-linux-x64-musl
+          npm rebuild @swc/core
 
       - name: Run tests with coverage
         run: npm run test:cov
