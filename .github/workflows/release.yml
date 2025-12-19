@@ -80,8 +80,8 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: |
-            mikemajesty/nestjs-microservice-boilerplate-api:${{ steps.version.outputs.version }}
-            mikemajesty/nestjs-microservice-boilerplate-api:${{ github.event.inputs.environment }}
+            mikelima1989/nestjs-microservice:${{ steps.version.outputs.version }}
+            mikelima1989/nestjs-microservice:${{ github.event.inputs.environment }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           platforms: linux/amd64,linux/arm64

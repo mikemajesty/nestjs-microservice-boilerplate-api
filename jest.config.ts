@@ -1,7 +1,8 @@
 import type { Config } from '@jest/types';
 import { pathsToModuleNameMapper } from 'ts-jest';
 
-import { compilerOptions } from './tsconfig.json';
+const tsconfig = require('./tsconfig.json');
+const { compilerOptions } = tsconfig;
 
 const config: Config.InitialOptions = {
   moduleFileExtensions: ['js', 'json', 'ts'],
@@ -23,7 +24,9 @@ const config: Config.InitialOptions = {
       }
     ]
   },
-  transformIgnorePatterns: ['node_modules/(?!.*\\.(js|ts)$)'],
+  transformIgnorePatterns: [
+    'node_modules/(?!(@faker-js/faker|@mikemajesty/zod-mock-schema)/)'
+  ],
   setupFilesAfterEnv: ['<rootDir>/test/initialization.ts'],
   testEnvironment: 'node',
   collectCoverageFrom: ['**/*.ts'],

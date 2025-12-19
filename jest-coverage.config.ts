@@ -1,6 +1,7 @@
 import { pathsToModuleNameMapper } from 'ts-jest';
 
-import { compilerOptions } from './tsconfig.json';
+const tsconfig = require('./tsconfig.json');
+const { compilerOptions } = tsconfig;
 
 export default {
   moduleFileExtensions: ['js', 'json', 'ts'],
