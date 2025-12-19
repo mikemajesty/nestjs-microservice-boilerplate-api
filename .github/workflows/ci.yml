@@ -89,6 +89,18 @@ jobs:
         run: |
           rm -f package-lock.json
           npm install
+          
+      - name: Debug SWC bindings
+        run: |
+          echo "=== Checking SWC installation ==="
+          ls -la node_modules/@swc/core/ || echo "No @swc/core"
+          ls -la node_modules/@swc/ || echo "No @swc folder"
+          echo "=== Checking for linux bindings ==="
+          find node_modules -name "*linux*" -type d | head -20
+          echo "=== Node platform info ==="
+          node -e "console.log(process.platform, process.arch)"
+          echo "=== glibc version ==="
+          ldd --version | head -1
 
       - name: Run tests with coverage
         run: npm run test:cov
