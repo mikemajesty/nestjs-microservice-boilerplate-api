@@ -11,10 +11,9 @@ on:
           - dev
           - preprod
           - prod
-      ref:
-        description: 'Branch ou Tag para deploy'
+      tag:
+        description: 'Tag para deploy (ex: v1.0.0)'
         required: true
-        default: 'master'
         type: string
 
 concurrency:
@@ -27,10 +26,20 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.environment }}
     steps:
+      - name: Validate tag format
+        run: |
+          TAG="${{ github.event.inputs.tag }}"
+          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "❌ Error: Tag must be in format v1.0.0 (e.g., v1.2.3)"
+            echo "   Received: $TAG"
+            exit 1
+          fi
+          echo "✅ Tag format valid: $TAG"
+
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.inputs.ref }}
+          ref: ${{ github.event.inputs.tag }}
           fetch-depth: 0
 
       - name: Setup Node.js
@@ -42,13 +51,16 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install SWC
+        run: npm install @swc/cli @swc/core
+
       - name: Build application
         run: npm run build
 
       - name: Deploy info
         run: |
           echo "🚀 Deploying to ${{ github.event.inputs.environment }}"
-          echo "📦 Ref: ${{ github.event.inputs.ref }}"
+          echo "📦 Tag: ${{ github.event.inputs.tag }}"
           echo "👤 Triggered by: ${{ github.actor }}"
           echo "🕐 Timestamp: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
 
@@ -64,12 +76,8 @@ jobs:
       - name: Extract version
         id: version
         run: |
-          REF="${{ github.event.inputs.ref }}"
-          if [[ "$REF" =~ ^v[0-9]+\.[0-9]+\.[0-9]+ ]]; then
-            VERSION="${REF#v}"
-          else
-            VERSION="${{ github.event.inputs.environment }}-$(git rev-parse --short HEAD)"
-          fi
+          TAG="${{ github.event.inputs.tag }}"
+          VERSION="${TAG#v}"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "📦 Docker tag: $VERSION"
 
@@ -94,7 +102,7 @@ jobs:
           | Info | Value |
           |------|-------|
           | Environment | \`${{ github.event.inputs.environment }}\` |
-          | Ref | \`${{ github.event.inputs.ref }}\` |
+          | Tag | \`${{ github.event.inputs.tag }}\` |
           | Docker Tag | \`${{ steps.version.outputs.version }}\` |
           | Triggered by | @${{ github.actor }} |
           EOF

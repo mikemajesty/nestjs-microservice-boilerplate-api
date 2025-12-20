@@ -32,7 +32,8 @@ scopes.push(
   'github',
   'workflow',
   'none',
-  `coverage`
+  `coverage`,
+  `build`
 );
 
 module.exports = {
