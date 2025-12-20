@@ -102,4 +102,23 @@ describe(RoleDeletePermissionUsecase.name, () => {
     ).resolves.toBeUndefined()
     expect(repository.create).toHaveBeenCalled()
   })
+
+  test('when permission exists but is not associated with role, should not remove it', async () => {
+    const otherPermission = permissiontMock.generate<PermissionEntity>({
+      overrides: { name: 'other:permission' }
+    })
+    const permissionInDb = permissiontMock.generate<PermissionEntity>({
+      overrides: { name: 'user:create' }
+    })
+
+    repository.findOne = TestUtils.mockResolvedValue<RoleEntity>({
+      ...role,
+      permissions: [otherPermission]
+    })
+    permissionRepository.findIn = TestUtils.mockResolvedValue<PermissionEntity[]>([permissionInDb])
+    repository.create = TestUtils.mockResolvedValue<CreatedModel>(null)
+
+    await expect(usecase.execute({ ...input, permissions: ['user:create'] })).resolves.toBeUndefined()
+    expect(repository.create).toHaveBeenCalled()
+  })
 })

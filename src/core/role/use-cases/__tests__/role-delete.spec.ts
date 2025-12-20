@@ -79,6 +79,17 @@ describe(RoleDeleteUsecase.name, () => {
     }
   })
 
+  test('when role has no permissions property, should delete successfully', async () => {
+    const roleWithoutPermissions = { ...role, permissions: undefined }
+    repository.findById = TestUtils.mockResolvedValue<RoleEntity>(roleWithoutPermissions)
+    repository.create = TestUtils.mockResolvedValue<CreatedModel>()
+
+    await expect(usecase.execute(input)).resolves.toEqual({
+      ...roleWithoutPermissions,
+      deletedAt: expect.any(Date)
+    })
+  })
+
   test('when role deleted successfully, should expect a role deleted', async () => {
     repository.findById = TestUtils.mockResolvedValue<RoleEntity>(role)
     repository.create = TestUtils.mockResolvedValue<CreatedModel>()

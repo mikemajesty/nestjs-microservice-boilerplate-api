@@ -94,4 +94,16 @@ describe(PermissionUpdateUsecase.name, () => {
 
     await expect(usecase.execute(input)).resolves.toBeDefined()
   })
+
+  test('when name is not provided, should update without checking for duplicates', async () => {
+    const inputWithoutName = permissionUpdateSchemaMock.generate({
+      overrides: {
+        name: undefined
+      }
+    })
+    repository.findById = TestUtils.mockResolvedValue<PermissionEntity>(permission)
+    repository.updateOne = TestUtils.mockResolvedValue<UpdatedModel>(null)
+
+    await expect(usecase.execute(inputWithoutName)).resolves.toBeDefined()
+  })
 })

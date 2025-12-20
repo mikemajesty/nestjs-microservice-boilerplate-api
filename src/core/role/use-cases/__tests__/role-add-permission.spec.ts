@@ -111,4 +111,16 @@ describe(RoleAddPermissionUsecase.name, () => {
     await expect(usecase.execute({ ...input, permissions: ['user:create'] })).resolves.toBeUndefined()
     expect(repository.create).toHaveBeenCalled()
   })
+
+  test('when permission does not exist in database, should create new permission', async () => {
+    repository.findOne = TestUtils.mockResolvedValue<RoleEntity>({
+      ...role,
+      permissions: []
+    })
+    permissionRepository.findIn = TestUtils.mockResolvedValue<PermissionEntity[]>([])
+    repository.create = TestUtils.mockResolvedValue<CreatedModel>()
+
+    await expect(usecase.execute({ ...input, permissions: ['new:permission'] })).resolves.toBeUndefined()
+    expect(repository.create).toHaveBeenCalled()
+  })
 })
