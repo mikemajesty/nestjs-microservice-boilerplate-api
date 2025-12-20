@@ -16,9 +16,9 @@ export const normalizeID = (entity: { _id?: string; id?: string }) => {
 
 export interface IEntity {
   id: string
-  createdAt?: Date | null | undefined
-  updatedAt?: Date | null | undefined
-  deletedAt?: Date | null | undefined
+  createdAt?: Date | null
+  updatedAt?: Date | null
+  deletedAt?: Date | null
 }
 
 export const BaseEntity = <T>() => {
@@ -29,10 +29,10 @@ export const BaseEntity = <T>() => {
       }
     }
 
-    readonly id!: string
-    readonly createdAt?: Date | null | undefined
-    readonly updatedAt?: Date | null | undefined
-    deletedAt?: Date | null | undefined
+    readonly id!: IEntity['id']
+    readonly createdAt?: IEntity['createdAt']
+    readonly updatedAt?: IEntity['updatedAt']
+    deletedAt?: IEntity['deletedAt']
 
     static nameOf = <D = keyof T>(name: keyof T) => name as D
 

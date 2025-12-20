@@ -18,7 +18,7 @@
     "prettier": "prettier --write \"src/**/*.json\"",
     "lint": "eslint \"{src,test}/**/*.{ts,js}\" --fix",
     "test": "TS_NODE_PROJECT=tsconfig.json node -r ts-node/register node_modules/.bin/jest --config=jest.config.ts --verbose --detectOpenHandles --forceExit",
-    "test:cov": "jest --config=\"./jest-coverage.config.ts\" --coverage --detectOpenHandles && npm run make-badges",
+    "test:cov": "jest --config=\"./jest-coverage.config.ts\" --coverage --detectOpenHandles --forceExit && npm run make-badges",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "setup": "docker-compose -f docker-compose-infra.yml down -v --remove-orphans && docker-compose -f docker-compose-infra.yml up -d",
     "docker:build": "docker build -t nestjs-api .",
@@ -40,7 +40,7 @@
   },
   "dependencies": {
     "@faker-js/faker": "^10.1.0",
-    "@mikemajesty/zod-mock-schema": "1.0.14",
+    "@mikemajesty/zod-mock-schema": "1.0.18",
     "@nestjs/common": "^11.1.9",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.1.9",

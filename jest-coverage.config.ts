@@ -8,10 +8,31 @@ export default {
   rootDir: 'src/core',
   testRegex: '.*\\.spec\\.ts$',
   transform: {
-    '^.+\\.(t|j)s$': 'ts-jest'
+    '^.+\\.(t|j)s$': [
+      '@swc/jest',
+      {
+        jsc: {
+          target: 'es2021',
+          parser: {
+            syntax: 'typescript',
+            decorators: true,
+            dynamicImport: true
+          },
+          transform: {
+            legacyDecorator: true,
+            decoratorMetadata: true
+          }
+        },
+        sourceMaps: true
+      }
+    ]
   },
+  transformIgnorePatterns: [
+    '/node_modules/(?!(@faker-js/faker|@mikemajesty/zod-mock-schema)/)'
+  ],
   setupFilesAfterEnv: ['../../test/initialization.ts'],
   testEnvironment: 'node',
+  coverageProvider: 'v8',
   collectCoverage: true,
   coverageThreshold: {
     global: {

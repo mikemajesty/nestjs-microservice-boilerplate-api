@@ -75,6 +75,23 @@ describe(PermissionDeleteUsecase.name, () => {
     await expect(usecase.execute(input)).rejects.toThrow(ApiConflictException)
   })
 
+  test('when permission has no roles property, should delete successfully', async () => {
+    const permissionWithoutRoles = new ZodMockSchema(PermissionEntitySchema).generate<PermissionEntity>({
+      overrides: {
+        name: 'name:permission',
+        roles: undefined
+      }
+    })
+
+    repository.findOneWithRelation = TestUtils.mockResolvedValue<PermissionEntity>(permissionWithoutRoles)
+    repository.create = TestUtils.mockResolvedValue<CreatedModel>()
+
+    await expect(usecase.execute(input)).resolves.toEqual({
+      ...permissionWithoutRoles,
+      deletedAt: expect.any(Date)
+    })
+  })
+
   const mock = new ZodMockSchema(PermissionEntitySchema)
   const permission = mock.generate<PermissionEntity>({
     overrides: {
