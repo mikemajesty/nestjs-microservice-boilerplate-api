@@ -101,11 +101,14 @@ describe(RoleAddPermissionUsecase.name, () => {
   })
 
   test('when adding permission without associated permission successfully, should expect an updated permission', async () => {
+    const permissionInDb = permissionMock.generate<PermissionEntity>({
+      overrides: { name: 'user:create' }
+    })
     repository.findOne = TestUtils.mockResolvedValue<RoleEntity>({
       ...role,
-      permissions: role.permissions.filter((p) => p.name !== 'user:create')
+      permissions: []
     })
-    permissionRepository.findIn = TestUtils.mockResolvedValue<PermissionEntity[]>(permissions)
+    permissionRepository.findIn = TestUtils.mockResolvedValue<PermissionEntity[]>([permissionInDb])
     repository.create = TestUtils.mockResolvedValue<CreatedModel>()
 
     await expect(usecase.execute({ ...input, permissions: ['user:create'] })).resolves.toBeUndefined()
@@ -121,6 +124,21 @@ describe(RoleAddPermissionUsecase.name, () => {
     repository.create = TestUtils.mockResolvedValue<CreatedModel>()
 
     await expect(usecase.execute({ ...input, permissions: ['new:permission'] })).resolves.toBeUndefined()
+    expect(repository.create).toHaveBeenCalled()
+  })
+
+  test('when permission exists and is already associated with role, should skip it', async () => {
+    const existingPermission = permissionMock.generate<PermissionEntity>({
+      overrides: { name: 'user:create' }
+    })
+    repository.findOne = TestUtils.mockResolvedValue<RoleEntity>({
+      ...role,
+      permissions: [existingPermission]
+    })
+    permissionRepository.findIn = TestUtils.mockResolvedValue<PermissionEntity[]>([existingPermission])
+    repository.create = TestUtils.mockResolvedValue<CreatedModel>()
+
+    await expect(usecase.execute({ ...input, permissions: ['user:create'] })).resolves.toBeUndefined()
     expect(repository.create).toHaveBeenCalled()
   })
 })
