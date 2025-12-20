@@ -16,6 +16,10 @@ on:
         required: true
         type: string
 
+permissions:
+  contents: write
+  pull-requests: write
+
 concurrency:
   group: release-${{ github.event.inputs.environment }}
   cancel-in-progress: false
