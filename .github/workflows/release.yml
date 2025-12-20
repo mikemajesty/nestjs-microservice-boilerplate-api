@@ -92,7 +92,6 @@ jobs:
             mikelima1989/nestjs-microservice:${{ github.event.inputs.environment }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          platforms: linux/amd64,linux/arm64
 
       - name: Get branch from tag
         id: branch

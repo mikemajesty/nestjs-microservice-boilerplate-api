@@ -19,387 +19,1091 @@
 
 ---
 
-## 📑 Table of Contents
+## Table of Contents
 
-- [Overview](#-overview)
-- [Architecture](#️-architecture)
-- [Key Features](#-key-features)
-- [Tech Stack](#️-tech-stack)
-- [Prerequisites](#-prerequisites)
-- [Quick Start](#-quick-start)
-- [Running the Application](#-running-the-application)
-- [Database Migrations](#️-database-migrations)
-- [CRUD Scaffolding](#-crud-scaffolding)
-- [Testing](#-testing)
-- [Load Testing](#-load-testing)
-- [API Documentation](#-api-documentation)
-- [Documentation](#-documentation)
-- [Observability](#-observability)
-- [Code Quality](#-code-quality)
-- [Project Structure](#-project-structure)
-- [Advanced Usage](#-advanced-usage)
-- [Contributing](#-contributing)
-- [License](#-license)
-- [Contributors](#-contributors)
-- [Support](#-support)
-- [Resources](#-resources)
-
-## 📚 Development Guides
-
-**🎯 Complete documentation for all custom utilities, decorators, and infrastructure components.**
-
-| Category | Description | Quick Access |
-|----------|-------------|--------------|
-| **🔧 Infrastructure** | Circuit breakers, HTTP clients, caching, logging | [📖 Browse](guides/infrastructure/) |
-| **🎭 Decorators** | @CircuitBreaker, @ValidateSchema, @Role, performance | [📖 Browse](guides/decorators/) |
-| **🧰 Utilities** | Collections, crypto, pagination, search, validation | [📖 Browse](guides/utilities/) |
-| **📚 Libraries** | Events, i18n, metrics, tokens | [📖 Browse](guides/libraries/) |
-
-**🚀 Start here:** [Complete Guide Index](guides/README.md)
+- [Architecture Overview](#architecture-overview)
+- [Architecture Comparison](#architecture-comparison)
+- [Layer Communication Rules](#layer-communication-rules)
+- [Project Structure](#project-structure)
+- [Quick Start](#quick-start)
+- [User Flow](#user-flow)
+- [Documentation Guides](#documentation-guides)
+- [Key Features](#key-features)
+- [Tech Stack](#tech-stack)
+- [Contributing](#contributing)
+- [License](#license)
 
 ---
 
-## 🎯 Overview
+## Architecture Overview
 
-This boilerplate provides a **production-ready foundation** for building scalable microservices with NestJS. It implements industry-standard architecture patterns including **Onion Architecture**, **Domain-Driven Design (DDD)**, and **Ports and Adapters (Hexagonal Architecture)**.
+This project implements a **pragmatic architecture** that combines the best ideas from Clean Architecture, Domain-Driven Design (DDD), and Hexagonal Architecture. Rather than strictly following one pattern, it takes a practical approach: **powerful enough for enterprise applications, yet simple enough for any developer to understand and maintain**.
 
-Built with enterprise needs in mind, it offers comprehensive features for authentication, authorization, multi-database support, observability, and automated CRUD generation - allowing teams to focus on business logic rather than infrastructure.
+### The Core Philosophy
 
-## 🏗️ Architecture
+The architecture is built around one fundamental principle: **protect your business logic**. Your domain rules should never depend on frameworks, databases, or external services. If you decide to switch from PostgreSQL to MongoDB, or from Redis to Memcached, your core business logic remains untouched.
 
-This project follows **Clean Architecture** principles with a focus on maintainability, testability, and scalability.
+![Architecture Diagram](OnionGraph.jpg)
 
-### Architectural Patterns
+### How It Compares to Other Architectures
 
-#### 1. **Onion Architecture**
-The codebase is organized in concentric layers where dependencies point inward:
-- **Core Layer**: Contains business entities, use cases, and repository interfaces
-- **Infrastructure Layer**: Implements external concerns (databases, cache, HTTP clients)
-- **Application Layer**: Modules that wire everything together
-- **Presentation Layer**: Controllers and API adapters
-
-![Onion Architecture Diagram](OnionGraph.jpg)
-
-#### 2. **Domain-Driven Design (DDD)**
-- **Entities**: Business objects with identity (`src/core/*/entity`)
-- **Use Cases**: Application-specific business rules (`src/core/*/use-cases`)
-- **Repository Pattern**: Abstract data access (`src/core/*/repository`)
-- **Value Objects**: Validated domain primitives
-
-#### 3. **Ports and Adapters (Hexagonal)**
-- **Ports**: Abstract interfaces defining contracts
-- **Adapters**: Concrete implementations for external systems
-- **Dependency Inversion**: Core logic independent of frameworks
-
-### Layer Responsibilities
-
-```
-┌─────────────────────────────────────────┐
-│         Controllers (Modules)           │  ← HTTP/API Layer
-├─────────────────────────────────────────┤
-│         Use Cases (Core)                │  ← Business Logic
-├─────────────────────────────────────────┤
-│     Entities & Repositories (Core)      │  ← Domain Layer
-├─────────────────────────────────────────┤
-│    Infrastructure (DB, Cache, HTTP)     │  ← External Services
-└─────────────────────────────────────────┘
-```
-
-### User Flow Example
-
-![User Diagram](diagram.png)
+| Pattern | This Project | Key Difference |
+|---------|--------------|----------------|
+| **Clean Architecture** | ✅ Implements | Simplified layers without over-engineering |
+| **Domain-Driven Design** | ✅ Implements | Entities and Use Cases without complex aggregates |
+| **Hexagonal Architecture** | ✅ Implements | Ports (interfaces) and Adapters (implementations) |
+| **Onion Architecture** | ✅ Implements | Core at center, dependencies point inward |
 
 ---
 
-## ✨ Key Features
+## Architecture Comparison
 
-### 🔐 Authentication & Authorization
+### Clean Architecture
 
-- **JWT-based Authentication**
-  - Login/Logout endpoints
-  - Access token generation
-  - Refresh token mechanism
-  - Token blacklisting on logout
+Clean Architecture organizes code into concentric circles where dependencies point inward. The innermost circle contains business rules, and outer circles contain implementation details.
+
+**How we implement it:**
+- **Entities** live in `src/core/*/entity` — pure business objects
+- **Use Cases** live in `src/core/*/use-cases` — application-specific business rules
+- **Interfaces** live in `src/core/*/repository` — contracts for external dependencies
+- **Frameworks** live in `src/modules` and `src/infra` — NestJS controllers and database implementations
+
+### Domain-Driven Design (DDD)
+
+DDD focuses on modeling your business domain. It introduces concepts like Entities, Value Objects, Aggregates, and Repositories.
+
+**How we implement it:**
+- **Entities**: Objects with identity that persist over time (`UserEntity`, `RoleEntity`)
+- **Repository Pattern**: Abstract interfaces defining data access contracts
+- **Use Cases**: Encapsulate business operations (similar to Application Services in DDD)
+- **Bounded Contexts**: Each module represents a bounded context
+
+**What we simplified:**
+- No complex Aggregate Roots — entities are self-contained
+- No Domain Events infrastructure — use the event system in `libs/` when needed
+- No Value Objects as separate classes — Zod schemas handle validation
+
+### Hexagonal Architecture (Ports and Adapters)
+
+Hexagonal Architecture separates the application from external concerns through Ports (interfaces) and Adapters (implementations).
+
+**How we implement it:**
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│                        ADAPTERS                               │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐   │
+│  │ Controllers │  │ Repositories│  │ External Services   │   │
+│  │ (modules/)  │  │ (modules/)  │  │ (infra/)            │   │
+│  └──────┬──────┘  └──────┬──────┘  └──────────┬──────────┘   │
+│         │                │                     │              │
+│         ▼                ▼                     ▼              │
+│  ┌─────────────────────────────────────────────────────────┐ │
+│  │                      PORTS                               │ │
+│  │              (core/*/repository interfaces)              │ │
+│  └─────────────────────────┬───────────────────────────────┘ │
+│                            │                                  │
+│                            ▼                                  │
+│  ┌─────────────────────────────────────────────────────────┐ │
+│  │                       CORE                               │ │
+│  │           Entities + Use Cases + Interfaces              │ │
+│  │                (src/core/)                               │ │
+│  └─────────────────────────────────────────────────────────┘ │
+└──────────────────────────────────────────────────────────────┘
+```
+
+**Ports (Interfaces):**
+- `ICatRepository` — defines what operations are available
+- `IHttpAdapter` — defines HTTP client contract
+- `ICacheAdapter` — defines caching contract
+
+**Adapters (Implementations):**
+- `CatRepository` in `modules/` — implements `ICatRepository` with TypeORM/Mongoose
+- `HttpService` in `infra/` — implements `IHttpAdapter` with Axios
+- `RedisService` in `infra/` — implements `ICacheAdapter` with Redis
+
+---
+
+## Design Decisions
+
+> ⚠️ **Important Notes About This Architecture**
+> 
+> This section explains some deliberate choices that differ from traditional implementations. Understanding these decisions will help you work with the codebase effectively.
+
+### Why We Call Interfaces "Adapters"
+
+You may notice that some interfaces in this project use the word "Adapter" (e.g., `IHttpAdapter`, `ICacheAdapter`). In traditional Hexagonal Architecture:
+
+- **Port**: An interface that defines a contract (what operations are available)
+- **Adapter**: A concrete implementation that fulfills that contract (how it's done)
+
+**The academic distinction:**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                  HEXAGONAL (Traditional)                     │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│   Port (Interface)              Adapter (Implementation)     │
+│   ─────────────────             ────────────────────────     │
+│   IUserRepository        →      PostgresUserRepository       │
+│   IEmailService          →      SendGridEmailService         │
+│   ICacheService          →      RedisCacheService            │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Our simplified approach:**
+
+We use "Adapter" in interface names because, conceptually, **both are abstractions**. The fundamental principle is the same: decouple your core business logic from implementation details. Whether you call the interface a "Port" or "Adapter" doesn't change how the pattern works.
+
+```typescript
+// Traditional naming
+interface IUserRepository { }      // Port
+class PostgresUserRepository { }   // Adapter
+
+// Our naming (simplified)
+interface IHttpAdapter { }         // Still an abstraction (contract)
+class HttpService { }              // Still an implementation
+```
+
+**Why this simplification?**
+
+1. **Reduced cognitive load** — One less concept to explain to new developers
+2. **Practical focus** — The behavior is identical regardless of naming
+3. **Consistency** — All abstractions follow the same `I*Adapter` pattern
+
+The key takeaway: **if it's an interface, it's a contract. If it's a class implementing that interface, it's the implementation.** The names are just labels.
+
+---
+
+### Why We Use Abstract Classes Instead of Interfaces
+
+You may notice that repository contracts use `abstract class` instead of TypeScript `interface`:
+
+```typescript
+// What we use
+export abstract class ICatRepository extends IRepository<CatEntity> {
+  abstract findByBreed(breed: string): Promise<CatEntity[]>
+}
+
+// Instead of
+export interface ICatRepository extends IRepository<CatEntity> {
+  findByBreed(breed: string): Promise<CatEntity[]>
+}
+```
+
+**Why?** This is a **NestJS/Node.js limitation**.
+
+TypeScript interfaces are erased at runtime — they don't exist in the compiled JavaScript. NestJS dependency injection relies on runtime tokens to resolve providers. If we used interfaces, we would need to pass a string token:
+
+```typescript
+// ❌ With interface — requires string token
+@Module({
+  providers: [
+    {
+      provide: 'ICatRepository',  // String token (error-prone, no type safety)
+      useClass: CatRepository,
+    },
+  ],
+})
+
+// ✅ With abstract class — class itself is the token
+@Module({
+  providers: [
+    {
+      provide: ICatRepository,    // Class reference (type-safe, refactorable)
+      useClass: CatRepository,
+    },
+  ],
+})
+```
+
+**Benefits of abstract classes:**
+
+1. **Type safety** — No magic strings, refactoring tools work correctly
+2. **Runtime existence** — The class exists in compiled JavaScript
+3. **Same behavior** — Acts as a contract just like an interface
+4. **Better DX** — IDE autocomplete and "Go to Definition" work properly
+
+**The trade-off:** Abstract classes can have implementation details (which interfaces cannot). We simply don't use that feature — our abstract classes are pure contracts.
+
+---
+
+### Why the "Middlewares" Folder Contains More Than Middlewares
+
+Yes, we know. The `src/middlewares/` folder contains:
+- Middlewares (authentication)
+- Guards (authorization)
+- Interceptors (logging, tracing)
+- Filters (exception handling)
+
+**Why didn't we split them?**
+
+Honestly? We couldn't find a better name. 🤷
+
+We tried:
+- `http-pipeline/` — too generic
+- `request-handlers/` — not quite right
+- `cross-cutting/` — sounds like a buzzword bingo winner
+- `stuff-that-runs-before-and-after-your-code/` — accurate but... no
+
+So we stuck with `middlewares/` because:
+1. They all operate in the HTTP request/response lifecycle
+2. They're all "things that wrap your controller logic"
+3. Everyone knows where to find them
+
+**If you have a better name, PRs are welcome!** Until then, just accept that `middlewares/` is a "creative interpretation" of the term. 😄
+
+---
+
+### Why Validations Live Inside Use Cases
+
+This is a fundamental difference from many Clean Architecture implementations.
+
+**The traditional approach (Clean Architecture):**
+
+```
+Controller → Validates Input → Use Case → Business Logic
+```
+
+In traditional Clean Architecture, input validation happens in the Controller or a dedicated Validation layer before reaching the Use Case. The Use Case assumes it receives valid data.
+
+**Our approach:**
+
+```
+Controller → Use Case (Validates + Business Logic)
+```
+
+We validate inputs **inside** the Use Case using Zod schemas.
+
+**Why we made this choice:**
+
+1. **Testability**
+   
+   When you test a Use Case, you should test the complete behavior — including validation. It's unacceptable to have a Use Case that passes tests but fails in production because validation was bypassed.
+
+   ```typescript
+   // Our tests validate the complete use case behavior
+   it('should throw validation error for invalid email', async () => {
+     const input = { email: 'invalid-email', name: 'John' };
+     await expect(useCase.execute(input)).rejects.toThrow(ValidationException);
+   });
+   ```
+
+2. **Use Case Integrity**
+   
+   A Use Case is a complete unit of business logic. If `CreateUserUseCase` requires a valid email, that validation IS part of the use case — not something external to it.
+
+3. **Self-Documenting Code**
+   
+   Looking at a Use Case, you immediately see what inputs it expects and how they're validated. No need to hunt through multiple layers.
+
+4. **Reduced Duplication**
+   
+   If multiple controllers call the same Use Case, validations are automatically applied. No risk of one controller forgetting to validate.
+
+**Comparison with other approaches:**
+
+| Approach | Validation Location | Pros | Cons |
+|----------|---------------------|------|------|
+| **Traditional Clean** | Controller/Validator layer | Thin use cases | Validation can be bypassed, harder to test |
+| **DDD** | Domain entities (Value Objects) | Rich domain model | Complex, verbose |
+| **Our Approach** | Inside Use Case | Complete testability, self-contained | See trade-offs below |
+
+**The trade-off:**
+
+If you need to consume a Use Case from multiple entry points with **different validation rules**, the Use Case validations might be too restrictive.
+
+**Solution:** For those cases, move specific validations to the Application layer (Controller/Adapter). The Use Case can have minimal validations (or none), and each consumer applies its own rules:
+
+```typescript
+// Controller A - Web API (strict validation)
+@Post()
+async create(@Body() input: CreateUserInput): Promise<UserCreateOutput> {
+  // Validate for web context
+  const validated = WebUserSchema.parse(input);
+  return this.useCase.execute(validated);
+}
+
+// Controller B - Internal service (different validation)
+async createFromInternal(input: InternalUserInput): Promise<UserCreateOutput> {
+  // Validate for internal context
+  const validated = InternalUserSchema.parse(input);
+  return this.useCase.execute(validated);
+}
+```
+
+**Our recommendation:** Start with validations inside Use Cases. Only move them out when you have a concrete need for different validation rules per consumer.
+
+---
+
+## What to Avoid in Core
+
+The `core/` folder is sacred — it contains your business logic and must remain **pure and independent**. Here are the key rules to follow:
+
+### Entities: Avoid Anemic Models
+
+An **anemic entity** is just a data container with no behavior — essentially a DTO. This is an anti-pattern because business logic ends up scattered across use cases and services.
+
+| ❌ Avoid | ✅ Prefer |
+|----------|-----------|
+| Entity with only properties | Entity with properties **and** behavior |
+| Business logic in Use Cases | Business logic **in the Entity** when it relates to state |
+| Calculations outside entity | Calculations as entity methods |
+
+**Ask yourself:** "Does this logic relate to the entity's state?" If yes, it belongs in the entity.
+
+📖 **See detailed examples:** [Entity Guide](guides/core/entity.md) — includes Rich Entity vs Anemic Entity comparison
+
+---
+
+### Entities: Must Extend BaseEntity
+
+Every Entity **must extend** the `BaseEntity` class. This is mandatory in this project.
+
+| ❌ Avoid | ✅ Prefer |
+|----------|-----------|
+| `class UserEntity { }` | `class UserEntity extends BaseEntity<UserEntity>() { }` |
+| `export class CatEntity { }` | `export class CatEntity extends BaseEntity<CatEntity>() { }` |
+
+```typescript
+// ❌ WRONG - Not extending BaseEntity
+export class CatEntity {
+  id!: string
+  name!: string
+  breed!: string
+  age!: number
+  createdAt?: Date
+  updatedAt?: Date
+  deletedAt?: Date
+
+  constructor(entity: Cat) {
+    Object.assign(this, entity)
+  }
+}
+
+// ✅ CORRECT - Extends BaseEntity
+import { BaseEntity } from '@/utils/entity'
+
+export class CatEntity extends BaseEntity<CatEntity>() {
+  name!: Cat['name']
+  breed!: Cat['breed']
+  age!: Cat['age']
+
+  constructor(entity: Cat) {
+    super(CatEntitySchema)
+    this.validate(entity)
+    this.ensureID()
+  }
+}
+```
+
+**What BaseEntity provides:**
+
+1. **Common properties** — `id`, `createdAt`, `updatedAt`, `deletedAt` are inherited
+2. **Validation** — `validate(entity)` method validates input against Zod schema
+3. **ID generation** — `ensureID()` generates UUID if not provided
+4. **Status methods** — `isActive()`, `isDeleted()`, `activate()`, `deactivate()`
+5. **Serialization** — `toObject()` returns plain object, `clone()` creates a copy
+6. **Type safety** — `nameOf()` provides type-safe property names
+
+**Constructor pattern:**
+
+Every entity constructor must follow this pattern:
+
+```typescript
+constructor(entity: Cat) {
+  super(CatEntitySchema)  // 1. Pass Zod schema to parent
+  this.validate(entity)   // 2. Validate and assign properties
+  this.ensureID()         // 3. Generate ID if not provided
+}
+```
+
+📖 **See detailed examples:** [Entity Guide](guides/core/entity.md) — includes full entity implementation
+
+---
+
+### Use Cases: Never Know Implementations
+
+A Use Case must **never, absolutely never** know about concrete implementations. It should only work with **abstractions (interfaces)**.
+
+This is the most important rule: **the Use Case receives abstractions, never implementations**.
+
+- ✅ Entities (`core/*/entity`)
+- ✅ Repository interfaces (`core/*/repository`)
+- ✅ Adapter interfaces (`IHttpAdapter`, `ICacheAdapter`, etc.)
+- ✅ Utils and decorators (`utils/`)
+- ✅ Types and interfaces
+
+| ❌ Avoid | ✅ Prefer |
+|----------|-----------|
+| `import { Controller } from '@nestjs/common'` | No framework imports |
+| `import { UserRepository } from 'modules/user/repository'` | `import { IUserRepository } from 'core/user/repository'` |
+| `import { HttpService } from 'infra/http'` | `import { IHttpAdapter } from 'infra/http'` (interface only) |
+| Direct database calls (TypeORM, Mongoose) | Repository interface methods |
+| `new RedisService()` | Receive `ICacheAdapter` via constructor |
+
+**The golden rule:**
+
+```typescript
+// ❌ WRONG - Use Case knows the implementation
+import { HttpService } from '@/infra/http/service';
+
+class MyUseCase {
+  constructor(private http: HttpService) {} // Concrete class!
+}
+
+// ✅ CORRECT - Use Case only knows the abstraction
+import { IHttpAdapter } from '@/infra/http/adapter';
+
+class MyUseCase implements IUsecase {
+  constructor(private http: IHttpAdapter) {} // Interface!
+}
+```
+
+**Why?** The Use Case should work identically whether:
+- Called from a REST controller, GraphQL resolver, CLI, or message queue
+- Using Redis or Memcached for cache
+- Using Axios or Fetch for HTTP
+- Running in tests with mocks
+
+---
+
+### Use Cases: Must Implement IUsecase
+
+Every Use Case **must implement** the `IUsecase` interface. This is mandatory in this project.
+
+| ❌ Avoid | ✅ Prefer |
+|----------|-----------|
+| `class MyUseCase { }` | `class MyUseCase implements IUsecase { }` |
+| `export class CreateUserUseCase { }` | `export class CreateUserUseCase implements IUsecase { }` |
+
+```typescript
+// ❌ WRONG - Not implementing IUsecase
+export class CatCreateUsecase {
+  constructor(private readonly catRepository: ICatRepository) {}
+
+  async execute(input: CatCreateInput): Promise<CatCreateOutput> {
+    // ...
+  }
+}
+
+// ✅ CORRECT - Implements IUsecase
+import { IUsecase } from '@/utils/usecase';
+
+export class CatCreateUsecase implements IUsecase {
+  constructor(private readonly catRepository: ICatRepository) {}
+
+  @ValidateSchema(CatCreateSchema)
+  async execute(input: CatCreateInput): Promise<CatCreateOutput> {
+    // ...
+  }
+}
+```
+
+**Why this matters:**
+
+1. **Contract enforcement** — Ensures all Use Cases have the same structure
+2. **Dependency injection** — NestJS can properly inject and resolve Use Cases
+3. **Type safety** — TypeScript validates that `execute()` method exists
+4. **Consistency** — Every Use Case follows the same pattern across the project
+
+📖 **See detailed patterns:** [Use Case Guide](guides/core/usecase.md) — includes architecture diagrams and testing patterns
+
+---
+
+### Repository Interfaces: Avoid Duplicating Generic Methods
+
+The repository interface should **only declare methods that don't exist** in the generic `IRepository<T>`. The generic repository already provides 20+ methods:
+
+| ❌ Avoid | ✅ Prefer |
+|----------|-----------|
+| Declaring `create()`, `findById()`, `update()` | Already inherited from `IRepository<T>` |
+| Duplicating generic query methods | Only add **domain-specific** queries |
+
+```typescript
+// ❌ Wrong - These already exist in IRepository
+export abstract class ICatRepository extends IRepository<CatEntity> {
+  abstract create(entity: CatEntity): Promise<CatEntity>  // Already exists!
+  abstract findById(id: string): Promise<CatEntity>      // Already exists!
+}
+
+// ✅ Correct - Only domain-specific methods
+export abstract class ICatRepository extends IRepository<CatEntity> {
+  abstract paginate(input: CatListInput): Promise<CatListOutput>
+  abstract findByBreed(breed: string): Promise<CatEntity[]>
+}
+```
+
+📖 **See full method list:** [Repository Guide](guides/core/repository.md) — includes `IRepository<T>` generic methods and examples
+
+---
+
+### Controllers/Adapters: Avoid Business Logic
+
+Controllers and Adapters must **never contain business logic**. Their responsibility is limited to:
+
+1. **Orchestration** — Receive request, call use case, return response
+2. **Input standardization** — Transform and normalize inputs for the use case
+
+| ❌ Avoid | ✅ Prefer |
+|----------|-----------|
+| Calculations in controller | Move to Use Case or Entity |
+| Conditional business rules | Move to Use Case |
+| Data manipulation | Move to Use Case |
+| Multiple repository calls | Move to Use Case |
+
+**When input standardization is OK:**
+
+We standardize listing inputs (pagination, sorting, search) in the Controller before calling the Use Case:
+
+```typescript
+// ✅ OK - Standardizing pagination inputs (not business logic)
+@Get()
+@Version('1')
+@Permission('cat:list')
+async list(@Req() { query }: ApiRequest): Promise<CatListOutput> {
+  const input: CatListInput = {
+    sort: SortHttpSchema.parse(query.sort),
+    search: SearchHttpSchema.parse(query.search),
+    limit: Number(query.limit),
+    page: Number(query.page)
+  }
+
+  return await this.listUsecase.execute(input)
+}
+
+// ❌ WRONG - Business logic in controller
+@Post()
+@Version('1')
+@Permission('cat:create')
+async create(@Req() { body }: ApiRequest): Promise<CatCreateOutput> {
+  // DON'T DO THIS - business logic belongs in Use Case
+  if (body.age > 10) {
+    body.status = 'senior';
+  }
+  const discount = body.price * 0.1; // Business calculation!
+  return await this.createUsecase.execute({ ...body, discount });
+}
+```
+
+📖 **See detailed patterns:** [Controller Guide](guides/modules/controller.md) and [Adapter Guide](guides/modules/adapter.md) — includes examples and best practices
+
+---
+
+### Core: Avoid External Libraries
+
+The `core/` folder must remain **pure and framework-agnostic**. Never import external libraries directly into entities or use cases.
+
+| ❌ Avoid in Core | ✅ Prefer |
+|-----------------|-----------|
+| `import axios from 'axios'` | Use `IHttpAdapter` interface |
+| `import { Repository } from 'typeorm'` | Use `IRepository<T>` interface |
+| `import moment from 'moment'` | Use `utils/date` or native Date |
+| `import _ from 'lodash'` | Use `utils/collection` or native methods |
+| `import Redis from 'ioredis'` | Use `ICacheAdapter` interface |
+
+**Why?**
+
+If you import `axios` directly into a Use Case:
+- You can't easily test it (need to mock axios globally)
+- You can't swap to `fetch` or another HTTP client
+- Your core business logic is coupled to a specific library
+
+```typescript
+// ❌ WRONG - External library in Use Case
+import axios from 'axios';
+
+export class GetExternalDataUseCase {
+  async execute(): Promise<ExternalData> {
+    const response = await axios.get('https://api.example.com/data');
+    return response.data;
+  }
+}
+
+// ✅ CORRECT - Use abstraction
+import { IHttpAdapter } from '@/infra/http/adapter';
+import { IUsecase } from '@/utils/usecase';
+
+export class GetExternalDataUseCase implements IUsecase {
+  constructor(private readonly http: IHttpAdapter) {}
   
-- **Password Management**
-  - Secure password hashing
-  - Password change functionality
-  - Forgot password flow with email
-  - Reset password with token validation
-
-- **Role-Based Access Control (RBAC)**
-  - Dynamic role assignment
-  - Granular permission system
-  - Endpoint-level authorization
-  - Permission inheritance
-
-### 💾 Multi-Database Support
-
-#### PostgreSQL (TypeORM)
-- Relational data modeling
-- Complex queries and joins
-- Transaction support
-- Migration system
-- Soft delete functionality
-
-#### MongoDB (Mongoose)
-- Document-based storage
-- **3-node Replica Set** for high availability
-- Automatic failover and data redundancy
-- Flexible schema design
-- Built-in pagination
-- Text search capabilities
-- Migration support
-
-### 🚀 CRUD Scaffolding
-
-**⚡ Supercharged by our powerful CLI tool** - Generate complete, production-ready CRUD modules in seconds!
-
-✨ **What makes it incredible:**
-- 🎯 **6 different templates**: CRUD (Postgres/Mongo), Library, Infrastructure, Module, Core
-- 🔄 **Auto-import magic**: Automatically registers modules in the right places
-- 🏗️ **Clean Architecture**: Follows all architectural patterns out of the box
-- 🧪 **100% Test Coverage**: Complete test suites generated automatically
-- 📝 **Smart naming**: Handles kebab-case, spaces, special characters automatically
-- 🚫 **Zero manual work**: From scaffolding to registration, fully automated
-
-**Generated features:**
-- Entity with Zod validation schemas
-- Complete use cases (Create, Read, Update, Delete, List)
-- Repository interface and implementation
-- REST Controller with all routes
-- Full unit test suite
-- Input/Output DTOs with validation
-- Pagination, search, and soft delete support
-
-> ```bash
-> npm run scaffold
-> ```
-```base
-  (x) POSTGRES:CRUD
-  ( ) MONGO:CRUD
-  ( ) LIB
-  ( ) INFRA
-  ( ) MODULE
-  ( ) CORE
+  async execute(): Promise<ExternalData> {
+    const response = await this.http.get({ url: 'https://api.example.com/data' });
+    return response.data;
+  }
+}
 ```
 
-### 📊 Observability Stack
+**Allowed in Core:**
+- ✅ Zod (validation is part of domain logic)
+- ✅ Native Node.js/JavaScript APIs
+- ✅ Your own `utils/` functions
 
-#### Distributed Tracing
-- **OpenTelemetry** integration
-- Zipkins for trace visualization
-- HTTP request tracing
-- Database query tracing
-- Inter-service call tracking
-- Custom span creation
+**Need an external library?** If you need functionality from an external library, **create a centralized wrapper** in `libs/` or `utils/`:
 
-#### Logging
-- **Pino** high-performance logger
-- Structured JSON logging
-- Request/Response logging
-- Error tracking with stack traces
-- Log aggregation with Loki
-- Configurable log levels
+```typescript
+// ❌ WRONG - Using lodash directly in Use Case
+import _ from 'lodash';
 
-#### Metrics
-- Request duration
-- HTTP status codes
-- Database query performance
-- Cache hit/miss ratio
-- Custom business metrics
-- Prometheus-compatible format
+export class MyUseCase {
+  execute(data: Product[]): Record<string, Product[]> {
+    return _.groupBy(data, 'category'); // Direct lodash usage
+  }
+}
 
-#### Health Checks
-- Database connectivity
-- Cache availability
-- Memory usage
-- CPU metrics
-- Custom health indicators
+// ✅ CORRECT - Create a centralized wrapper
+// utils/collection.ts
+import _ from 'lodash';
 
-### 🔄 Resilience Patterns
+export const CollectionUtil = {
+  groupBy: <T>(array: T[], key: keyof T) => _.groupBy(array, key),
+  uniqBy: <T>(array: T[], key: keyof T) => _.uniqBy(array, key),
+  // ... expose only what you need
+};
 
-- **Circuit Breaker** (Opossum)
-  - Automatic failure detection
-  - Fallback mechanisms
-  - Configurable thresholds
-  - Service degradation
+// Then in Use Case
+import { CollectionUtil } from '@/utils/collection';
+import { IUsecase } from '@/utils/usecase';
 
-- **Retry Logic**
-  - Exponential backoff
-  - Configurable retry policies
-  - Request timeout handling
+export class MyUseCase implements IUsecase {
+  execute(data: Product[]): Record<string, Product[]> {
+    return CollectionUtil.groupBy(data, 'category'); // ✅ Uses wrapper
+  }
+}
+```
 
-### 🌍 Internationalization (i18n)
-
-- Multi-language support
-- Dynamic language switching
-- Validation message translation
-- API response localization
-- Supported languages: English, Portuguese
-
-### 📦 Caching Strategies
-
-- **Redis** for distributed caching
-- **NodeCache** for in-memory caching
-- TTL configuration
-- Cache invalidation
-- Cache-aside pattern
-
-### 🛡️ Security Features
-
-- Helmet.js for HTTP headers
-- CORS configuration
-- Request rate limiting
-- Input validation with Zod
-- SQL injection prevention
-- XSS protection
-- CSRF protection ready
-
-### 📧 Email System
-
-- Handlebars templates
-- Welcome emails
-- Password reset emails
-- SMTP configuration
-- HTML/Plain text support
+**Benefits of centralization:**
+- Single point of change if you need to swap libraries
+- Easier to mock in tests
+- Controls which functions are exposed
+- Documents which external libs are used in the project
 
 ---
 
-## 🛠️ Tech Stack
+### Types: Use Entity Composition and Proper Naming
 
-### Core Framework
-- **NestJS** 11.x - Progressive Node.js framework
-- **TypeScript** 5.9.3 - Type-safe development
-- **Node.js** 22.x - Runtime environment
+When creating Input/Output types, **always derive them from the Entity**. This is mandatory to avoid property duplication.
 
-### Databases & ORMs
-- **PostgreSQL** with TypeORM - Relational database
-- **MongoDB** with Mongoose - Document database
-- **Redis** - Caching and sessions
+#### Rule 1: Compose from Entity
 
-### Observability
-- **OpenTelemetry** - Distributed tracing
-- **Pino** - High-performance logging
-- **Zipkins** - Trace visualization
-- **Prometheus** - Metrics collection
+```typescript
+// ❌ WRONG - Duplicating properties that exist in Entity
+type UserCreateInput = {
+  name: string;      // Already in UserEntity!
+  email: string;     // Already in UserEntity!
+  password: string;  // Already in UserEntity!
+};
 
-### Testing
-- **Jest** - Testing framework
-- **Supertest** - HTTP assertions
-- **Testcontainers** - Integration testing with Docker
+// ✅ CORRECT - Compose from Entity
+type UserCreateInput = Pick<UserEntity, 'name' | 'email' | 'password'>;
 
-### Code Quality
-- **ESLint** - Linting
-- **Prettier** - Code formatting
-- **Husky** - Git hooks
-- **Commitlint** - Commit message linting
-- **Lint-staged** - Staged files linting
+// ✅ CORRECT - Extend when needed
+type UserUpdateInput = Pick<UserEntity, 'id'> & Partial<Pick<UserEntity, 'name' | 'email'>>;
 
-### DevOps
-- **Docker** - Containerization
-- **Docker Compose** - Multi-container orchestration
-- **PM2** - Process management
-- **Artillery** - Load testing
+// ✅ CORRECT - Omit sensitive fields for output
+type UserOutput = Omit<UserEntity, 'password' | 'deletedAt'>;
+```
 
-### Additional Libraries
-- **Zod** - Schema validation
-- **Axios** - HTTP client
-- **JWT** - Token management
-- **Nodemailer** - Email sending
-- **Swagger** - API documentation
+#### Rule 2: Use `z.infer` for Validated Types
+
+When you need runtime validation, use Zod schema with `z.infer`. Zod has built-in `pick` and `omit` methods for composition:
+
+```typescript
+// ✅ Schema with validation using pick (cleaner)
+const UserCreateSchema = UserEntitySchema.pick({
+  name: true,
+  email: true,
+  password: true,
+});
+
+// ✅ Schema using omit (exclude fields)
+const UserOutputSchema = UserEntitySchema.omit({
+  password: true,
+  deletedAt: true,
+});
+
+// ✅ Infer type from schema
+type UserCreateInput = z.infer<typeof UserCreateSchema>;
+type UserOutput = z.infer<typeof UserOutputSchema>;
+```
+
+📖 **See detailed patterns:** [Entity Guide](guides/core/entity.md) — includes schema composition examples
+
+
+#### Rule 3: Naming Convention — Input and Output Only
+
+**Never use** prefixes or suffixes like `DTO`, `ViewModel`, `Request`, `Response`. The standard naming convention is:
+
+| ❌ Avoid | ✅ Use |
+|----------|--------|
+| `CreateUserDTO` | `UserCreateInput` |
+| `UserResponseDTO` | `UserCreateOutput` |
+| `UserViewModel` | `UserOutput` |
+| `GetUserRequest` | `UserGetInput` |
+| `UserListResponse` | `UserListOutput` |
+
+**Pattern:** `{Entity}{Action}{Input|Output}`
+
+```typescript
+// Naming examples
+type UserCreateInput = Pick<UserEntity, 'name' | 'email' | 'password'>;
+type UserCreateOutput = Pick<UserEntity, 'id' | 'name' | 'email' | 'createdAt'>;
+
+type UserUpdateInput = Pick<UserEntity, 'id'> & Partial<Pick<UserEntity, 'name'>>;
+type UserUpdateOutput = Pick<UserEntity, 'id' | 'name' | 'updatedAt'>;
+
+type UserListInput = { pagination: PaginationInput; search?: string };
+type UserListOutput = { data: UserOutput[]; pagination: PaginationOutput };
+```
 
 ---
 
-## 📋 Prerequisites
+### Types: Avoid `any` — Always Type When Possible
 
-Before you begin, ensure you have the following installed:
+The `any` type defeats the purpose of TypeScript. **Always provide explicit types** when it makes sense and doesn't create unnecessary complexity.
 
-- **Node.js** >= 22.0.0 ([Download](https://nodejs.org/))
-- **npm** >= 9.x or **yarn** >= 1.22.x
-- **Docker** >= 20.x ([Download](https://www.docker.com/))
+| ❌ Avoid | ✅ Prefer |
+|----------|-----------|
+| `function process(data: any)` | `function process(data: UserEntity)` |
+| `const result: any = await fetch()` | `const result: ApiResponse = await fetch()` |
+| `items.map((item: any) => ...)` | `items.map((item: OrderItem) => ...)` |
+
+**When to type:**
+
+1. **Function parameters** — Always type them
+2. **Function return types** — Type when not obvious from implementation
+3. **Variables** — Type when TypeScript can't infer correctly
+4. **Generics** — Use generics instead of `any` for flexible types
+
+```typescript
+// ❌ WRONG - Using any
+const processItems = (items: any[]): any => {
+  return items.map((item: any) => item.value);
+}
+
+// ✅ CORRECT - Properly typed
+const processItems = <T extends { value: number }>(items: T[]): number[] => {
+  return items.map((item) => item.value);
+}
+
+// ✅ CORRECT - Using unknown when type is truly unknown
+const parseJson = (json: string): unknown => {
+  return JSON.parse(json);
+}
+```
+
+**When `any` is unavoidable:**
+
+Sometimes you genuinely can't type something properly (third-party libraries, complex dynamic types, etc.). In these cases, **use eslint-disable** to acknowledge the exception:
+
+```typescript
+// ✅ OK - Acknowledged exception with eslint-disable
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const handleLegacyApi = (response: any): ProcessedData => {
+  // Legacy API with unpredictable structure
+  return transformLegacyResponse(response);
+}
+
+// ✅ OK - Type assertion after validation
+const processExternalData = (data: unknown): UserData => {
+  if (!isValidUserData(data)) {
+    throw new Error('Invalid data');
+  }
+  return data as UserData;
+}
+```
+
+**The rule of thumb:** If you're reaching for `any`, ask yourself:
+1. Can I use a specific type? → Use it
+2. Can I use a generic? → Use `<T>`
+3. Can I use `unknown`? → Safer than `any`
+4. None of the above work? → Use `any` with `eslint-disable`
+
+---
+
+### Functions: Always Declare Explicit Return Types
+
+This is a **project standard**: every function must have an explicit return type. TypeScript can infer return types, but explicit declarations improve code readability and catch errors earlier.
+
+| ❌ Avoid | ✅ Prefer |
+|----------|-----------|
+| `async getUser()` | `async getUser(): Promise<UserEntity>` |
+| `const sum = (a, b) =>` | `const sum = (a: number, b: number): number =>` |
+| `execute(input)` | `execute(input: CreateInput): Promise<void>` |
+
+```typescript
+// ❌ WRONG - No explicit return type
+async getById(id: string) {
+  return await this.repository.findById(id)
+}
+
+// ❌ WRONG - Missing Promise<void>
+async delete(id: string) {
+  await this.repository.delete(id)
+}
+
+// ✅ CORRECT - Explicit return types
+async getById(id: string): Promise<UserEntity> {
+  return await this.repository.findById(id)
+}
+
+async delete(id: string): Promise<void> {
+  await this.repository.delete(id)
+}
+
+// ✅ CORRECT - Even for simple functions
+const calculateTotal = (items: OrderItem[]): number => {
+  return items.reduce((sum, item) => sum + item.price, 0)
+}
+```
+
+**Why this matters:**
+
+1. **Self-documentation** — Reading the function signature tells you exactly what to expect
+2. **Earlier error detection** — TypeScript catches mismatches at compile time
+3. **Refactoring safety** — Changing implementation won't accidentally change return type
+4. **API contracts** — Makes interfaces and abstractions crystal clear
+
+**Common return types:**
+
+| Scenario | Return Type |
+|----------|-------------|
+| Async operation that returns data | `Promise<EntityType>` |
+| Async operation with no return | `Promise<void>` |
+| Sync function returning value | `string`, `number`, `boolean`, etc. |
+| Function returning nothing | `void` |
+| Function that may return null | `Promise<Entity \| null>` |
+
+---
+
+### Aggregates: Multiple Entities in the Same Folder
+
+In DDD, an **Aggregate** is a cluster of related entities that are treated as a single unit. When entities belong to the same aggregate, they can live together in the same folder.
+
+**Example: User Aggregate**
+
+If `User` and `Address` are always created/updated together and `Address` has no meaning without a `User`, they belong to the same aggregate:
+
+```
+core/
+└── user/
+    ├── entity/
+    │   ├── user.ts           # Aggregate Root
+    │   └── address.ts        # Belongs to User aggregate
+    ├── repository/
+    │   ├── user.ts           # Main repository
+    │   └── address.ts        # Can have its own repository if needed
+    └── use-cases/
+        ├── user-create.ts    # May create User + Address together
+        └── address-update.ts # Can update Address independently
+```
+
+**When to use aggregates:**
+
+| Scenario | Same Folder (Aggregate) | Separate Folders |
+|----------|-------------------------|------------------|
+| Entities always created together | ✅ | — |
+| Child has no meaning without parent | ✅ | — |
+| Shared business rules | ✅ | — |
+| Entities are independent | — | ✅ |
+| Different lifecycles | — | ✅ |
+
+**Key rules:**
+
+1. **Aggregate Root** — One entity is the "root" (e.g., `User`). External access should go through it
+2. **Transactional consistency** — Operations within an aggregate should be atomic
+3. **Own rules** — Each entity can still have its own validation and behavior
+4. **Separate repositories are OK** — `Address` can have its own repository for specific queries
+
+**Practical example:**
+
+```typescript
+// user-create.ts - Creates User with Address in same transaction
+import { IUsecase } from '@/utils/usecase';
+
+export class UserCreateUseCase implements IUsecase {
+  constructor(
+    private readonly userRepository: IUserRepository,
+    private readonly addressRepository: IAddressRepository,
+  ) {}
+
+  async execute(input: UserCreateInput): Promise<UserCreateOutput> {
+    // Create both as part of the same aggregate operation
+    const user = new UserEntity(input.user);
+    const address = new AddressEntity({ ...input.address, userId: user.id });
+    
+    await this.userRepository.create(user);
+    await this.addressRepository.create(address);
+    
+    return new UserCreateOutput(user);
+  }
+}
+```
+
+**Don't over-engineer:** Not everything needs to be an aggregate. Start simple — if you notice entities are always manipulated together, then group them.
+
+---
+
+## Layer Communication Rules
+
+Understanding which layers can communicate with which is crucial for maintaining the architecture.
+
+### The Golden Rule
+
+> **Dependencies always point inward.** Inner layers never know about outer layers.
+
+### Communication Matrix
+
+| Layer | Can Access | Cannot Access |
+|-------|------------|---------------|
+| **Core (Entities)** | Nothing | Everything else |
+| **Core (Use Cases)** | Entities, Repository Interfaces | Modules, Infra, Libs |
+| **Core (Repositories)** | Entities | Everything else (it's just an interface) |
+| **Modules** | Core (all), Infra, Libs | — |
+| **Infra** | Core Interfaces | Core Use Cases, Modules |
+| **Libs** | Nothing from src/ | — |
+
+### Visual Representation
+
+```
+                    ┌─────────────────────┐
+                    │      MODULES        │
+                    │   (Controllers,     │
+                    │    Adapters)        │
+                    └──────────┬──────────┘
+                               │ uses
+                               ▼
+┌──────────────┐      ┌─────────────────────┐      ┌──────────────┐
+│    INFRA     │◄─────│       CORE          │─────►│     LIBS     │
+│  (Database,  │      │  (Entities, Use     │      │  (Tokens,    │
+│   Cache,     │      │   Cases, Repo       │      │   Events,    │
+│   HTTP)      │      │   Interfaces)       │      │   i18n)      │
+└──────────────┘      └─────────────────────┘      └──────────────┘
+        │                      ▲
+        │                      │
+        └──────────────────────┘
+              implements
+```
+
+### Practical Example
+
+When a user creates a new cat:
+
+```
+1. Controller (modules/cat/controller.ts)
+   └── receives HTTP request
+
+2. Adapter (modules/cat/adapter.ts)
+   └── transforms request, calls use case
+
+3. Use Case (core/cat/use-cases/cat-create.ts)
+   └── contains business logic
+   └── calls repository interface
+
+4. Repository Interface (core/cat/repository/cat.ts)
+   └── defines contract (what, not how)
+
+5. Repository Implementation (modules/cat/repository.ts)
+   └── implements the interface
+   └── uses TypeORM/Mongoose to persist data
+```
+
+The use case never knows if data goes to PostgreSQL, MongoDB, or a mock. It only knows it has a repository that can `create()`, `update()`, `delete()`, and `findById()`.
+
+---
+
+## Project Structure
+
+```
+src/
+├── core/                    # 🧠 Business Logic (Framework-agnostic)
+│   └── [module]/
+│       ├── entity/          # Domain entities with Zod validation
+│       ├── repository/      # Repository interfaces (contracts)
+│       └── use-cases/       # Business rules and operations
+│           └── __tests__/   # Unit tests for use cases
+│
+├── modules/                 # 🔌 NestJS Application Layer
+│   └── [module]/
+│       ├── adapter.ts       # Connects controllers to use cases
+│       ├── controller.ts    # HTTP endpoints
+│       ├── module.ts        # NestJS module definition
+│       ├── repository.ts    # Repository implementation
+│       └── swagger.ts       # API documentation
+│
+├── infra/                   # 🔧 Infrastructure Layer
+│   ├── database/            # Database connections and schemas
+│   ├── cache/               # Redis and in-memory cache
+│   ├── http/                # HTTP client with circuit breaker
+│   ├── logger/              # Pino logger configuration
+│   ├── secrets/             # Environment variables management
+│   └── repository/          # Base repository implementations
+│
+├── libs/                    # 📚 Shared Libraries
+│   ├── event/               # Event emitter system
+│   ├── i18n/                # Internationalization
+│   ├── token/               # JWT management
+│   └── metrics/             # Prometheus metrics
+│
+└── utils/                   # 🛠️ Utility Functions
+    ├── decorators/          # Custom decorators
+    ├── middlewares/         # HTTP middlewares
+    ├── interceptors/        # NestJS interceptors
+    └── filters/             # Exception filters
+```
+
+### Folder Responsibilities
+
+| Folder | Responsibility | Can Import From |
+|--------|---------------|-----------------|
+| `core/` | Pure business logic, entities, use cases, repository contracts | Only itself |
+| `modules/` | NestJS controllers, dependency injection, route handling | `core/`, `infra/`, `libs/` |
+| `infra/` | External services, databases, cache, HTTP clients | `core/` (interfaces only) |
+| `libs/` | Reusable libraries, framework-agnostic utilities | Nothing from `src/` |
+| `utils/` | Helper functions, decorators, middlewares | Anything |
+
+---
+
+## Quick Start
+
+### Prerequisites
+
+- **Node.js** >= 22.0.0
+- **Docker** >= 20.x
 - **Docker Compose** >= 2.x
-- **NVM** (Node Version Manager) - Recommended
 
-### System Requirements
-
-- **OS**: Linux, macOS, or Windows (with WSL2)
-- **Memory**: Minimum 4GB RAM (8GB recommended)
-- **Disk Space**: 2GB free space
-
----
-
-## 🚀 Quick Start
-
-### 1. Clone the Repository
+### 1. Clone and Install
 
 ```bash
 git clone https://github.com/mikemajesty/nestjs-microservice-boilerplate-api.git
 cd nestjs-microservice-boilerplate-api
-```
 
-### 2. Install Node Version
+# Use correct Node version
+nvm install && nvm use
 
-```bash
-# Install the required Node.js version
-nvm install
-
-# Use the installed version
-nvm use
-```
-
-### 3. Install Dependencies
-
-```bash
+# Install dependencies
 npm install
 ```
 
-### 4. Setup Infrastructure
-
-Start all required services (PostgreSQL, MongoDB, Redis, Zipkins, etc.):
+### 2. Start Infrastructure
 
 ```bash
 npm run setup
 ```
 
-This command will:
-- Stop and remove existing containers
-- Clean up volumes
-- Start fresh containers for all services
-- Wait for services to be ready
+This starts PostgreSQL, MongoDB (replica set), Redis, Zipkin, Prometheus, Grafana, and more.
 
-### 5. Run Migrations
-
-Migrations run automatically on application start, but you can run them manually:
+### 3. Run the Application
 
 ```bash
-# Run all migrations
-npm run migration:run
-```
-
-### 6. Start the Application
-
-```bash
-# Development mode with hot-reload
 npm run start:dev
-
-# Debug mode
-npm run start:debug
-
-# Production mode
-npm run start
 ```
 
-The API will be available at: `http://localhost:5000`
+The API will be available at `http://localhost:5000`
 
-### 7. Access Swagger Documentation
-
-Open your browser and navigate to:
-```
-http://localhost:5000/api-docs
-```
-
-### 8. Test the API
+### 4. Test the API
 
 Login with default credentials:
 
@@ -413,1754 +1117,232 @@ curl -X 'POST' \
     "password": "admin"
   }'
 ```
-### Configuration Files
 
-- **`nest-cli.json`** - NestJS CLI configuration
-- **`tsconfig.json`** - TypeScript compiler options
-- **`jest.config.ts`** - Testing configuration
-- **`eslint.config.mjs`** - Linting rules
-- **`.prettierrc`** - Code formatting rules
-- **`docker-compose-infra.yml`** - Infrastructure services
+### 5. Explore the API
 
-### Infrastructure Services
-
-After running `npm run setup`, the following services will be available:
-
-#### Databases
-
-| Service | URL | Credentials | Description |
-|---------|-----|-------------|-------------|
-| **PostgreSQL** | `localhost:5432` | User: `admin`<br>Password: `admin` | Primary relational database |
-| **MongoDB Replica Set** | `localhost:27017` (Primary)<br>`localhost:27018` (Secondary)<br>`localhost:27019` (Tertiary) | User: `admin`<br>Password: `admin123` | 3-node MongoDB replica set for high availability |
-| **Redis** | `localhost:6379` | Password: `redis123` | In-memory cache and session store |
-
-#### Database Management Tools
-
-| Service | URL | Credentials | Description |
-|---------|-----|-------------|-------------|
-| **PgAdmin** | `http://localhost:16543` | Email: `pgadmin@gmail.com`<br>Password: `PgAdmin2019!` | PostgreSQL administration |
-| **Mongo Express** | `http://localhost:8081` | - | MongoDB web interface |
-
-#### Observability Stack
-
-| Service | URL | Credentials | Description |
-|---------|-----|-------------|-------------|
-| **Zipkin** | `http://localhost:9411` | - | Distributed tracing UI |
-| **Prometheus** | `http://localhost:9090` | - | Metrics collection and querying |
-| **Grafana** | `http://localhost:3000` | User: `admin`<br>Password: `grafana123` | Metrics visualization and dashboards |
-| **Loki** | `http://localhost:3100` | - | Log aggregation system |
-| **AlertManager** | `http://localhost:9093` | - | Alert management and routing |
-
-#### Supporting Services
-
-| Service | Ports | Description |
-|---------|-------|-------------|
-| **OpenTelemetry Collector** | `4317` (gRPC)<br>`4318` (HTTP)<br>`9464` (Prometheus) | Receives, processes and exports telemetry data |
-| **Promtail** | - | Ships logs to Loki |
+Open Swagger documentation: `http://localhost:5000/api-docs`
 
 ---
 
-## 🏃 Running the Application
+## User Flow
 
-### Development Mode
+The following diagram illustrates how a request flows through the system:
 
-Hot-reload enabled for rapid development:
+![User Flow Diagram](diagram.png)
 
-```bash
-npm run start:dev
-```
+**Flow explanation:**
 
-### Debug Mode
-
-Attach a debugger to inspect and debug:
-
-```bash
-npm run start:debug
-```
-
-Then attach your IDE debugger to port `9229`.
-
-### Production Mode
-
-Optimized build for production:
-
-```bash
-# Build the application
-npm run build
-
-# Start production server
-npm run start
-```
-
-### Using Docker
-
-Run the entire application stack with Docker Compose:
-
-```bash
-# Start all services
-docker-compose up -d
-
-# View logs
-docker-compose logs -f microservice-api
-
-# Stop services
-docker-compose down
-```
-
-### Using PM2 (Production)
-
-PM2 provides process management and monitoring:
-
-```bash
-# Start with PM2
-npm run start
-
-# Monitor processes
-pm2 monit
-
-# View logs
-pm2 logs
-
-# Restart application
-pm2 restart ecosystem.config.js
-
-# Stop application
-pm2 stop ecosystem.config.js
-```
+1. **Client** sends HTTP request
+2. **Controller** receives and validates input
+3. **Adapter** transforms request and calls use case
+4. **Use Case** executes business logic
+5. **Repository** (via interface) persists/retrieves data
+6. **Response** flows back through the same layers
 
 ---
 
-## 🗄️ Database Migrations
+## Documentation Guides
 
-### PostgreSQL Migrations
+Complete documentation for every aspect of this project is available in the `guides/` folder. Each guide provides in-depth explanations, examples, and best practices.
 
-#### Create a New Migration
+### 📂 [Core](guides/core/)
 
-```bash
-npm run migration-postgres:create
-```
+Business logic layer documentation.
 
-This creates a new migration file in `src/infra/database/postgres/migrations/`.
+| Guide | Description |
+|-------|-------------|
+| [Entity](guides/core/entity.md) | Domain entities with Zod validation |
+| [Use Case](guides/core/usecase.md) | Business rules and operations |
+| [Repository](guides/core/repository.md) | Repository interface patterns |
+| [Test](guides/core/test.md) | Testing use cases |
 
-#### Run Migrations
+### 📂 [Modules](guides/modules/)
 
-```bash
-npm run migration-postgres:run
-```
+NestJS application layer documentation.
 
-#### Revert Last Migration
+| Guide | Description |
+|-------|-------------|
+| [Module](guides/modules/module.md) | NestJS module structure |
+| [Controller](guides/modules/controller.md) | HTTP endpoints |
+| [Adapter](guides/modules/adapter.md) | Use case adapters |
+| [Repository](guides/modules/repository.md) | Repository implementations |
+| [Test](guides/modules/test.md) | Module testing |
 
-```bash
-npm run migration-postgres:undo
-```
+### 📂 [Infrastructure](guides/infra/)
 
-### MongoDB Migrations
+External services and integrations.
 
-#### Create a New Migration
+| Guide | Description |
+|-------|-------------|
+| [Database](guides/infra/database.md) | PostgreSQL and MongoDB setup |
+| [Cache](guides/infra/cache.md) | Redis and in-memory caching |
+| [HTTP](guides/infra/http.md) | HTTP client with circuit breaker |
+| [Logger](guides/infra/logger.md) | Pino logging configuration |
+| [Secrets](guides/infra/secrets.md) | Environment variables |
+| [Repository](guides/infra/repository.md) | Base repository patterns |
+| [Email](guides/infra/email.md) | Email sending with templates |
 
-```bash
-npm run migration-mongo:create
-```
+### 📂 [Libraries](guides/libs/)
 
-Provide a name when prompted (e.g., `createUsersCollection`).
+Shared libraries and utilities.
 
-#### Run Migrations
+| Guide | Description |
+|-------|-------------|
+| [Token](guides/libs/token.md) | JWT management |
+| [Event](guides/libs/event.md) | Event emitter system |
+| [i18n](guides/libs/i18n.md) | Internationalization |
+| [Metrics](guides/libs/metrics.md) | Prometheus metrics |
 
-```bash
-npm run migration-mongo:run
-```
+### 📂 [Decorators](guides/decorators/)
 
-#### Revert Last Migration
+Custom decorators for common patterns.
 
-```bash
-npm run migration-mongo:undo
-```
+| Guide | Description |
+|-------|-------------|
+| [Circuit Breaker](guides/decorators/circuit-breaker.md) | Resilience pattern |
+| [Permission](guides/decorators/permission.md) | Authorization decorator |
+| [Validate Schema](guides/decorators/validate-schema.md) | Input validation |
+| [Log Execution Time](guides/decorators/log-execution-time.md) | Performance logging |
+| [Request Timeout](guides/decorators/request-timeout.md) | Timeout handling |
+| [Process](guides/decorators/process.md) | Background processing |
+| [Thread](guides/decorators/thread.md) | Worker threads |
 
-### Run All Migrations
+### 📂 [Middlewares](guides/middlewares/)
 
-Run both PostgreSQL and MongoDB migrations concurrently:
+HTTP middleware components.
 
-```bash
-npm run migration:run
-```
+| Guide | Description |
+|-------|-------------|
+| [Authentication](guides/middlewares/authentication.middleware.md) | JWT authentication |
+| [Authorization](guides/middlewares/authorization.guard.md) | Role-based access |
+| [HTTP Logger](guides/middlewares/http-logger.interceptor.md) | Request/response logging |
+| [Tracing](guides/middlewares/tracing.interceptor.md) | Distributed tracing |
+| [Exception Handler](guides/middlewares/exception-handler.filter.md) | Error handling |
 
----
+### 📂 [Tests](guides/tests/)
 
-## 🎨 CRUD Scaffolding
+Testing utilities and patterns.
 
-> 🌟 **Powered by [@mikemajesty/microservice-crud](https://www.npmjs.com/package/@mikemajesty/microservice-crud)** - The most powerful NestJS CRUD generator!
+| Guide | Description |
+|-------|-------------|
+| [Mock](guides/tests/mock.md) | Mock data generation |
+| [Containers](guides/tests/containers.md) | Testcontainers setup |
+| [Util](guides/tests/util.md) | Test utilities |
 
-Generate a complete, production-ready CRUD module in seconds with our intelligent CLI tool!
+### 📂 [Setup](guides/setup/)
 
-### 🚀 Why This CLI is Incredible
+Project configuration and setup.
 
-- ⚡ **Lightning Fast**: Complete CRUD in <5 seconds
-- 🎯 **6 Template Types**: CRUD (Postgres/Mongo), Library, Infrastructure, Module, Core
-- 🔄 **Auto-Import**: Automatically registers modules in `app.module.ts`, `libs/module.ts`, or `infra/module.ts`
-- 🏗️ **Clean Architecture**: Generates code following Clean Architecture, DDD, and Hexagonal patterns
-- 🧪 **100% Coverage**: Every generated module includes complete test suites
-- 📝 **Smart Naming**: Handles spaces, underscores, special characters - converts everything to kebab-case
-- 🔒 **Type Safe**: Full TypeScript with Zod validation schemas
-- 📚 **Zero Config**: Works out of the box, no configuration needed
-- 🎨 **Customizable**: All templates are in `src/templates/` - modify to match your patterns
+| Guide | Description |
+|-------|-------------|
+| [Environment](guides/setup/environment.md) | Environment variables |
+| [Docker](guides/setup/docker.md) | Docker configuration |
+| [Husky](guides/setup/husky.md) | Git hooks |
+| [Package](guides/setup/package.md) | NPM scripts |
 
-### Installation
+### 📂 [Deploy](guides/deploy/)
 
-**Local (project-specific):**
-```bash
-npm run scaffold
-```
+Deployment and CI/CD documentation.
 
-**Global (use anywhere):**
-```bash
-npm install -g @mikemajesty/microservice-crud
-microservice-crud
-```
+| Guide | Description |
+|-------|-------------|
+| [Readme](guides/deploy/readme.md) | Complete deployment guide |
+| [Action](guides/deploy/action.md) | GitHub Actions workflows |
 
-### Usage
+### 📂 [Utils](guides/utils/)
 
-```bash
-npm run scaffold
-```
+Utility functions and helpers.
 
-### Interactive Prompts
-
-1. **Choose Database**
-   - `POSTGRES:CRUD` - Generate CRUD for PostgreSQL
-   - `MONGO:CRUD` - Generate CRUD for MongoDB
-   - `LIB` - Generate a library module
-   - `INFRA` - Generate infrastructure component
-   - `MODULE` - Generate a custom module
-   - `CORE` - Generate core domain logic
-
-2. **Enter Module Name**
-   - Use singular form (e.g., `product`, `order`, `customer`)
-   - Follow camelCase or kebab-case naming
-
-### What Gets Generated
-
-For a module named `product`:
-
-```
-src/
-├── core/
-│   └── product/
-│       ├── entity/
-│       │   └── product.ts                    # Domain entity with validation
-│       ├── repository/
-│       │   └── product.ts                    # Repository interface
-│       └── use-cases/
-│           ├── product-create.ts             # Create use case
-│           ├── product-update.ts             # Update use case
-│           ├── product-delete.ts             # Delete use case (soft)
-│           ├── product-get-by-id.ts          # Find by ID use case
-│           ├── product-list.ts               # List with pagination/search
-│           └── __tests__/                    # Unit tests (100% coverage)
-│               ├── product-create.spec.ts
-│               ├── product-update.spec.ts
-│               ├── product-delete.spec.ts
-│               ├── product-get-by-id.spec.ts
-│               └── product-list.spec.ts
-├── modules/
-│   └── product/
-│       ├── adapter.ts                        # Use case adapters
-│       ├── controller.ts                     # REST controller
-│       ├── module.ts                         # NestJS module
-│       ├── repository.ts                     # Repository implementation
-│       └── swagger.ts                        # API documentation
-└── infra/
-    └── database/
-        └── [postgres|mongo]/
-            └── schemas/
-                └── product.ts                # Database schema
-```
-
-### Generated Features
-
-Each CRUD module includes:
-
-✅ **Entity Validation** - Zod schemas for type-safe validation  
-✅ **Pagination** - Offset/limit based pagination  
-✅ **Search** - Full-text search capabilities  
-✅ **Sorting** - Multi-field sorting  
-✅ **Soft Delete** - Logical deletion with `deletedAt`  
-✅ **Filtering** - Dynamic query filters  
-✅ **Swagger Docs** - Auto-generated API documentation  
-✅ **Unit Tests** - 100% test coverage  
-✅ **Type Safety** - Full TypeScript support  
-✅ **Error Handling** - Consistent error responses  
-
-### Example
-
-After generation, the CLI automatically:
-1. ✅ Registers the module in the appropriate file (`app.module.ts`, `libs/module.ts`, or `infra/module.ts`)
-2. ✅ Creates all necessary directories and files
-3. ✅ Generates database schemas with proper indexes
-4. ✅ Sets up complete test infrastructure
-
-**Next steps:**
-1. Run migrations if database schema was created
-2. Access the new endpoints in Swagger UI
-3. Run tests to verify everything works: `npm test`
-
-### 📦 CLI Package
-
-The CRUD generator is available as a standalone NPM package:
-
-🔗 **[@mikemajesty/microservice-crud](https://www.npmjs.com/package/@mikemajesty/microservice-crud)**
-
-- Use it in any NestJS project
-- Fully documented with examples
-- Active maintenance and updates
-- Open source (MIT License)
-
-**Features highlight:**
-- ⚡ 6 different generation templates
-- 🔄 Auto-registration in module files
-- 🧪 Complete test suite generation
-- 📝 Intelligent name sanitization
-- 🏗️ Clean Architecture compliant
-- 🎯 Zero configuration needed
-
-<img loading="lazy" src="ohmy.gif" width="150" height="150"/>
+| Guide | Description |
+|-------|-------------|
+| [Pagination](guides/utils/pagination.md) | Pagination utilities |
+| [Exception](guides/utils/exception.md) | Exception handling |
+| [Crypto](guides/utils/crypto.md) | Encryption utilities |
+| [Date](guides/utils/date.md) | Date manipulation |
+| [Validator](guides/utils/validator.md) | Validation helpers |
+| [Collection](guides/utils/collection.md) | Array utilities |
+| [Search](guides/utils/search.md) | Search utilities |
 
 ---
 
+## Key Features
 
+### Authentication & Authorization
 
-## 🧪 Testing
+- JWT-based authentication with refresh tokens
+- Role-Based Access Control (RBAC)
+- Permission system with granular control
+- Password reset flow with email
 
-This project maintains **100% code coverage** with comprehensive test suites.
+### Multi-Database Support
 
-### Test Structure
-
-```
-test/
-├── initialization.ts           # Global test setup
-└── **/*.spec.ts               # Unit tests
-
-src/
-└── core/
-    └── */use-cases/__tests__/  # Use case tests
-```
-
-### Running Tests
-
-#### Run All Tests
-
-```bash
-npm run test
-```
-
-#### Run Tests with Coverage
-
-```bash
-npm run test:cov
-```
-
-Coverage reports are generated in:
-- `coverage/` - HTML report
-- `coverage/lcov.info` - LCOV format
-- Badges automatically updated in README
-
-#### Debug Tests
-
-```bash
-npm run test:debug
-```
-
-Then attach your debugger to the Node process.
-
-#### Watch Mode
-
-```bash
-npm run test -- --watch
-```
-
-### Test Types
-
-#### Unit Tests
-- **Use Case Tests**: Business logic validation
-- **Entity Tests**: Domain model validation
-- **Service Tests**: Infrastructure service testing
-
-#### Integration Tests
-- **API Tests**: End-to-end API testing with Supertest
-- **Database Tests**: Using Testcontainers for real databases
-- **Cache Tests**: Redis integration testing
-
-### Test Utilities
-
-#### Test Configuration
-
-```typescript
-// test/initialization.ts
-import { TestHelper } from '@/utils/test';
-import { TestContainersHelper } from '@/utils/test/containers';
-
-export const setupTestEnvironment = async () => {
-  await TestContainersHelper.startContainers();
-  await TestHelper.seedDatabase();
-};
-```
----
-
-## 🎯 Load Testing
-
-Comprehensive load testing system using [Artillery.io](.artillery/README.md) for performance validation and capacity planning.
-
-### Quick Start
-
-```bash
-# Smoke test (quick validation)
-make artillery-smoke
-
-# Full load test
-make artillery-local
-
-# Production testing
-make artillery-prod-quick
-```
-
-### Features
-
-- **Environment-specific configurations** for different testing scenarios
-- **Realistic user flow simulation** with authentication
-- **Secure credential management** via environment variables
-- **Template-based config generation** for maintainability
-
-### Configuration
-
-```bash
-# Environment variables (.env)
-ARTILLERY_TARGET=http://localhost:8080
-ARTILLERY_ENV=local
-ARTILLERY_TEST_EMAIL=test@example.com
-ARTILLERY_TEST_PASSWORD=password123
-```
-
-### Test Environments
-
-| Environment | Use Case | Target |
-|-------------|----------|--------|
-| `local` | Development testing | `http://localhost:8080` |
-| `dev` | Development environment | Development server |
-| `preprod` | Pre-production validation | Staging server |
-| `prod` | Production capacity testing | Production server |
-
-### Documentation
-
-📚 **Complete guide**: [Artillery Load Testing Documentation](.artillery/README.md)
-
-- Load test configuration and setup
-- Environment-specific testing scenarios  
-- Security best practices
-- Performance monitoring and metrics
-- Troubleshooting and advanced usage
-
----
-
-Located in `src/utils/tests.ts`:
-- Mock factories
-- Test data generators
-- Common assertions
-- Setup/teardown helpers
-
-### Testcontainers
-
-Automatically spins up isolated Docker containers for integration tests:
-- PostgreSQL container
-- MongoDB container
-- Redis container
-
-Ensures tests run in isolation with clean state.
-
-### Writing Tests
-
-This project follows best practices for test data generation using **ZodMockSchema** to automatically generate type-safe mock data from Zod schemas.
-
-#### Automatic Mock Generation (Recommended)
-
-Use `ZodMockSchema` to generate test data automatically from your entity schemas:
-
-```typescript
-import { ZodMockSchema } from '@mikemajesty/zod-mock-schema';
-import { CatEntitySchema } from '../../entity/cat';
-
-describe('CatCreateUseCase', () => {
-  let useCase: CatCreateUseCase;
-  let repository: jest.Mocked<ICatRepository>;
-
-  beforeEach(() => {
-    repository = createMockRepository();
-    useCase = new CatCreateUseCase(repository);
-  });
-
-  // Generate mock data automatically from schema
-  const mock = new ZodMockSchema(CatEntitySchema);
-  const input = mock.generate();
-
-  it('should create a cat successfully', async () => {
-    repository.create = jest.fn().mockResolvedValue(input);
-    
-    const result = await useCase.execute(input, mockTracing);
-    
-    expect(result).toEqual(input);
-    expect(repository.create).toHaveBeenCalledWith(
-      expect.objectContaining(input)
-    );
-  });
-});
-```
-
-**Why use ZodMockSchema?**
-
-✅ **Type Safety**: Generates data that matches your Zod schemas  
-✅ **Automatic Updates**: Mock data updates when schema changes  
-✅ **Consistency**: Same data structure across all tests  
-✅ **Less Boilerplate**: No need to manually create test fixtures  
-✅ **Valid Data**: Generated data always passes schema validation  
-
-**Documentation**: For advanced usage and customization, see [ZodMockSchema Documentation](https://github.com/mikemajesty/zod-mock-schema)
-
-#### Manual Test Data (Alternative)
-
-For specific test cases where you need custom data:
-
-```typescript
-it('should create a product successfully', async () => {
-  const input = { name: 'Test Product', price: 99.99 };
-  const result = await useCase.execute(input);
-  
-  expect(result).toMatchObject(input);
-  expect(repository.create).toHaveBeenCalledWith(
-    expect.objectContaining(input)
-  );
-});
-```
-
-### Code Coverage Badges
-
-Coverage badges are automatically generated and updated in the README after running `npm run test:cov`.
-
----
-
-## 📚 API Documentation
-
-### Interactive API Documentation
-
-This project uses **TypeSpec** to generate OpenAPI specifications, providing interactive API documentation via Swagger UI.
-
-#### Access Swagger UI
-
-Open your browser and navigate to:
-
-```
-http://localhost:5000/api-docs
-```
-
-The Swagger UI provides:
-- Interactive endpoint testing
-- Request/response schemas
-- Authentication flows
-- Real-time API exploration
-
-#### OpenAPI Specification
-
-The OpenAPI 3.0 specification is auto-generated from TypeSpec definitions and available at:
-
-```yaml
-api-spec/tsp-output/@typespec/openapi3/openapi.api.1.0.yaml
-```
-
-### API Endpoints Overview
-
-All API endpoints follow a versioned structure: `/api/{version}/resource`
-
-#### Authentication
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/v1/login` | User login |
-| POST | `/api/v1/logout` | User logout |
-| POST | `/api/v1/forgot-password` | Request password reset |
-| POST | `/api/v1/reset-password` | Reset password with token |
-
-#### Users
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/v1/users` | List users (paginated) |
-| GET | `/api/v1/users/:id` | Get user by ID |
-| POST | `/api/v1/users` | Create new user |
-| PUT | `/api/v1/users/:id` | Update user |
-| DELETE | `/api/v1/users/:id` | Delete user (soft) |
-
-#### Roles
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/v1/roles` | List roles |
-| GET | `/api/v1/roles/:id` | Get role by ID |
-| POST | `/api/v1/roles` | Create role |
-| PUT | `/api/v1/roles/:id` | Update role |
-| DELETE | `/api/v1/roles/:id` | Delete role |
-
-#### Permissions
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/v1/permissions` | List permissions |
-| GET | `/api/v1/permissions/:id` | Get permission by ID |
-| POST | `/api/v1/permissions` | Create permission |
-| PUT | `/api/v1/permissions/:id` | Update permission |
-| DELETE | `/api/v1/permissions/:id` | Delete permission |
-
-#### Health
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/health` | Application health check |
-| GET | `/health/database` | Database connectivity |
-| GET | `/health/cache` | Cache availability |
-
-### Request Examples
-
-#### Login
-
-```bash
-curl -X 'POST' \
-  'http://localhost:5000/api/v1/login' \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "email": "admin@admin.com",
-    "password": "admin"
-  }'
-```
-
-#### List Users with Pagination
-
-```bash
-curl -X 'GET' \
-  'http://localhost:5000/api/v1/users?limit=10&offset=0&sort=createdAt:desc' \
-  -H 'Authorization: Bearer YOUR_TOKEN'
-```
-
-#### Create a User
-
-```bash
-curl -X 'POST' \
-  'http://localhost:5000/api/v1/users' \
-  -H 'Content-Type: application/json' \
-  -H 'Authorization: Bearer YOUR_TOKEN' \
-  -d '{
-    "name": "John Doe",
-    "email": "john@example.com",
-    "password": "securePassword123",
-    "roles": ["user"]
-  }'
-```
-
-### Response Format
-
-#### Success Response
-
-Success responses return the data directly from use cases without additional wrapping:
-
-```json
-{
-  "id": "123e4567-e89b-12d3-a456-426614174000",
-  "name": "John Doe",
-  "email": "john@example.com",
-  "createdAt": "2024-12-08T00:00:00.000Z"
-}
-```
-
-For list endpoints with pagination:
-
-```json
-{
-  "docs": [
-    {
-      "id": "123e4567-e89b-12d3-a456-426614174000",
-      "name": "John Doe",
-      "email": "john@example.com"
-    }
-  ],
-  "page": 1,
-  "limit": 10,
-  "total": 100
-}
-```
-
-#### Error Response
-
-Error responses follow a standardized structure:
-
-```json
-{
-  "error": {
-    "code": 400,
-    "traceid": "abc-def-123",
-    "context": "UserModule",
-    "message": [
-      "email: Invalid email format",
-      "name: String must contain at least 1 character(s)"
-    ],
-    "timestamp": "08/12/2024 10:30:45",
-    "path": "/api/v1/users"
-  }
-}
-```
-
-**Error Response Fields:**
-- `code` - HTTP status code
-- `traceid` - Request trace ID for debugging
-- `context` - Module/context where the error occurred
-- `message` - Array of error messages
-- `timestamp` - Error timestamp in configured format
-- `path` - Request path where error occurred
-
----
-
-## 📖 Documentation
-
-This project uses **TypeSpec** as a modern, type-safe way to define API contracts and generate OpenAPI specifications.
-
-### What is TypeSpec?
-
-TypeSpec is a language for describing cloud service APIs and generating other API description languages, client and service code, documentation, and other assets. It provides excellent IDE support with auto-completion and type checking.
-
-### API Specification Structure
-
-```
-api-spec/
-├── README.md              # TypeSpec documentation overview
-├── package.json           # TypeSpec dependencies
-├── tspconfig.yaml         # TypeSpec configuration
-├── docker-compose.yml     # Documentation services
-├── src/
-│   ├── main.tsp          # Main TypeSpec entry point
-│   ├── modules/          # API module specifications
-│   │   ├── cat/          # Example: Cat module
-│   │   │   ├── controller.tsp
-│   │   │   ├── model.tsp
-│   │   │   └── exception.tsp
-│   │   ├── user/
-│   │   ├── role/
-│   │   ├── permission/
-│   │   ├── login/
-│   │   ├── logout/
-│   │   ├── reset-password/
-│   │   └── health/
-│   └── utils/
-│       ├── exceptions.tsp    # Common exceptions
-│       ├── model.tsp         # Common models
-│       └── versioning.tsp    # API versioning
-└── tsp-output/           # Generated OpenAPI specs
-    └── @typespec/
-        └── openapi3/
-            └── openapi.api.1.0.yaml
-```
-
-### Working with TypeSpec Documentation
-
-#### 1. Install Dependencies
-
-```bash
-cd docs
-npm install
-# or
-yarn doc:install
-```
-
-#### 2. Start Documentation Development Server
-
-This starts a live-reload documentation server:
-
-```bash
-yarn start
-```
-
-This will:
-- Compile TypeSpec files on changes
-- Serve Swagger UI with live reload
-- Watch for file changes automatically
-
-#### 3. Compile TypeSpec to OpenAPI
-
-To manually compile TypeSpec specifications:
-
-```bash
-cd docs
-yarn doc:compiler
-```
-
-Generated files will be in `api-spec/tsp-output/@typespec/openapi3/`
-
-### Adding New API Documentation
-
-#### Step 1: Create Module Structure
-
-For a new module (e.g., `product`), create these files in `api-spec/src/modules/product/`:
-
-**controller.tsp** - Defines the API endpoints
-
-```typescript
-import "@typespec/http";
-import "@typespec/rest";
-import "@typespec/openapi3";
-import "../../utils/model.tsp";
-import "./model.tsp";
-import "./exception.tsp";
-
-using TypeSpec.Http;
-using Utils.Model;
-
-namespace api.Product;
-
-@tag("Product")
-@route("api/{version}/products")
-@useAuth(BearerAuth)
-interface ProductController {
-  @post
-  @doc("Create product")
-  @returnsDoc("Product created successfully")
-  create(
-    ...VersionParams,
-    @body body: CreateInput
-  ): CreateOutput | CreateValidationException;
-
-  @get
-  @doc("List products")
-  @returnsDoc("Products retrieved successfully")
-  list(
-    ...VersionParams,
-    ...ListQueryInput
-  ): ListOutput;
-}
-```
-
-**model.tsp** - Defines data models
-
-```typescript
-import "../../utils/model.tsp";
-
-using Utils.Model;
-
-namespace api.Product;
-
-model CreateInput {
-  name: string;
-  price: decimal;
-  description?: string;
-}
-
-model CreateOutput {
-  id: string;
-  name: string;
-  price: decimal;
-  description?: string;
-  createdAt: utcDateTime;
-}
-
-model ListOutput is PaginatedResponse<CreateOutput>;
-```
-
-**exception.tsp** - Defines error responses
-
-```typescript
-import "../../utils/exceptions.tsp";
-
-using Utils.Exceptions;
-
-namespace api.Product;
-
-model CreateValidationException is Exception<400, "Validation failed">;
-model NotFoundException is Exception<404, "Product not found">;
-```
-
-#### Step 2: Import in Main File
-
-Add your module to `api-spec/src/main.tsp`:
-
-```typescript
-import "./modules/product/controller.tsp";
-```
-
-#### Step 3: Compile and Test
-
-```bash
-cd docs
-yarn doc:compiler
-```
-
-Check the generated OpenAPI spec in `api-spec/tsp-output/@typespec/openapi3/openapi.api.1.0.yaml`
-
-### TypeSpec Best Practices
-
-#### Consistency
-- Follow the existing module structure
-- Use consistent naming conventions (PascalCase for models, camelCase for properties)
-- Leverage common models from `utils/model.tsp`
-- Reuse exception definitions from `utils/exceptions.tsp`
-
-#### Type Safety
-- Define explicit types for all properties
-- Use TypeSpec's built-in types (`string`, `int32`, `decimal`, `utcDateTime`)
-- Leverage models for request/response validation
-- Use unions for multiple possible responses
-
-#### Documentation
-- Add `@doc` decorator for endpoint descriptions
-- Use `@returnsDoc` for response descriptions
-- Include `@example` for complex models
-- Add `@summary` for concise endpoint summaries
-
-#### Versioning
-- All endpoints use the `{version}` path parameter
-- Leverage the `VersionParams` model from `utils/versioning.tsp`
-- Follow semantic versioning for API changes
-
-### TypeSpec vs Swagger Decorators
-
-Why TypeSpec instead of NestJS Swagger decorators?
-
-✅ **Type Safety**: TypeSpec provides compile-time type checking  
-✅ **Separation of Concerns**: API contracts separated from implementation  
-✅ **Better DX**: Superior IDE support with IntelliSense  
-✅ **Reusability**: Shared models and types across endpoints  
-✅ **Tooling**: Auto-generation of clients, mocks, and documentation  
-✅ **Standard**: OpenAPI 3.0 compliant output  
-✅ **Maintainability**: Single source of truth for API contracts  
-
-### Additional Resources
-
-- [TypeSpec Official Documentation](https://typespec.io/docs)
-- [TypeSpec Playground](https://typespec.io/playground)
-- [OpenAPI 3.0 Specification](https://swagger.io/specification/)
-- [TypeSpec REST Library](https://typespec.io/docs/libraries/rest)
-- [TypeSpec HTTP Library](https://typespec.io/docs/libraries/http)
-- [TypeSpec Versioning](https://typespec.io/docs/libraries/versioning)
-
----
-
-## 📊 Observability
-
-### Distributed Tracing
-
-#### Zipkin UI
-
-Access Zipkin for distributed tracing:
-
-```
-http://localhost:9411
-```
-
-#### Tracing Features
-
-- **Automatic Instrumentation**: HTTP requests, database queries
-- **Custom Spans**: Create application-specific spans
-- **Context Propagation**: Trace requests across services
-- **Performance Analysis**: Identify bottlenecks
-
-#### Using Tracing in Code
-
-See [TRACING.md](TRACING.md) for detailed documentation.
-
-Basic example:
-
-```typescript
-// In your use case
-async execute(input: Input, httpService: IHttpAdapter): Promise<Output> {
-  const http = httpService.instance();
-  const span = httpService.tracing.createSpan('external-api-call');
-  
-  try {
-    span.setTag(httpService.tracing.tags.PEER_SERVICE, 'external-api');
-    const result = await http.get('https://api.example.com/data');
-    span.finish();
-    return result;
-  } catch (error) {
-    span.setTag(httpService.tracing.tags.ERROR, true);
-    span.setTag('message', error.message);
-    span.finish();
-    throw error;
-  }
-}
-```
-
-### Logging
-
-#### Log Levels
-
-- **fatal**: System is unusable
-- **error**: Error events
-- **warn**: Warning messages
-- **info**: Informational messages
-- **debug**: Debug messages
-- **trace**: Very detailed trace messages
-
-#### Structured Logging
-
-All logs are JSON-formatted for easy parsing:
-
-```json
-{
-  "level": "info",
-  "time": 1702000000000,
-  "msg": "User created",
-  "userId": "123e4567-e89b-12d3-a456-426614174000",
-  "correlationId": "abc-def-ghi",
-  "service": "microservice-api"
-}
-```
-
-#### Request Logging
-
-Automatic logging of all HTTP requests:
-- Request method and URL
-- Request headers
-- Request body
-- Response status
-- Response time
-- User information
-
-#### Viewing Logs
-
-```bash
-# Application logs
-tail -f logs/app.log
-
-# Error logs only
-tail -f logs/error.log
-
-# With PM2
-pm2 logs microservice-api
-
-# With Docker
-docker-compose logs -f microservice-api
-```
-
-#### Loki for Log Aggregation
-
-Logs are automatically shipped to Loki for centralized log aggregation:
-
-```
-http://localhost:3100
-```
-
-View logs in Grafana with Loki data source pre-configured.
-
-### Metrics
-
-Metrics are exposed in Prometheus format:
-
-```
-http://localhost:5000/metrics
-```
-
-#### Prometheus UI
-
-Access Prometheus for metrics visualization:
-
-```
-http://localhost:9090
-```
-
-#### Grafana Dashboard
-
-Access Grafana for advanced monitoring dashboards:
-
-```
-http://localhost:3000
-```
-
-Default credentials:
-- Username: `admin`
-- Password: `grafana123`
-
-#### Available Metrics
-
-- **HTTP Metrics**
-  - Request count
-  - Request duration (histogram)
-  - Response status codes
-  - Active requests
-
-- **Database Metrics**
-  - Query count
-  - Query duration
-  - Connection pool status
-
-- **Cache Metrics**
-  - Hit/miss ratio
-  - Cache size
-  - Eviction count
-
-- **Application Metrics**
-  - Memory usage
-  - CPU usage
-  - Event loop lag
-
-### Health Checks
-
-#### Liveness Probe
-
-```bash
-curl http://localhost:5000/health
-```
-
-Response:
-```json
-{
-  "status": "ok",
-  "info": {
-    "database": { "status": "up" },
-    "cache": { "status": "up" }
-  },
-  "details": {
-    "database": { "status": "up" },
-    "cache": { "status": "up" }
-  }
-}
-```
-
-#### Readiness Probe
-
-Checks if the application is ready to receive traffic:
-- Database connectivity
-- Cache availability
-- Required migrations applied
-
----
-
-## 🎯 Code Quality
-
-### Linting
-
-#### Run Linter
-
-```bash
-npm run lint
-```
-
-#### Auto-fix Issues
-
-```bash
-npm run lint -- --fix
-```
-
-#### ESLint Configuration
-
-Located in `eslint.config.mjs`:
-- TypeScript rules
-- NestJS best practices
-- Security rules
-- Import sorting
-- No lodash/underscore (prefer native JS)
-
-### Code Formatting
-
-#### Format Code
-
-```bash
-npm run prettier
-```
-
-#### Prettier Configuration
-
-Located in `.prettierrc`:
-- Single quotes
-- No semicolons
-- 100 character line width
-- 2 space indentation
-
-### Git Hooks
-
-#### Pre-commit Hook (Husky)
-
-Automatically runs on `git commit`:
-- Lints staged files
-- Runs type checking
-- Validates commit message format
-
-#### Lint-staged
-
-Only lints files staged for commit:
-
-```json
-{
-  "*.{ts,js}": ["eslint --fix"],
-  "*.json": ["prettier --write"]
-}
-```
-
-### Commit Message Convention
-
-This project uses a **hybrid approach** based on [Conventional Commits](https://www.conventionalcommits.org/) with **mandatory scopes** enforced by Commitlint.
-
-```
-<type>(<scope>): <subject>
-
-<body>
-
-<footer>
-```
-
-**Important**: The `<scope>` is **mandatory** and must be one of the allowed values.
-
-#### Types
-
-- `feat`: New feature
-- `fix`: Bug fix
-- `docs`: Documentation changes
-- `style`: Code style changes (formatting)
-- `refactor`: Code refactoring
-- `perf`: Performance improvements
-- `test`: Adding or updating tests
-- `build`: Build system changes
-- `ci`: CI/CD changes
-- `chore`: Other changes
-
-#### Allowed Scopes
-
-Scopes are **dynamically generated** from the project structure (`src/` directories) plus the following fixed scopes:
-
-**Project Structure Scopes**: Automatically includes all directory names from:
-- `src/core/*` - Core domain modules (user, role, permission, cat, etc.)
-- `src/infra/*` - Infrastructure components (database, cache, http, email, etc.)
-- `src/libs/*` - Shared libraries (token, event, i18n, etc.)
-- `src/modules/*` - Application modules
-- `src/utils/*` - Utility directories
-
-**Fixed Scopes**:
-- `remove` - Removing files or features
-- `revert` - Reverting previous commits
-- `conflict` - Resolving merge conflicts
-- `config` - Configuration changes
-- `entity` - Entity-related changes
-- `utils` - Utility functions
-- `deps` - Dependency updates
-- `modules` - Module-level changes
-- `test` - Test files
-- `migration` - Database migrations
-- `core` - Core layer changes
-- `swagger` - API documentation
-- `usecases` - Use case implementations
-
-#### Scope Validation
-
-The scope is validated on commit using Commitlint configuration in [commitlint.config.js](commitlint.config.js). Invalid scopes will **reject the commit**.
-
-To see all available scopes, check the project structure or run:
-```bash
-node -e "console.log(require('./commitlint.config.js').rules['scope-enum'][2])"
-```
-
-#### Examples
-
-```bash
-feat(user): add email verification feature
-
-fix(auth): resolve token refresh issue
-
-docs(readme): update API documentation section
-
-test(user): add unit tests for user creation use case
-
-refactor(database): optimize connection pooling
-
-chore(deps): update nestjs to version 11.x
-```
-
-#### Invalid Examples ❌
-
-```bash
-# Missing scope
-feat: add new feature
-
-# Invalid scope
-feat(invalid-scope): add new feature
-
-# These will be rejected by Commitlint
-```
-
-### Continuous Integration
-
-#### Semantic Release
-
-Automatic versioning and changelog generation based on commit messages:
-- Analyzes commits
-- Determines version bump (major/minor/patch)
-- Generates changelog
-- Creates GitHub release
-- Publishes to npm (if configured)
-
----
-
-## 📁 Project Structure
-
-```
-nestjs-microservice-boilerplate-api/
-├── .artillery/                 # Load testing configuration
-├── .docker/                    # Docker-related files
-├── .github/                    # GitHub Actions workflows
-├── .husky/                     # Git hooks
-├── .vscode/                    # VS Code settings
-├── api-spec/                   # API specifications (TypeSpec)
-├── scripts/                    # Utility scripts
-├── src/
-│   ├── core/                   # 🎯 Business Logic Layer
-│   │   ├── cat/                # Example domain: Cat
-│   │   │   ├── entity/         # Domain entities
-│   │   │   │   └── cat.ts
-│   │   │   ├── repository/     # Repository interfaces
-│   │   │   │   └── cat.ts
-│   │   │   └── use-cases/      # Business use cases
-│   │   │       ├── cat-create.ts
-│   │   │       ├── cat-update.ts
-│   │   │       ├── cat-delete.ts
-│   │   │       ├── cat-get-by-id.ts
-│   │   │       ├── cat-list.ts
-│   │   │       └── __tests__/  # Use case tests
-│   │   ├── user/               # User domain
-│   │   ├── role/               # Role domain
-│   │   ├── permission/         # Permission domain
-│   │   └── reset-password/     # Password reset domain
-│   │
-│   ├── infra/                  # 🔧 Infrastructure Layer
-│   │   ├── database/           # Database implementations
-│   │   │   ├── mongo/          # MongoDB setup
-│   │   │   │   ├── config.ts
-│   │   │   │   ├── migrations/
-│   │   │   │   ├── schemas/
-│   │   │   │   └── service.ts
-│   │   │   └── postgres/       # PostgreSQL setup
-│   │   │       ├── config.ts
-│   │   │       ├── migrations/
-│   │   │       ├── schemas/
-│   │   │       └── service.ts
-│   │   ├── cache/              # Cache implementations
-│   │   │   ├── redis/
-│   │   │   └── memory/
-│   │   ├── http/               # HTTP client service
-│   │   ├── email/              # Email service
-│   │   │   ├── service.ts
-│   │   │   └── templates/      # Email templates
-│   │   ├── logger/             # Logging service
-│   │   ├── secrets/            # Secrets management
-│   │   └── repository/         # Generic repository implementations
-│   │
-│   ├── libs/                   # 📚 Shared Libraries
-│   │   ├── token/              # JWT token service
-│   │   ├── event/              # Event emitter
-│   │   └── i18n/               # Internationalization
-│   │       ├── languages/
-│   │       │   ├── en/
-│   │       │   └── pt/
-│   │       └── service.ts
-│   │
-│   ├── modules/                # 🚀 Application Modules
-│   │   ├── cat/                # Cat module
-│   │   │   ├── adapter.ts      # Use case adapters
-│   │   │   ├── controller.ts   # REST controller
-│   │   │   ├── module.ts       # NestJS module
-│   │   │   ├── repository.ts   # Repository implementation
-│   │   │   └── swagger.ts      # Swagger documentation
-│   │   ├── user/               # User module
-│   │   ├── role/               # Role module
-│   │   ├── permission/         # Permission module
-│   │   ├── login/              # Login module
-│   │   ├── logout/             # Logout module
-│   │   ├── reset-password/     # Password reset module
-│   │   └── health/             # Health check module
-│   │
-│   ├── observables/            # 👁️ Cross-cutting Concerns
-│   │   ├── filters/            # Exception filters
-│   │   │   └── http-exception.filter.ts
-│   │   ├── guards/             # Route guards
-│   │   │   └── auth.guard.ts
-│   │   ├── interceptors/       # Request/Response interceptors
-│   │   │   ├── http-logger.interceptor.ts
-│   │   │   ├── tracing.interceptor.ts
-│   │   │   ├── metrics.interceptor.ts
-│   │   │   └── request-timeout.interceptor.ts
-│   │   └── middlewares/        # Express middlewares
-│   │       └── authentication.middleware.ts
-│   │
-│   ├── utils/                  # 🛠️ Utility Functions
-│   │   ├── decorators/         # Custom decorators
-│   │   │   ├── role.decorator.ts
-│   │   │   ├── validate-schema.decorator.ts
-│   │   │   └── request-timeout.decorator.ts
-│   │   ├── api-spec/           # API specification utilities
-│   │   │   ├── swagger.ts
-│   │   │   └── data/           # Swagger example data
-│   │   ├── entity.ts           # Base entity class
-│   │   ├── exception.ts        # Custom exceptions
-│   │   ├── pagination.ts       # Pagination utilities
-│   │   ├── search.ts           # Search utilities
-│   │   ├── sort.ts             # Sort utilities
-│   │   ├── tracing.ts          # Tracing utilities
-│   │   ├── tests.ts            # Test utilities
-│   │   └── validator.ts        # Zod validation helpers
-│   │
-│   ├── app.module.ts           # Root application module
-│   └── main.ts                 # Application entry point
-│
-├── test/                       # 🧪 Test Configuration
-│   └── initialization.ts       # Global test setup
-├── .env                        # Environment variables
-├── .nvmrc                      # Node version
-├── commitlint.config.js        # Commit lint configuration
-├── docker-compose.yml          # Main docker compose
-├── docker-compose-infra.yml    # Infrastructure services
-├── Dockerfile                  # Application dockerfile
-├── ecosystem.config.js         # PM2 configuration
-├── eslint.config.mjs           # ESLint configuration
-├── jest.config.ts              # Jest configuration
-├── nest-cli.json               # NestJS CLI configuration
-├── package.json                # Dependencies and scripts
-├── tsconfig.json               # TypeScript configuration
-└── README.md                   # This file
-```
-
-### Layer Descriptions
-
-#### Core Layer (`src/core/`)
-Contains the business logic, independent of frameworks and external services. Includes:
-- **Entities**: Domain models with business rules
-- **Use Cases**: Application-specific business operations
-- **Repository Interfaces**: Abstract data access contracts
-
-#### Infrastructure Layer (`src/infra/`)
-Implements external concerns and technical details:
-- Database connections and schemas
-- Third-party API clients
-- Caching mechanisms
-- Email services
-- Logging infrastructure
-
-#### Libraries Layer (`src/libs/`)
-Reusable, framework-agnostic libraries:
-- Token management
-- Event handling
-- Internationalization
-
-#### Modules Layer (`src/modules/`)
-NestJS modules that wire everything together:
-- Controllers for HTTP endpoints
-- Dependency injection configuration
-- Route definitions
-- Swagger documentation
-
-#### Observables Layer (`src/observables/`)
-Cross-cutting concerns applied to the entire application:
-- Authentication and authorization
-- Request/response logging
-- Error handling
-- Performance monitoring
-
----
-
-## 🚀 Advanced Usage
-
-### Custom Decorators
-
-#### Role-Based Authorization
-
-```typescript
-import { Roles } from '@/utils/decorators';
-
-@Controller('admin')
-export class AdminController {
-  @Get('users')
-  @Roles('admin', 'superadmin')
-  async listUsers() {
-    // Only accessible by admin and superadmin roles
-  }
-}
-```
-
-#### Request Timeout
-
-```typescript
-import { RequestTimeout } from '@/utils/decorators';
-
-@Controller('data')
-export class DataController {
-  @Get('export')
-  @RequestTimeout(60000) // 60 seconds
-  async exportLargeDataset() {
-    // Long-running operation
-  }
-}
-```
-
-#### Schema Validation
-
-```typescript
-import { ValidateSchema } from '@/utils/decorators';
-import { z } from 'zod';
-
-const CreateProductSchema = z.object({
-  name: z.string().min(1).max(200),
-  price: z.number().positive(),
-  description: z.string().optional()
-});
-
-@Controller('products')
-export class ProductController {
-  @Post()
-  @ValidateSchema(CreateProductSchema)
-  async create(@Body() data: z.infer<typeof CreateProductSchema>) {
-    // Data is validated and type-safe
-  }
-}
-```
-
-### Circuit Breaker Pattern
-
-Protect your services from cascading failures:
-
-```typescript
-import CircuitBreaker from 'opossum';
-
-const options = {
-  timeout: 3000, // If function takes longer than 3 seconds, trigger a failure
-  errorThresholdPercentage: 50, // Open circuit if 50% of requests fail
-  resetTimeout: 30000 // Try again after 30 seconds
-};
-
-const breaker = new CircuitBreaker(asyncFunction, options);
-
-breaker.fire()
-  .then(result => console.log(result))
-  .catch(err => console.error(err));
-```
-
-### Event-Driven Architecture
-
-Use the event emitter for decoupled communication:
-
-```typescript
-// Emit an event
-this.eventEmitter.emit('user.created', {
-  userId: user.id,
-  email: user.email
-});
-
-// Listen to an event
-@OnEvent('user.created')
-handleUserCreated(payload: { userId: string; email: string }) {
-  // Send welcome email
-  this.emailService.sendWelcome(payload.email);
-}
-```
-
-### Load Testing
-
-Run load tests with Artillery:
-
-```bash
-npm run test:load
-```
-
-Configure tests in `.artillery/config.yaml`.
-
-### Database Connection Pooling
-
-PostgreSQL pool configuration:
-
-```typescript
-// In postgres config
-{
-  host: process.env.POSTGRES_HOST,
-  port: parseInt(process.env.POSTGRES_PORT),
-  poolSize: 20,
-  maxQueryExecutionTime: 1000,
-  extra: {
-    max: 20, // Maximum pool size
-    min: 5,  // Minimum pool size
-    idleTimeoutMillis: 30000
-  }
-}
-```
-
-### Caching Strategies
-
-#### Cache-Aside Pattern
-
-```typescript
-async getUser(id: string): Promise<User> {
-  // Try cache first
-  const cached = await this.cache.get(`user:${id}`);
-  if (cached) return cached;
-
-  // Cache miss - fetch from database
-  const user = await this.repository.findById(id);
-  
-  // Update cache
-  await this.cache.set(`user:${id}`, user, 3600);
-  
-  return user;
-}
-```
-
-#### Cache Invalidation
-
-```typescript
-async updateUser(id: string, data: UpdateUserDTO): Promise<User> {
-  const user = await this.repository.update(id, data);
-  
-  // Invalidate cache
-  await this.cache.del(`user:${id}`);
-  
-  return user;
-}
-```
-
-### Secrets Management
-
-Access secrets securely:
-
-```typescript
-import { ISecretsAdapter } from '@/infra/secrets';
-
-constructor(private readonly secrets: ISecretsAdapter) {}
-
-async someMethod() {
-  const apiKey = await this.secrets.get('EXTERNAL_API_KEY');
-  // Use the secret
-}
-```
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Please follow these guidelines:
-
-### Getting Started
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Make your changes
-4. Run tests: `npm run test`
-5. Run linter: `npm run lint`
-6. Commit your changes: `git commit -m 'feat: add amazing feature'`
-7. Push to the branch: `git push origin feature/amazing-feature`
-8. Open a Pull Request
-
-### Commit Message Guidelines
-
-Follow [Conventional Commits](./commitlint.config.js):
-- Use `feat:` for new features
-- Use `fix:` for bug fixes
-- Use `docs:` for documentation
-- Use `test:` for tests
-- Use `refactor:` for code refactoring
-
-### Code Style
-
-- Follow the existing code style
-- Use TypeScript strict mode
-- Write unit tests for new features
-- Update documentation as needed
-- Maintain 100% test coverage
-
-### Pull Request Process
-
-1. Update the README.md with details of changes if applicable
-2. Update the CHANGELOG.md following Keep a Changelog format
-3. Ensure all tests pass
-4. Request review from maintainers
-5. Squash commits before merging
-
----
-
-## 📄 License
-
-This project is licensed under the **MIT License** - see the [LICENSE](https://opensource.org/licenses/MIT) file for details.
-
-### MIT License Summary
-
-```
-Copyright (c) 2024
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```
-
----
-
-## 👥 Contributors
-
-Thanks to all contributors who have helped make this project better!
-
-<table>
-  <tr>
-    <td align="center">
-      <a href="https://github.com/mikemajesty">
-        <img src="https://avatars1.githubusercontent.com/u/11630212?s=460&v=4" width="100px;" alt="Mike Lima"/>
-        <br />
-        <sub><b>Mike Lima</b></sub>
-      </a>
-      <br />
-      <a href="https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commits?author=mikemajesty" title="Code">💻</a>
-      <a href="#maintenance-mikemajesty" title="Maintenance">🚧</a>
-    </td>
-  </tr>
-</table>
-
----
-
-## 📞 Support
-
-- **API Specifications**: [api-spec/README.md](api-spec/README.md)
-- **Issues**: [GitHub Issues](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/discussions)
-
----
-
-## 🎓 Resources
-
-### Architecture Patterns
-- [Onion Architecture](https://jeffreypalermo.com/2008/07/the-onion-architecture-part-1/)
-- [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
-- [Hexagonal Architecture](https://alistair.cockburn.us/hexagonal-architecture/)
-- [Domain-Driven Design](https://martinfowler.com/bliki/DomainDrivenDesign.html)
-
-### NestJS
-- [Official Documentation](https://docs.nestjs.com/)
-- [NestJS Recipes](https://docs.nestjs.com/recipes/sql-typeorm)
-- [NestJS Best Practices](https://github.com/nestjs/nest/tree/master/sample)
+- **PostgreSQL** with TypeORM for relational data
+- **MongoDB** with Mongoose (3-node replica set)
+- Automatic migrations
 
 ### Observability
-- [OpenTelemetry](https://opentelemetry.io/)
-- [Zipkins Tracing](https://www.Zipkinstracing.io/)
-- [Prometheus](https://prometheus.io/)
+
+- **Distributed Tracing** with OpenTelemetry and Zipkin
+- **Logging** with Pino and Loki
+- **Metrics** with Prometheus and Grafana
+- **Health Checks** for all services
+
+### Developer Experience
+
+- **CRUD Scaffolding** — generate complete modules with `npm run scaffold`
+- **100% Test Coverage** — comprehensive test suites
+- **Type Safety** — full TypeScript with Zod validation
+- **API Documentation** — Swagger UI with TypeSpec
+
+### Resilience
+
+- **Circuit Breaker** pattern for external calls
+- **Retry Logic** with exponential backoff
+- **Request Timeout** handling
+
+---
+
+## Tech Stack
+
+| Category | Technologies |
+|----------|-------------|
+| **Framework** | NestJS 11.x, TypeScript 5.9.3 |
+| **Databases** | PostgreSQL (TypeORM), MongoDB (Mongoose), Redis |
+| **Observability** | OpenTelemetry, Zipkin, Pino, Prometheus, Grafana, Loki |
+| **Testing** | Jest, Supertest, Testcontainers |
+| **Code Quality** | ESLint, Prettier, Husky, Commitlint |
+| **DevOps** | Docker, Docker Compose, PM2, GitHub Actions |
+| **Documentation** | Swagger, TypeSpec |
+
+---
+
+## Contributing
+
+Contributions are welcome! Please read our contributing guidelines before submitting a PR.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes using conventional commits (`git commit -m 'feat: add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+---
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## Support
+
+- ⭐ Star this repository if you find it useful
+- 🐛 [Report bugs](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/issues)
+- 💡 [Request features](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/issues)
+- 📖 [Read the guides](guides/)
 
 ---
 
 <div align="center">
-  <strong>⭐ If you find this project useful, please consider giving it a star! ⭐</strong>
-  <br><br>
-  <sub>Built with ❤️ by <a href="https://github.com/mikemajesty">Mike Lima</a></sub>
+  <p>Built with ❤️ by <a href="https://github.com/mikemajesty">Mike Lima</a></p>
 </div>
