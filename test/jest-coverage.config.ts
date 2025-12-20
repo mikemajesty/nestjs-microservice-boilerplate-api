@@ -1,11 +1,12 @@
+import { readFileSync } from 'fs';
 import { pathsToModuleNameMapper } from 'ts-jest';
 
-const tsconfig = require('./tsconfig.json');
+const tsconfig = JSON.parse(readFileSync('./tsconfig.json', 'utf-8'));
 const { compilerOptions } = tsconfig;
 
 export default {
   moduleFileExtensions: ['js', 'json', 'ts'],
-  rootDir: 'src/core',
+  rootDir: '../src/core',
   testRegex: '.*\\.spec\\.ts$',
   transform: {
     '^.+\\.(t|j)s$': [

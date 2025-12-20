@@ -1,11 +1,13 @@
 import type { Config } from '@jest/types';
+import { readFileSync } from 'fs';
 import { pathsToModuleNameMapper } from 'ts-jest';
 
-const tsconfig = require('./tsconfig.json');
+const tsconfig = JSON.parse(readFileSync('./tsconfig.json', 'utf-8'));
 const { compilerOptions } = tsconfig;
 
 const config: Config.InitialOptions = {
   moduleFileExtensions: ['js', 'json', 'ts'],
+  rootDir: '..',
   roots: ['src/core', 'src/modules'],
   testRegex: '.*\\.spec\\.ts$',
   transform: {
