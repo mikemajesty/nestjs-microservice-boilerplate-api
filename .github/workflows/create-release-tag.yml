@@ -102,7 +102,7 @@ jobs:
           echo "📋 Version: $VERSION"
           echo "🏷️ Tag: $TAG_NAME"
 
-          # Commit version change if there are changes
+          # Commit version changes
           if [ -n "$(git status --porcelain)" ]; then
             git add package.json package-lock.json 2>/dev/null || git add package.json
             git commit -m "chore(release): bump version to ${VERSION}"
@@ -148,5 +148,5 @@ jobs:
           ### 📝 Next Steps
 
           1. ✅ Tag \`$TAG_NAME\` created successfully
-          2. 🚀 Run the **Release** workflow to deploy and create the GitHub Release
+          2. 🚀 Run the **Release** workflow to deploy, generate changelog, and create the GitHub Release
           EOF

@@ -93,50 +93,11 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Get branch from tag
-        id: branch
+      - name: Generate Changelog
         run: |
-          TAG="${{ github.event.inputs.tag }}"
-          BRANCH=$(git branch -r --contains tags/$TAG | grep -v HEAD | head -1 | sed 's/origin\///' | xargs)
-          echo "branch=$BRANCH" >> $GITHUB_OUTPUT
-          echo "📌 Branch containing tag: $BRANCH"
-
-      - name: Create PR to master
-        if: steps.branch.outputs.branch != 'master' && steps.branch.outputs.branch != ''
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          BRANCH="${{ steps.branch.outputs.branch }}"
-          TAG="${{ github.event.inputs.tag }}"
-          ENV="${{ github.event.inputs.environment }}"
-          ACTOR="${{ github.actor }}"
-          
-          # Check if PR already exists
-          EXISTING_PR=$(gh pr list --head "$BRANCH" --base master --json number --jq '.[0].number' || echo "")
-          
-          if [ -n "$EXISTING_PR" ]; then
-            echo "✅ PR #$EXISTING_PR already exists for branch $BRANCH"
-          else
-            BODY=$(cat <<EOF
-          ## Automatic Release
-          
-          This PR was automatically created after a successful deploy.
-          
-          | Info | Value |
-          |------|-------|
-          | Tag | $TAG |
-          | Environment | $ENV |
-          | Branch | $BRANCH |
-          | Triggered by | @$ACTOR |
-          EOF
-          )
-            gh pr create \
-              --base master \
-              --head "$BRANCH" \
-              --title "🚀 Release $TAG to $ENV" \
-              --body "$BODY"
-            echo "✅ PR created successfully"
-          fi
+          npm install -g conventional-changelog-cli
+          conventional-changelog -p conventionalcommits -i CHANGELOG.md -s -r 0
+          echo "✅ Changelog generated"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -149,16 +110,55 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Summary
+      - name: Create PR to master with changelog
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cat >> $GITHUB_STEP_SUMMARY << EOF
-          ## 🚀 Deploy Complete!
+          TAG="${{ github.event.inputs.tag }}"
+          VERSION="${{ steps.version.outputs.version }}"
+          BRANCH="changelog/${TAG}"
           
-          | Info | Value |
-          |------|-------|
-          | Environment | \`${{ github.event.inputs.environment }}\` |
-          | Tag | \`${{ github.event.inputs.tag }}\` |
-          | Docker Tag | \`${{ steps.version.outputs.version }}\` |
-          | Branch | \`${{ steps.branch.outputs.branch }}\` |
-          | Triggered by | @${{ github.actor }} |
-          EOF
+          # Configure git
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          
+          # Create a new branch from master for the changelog
+          git fetch origin master
+          git checkout -b "$BRANCH" origin/master
+          
+          # Copy the generated changelog
+          git checkout HEAD@{1} -- CHANGELOG.md
+          
+          # Commit and push
+          git add CHANGELOG.md
+          git commit -m "docs(changelog): update changelog for ${TAG}"
+          git push origin "$BRANCH"
+          
+          # Create PR
+          gh pr create \
+            --base master \
+            --head "$BRANCH" \
+            --title "📝 Changelog for ${TAG}" \
+            --body "## Changelog Update
+              This PR adds the changelog for release \`${TAG}\`.
+
+              **Generated automatically by the Release workflow.**
+              "
+                        echo "✅ PR created successfully"
+
+                    - name: Summary
+                      run: |
+                        cat >> $GITHUB_STEP_SUMMARY << EOF
+                        ## 🚀 Deploy Complete!
+                        
+                        | Info | Value |
+                        |------|-------|
+                        | Environment | \`${{ github.event.inputs.environment }}\` |
+                        | Tag | \`${{ github.event.inputs.tag }}\` |
+                        | Docker Tag | \`${{ steps.version.outputs.version }}\` |
+                        | Triggered by | @${{ github.actor }} |
+                        
+                        ### 📝 Changelog
+                        
+                        A PR was created to merge the changelog to master.
+                        EOF
