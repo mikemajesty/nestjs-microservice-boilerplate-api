@@ -33,7 +33,8 @@ scopes.push(
   'workflow',
   'none',
   `coverage`,
-  `build`
+  `build`,
+  `changelog`
 );
 
 module.exports = {
