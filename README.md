@@ -79,7 +79,7 @@ DDD focuses on modeling your business domain. It introduces concepts like Entiti
 - **Bounded Contexts**: Each module represents a bounded context
 
 **What we simplified:**
-- No complex Aggregate Roots — entities are self-contained
+- Simplified Aggregates — entities can be grouped but without strict root enforcement
 - No Domain Events infrastructure — use the event system in `libs/` when needed
 - No Value Objects as separate classes — Zod schemas handle validation
 

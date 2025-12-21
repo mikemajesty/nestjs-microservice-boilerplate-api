@@ -1,9 +1,6 @@
 {
   "*.{ts,js}": [
     "eslint --fix",
-    "prettier --write"
-  ],
-  "*.{ts,js}": [
     "npm run test -- --findRelatedTests --passWithNoTests --bail"
   ]
 }
