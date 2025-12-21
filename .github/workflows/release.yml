@@ -101,6 +101,8 @@ jobs:
         run: |
           npm install -g conventional-changelog-cli
           conventional-changelog -p conventionalcommits -i CHANGELOG.md -s -r 0
+          # Save changelog to temp file
+          cp CHANGELOG.md /tmp/CHANGELOG.md
           echo "✅ Changelog generated"
 
       - name: Create GitHub Release
@@ -130,8 +132,8 @@ jobs:
           git fetch origin master
           git checkout -b "$BRANCH" origin/master
           
-          # Copy the generated changelog
-          git checkout HEAD@{1} -- CHANGELOG.md
+          # Copy the generated changelog from temp
+          cp /tmp/CHANGELOG.md CHANGELOG.md
           
           # Commit and push
           git add CHANGELOG.md
