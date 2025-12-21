@@ -141,30 +141,33 @@ jobs:
           git push origin "$BRANCH"
           
           # Create PR
+          BODY="## Changelog Update
+
+          This PR adds the changelog for release \`${TAG}\`.
+
+          **Generated automatically by the Release workflow.**"
+          
           gh pr create \
             --base master \
             --head "$BRANCH" \
             --title "📝 Changelog for ${TAG}" \
-            --body "## Changelog Update
-              This PR adds the changelog for release \`${TAG}\`.
+            --body "$BODY"
+          
+          echo "✅ PR created successfully"
 
-              **Generated automatically by the Release workflow.**
-              "
-                        echo "✅ PR created successfully"
-
-                    - name: Summary
-                      run: |
-                        cat >> $GITHUB_STEP_SUMMARY << EOF
-                        ## 🚀 Deploy Complete!
-                        
-                        | Info | Value |
-                        |------|-------|
-                        | Environment | \`${{ github.event.inputs.environment }}\` |
-                        | Tag | \`${{ github.event.inputs.tag }}\` |
-                        | Docker Tag | \`${{ steps.version.outputs.version }}\` |
-                        | Triggered by | @${{ github.actor }} |
-                        
-                        ### 📝 Changelog
-                        
-                        A PR was created to merge the changelog to master.
-                        EOF
+      - name: Summary
+        run: |
+          cat >> $GITHUB_STEP_SUMMARY << EOF
+          ## 🚀 Deploy Complete!
+          
+          | Info | Value |
+          |------|-------|
+          | Environment | \`${{ github.event.inputs.environment }}\` |
+          | Tag | \`${{ github.event.inputs.tag }}\` |
+          | Docker Tag | \`${{ steps.version.outputs.version }}\` |
+          | Triggered by | @${{ github.actor }} |
+          
+          ### 📝 Changelog
+          
+          A PR was created to merge the changelog to master.
+          EOF
