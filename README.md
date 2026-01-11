@@ -45,15 +45,6 @@ The architecture is built around one fundamental principle: **protect your busin
 
 ![Architecture Diagram](OnionGraph.jpg)
 
-### How It Compares to Other Architectures
-
-| Pattern | This Project | Key Difference |
-|---------|--------------|----------------|
-| **Clean Architecture** | ✅ Implements | Simplified layers without over-engineering |
-| **Domain-Driven Design** | ✅ Implements | Entities and Use Cases without complex aggregates |
-| **Hexagonal Architecture** | ✅ Implements | Ports (interfaces) and Adapters (implementations) |
-| **Onion Architecture** | ✅ Implements | Core at center, dependencies point inward |
-
 ---
 
 ## Architecture Comparison
