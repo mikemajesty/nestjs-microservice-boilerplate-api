@@ -11,8 +11,7 @@ import { CatListInput, CatListOutput } from '@/core/cat/use-cases/cat-list'
 import { Cat, CatDocument } from '@/infra/database/mongo/schemas/cat'
 import { MongoRepository } from '@/infra/repository'
 import { ConvertMongooseFilter, SearchTypeEnum, ValidateDatabaseSortAllowed } from '@/utils/decorators'
-import { IEntity } from '@/utils/entity'
-import { FilterQuery, MongoRepositoryModelSessionType } from '@/utils/mongoose'
+import { MongoRepositoryModelSessionType } from '@/utils/mongoose'
 
 @Injectable()
 export class CatRepository extends MongoRepository<CatDocument> implements ICatRepository {
@@ -26,18 +25,8 @@ export class CatRepository extends MongoRepository<CatDocument> implements ICatR
     { name: 'breed', type: SearchTypeEnum.like },
     { name: 'age', type: SearchTypeEnum.equal, format: 'Number' }
   ])
-  async paginate({ limit, page, search, sort }: CatListInput): Promise<CatListOutput> {
-    const cats = await this.entity.paginate(search as FilterQuery<IEntity>, {
-      page,
-      limit,
-      sort: sort as object
-    })
-
-    return {
-      docs: cats.docs.map((u) => new CatEntity(u.toObject({ virtuals: true })).toObject()),
-      limit,
-      page,
-      total: cats.totalDocs
-    }
+  async paginate(input: CatListInput): Promise<CatListOutput> {
+    const cats = await this.applyPagination(input)
+    return { ...cats, docs: cats.docs.map((doc) => new CatEntity(doc).toObject()) }
   }
 }

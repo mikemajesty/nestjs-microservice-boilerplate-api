@@ -3,7 +3,7 @@
  */
 import { Infer, InputValidator } from './validator'
 
-export type SearchInput<T> = { search: T | null }
+export type SearchInput<T> = { search: T | Partial<T> | null }
 
 export const SearchHttpSchema = InputValidator.string()
   .optional()

@@ -1,6 +1,8 @@
 /**
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/infra/repository.md
  */
+import { PaginationInput, PaginationOutput } from '@/utils/pagination'
+
 import {
   CreatedModel,
   CreatedOrUpdateModel,
@@ -8,9 +10,13 @@ import {
   JoinType,
   RemovedModel,
   UpdatedModel
-} from './types';
+} from './types'
 
 export abstract class IRepository<T> {
+  abstract applyPagination(input: PaginationInput<T>): Promise<PaginationOutput<T>>
+
+  abstract runInTransaction<R>(fn: (context: unknown) => Promise<R>): Promise<R>
+
   abstract create<TOptions = unknown>(document: T, saveOptions?: TOptions): Promise<CreatedModel>
 
   abstract createOrUpdate<TUpdate = Partial<T>, TOptions = unknown>(

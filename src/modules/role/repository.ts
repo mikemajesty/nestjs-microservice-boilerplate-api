@@ -2,7 +2,7 @@
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/modules/repository.md
  */
 import { Injectable } from '@nestjs/common'
-import { FindOptionsOrder, FindOptionsWhere, Repository } from 'typeorm'
+import { Repository } from 'typeorm'
 
 import { RoleEntity } from '@/core/role/entity/role'
 import { IRoleRepository } from '@/core/role/repository/role'
@@ -10,8 +10,6 @@ import { RoleListInput, RoleListOutput } from '@/core/role/use-cases/role-list'
 import { RoleSchema } from '@/infra/database/postgres/schemas/role'
 import { TypeORMRepository } from '@/infra/repository/postgres/repository'
 import { ConvertTypeOrmFilter, SearchTypeEnum, ValidateDatabaseSortAllowed } from '@/utils/decorators'
-import { IEntity } from '@/utils/entity'
-import { PaginationUtils } from '@/utils/pagination'
 
 @Injectable()
 export class RoleRepository extends TypeORMRepository<Model> implements IRoleRepository {
@@ -22,16 +20,8 @@ export class RoleRepository extends TypeORMRepository<Model> implements IRoleRep
   @ConvertTypeOrmFilter<RoleEntity>([{ name: 'name', type: SearchTypeEnum.like }])
   @ValidateDatabaseSortAllowed<RoleEntity>({ name: 'name' }, { name: 'createdAt' })
   async paginate(input: RoleListInput): Promise<RoleListOutput> {
-    const skip = PaginationUtils.calculateSkip(input)
-
-    const [docs, total] = await this.repository.findAndCount({
-      take: input.limit,
-      skip,
-      order: input.sort as FindOptionsOrder<IEntity>,
-      where: input.search as FindOptionsWhere<unknown>
-    })
-
-    return { docs: docs.map((doc) => new RoleEntity(doc).toObject()), total, page: input.page, limit: input.limit }
+    const docs = await this.applyPagination(input)
+    return { ...docs, docs: docs.docs.map((doc) => new RoleEntity(doc).toObject()) }
   }
 }
 

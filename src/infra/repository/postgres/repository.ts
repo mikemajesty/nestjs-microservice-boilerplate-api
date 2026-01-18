@@ -3,8 +3,10 @@
  */
 import {
   BaseEntity,
+  EntityManager,
   FindManyOptions,
   FindOneOptions,
+  FindOptionsOrder,
   FindOptionsWhere,
   In,
   Raw,
@@ -13,6 +15,7 @@ import {
 } from 'typeorm'
 
 import { IEntity } from '@/utils/entity'
+import { PaginationInput, PaginationOutput, PaginationUtils } from '@/utils/pagination'
 
 import { IRepository } from '../adapter'
 import {
@@ -26,6 +29,35 @@ import {
 
 export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEntity> implements IRepository<T> {
   constructor(readonly repository: Repository<T>) {}
+
+  async runInTransaction<R>(fn: (manager: EntityManager) => Promise<R>): Promise<R> {
+    const queryRunner = this.repository.manager.connection.createQueryRunner()
+    await queryRunner.connect()
+    await queryRunner.startTransaction()
+    try {
+      const result = await fn(queryRunner.manager)
+      await queryRunner.commitTransaction()
+      return result
+    } catch (err) {
+      await queryRunner.rollbackTransaction()
+      throw err
+    } finally {
+      await queryRunner.release()
+    }
+  }
+
+  async applyPagination<R>(input: PaginationInput<R>): Promise<PaginationOutput<T>> {
+    const skip = PaginationUtils.calculateSkip(input)
+
+    const [docs, total] = await this.repository.findAndCount({
+      take: input.limit,
+      skip,
+      order: input.sort as FindOptionsOrder<T>,
+      where: input.search as FindOptionsWhere<T>
+    })
+
+    return { docs, total, page: input.page, limit: input.limit }
+  }
 
   async findOr(propertyList: (keyof T)[], value: string): Promise<T[]> {
     const filter = propertyList.map((property) => {

@@ -598,6 +598,43 @@ enum DatabaseOperationEnum {
 }
 ```
 
+
+## Transaction Operations
+
+### `runInTransaction(fn)`
+
+Executes multiple operations in a single transaction. The callback receives the transaction context (session for MongoDB, manager for TypeORM).
+
+#### MongoDB Example
+```typescript
+await this.userRepository.runInTransaction(async (session) => {
+  await this.userRepository.create({
+    id: IdGeneratorUtils.uuid(),
+    name: 'John Doe',
+    email: 'john@example.com'
+  }, { session });
+  await this.userRepository.updateOne(
+    { id: 'user-123' },
+    { status: 'active' },
+    { session }
+  );
+  // ...other operations
+});
+```
+
+#### TypeORM Example
+```typescript
+await this.userRepository.runInTransaction(async (manager) => {
+  await manager.save(UserEntity, {
+    id: IdGeneratorUtils.uuid(),
+    name: 'John Doe',
+    email: 'john@example.com'
+  });
+  await manager.update(UserEntity, { id: 'user-123' }, { status: 'active' });
+  // ...other operations
+});
+```
+
 ## Automatic Soft Delete Handling
 
 Both implementations automatically filter out soft-deleted records:

@@ -3,10 +3,12 @@
  */
 import { HttpStatus } from '@nestjs/common'
 import {
+  ClientSession,
   Document,
   InsertManyOptions,
   Model,
   MongooseUpdateQueryOptions,
+  PaginateModel,
   SaveOptions,
   UpdateQuery,
   UpdateWithAggregationPipeline
@@ -15,7 +17,8 @@ import {
 import { ConvertMongoFilterToBaseRepository } from '@/utils/decorators'
 import { IEntity } from '@/utils/entity'
 import { ApiBadRequestException, BaseException, MessageType, ParametersType } from '@/utils/exception'
-import { FilterQuery } from '@/utils/mongoose'
+import { FilterQuery, MongoRepositoryModelSessionType } from '@/utils/mongoose'
+import { PaginationInput, PaginationOutput } from '@/utils/pagination'
 
 import { IRepository } from '../adapter'
 import {
@@ -36,10 +39,40 @@ const handleDatabaseError = (error: unknown, context: string): ApiDatabaseExcept
 }
 
 export class MongoRepository<T extends Document = Document> implements IRepository<T> {
-  constructor(private readonly model: Model<T>) {}
+  private paginateModel: MongoRepositoryModelSessionType<PaginateModel<T>>
 
-  private toObject(document: T, options: { virtuals?: boolean } = { virtuals: true }): T {
-    return document.toObject({ virtuals: options.virtuals })
+  constructor(private readonly model: Model<T>) {
+    this.paginateModel = this.model as MongoRepositoryModelSessionType<PaginateModel<T>>
+  }
+
+  async runInTransaction<R>(fn: (session: ClientSession) => Promise<R>): Promise<R> {
+    const mongoose = this.model.db.base
+    const session = await mongoose.startSession()
+    session.startTransaction()
+    try {
+      const result = await fn(session)
+      await session.commitTransaction()
+      return result
+    } catch (err) {
+      await session.abortTransaction()
+      throw err
+    } finally {
+      session.endSession()
+    }
+  }
+
+  async applyPagination<R>(input: PaginationInput<R>): Promise<PaginationOutput<T>> {
+    const cats = await this.paginateModel.paginate(input.search as FilterQuery<R>, {
+      page: input.page,
+      limit: input.limit,
+      sort: input.sort as object
+    })
+    return {
+      docs: cats.docs.map((u) => this.toObject(u)),
+      limit: input.limit,
+      page: input.page,
+      total: cats.totalDocs
+    }
   }
 
   async insertMany<TOptions>(documents: T[], saveOptions?: TOptions): Promise<void> {
@@ -444,6 +477,10 @@ export class MongoRepository<T extends Document = Document> implements IReposito
     }
 
     return processedFilter as FilterQuery<T>
+  }
+
+  private toObject(document: T, options: { virtuals?: boolean } = { virtuals: true }): T {
+    return document.toObject({ virtuals: options.virtuals })
   }
 }
 
