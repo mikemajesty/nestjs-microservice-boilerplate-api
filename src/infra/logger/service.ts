@@ -15,7 +15,8 @@ import { DateUtils } from '@/utils/date'
 import { ApiBadRequestException, ApiInternalServerException, BaseException } from '@/utils/exception'
 import { IDGeneratorUtils } from '@/utils/id-generator'
 
-import { name } from '../../../package.json'
+import { name, version } from '../../../package.json'
+import { EnvEnum } from '../secrets/types'
 import { ILoggerAdapter } from './adapter'
 import { ErrorType, MessageInputType } from './types'
 
@@ -45,13 +46,22 @@ export class LoggerService implements ILoggerAdapter {
           level: 'info',
           stream: lokiTransport({
             host: process.env.LOKI_URL as string,
-            labels: { job: 'nestjs' },
-            interval: 5
+            labels: { job: name, env: process.env.NODE_ENV as EnvEnum, version },
+            interval: this.getLokiInterval()
           })
         }
       ])
     )
     this.logger = pinoHttp(this.getPinoHttpConfig(pinoLogger))
+  }
+
+  getLokiInterval(): number | undefined {
+    const env = process.env.NODE_ENV as EnvEnum
+    if (env === EnvEnum.PRD) {
+      return 5
+    }
+
+    return 1
   }
 
   setApplication(app: string): void {

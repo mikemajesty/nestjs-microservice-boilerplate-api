@@ -82,23 +82,23 @@ Hexagonal Architecture separates the application from external concerns through 
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│                        ADAPTERS                               │
+│                        ADAPTERS                              │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐   │
 │  │ Controllers │  │ Repositories│  │ External Services   │   │
 │  │ (modules/)  │  │ (modules/)  │  │ (infra/)            │   │
 │  └──────┬──────┘  └──────┬──────┘  └──────────┬──────────┘   │
-│         │                │                     │              │
-│         ▼                ▼                     ▼              │
+│         │                │                    │              │
+│         ▼                ▼                    ▼              │
 │  ┌─────────────────────────────────────────────────────────┐ │
-│  │                      PORTS                               │ │
-│  │              (core/*/repository interfaces)              │ │
+│  │                      PORTS                              │ │
+│  │            (core/*/repository interfaces)               │ │
 │  └─────────────────────────┬───────────────────────────────┘ │
-│                            │                                  │
-│                            ▼                                  │
+│                            │                                 │
+│                            ▼                                 │
 │  ┌─────────────────────────────────────────────────────────┐ │
-│  │                       CORE                               │ │
-│  │           Entities + Use Cases + Interfaces              │ │
-│  │                (src/core/)                               │ │
+│  │                       CORE                              │ │
+│  │           Entities + Use Cases + Interfaces             │ │
+│  │                     (src/core/)                         │ │
 │  └─────────────────────────────────────────────────────────┘ │
 └──────────────────────────────────────────────────────────────┘
 ```
@@ -131,9 +131,9 @@ You may notice that some interfaces in this project use the word "Adapter" (e.g.
 **The academic distinction:**
 
 ```
-┌─────────────────────────────────────────────────────────────┐
+┌──────────────────────────────────────────────────────────────┐
 │                  HEXAGONAL (Traditional)                     │
-├─────────────────────────────────────────────────────────────┤
+├──────────────────────────────────────────────────────────────┤
 │                                                              │
 │   Port (Interface)              Adapter (Implementation)     │
 │   ─────────────────             ────────────────────────     │
@@ -141,7 +141,7 @@ You may notice that some interfaces in this project use the word "Adapter" (e.g.
 │   IEmailService          →      SendGridEmailService         │
 │   ICacheService          →      RedisCacheService            │
 │                                                              │
-└─────────────────────────────────────────────────────────────┘
+└──────────────────────────────────────────────────────────────┘
 ```
 
 **Our simplified approach:**

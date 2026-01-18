@@ -44,24 +44,24 @@ import { EnvEnum } from './types'
           PORT: InputValidator.number()
             .or(InputValidator.string())
             .transform((p) => Number(p)),
-          PROMETHUES_URL: InputValidator.string().url(),
-          GRAFANA_URL: InputValidator.string().url(),
-          REDIS_URL: InputValidator.string().url(),
+          PROMETHUES_URL: InputValidator.url(),
+          GRAFANA_URL: InputValidator.url(),
+          REDIS_URL: InputValidator.url(),
           TOKEN_EXPIRATION: InputValidator.string().or(InputValidator.number()),
           REFRESH_TOKEN_EXPIRATION: InputValidator.string().or(InputValidator.number()),
-          ZIPKIN_URL: InputValidator.string().url(),
+          ZIPKIN_URL: InputValidator.url(),
           EMAIL: InputValidator.object({
             HOST: InputValidator.string(),
             PORT: InputValidator.number(),
             USER: InputValidator.string(),
             PASS: InputValidator.string(),
-            FROM: InputValidator.string().email()
+            FROM: InputValidator.email()
           }),
           AUTH: InputValidator.object({
             GOOGLE: InputValidator.object({
               CLIENT_ID: InputValidator.string(),
               CLIENT_SECRET: InputValidator.string(),
-              REDIRECT_URL: InputValidator.string().url()
+              REDIRECT_URL: InputValidator.url()
             })
           })
         })
