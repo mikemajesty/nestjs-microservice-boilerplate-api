@@ -33,7 +33,7 @@ export class RedisService implements Partial<ICacheAdapter<RedisClientType>> {
       if (typeof error === 'string') {
         error = new ApiInternalServerException(error)
       }
-      ; (error as { context: string }).context = `${RedisService.name}/ping`
+      ;(error as { context: string }).context = `${RedisService.name}/ping`
       this.logger.error(error as ErrorType)
       return 'DOWN'
     }

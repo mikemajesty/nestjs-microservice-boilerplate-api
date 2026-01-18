@@ -9,12 +9,14 @@ import {
   FindOptionsOrder,
   FindOptionsWhere,
   In,
+  Not,
   Raw,
   Repository,
   SaveOptions
 } from 'typeorm'
 
 import { IEntity } from '@/utils/entity'
+import { ApiInternalServerException } from '@/utils/exception'
 import { PaginationInput, PaginationOutput, PaginationUtils } from '@/utils/pagination'
 
 import { IRepository } from '../adapter'
@@ -85,7 +87,7 @@ export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEn
   async createOrUpdate<TUpdate = Partial<T>>(updated: TUpdate): Promise<CreatedOrUpdateModel> {
     const documentEntity: IEntity = updated as IEntity
     if (!documentEntity?.id) {
-      throw new Error('id is required')
+      throw new ApiInternalServerException('id is required', { context: `${TypeORMRepository.name}.createOrUpdate` })
     }
 
     const exists = await this.findById(documentEntity.id)
@@ -119,8 +121,7 @@ export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEn
       deletedAt: null
     }
     for (const key of Object.keys(filter)) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      where[`${key}`] = In((filter as { [key: string]: any })[`${key}`])
+      where[`${key}`] = In((filter as { [key: string]: string[] })[`${key}`])
     }
     return this.repository.find({
       where
@@ -310,6 +311,18 @@ export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEn
     }
 
     return this.repository.find(options)
+  }
+
+  async exists<TQuery = Partial<T>>(filter: TQuery): Promise<boolean> {
+    const result = await this.repository.exists({ where: filter as FindOptionsWhere<T> })
+    return result
+  }
+
+  async existsOnUpdate<TQuery = Partial<T>>(filter: TQuery, id: string | number): Promise<boolean> {
+    const result = await this.repository.exists({
+      where: { ...filter, id: Not(id) } as FindOptionsWhere<T>
+    })
+    return result
   }
 
   private convertJoins(joins?: JoinType<T>): {

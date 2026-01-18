@@ -16,9 +16,9 @@ export function RunInNewProcess(timeout?: number) {
 
         const child: ChildProcess = __filename.endsWith('.ts')
           ? fork(processFile, [], {
-            execArgv: ['-r', 'ts-node/register'],
-            silent: false
-          })
+              execArgv: ['-r', 'ts-node/register'],
+              silent: false
+            })
           : fork(processFile)
         let timeoutId: NodeJS.Timeout | null = null
         let isResolved = false

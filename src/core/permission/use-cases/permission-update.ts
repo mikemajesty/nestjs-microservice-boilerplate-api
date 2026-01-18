@@ -29,10 +29,12 @@ export class PermissionUpdateUsecase implements IUsecase {
     }
 
     if (input.name) {
-      const permissionExists = await this.permissionRepository.existsOnUpdate({
-        idNotEquals: input.id,
-        nameEquals: input.name
-      })
+      const permissionExists = await this.permissionRepository.existsOnUpdate(
+        {
+          name: input.name
+        },
+        input.id
+      )
 
       if (permissionExists) {
         throw new ApiConflictException('permissionExists')

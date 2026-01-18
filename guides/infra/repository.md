@@ -477,6 +477,77 @@ const user = await this.userRepository.findOneWithSelectFields(
 // user = { id: 'user-123', email: '...', name: '...' }
 ```
 
+## Pagination Pattern with `applyPagination`
+
+To ensure consistent and validated pagination across all repositories, every repository implementation must provide an `applyPagination` method. This method is responsible for handling pagination logic in a database-agnostic way, returning a standardized output regardless of the underlying database.
+
+**Usage:**
+- Implement `applyPagination` in every repository (MongoDB, PostgreSQL, etc.), following the interface contract and using `async`.
+- Always use the appropriate decorators (e.g., `@ConvertMongooseFilter`, `@ConvertTypeOrmFilter`, `@ValidateDatabaseSortAllowed`) on your pagination methods to ensure filters and sorting are correctly handled for each database.
+- In the output, always map each document to a new instance of the domain entity (e.g., `new CatEntity(doc).toObject()`). This guarantees validation and standardization of the returned data, regardless of the database.
+
+**Example (MongoDB):**
+```typescript
+@ValidateDatabaseSortAllowed<CatEntity>({ name: 'createdAt' }, { name: 'breed' })
+@ConvertMongooseFilter<CatEntity>([
+  { name: 'name', type: SearchTypeEnum.like },
+  { name: 'breed', type: SearchTypeEnum.like },
+  { name: 'age', type: SearchTypeEnum.equal, format: 'Number' }
+])
+async paginate(input: CatListInput): Promise<CatListOutput> {
+  const cats = await this.applyPagination(input)
+  return { ...cats, docs: cats.docs.map((doc) => new CatEntity(doc).toObject()) }
+}
+```
+
+**Example (PostgreSQL/TypeORM):**
+```typescript
+@ConvertTypeOrmFilter<RoleEntity>([{ name: 'name', type: SearchTypeEnum.like }])
+@ValidateDatabaseSortAllowed<RoleEntity>({ name: 'name' }, { name: 'createdAt' })
+async paginate(input: RoleListInput): Promise<RoleListOutput> {
+  const docs = await this.applyPagination(input)
+  return { ...docs, docs: docs.docs.map((doc) => new RoleEntity(doc).toObject()) }
+}
+```
+
+---
+
+## Existence Methods: `exists` and `existsOnUpdate`
+
+To simplify existence checks and uniqueness validation, the repository interface includes two methods:
+
+### `exists`
+
+Checks if any record exists matching the filter.  
+Returns only `true` or `false`, never throws.
+
+**Example:**
+```typescript
+const exists = await userRepository.exists({ email: 'test@email.com' })
+if (exists) {
+  // Handle existence
+}
+```
+
+### `existsOnUpdate`
+
+Checks if any other record exists matching the filter, ignoring the given id.  
+Useful for uniqueness validation on update (e.g., avoid duplicate emails).
+
+**Example:**
+```typescript
+const exists = await userRepository.existsOnUpdate({ email: 'test@email.com' }, userId)
+if (exists) {
+  // Handle conflict
+}
+```
+
+**Implementation Notes:**
+- Both methods are available for MongoDB and PostgreSQL repositories.
+- Always return a boolean, never throw errors.
+- `existsOnUpdate` ignores the current record by id, ideal for update scenarios.
+
+
 #### `findAllWithSelectFields(includeFields, filter?, options?)`
 
 Find all documents, selecting ONLY specific fields.

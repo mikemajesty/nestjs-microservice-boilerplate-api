@@ -2,7 +2,7 @@
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/modules/repository.md
  */
 import { Injectable } from '@nestjs/common'
-import { FindOptionsRelations, FindOptionsWhere, Not, Repository } from 'typeorm'
+import { FindOptionsRelations, FindOptionsWhere, Repository } from 'typeorm'
 
 import { UserEntity } from '@/core/user/entity/user'
 import { IUserRepository } from '@/core/user/repository/user'
@@ -15,15 +15,6 @@ import { ConvertTypeOrmFilter, SearchTypeEnum, ValidateDatabaseSortAllowed } fro
 export class UserRepository extends TypeORMRepository<Model> implements IUserRepository {
   constructor(readonly repository: Repository<Model>) {
     super(repository)
-  }
-
-  async existsOnUpdate(
-    equalFilter: Pick<UserEntity, 'email'>,
-    notEqualFilter: Pick<UserEntity, 'id'>
-  ): Promise<boolean> {
-    const exists = await this.repository.exists({ where: { id: Not(notEqualFilter.id), email: equalFilter.email } })
-
-    return exists
   }
 
   async findOneWithRelation(

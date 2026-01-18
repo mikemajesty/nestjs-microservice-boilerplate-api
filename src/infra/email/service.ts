@@ -62,4 +62,3 @@ export type SendEmailInput = {
 }
 
 export type SendEmailOutput = SMTPTransport.SentMessageInfo
-

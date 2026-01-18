@@ -274,12 +274,12 @@ export class IDGeneratorUtils {
     options?: T extends 'uuid'
       ? UUIDOptions
       : T extends 'ulid'
-      ? ULIDOptions
-      : T extends 'nanoid'
-      ? NanoIdOptions
-      : T extends 'objectid'
-      ? ObjectIdOptions
-      : never
+        ? ULIDOptions
+        : T extends 'nanoid'
+          ? NanoIdOptions
+          : T extends 'objectid'
+            ? ObjectIdOptions
+            : never
   ): string {
     return this.generators[`${type}`](options)
   }

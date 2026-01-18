@@ -421,6 +421,19 @@ export class MongoRepository<T extends Document = Document> implements IReposito
     return data.map((d) => d.toObject())
   }
 
+  @ConvertMongoFilterToBaseRepository()
+  async exists<TQuery = Partial<T>>(filter: TQuery): Promise<boolean> {
+    const result = await this.model.exists(filter as FilterQuery<T>)
+    return !!result
+  }
+
+  @ConvertMongoFilterToBaseRepository()
+  async existsOnUpdate<TQuery = Partial<T>>(filter: TQuery, id: string | number): Promise<boolean> {
+    const query = { ...filter, _id: { $ne: id } }
+    const result = await this.model.exists(query as FilterQuery<T>)
+    return !!result
+  }
+
   private getPopulatePaths(joins?: JoinType<T>): string[] {
     if (!joins) return []
 

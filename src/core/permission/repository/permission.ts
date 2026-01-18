@@ -12,7 +12,6 @@ export type ExistsOnUpdateInput = {
 }
 
 export abstract class IPermissionRepository extends IRepository<PermissionEntity> {
-  abstract existsOnUpdate(input: ExistsOnUpdateInput): Promise<boolean>
   abstract paginate(input: PermissionListInput): Promise<PermissionListOutput>
   abstract findOneWithRelation(
     filter: Partial<PermissionEntity>,

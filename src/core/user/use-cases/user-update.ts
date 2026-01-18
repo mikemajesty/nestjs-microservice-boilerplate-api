@@ -39,7 +39,7 @@ export class UserUpdateUsecase implements IUsecase {
     const entity = new UserEntity(user)
     entity.merge({ ...input, roles })
 
-    const userExists = await this.userRepository.existsOnUpdate({ email: entity.email }, { id: entity.id })
+    const userExists = await this.userRepository.existsOnUpdate({ email: entity.email }, entity.id)
 
     if (userExists) {
       throw new ApiConflictException('userExists')

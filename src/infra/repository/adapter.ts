@@ -102,4 +102,8 @@ export abstract class IRepository<T> {
   abstract findOneWithJoin<Filter = Partial<T>>(filter: Filter, joins?: JoinType<T>): Promise<T | null>
 
   abstract findAllWithJoin<Filter = Partial<T>>(filter?: Filter, joins?: JoinType<T>): Promise<T[]>
+
+  abstract exists<TQuery = Partial<T>>(filter: TQuery): Promise<boolean>
+
+  abstract existsOnUpdate<TQuery = Partial<T>>(filter: TQuery, id: string | number): Promise<boolean>
 }

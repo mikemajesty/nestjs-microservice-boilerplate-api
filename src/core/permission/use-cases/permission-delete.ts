@@ -2,12 +2,12 @@
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/core/usecase.md
  */
 import { IPermissionRepository } from '@/core/permission/repository/permission'
+import { RoleEntity } from '@/core/role/entity/role'
 import { ValidateSchema } from '@/utils/decorators'
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception'
 import { IUsecase } from '@/utils/usecase'
 import { Infer } from '@/utils/validator'
 
-import { RoleEntity } from '@/core/role/entity/role'
 import { PermissionEntity, PermissionEntitySchema } from '../entity/permission'
 
 export const PermissionDeleteSchema = PermissionEntitySchema.pick({

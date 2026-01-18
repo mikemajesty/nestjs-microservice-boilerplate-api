@@ -34,9 +34,9 @@ export class ExceptionHandlerInterceptor implements NestInterceptor {
         }
 
         if (request?.tracing as TracingType) {
-          ; (request.tracing as TracingType).addAttribute('http.status_code', error.status)
-            ; (request.tracing as TracingType).setStatus({ message: error.message, code: SpanStatusCode.ERROR })
-            ; (request.tracing as TracingType).finish()
+          ;(request.tracing as TracingType).addAttribute('http.status_code', error.status)
+          ;(request.tracing as TracingType).setStatus({ message: error.message, code: SpanStatusCode.ERROR })
+          ;(request.tracing as TracingType).finish()
         }
 
         throw error
@@ -44,9 +44,7 @@ export class ExceptionHandlerInterceptor implements NestInterceptor {
     )
   }
 
-  private getStatusCode(
-    error: ZodError | AxiosError<ExternalErrorResponse>
-  ): number {
+  private getStatusCode(error: ZodError | AxiosError<ExternalErrorResponse>): number {
     if (error instanceof ZodError) {
       return ApiBadRequestException.STATUS
     }
