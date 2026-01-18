@@ -11,7 +11,6 @@ import compression from 'compression'
 import { NextFunction, Request, Response } from 'express'
 import fs from 'fs'
 import helmet from 'helmet'
-import { IncomingMessage, ServerResponse } from 'http'
 import yaml from 'js-yaml'
 import path from 'path'
 import swagger from 'swagger-ui-express'
@@ -23,7 +22,6 @@ import { ExceptionHandlerFilter } from '@/middlewares/filters'
 import { name } from '../package.json'
 import { AppModule } from './app.module'
 import { ErrorType } from './infra/logger'
-import { CryptoUtils } from './utils/crypto'
 import { changeLanguage, initI18n, normalizeLocale } from './utils/validator'
 
 async function bootstrap() {
@@ -69,9 +67,6 @@ async function bootstrap() {
       return res.sendStatus(204)
     }
 
-    const nonce = CryptoUtils.generateRandomBase64()
-    res.locals.nonce = nonce
-    res.setHeader('X-Content-Security-Policy-Nonce', nonce)
     next()
   })
 
@@ -90,12 +85,7 @@ async function bootstrap() {
           frameSrc: ["'none'"],
           upgradeInsecureRequests: [],
           imgSrc: [`'self'`, 'data:', 'blob:', 'validator.swagger.io'],
-          scriptSrc: [
-            "'self'",
-            (req, res) => {
-              return `'nonce-${(res as ServerResponse<IncomingMessage> & { locals: { nonce: string } }).locals.nonce}'`
-            }
-          ]
+          scriptSrc: [`'self'`]
         }
       }
     })

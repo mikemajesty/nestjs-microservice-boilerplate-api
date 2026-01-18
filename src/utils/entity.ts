@@ -27,21 +27,30 @@ export const BaseEntity = <T>() => {
       if (!_schema) {
         throw new ApiUnprocessableEntityException('BaseEntity requires a schema')
       }
+      this.initializeTimestamps()
+    }
+
+    initializeTimestamps(): void {
+      const now = DateUtils.getJSDate()
+      if (!this.createdAt) this.createdAt = now
+      if (!this.updatedAt) this.updatedAt = now
     }
 
     readonly id!: IEntity['id']
-    readonly createdAt?: IEntity['createdAt']
-    readonly updatedAt?: IEntity['updatedAt']
+    createdAt?: IEntity['createdAt']
+    updatedAt?: IEntity['updatedAt']
     deletedAt?: IEntity['deletedAt']
 
-    static nameOf = <D = keyof T>(name: keyof T) => name as D
+    static nameOf<D = keyof T>(name: Exclude<keyof T, symbol>): D {
+      return name as D
+    }
 
     isActive(): boolean {
-      return !this.deletedAt
+      return [null, undefined].every((d) => d !== this.deletedAt)
     }
 
     isDeleted(): boolean {
-      return !!this.deletedAt
+      return [null, undefined].some((d) => d === this.deletedAt)
     }
 
     deactivate(): this {

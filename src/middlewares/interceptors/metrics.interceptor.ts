@@ -60,3 +60,33 @@ export class MetricsInterceptor implements NestInterceptor {
     )
   }
 }
+
+/**
+ * A counter for the total number of HTTP requests.
+ *
+ * Useful PromQL queries:
+ *
+ * // Total request rate per second over the last 5 minutes:
+ * sum(rate(http_server_requests_count_total[5m]))
+ *
+ * // Request rate per second by method and route:
+ * sum(rate(http_server_requests_count_total[5m])) by (http_method, http_route)
+ *
+ * // Percentage of server errors (5xx) over the last 5 minutes:
+ * sum(rate(http_server_requests_count_total{http_status_class="5xx"}[5m])) / sum(rate(http_server_requests_count_total[5m])) * 100
+ */
+
+/**
+ * A histogram for the duration of HTTP requests in milliseconds.
+ *
+ * Useful PromQL queries:
+ *
+ * // 95th percentile of request duration over the last 5 minutes (in ms):
+ * histogram_quantile(0.95, sum(rate(http_server_requests_duration_bucket[5m])) by (le))
+ *
+ * // 99th percentile of request duration for a specific route:
+ * histogram_quantile(0.99, sum(rate(http_server_requests_duration_bucket{http_route="/api/v1/users"}[5m])) by (le))
+ *
+ * // Average request duration by route:
+ * sum(rate(http_server_requests_duration_sum[5m])) by (http_route) / sum(rate(http_server_requests_duration_count[5m])) by (http_route)
+ */
