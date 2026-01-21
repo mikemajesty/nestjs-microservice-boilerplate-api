@@ -25,7 +25,7 @@ export const BaseEntity = <T>() => {
   abstract class Entity implements IEntity {
     protected constructor(readonly _schema: z.ZodSchema) {
       if (!_schema) {
-        throw new ApiUnprocessableEntityException('BaseEntity requires a schema')
+        throw new ApiUnprocessableEntityException(`${this.constructor.name} required a schema`)
       }
       this.initializeTimestamps()
     }

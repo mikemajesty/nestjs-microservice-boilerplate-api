@@ -6,7 +6,6 @@ import { Test } from '@nestjs/testing'
 
 import { CatDeleteInput, CatDeleteUsecase } from '@/core/cat/use-cases/cat-delete'
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger'
-import { UpdatedModel } from '@/infra/repository'
 import { ICatDeleteAdapter } from '@/modules/cat/adapter'
 import { ApiNotFoundException } from '@/utils/exception'
 import { TestUtils } from '@/utils/test/util'
@@ -68,7 +67,7 @@ describe(CatDeleteUsecase.name, () => {
 
   test('when cat deleted successfully, should expect a cat deleted', async () => {
     repository.findById = TestUtils.mockResolvedValue<CatEntity>(input)
-    repository.updateOne = TestUtils.mockResolvedValue<UpdatedModel>()
+    repository.softRemove = TestUtils.mockResolvedValue<CatEntity>()
 
     await expect(usecase.execute({ id: TestUtils.getMockUUID() }, TestUtils.getMockTracing())).resolves.toEqual({
       ...input,

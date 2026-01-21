@@ -29,7 +29,7 @@ export class UserDeleteUsecase implements IUsecase {
 
     entity.deactivate()
 
-    await this.userRepository.softRemove(entity.toObject())
+    await this.userRepository.softRemove({ id: entity.id })
 
     tracing.logEvent('user-deleted', `user: ${user.email} deleted by: ${userData.email}`)
 

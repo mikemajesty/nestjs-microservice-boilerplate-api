@@ -325,6 +325,10 @@ export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEn
     return result
   }
 
+  async softRemove(entity: Partial<T>): Promise<T> {
+    return await this.repository.softRemove(entity as T)
+  }
+
   private convertJoins(joins?: JoinType<T>): {
     relations: string[]
   } {

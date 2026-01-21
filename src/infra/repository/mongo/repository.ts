@@ -14,6 +14,7 @@ import {
   UpdateWithAggregationPipeline
 } from 'mongoose'
 
+import { DateUtils } from '@/utils/date'
 import { ConvertMongoFilterToBaseRepository } from '@/utils/decorators'
 import { IEntity } from '@/utils/entity'
 import { ApiBadRequestException, BaseException, MessageType, ParametersType } from '@/utils/exception'
@@ -55,7 +56,7 @@ export class MongoRepository<T extends Document = Document> implements IReposito
       return result
     } catch (err) {
       await session.abortTransaction()
-      throw err
+      throw handleDatabaseError(err, 'runInTransaction')
     } finally {
       session.endSession()
     }
@@ -79,7 +80,7 @@ export class MongoRepository<T extends Document = Document> implements IReposito
     try {
       await this.model.insertMany(documents, saveOptions as InsertManyOptions)
     } catch (error) {
-      handleDatabaseError(error, 'insertMany')
+      throw handleDatabaseError(error, 'insertMany')
     }
   }
 
@@ -432,6 +433,14 @@ export class MongoRepository<T extends Document = Document> implements IReposito
     const query = { ...filter, _id: { $ne: id } }
     const result = await this.model.exists(query as FilterQuery<T>)
     return !!result
+  }
+
+  @ConvertMongoFilterToBaseRepository()
+  async softRemove(entity: Partial<T>): Promise<T> {
+    return (await this.findOneAndUpdate(
+      entity as FilterQuery<T>,
+      { deletedAt: DateUtils.getJSDate() } as UpdateQuery<T>
+    )) as T
   }
 
   private getPopulatePaths(joins?: JoinType<T>): string[] {
