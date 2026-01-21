@@ -42,11 +42,7 @@ export class UserChangePasswordUsecase implements IUsecase {
       throw new ApiBadRequestException('passwordIsDifferent')
     }
 
-    entityPassword.password = input.newPassword
-
-    entityPassword.createPassword()
-
-    user.password = entityPassword
+    entityPassword.changePassword(input.newPassword)
 
     await this.repository.create(user)
   }

@@ -33,7 +33,7 @@ export const BaseEntity = <T>() => {
     initializeTimestamps(): void {
       const now = DateUtils.getJSDate()
       if (!this.createdAt) this.createdAt = now
-      if (!this.updatedAt) this.updatedAt = now
+      this.updatedAt = now
     }
 
     readonly id!: IEntity['id']

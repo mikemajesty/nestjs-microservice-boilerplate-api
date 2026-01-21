@@ -41,4 +41,10 @@ export class UserPasswordEntity extends BaseEntity<UserPasswordEntity>() {
       throw new ApiBadRequestException('incorrectPassword')
     }
   }
+
+  changePassword(newPassword: string) {
+    this.password = newPassword
+    this.createPassword()
+    return this.password
+  }
 }

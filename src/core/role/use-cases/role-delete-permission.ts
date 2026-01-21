@@ -34,16 +34,10 @@ export class RoleDeletePermissionUsecase implements IUsecase {
 
     for (const permission of input.permissions) {
       const permissionExists = permissions.find((p) => p.name === permission)
-
       if (!permissionExists) {
         continue
       }
-
-      const permissionAssociated = entity.permissions.find((p) => p.name === permission)
-
-      if (permissionAssociated) {
-        entity.permissions = entity.permissions.filter((p) => p.name !== permissionAssociated.name)
-      }
+      entity.removePermissionByName(permission)
     }
 
     await this.roleRepository.create(entity.toObject())

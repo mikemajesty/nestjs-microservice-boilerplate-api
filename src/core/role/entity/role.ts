@@ -31,11 +31,23 @@ type Role = Infer<typeof RoleEntitySchema>
 export class RoleEntity extends BaseEntity<RoleEntity>() {
   name!: Role['name']
 
-  permissions!: PermissionEntity[]
+  permissions: PermissionEntity[] = []
 
   constructor(entity: Role) {
     super(RoleEntitySchema)
     this.validate(entity)
     this.ensureID()
+  }
+
+  addPermission(permission: PermissionEntity) {
+    if (this.permissions.find((p) => p.name === permission.name)) {
+      return
+    }
+
+    this.permissions.push(permission)
+  }
+
+  removePermissionByName(name: string) {
+    this.permissions = this.permissions.filter((p) => p.name !== name)
   }
 }
