@@ -2,7 +2,7 @@
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/modules/repository.md
  */
 import { Injectable } from '@nestjs/common'
-import { FindOptionsRelations, FindOptionsWhere, Repository } from 'typeorm'
+import { Repository } from 'typeorm'
 
 import { PermissionEntity } from '@/core/permission/entity/permission'
 import { IPermissionRepository } from '@/core/permission/repository/permission'
@@ -15,16 +15,6 @@ import { ConvertTypeOrmFilter, SearchTypeEnum, ValidateDatabaseSortAllowed } fro
 export class PermissionRepository extends TypeORMRepository<Model> implements IPermissionRepository {
   constructor(readonly repository: Repository<Model>) {
     super(repository)
-  }
-
-  async findOneWithRelation(
-    filter: Partial<PermissionEntity>,
-    relations: { [key in keyof Partial<PermissionEntity>]: boolean }
-  ): Promise<PermissionEntity> {
-    return (await this.repository.findOne({
-      where: filter as FindOptionsWhere<unknown>,
-      relations: relations as FindOptionsRelations<unknown>
-    })) as PermissionEntity
   }
 
   @ConvertTypeOrmFilter<PermissionEntity>([{ name: 'name', type: SearchTypeEnum.like }])

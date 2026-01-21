@@ -9,8 +9,4 @@ import { UserListInput, UserListOutput } from '../use-cases/user-list'
 export abstract class IUserRepository extends IRepository<UserEntity> {
   abstract paginate(input: UserListInput): Promise<UserListOutput>
   abstract softRemove(entity: Partial<UserEntity>): Promise<UserEntity>
-  abstract findOneWithRelation(
-    filter: Partial<UserEntity>,
-    relations: { [key in keyof Partial<UserEntity>]: true | false }
-  ): Promise<UserEntity>
 }

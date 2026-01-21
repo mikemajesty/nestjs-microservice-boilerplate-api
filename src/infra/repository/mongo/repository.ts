@@ -391,7 +391,7 @@ export class MongoRepository<T extends Document = Document> implements IReposito
   }
 
   @ConvertMongoFilterToBaseRepository()
-  async findOneWithJoin<Filter = Partial<T>>(filter: Filter, joins?: JoinType<T>): Promise<T | null> {
+  async findOneWithRelation<Filter = Partial<T>>(filter: Filter, joins?: JoinType<T>): Promise<T | null> {
     const populatePaths = this.getPopulatePaths(joins)
 
     const query = this.model.findOne(filter as FilterQuery<T>)
@@ -406,7 +406,7 @@ export class MongoRepository<T extends Document = Document> implements IReposito
   }
 
   @ConvertMongoFilterToBaseRepository()
-  async findAllWithJoin<Filter = Partial<T>>(filter?: Filter, joins?: JoinType<T>): Promise<T[]> {
+  async findAllWithRelation<Filter = Partial<T>>(filter?: Filter, joins?: JoinType<T>): Promise<T[]> {
     const populatePaths = this.getPopulatePaths(joins)
 
     const query = this.model.find(filter ?? {})

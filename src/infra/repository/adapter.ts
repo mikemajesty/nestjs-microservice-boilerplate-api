@@ -291,9 +291,9 @@ export abstract class IRepository<T> {
    * @param joins Join configuration.
    * @returns Found document or null.
    * @example
-   *   await repo.findOneWithJoin({ id: '123' }, { profile: true })
+   *   await repo.findOneWithRelation({ id: '123' }, { profile: true })
    */
-  abstract findOneWithJoin<Filter = Partial<T>>(filter: Filter, joins?: JoinType<T>): Promise<T | null>
+  abstract findOneWithRelation<Filter = Partial<T>>(filter: Filter, joins?: JoinType<T>): Promise<T | null>
 
   /**
    * Finds all documents with join on other entities.
@@ -301,9 +301,9 @@ export abstract class IRepository<T> {
    * @param joins Join configuration.
    * @returns List of documents.
    * @example
-   *   await repo.findAllWithJoin({ active: true }, { profile: true, roles: ['name'] })
+   *   await repo.findAllWithRelation({ active: true }, { profile: true, roles: ['name'] })
    */
-  abstract findAllWithJoin<Filter = Partial<T>>(filter?: Filter, joins?: JoinType<T>): Promise<T[]>
+  abstract findAllWithRelation<Filter = Partial<T>>(filter?: Filter, joins?: JoinType<T>): Promise<T[]>
 
   /**
    * Checks if a document exists matching the filter.

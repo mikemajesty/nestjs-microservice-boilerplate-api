@@ -2,7 +2,7 @@
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/modules/repository.md
  */
 import { Injectable } from '@nestjs/common'
-import { FindOptionsRelations, FindOptionsWhere, Repository } from 'typeorm'
+import { Repository } from 'typeorm'
 
 import { UserEntity } from '@/core/user/entity/user'
 import { IUserRepository } from '@/core/user/repository/user'
@@ -15,20 +15,6 @@ import { ConvertTypeOrmFilter, SearchTypeEnum, ValidateDatabaseSortAllowed } fro
 export class UserRepository extends TypeORMRepository<Model> implements IUserRepository {
   constructor(readonly repository: Repository<Model>) {
     super(repository)
-  }
-
-  async findOneWithRelation(
-    filter: Partial<UserEntity>,
-    relations: { [key in keyof Partial<UserEntity>]: boolean }
-  ): Promise<UserEntity> {
-    return (await this.repository.findOne({
-      where: filter as FindOptionsWhere<unknown>,
-      relations: relations as FindOptionsRelations<unknown>
-    })) as UserEntity
-  }
-
-  async softRemove(entity: Partial<UserEntity>): Promise<Model> {
-    return await this.repository.softRemove(entity as Model)
   }
 
   @ConvertTypeOrmFilter<UserEntity>([

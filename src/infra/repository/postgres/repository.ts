@@ -281,7 +281,7 @@ export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEn
     })
   }
 
-  async findOneWithJoin<Filter = Partial<T>>(filter: Filter, joins?: JoinType<T>): Promise<T | null> {
+  async findOneWithRelation<Filter = Partial<T>>(filter: Filter, joins?: JoinType<T>): Promise<T | null> {
     const { relations } = this.convertJoins(joins)
 
     const options: FindOneOptions<T> = {
@@ -295,7 +295,7 @@ export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEn
     return this.repository.findOne(options)
   }
 
-  async findAllWithJoin<Filter = Partial<T>>(filter?: Filter, joins?: JoinType<T>): Promise<T[]> {
+  async findAllWithRelation<Filter = Partial<T>>(filter?: Filter, joins?: JoinType<T>): Promise<T[]> {
     const { relations } = this.convertJoins(joins)
 
     const where: FindOptionsWhere<T> = filter
