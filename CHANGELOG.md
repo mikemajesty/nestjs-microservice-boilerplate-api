@@ -1,3 +1,9 @@
+## [1.1.10](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/v1.1.9...v1.1.10) (2026-01-18)
+
+### Features
+
+* **repository:** add exists and existsOnUpdate methods ([626016b](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/626016be732a9273857df3d129e5c910e2c07543))
+* **repository:** add transaction repository and applyPagination ([133efe4](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/133efe4f19022a8e9452b45da898aedf8e15da53))
 ## [1.1.9](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/v1.1.8...v1.1.9) (2025-12-21)
 ## [1.1.8](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/v1.1.7...v1.1.8) (2025-12-21)
 ## [1.1.7](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/v1.1.6...v1.1.7) (2025-12-21)
