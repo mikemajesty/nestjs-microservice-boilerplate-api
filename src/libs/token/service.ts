@@ -7,7 +7,7 @@ import jwt from 'jsonwebtoken'
 import { UserEntitySchema } from '@/core/user/entity/user'
 import { ISecretsAdapter } from '@/infra/secrets'
 import { ApiUnauthorizedException } from '@/utils/exception'
-import { Infer, InputValidator } from '@/utils/validator'
+import { InputValidator } from '@/utils/validator'
 
 import { ITokenAdapter } from './adapter'
 
@@ -20,11 +20,11 @@ export const TokenGetSchema = UserEntitySchema.pick({
 export class TokenService implements ITokenAdapter {
   constructor(private readonly secret: ISecretsAdapter) {}
 
-  sign<TOpt = jwt.SignOptions>(model: SignInput, options?: TOpt): SignOutput {
+  sign(input: TokenSignInput): TokenSignOutput {
     const token = jwt.sign(
-      model,
-      this.secret.JWT_SECRET_KEY,
-      options || {
+      input.body as jwt.JwtPayload,
+      input.secret ?? this.secret.JWT_SECRET_KEY,
+      input.options || {
         expiresIn: this.secret.TOKEN_EXPIRATION as jwt.SignOptions['expiresIn']
       }
     )
@@ -32,9 +32,9 @@ export class TokenService implements ITokenAdapter {
     return { token }
   }
 
-  async verify<T>(token: string): Promise<T> {
+  async verify<T>(input: TokenVerifyInput): Promise<T> {
     return new Promise((res, rej) => {
-      jwt.verify(token, this.secret.JWT_SECRET_KEY, (error, decoded) => {
+      jwt.verify(input.token, input.secret ?? this.secret.JWT_SECRET_KEY, (error, decoded) => {
         if (error) rej(new ApiUnauthorizedException(error.message))
 
         res(decoded as T)
@@ -43,8 +43,17 @@ export class TokenService implements ITokenAdapter {
   }
 }
 
-export type SignInput = Infer<typeof TokenGetSchema>
+export type TokenSignInput = {
+  secret?: string
+  body: unknown
+  options?: jwt.SignOptions
+}
 
-export type SignOutput = {
+export type TokenSignOutput = {
+  token: string
+}
+
+export type TokenVerifyInput = {
+  secret?: string
   token: string
 }

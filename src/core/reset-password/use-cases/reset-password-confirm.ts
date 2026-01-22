@@ -37,7 +37,7 @@ export class ResetPasswordConfirmUsecase implements IUsecase {
       throw new ApiBadRequestException('passwords are different')
     }
 
-    const token = await this.token.verify<ResetPasswordConfirmVerify>(input.token)
+    const token = await this.token.verify<ResetPasswordConfirmVerify>({ token: input.token })
 
     const user = await this.userRepository.findOneWithRelation({ id: token.id }, { password: true })
 

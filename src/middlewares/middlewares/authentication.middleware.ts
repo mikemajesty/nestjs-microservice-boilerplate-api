@@ -50,7 +50,7 @@ export class AuthenticationMiddleware implements NestMiddleware {
       next(new ApiUnauthorizedException('you have been logged out'))
     }
 
-    const userDecoded = (await this.tokenService.verify<UserRequest>(token).catch((error) => {
+    const userDecoded = (await this.tokenService.verify<UserRequest>({ token }).catch((error) => {
       error.status = ApiUnauthorizedException.STATUS
       if (process.env.NODE_ENV !== 'test') {
         this.loggerService?.logger(request, response)

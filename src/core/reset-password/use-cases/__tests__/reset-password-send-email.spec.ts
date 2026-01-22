@@ -11,7 +11,7 @@ import { IUserRepository } from '@/core/user/repository/user'
 import { CreatedModel } from '@/infra/repository'
 import { ISecretsAdapter } from '@/infra/secrets'
 import { EmitEventOutput, IEventAdapter } from '@/libs/event'
-import { ITokenAdapter, SignOutput } from '@/libs/token'
+import { ITokenAdapter, TokenSignOutput } from '@/libs/token'
 import { IConfirmResetPasswordAdapter, ISendEmailResetPasswordAdapter } from '@/modules/reset-password/adapter'
 import { ApiNotFoundException } from '@/utils/exception'
 import { TestUtils } from '@/utils/test/util'
@@ -47,7 +47,7 @@ describe(ResetPasswordSendEmailUsecase.name, () => {
         {
           provide: ITokenAdapter,
           useValue: {
-            sign: TestUtils.mockReturnValue<SignOutput>({ token: 'token' })
+            sign: TestUtils.mockReturnValue<TokenSignOutput>({ token: 'token' })
           }
         },
         {

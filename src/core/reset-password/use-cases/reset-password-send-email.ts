@@ -45,7 +45,7 @@ export class ResetPasswordSendEmailUsecase implements IUsecase {
       return
     }
 
-    const hash = this.token.sign({ id: user.id })
+    const hash = this.token.sign({ body: { id: user.id } })
     const entity = new ResetPasswordEntity({ id: IDGeneratorUtils.uuid(), token: hash.token, user })
 
     await this.resetPasswordRepository.create(entity.toObject())

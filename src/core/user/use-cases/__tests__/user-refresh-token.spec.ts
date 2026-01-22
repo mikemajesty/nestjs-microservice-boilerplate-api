@@ -5,7 +5,7 @@ import { ZodMockSchema } from '@mikemajesty/zod-mock-schema'
 import { Test } from '@nestjs/testing'
 
 import { RoleEntity, RoleEntitySchema } from '@/core/role/entity/role'
-import { ITokenAdapter, SignOutput } from '@/libs/token'
+import { ITokenAdapter, TokenSignOutput } from '@/libs/token'
 import { IRefreshTokenAdapter } from '@/modules/login/adapter'
 import { ApiBadRequestException, ApiNotFoundException } from '@/utils/exception'
 import { TestUtils } from '@/utils/test/util'
@@ -125,7 +125,7 @@ describe(RefreshTokenUsecase.name, () => {
     token.verify = TestUtils.mockImplementation<UserRefreshTokenVerifyInput>(() => ({
       userId: TestUtils.getMockUUID()
     }))
-    token.sign = TestUtils.mockReturnValue<SignOutput>({ token: '<token>' })
+    token.sign = TestUtils.mockReturnValue<TokenSignOutput>({ token: '<token>' })
     const user = userMock.generate<UserEntity>({
       overrides: {
         password: { ...password, password: '69bf0bc46f51b33377c4f3d92caf876714f6bbbe99e7544487327920873f9820' },

@@ -45,12 +45,14 @@ export class LoginUsecase implements IUsecase {
     tracing.logEvent('user-login', `${user}`)
 
     const { token } = this.tokenService.sign({
-      email: user.email,
-      name: user.name,
-      id: user.id
-    } as UserRequest)
+      body: {
+        email: user.email,
+        name: user.name,
+        id: user.id
+      } as UserRequest
+    })
 
-    const { token: refreshToken } = this.tokenService.sign({ userId: user.id })
+    const { token: refreshToken } = this.tokenService.sign({ body: { userId: user.id } })
 
     return { accessToken: token, refreshToken }
   }
