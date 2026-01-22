@@ -58,6 +58,9 @@ Clean Architecture organizes code into concentric circles where dependencies poi
 - **Use Cases** live in `src/core/*/use-cases` — application-specific business rules
 - **Interfaces** live in `src/core/*/repository` — contracts for external dependencies
 - **Frameworks** live in `src/modules` and `src/infra` — NestJS controllers and database implementations
+**What we simplified:**
+- No explicit Interactors or Presenters
+- No input/output boundary classes
 
 ### Domain-Driven Design (DDD)
 
@@ -70,9 +73,23 @@ DDD focuses on modeling your business domain. It introduces concepts like Entiti
 - **Bounded Contexts**: Each module represents a bounded context
 
 **What we simplified:**
-- Simplified Aggregates — entities can be grouped but without strict root enforcement
-- No Domain Events infrastructure — use the event system in `libs/` when needed
-- No Value Objects as separate classes — Zod schemas handle validation
+- No Domain Events infrastructure
+- No Value Objects as separate classes
+- Unified service layer (no Domain/Application Service split)
+
+#### Service Layer Comparison: DDD vs. This Architecture
+
+In traditional DDD, there are two types of services:
+
+- **Domain Service:** Encapsulates domain logic that does not naturally fit within an Entity or Value Object.
+- **Application Service:** Coordinates use cases, orchestrating entities, repositories, and domain services to fulfill business processes.
+
+**In this architecture, both responsibilities are unified into a single component: the `UseCase`.**
+
+- The `UseCase` acts as the application service, orchestrating business operations and dependencies.
+- Domain logic that would be placed in a domain service is either implemented within entities or directly in the use case, depending on complexity.
+
+This simplification reduces boilerplate and cognitive overhead, while still maintaining a clear separation between business logic and infrastructure. The result is a leaner, more maintainable service layer without sacrificing the core benefits of DDD.
 
 ### Hexagonal Architecture (Ports and Adapters)
 
@@ -486,14 +503,12 @@ import { IUsecase } from '@/utils/usecase';
 export class CatCreateUsecase implements IUsecase {
   constructor(private readonly catRepository: ICatRepository) {}
 
-  @ValidateSchema(CatCreateSchema)
-  async execute(input: CatCreateInput): Promise<CatCreateOutput> {
-    // ...
   }
 }
-```
 
-**Why this matters:**
+    **What we simplified:**
+    - No explicit inbound/outbound port distinction
+    - Unified adapter naming for interfaces and implementations
 
 1. **Contract enforcement** — Ensures all Use Cases have the same structure
 2. **Dependency injection** — NestJS can properly inject and resolve Use Cases
