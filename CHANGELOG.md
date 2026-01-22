@@ -1,3 +1,4 @@
+## [1.1.11](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/v1.1.10...v1.1.11) (2026-01-22)
 ## [1.1.10](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/v1.1.9...v1.1.10) (2026-01-18)
 
 ### Features
