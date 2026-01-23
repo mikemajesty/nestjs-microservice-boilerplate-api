@@ -14,26 +14,15 @@ export const normalizeID = (entity: { _id?: string; id?: string }) => {
   return entity
 }
 
-export interface IEntity {
-  id: string
-  createdAt?: Date | null
-  updatedAt?: Date | null
-  deletedAt?: Date | null
-}
-
 export const BaseEntity = <T>() => {
-  abstract class Entity implements IEntity {
+  const eventsMap = new WeakMap<object, DomainEvent<unknown>[]>()
+  abstract class Entity implements IEntity, IEvents {
     protected constructor(readonly _schema: z.ZodSchema) {
       if (!_schema) {
         throw new ApiUnprocessableEntityException(`${this.constructor.name} required a schema`)
       }
       this.initializeTimestamps()
-    }
-
-    initializeTimestamps(): void {
-      const now = DateUtils.getJSDate()
-      if (!this.createdAt) this.createdAt = now
-      this.updatedAt = now
+      this.clearEvents()
     }
 
     readonly id!: IEntity['id']
@@ -92,7 +81,56 @@ export const BaseEntity = <T>() => {
       const merged = { ...current, ...partial }
       return new (this.constructor as new (entity: T) => this)(merged as T)
     }
-  }
 
+    addEvent<R>(event: AddEventInput<R>): void {
+      const domainEvent: DomainEvent<R> = {
+        ...event,
+        occurredAt: DateUtils.getJSDate()
+      }
+      eventsMap.get(this)!.push(domainEvent)
+    }
+
+    getEvents<R>(): DomainEvent<R>[] {
+      return eventsMap.get(this) as DomainEvent<R>[]
+    }
+
+    releaseEvents<R>(): DomainEvent<R>[] {
+      const events = this.getEvents<R>()
+      this.clearEvents()
+      return events
+    }
+
+    clearEvents(): void {
+      eventsMap.set(this, [])
+    }
+
+    initializeTimestamps(): void {
+      const now = DateUtils.getJSDate()
+      if (!this.createdAt) this.createdAt = now
+      this.updatedAt = now
+    }
+  }
   return Entity
 }
+
+export interface IEntity {
+  id: string
+  createdAt?: Date | null
+  updatedAt?: Date | null
+  deletedAt?: Date | null
+}
+
+export interface IEvents {
+  addEvent<T>(event: AddEventInput<T>): void
+  getEvents<T>(): DomainEvent<T>[]
+  releaseEvents<T>(): DomainEvent<T>[]
+  clearEvents(): void
+}
+
+export type DomainEvent<T> = {
+  name: string
+  payload: T
+  occurredAt: Date
+}
+
+type AddEventInput<T> = Omit<DomainEvent<T>, 'occurredAt'>
