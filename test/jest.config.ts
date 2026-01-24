@@ -27,7 +27,7 @@ const config: Config.InitialOptions = {
     ]
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(@faker-js/faker|@mikemajesty/zod-mock-schema)/)'
+    'node_modules/(?!(@faker-js/faker|@mikemajesty/zod-mock-schema|uuid)/)'
   ],
   setupFilesAfterEnv: ['<rootDir>/test/initialization.ts'],
   testEnvironment: 'node',
