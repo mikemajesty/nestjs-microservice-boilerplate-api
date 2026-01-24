@@ -71,7 +71,7 @@
     "jsonwebtoken": "^9.0.2",
     "luxon": "^3.7.2",
     "mongo-migrate-ts": "^2.0.0",
-    "mongoose": "^8.20.2",
+    "mongoose": "^9.1.5",
     "mongoose-paginate-v2": "^1.9.1",
     "nestjs-convert-to-curl": "^2.0.6",
     "nestjs-i18n": "^10.5.1",
