@@ -97,7 +97,7 @@
     "typeorm": "^0.3.27",
     "typeorm-naming-strategies": "^4.1.0",
     "typescript": "5.9.3",
-    "uuid": "^11.0.0",
+    "uuid": "^13.0.0",
     "v8": "^0.1.0",
     "validator-brasil": "^1.0.0",
     "write-excel-file": "^2.3.10",
