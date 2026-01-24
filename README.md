@@ -73,7 +73,6 @@ DDD focuses on modeling your business domain. It introduces concepts like Entiti
 - **Bounded Contexts**: Each module represents a bounded context
 
 **What we simplified:**
-- No Domain Events infrastructure
 - No Value Objects as separate classes
 - Unified service layer (no Domain/Application Service split)
 
@@ -505,8 +504,7 @@ export class CatCreateUsecase implements IUsecase {
 
   }
 }
-
-    **What we simplified:**
+**What we simplified:**
     - No explicit inbound/outbound port distinction
     - Unified adapter naming for interfaces and implementations
 
@@ -546,9 +544,9 @@ export abstract class ICatRepository extends IRepository<CatEntity> {
 
 ---
 
-### Controllers/Adapters: Avoid Business Logic
+### Controllers: Avoid Business Logic
 
-Controllers and Adapters must **never contain business logic**. Their responsibility is limited to:
+Controllers must **never contain business logic**. Their responsibility is limited to:
 
 1. **Orchestration** — Receive request, call use case, return response
 2. **Input standardization** — Transform and normalize inputs for the use case

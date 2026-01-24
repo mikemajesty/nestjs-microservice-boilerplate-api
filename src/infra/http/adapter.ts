@@ -11,7 +11,6 @@ export abstract class IHttpAdapter<T = Axios | AxiosInstance> {
   abstract instance(): T
   abstract tracing?: TracingType
 
-  // Métodos tradicionais (lançam erro)
   abstract get<Response = unknown>(url: string, config?: AxiosRequestConfig): Promise<Response>
   abstract post<Response = unknown, Request = HttpData>(
     url: string,
