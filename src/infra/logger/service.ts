@@ -22,8 +22,9 @@ import { ErrorType, MessageInputType } from './types'
 
 @Injectable({ scope: Scope.REQUEST })
 export class LoggerService implements ILoggerAdapter {
+  private readonly DATE_FORMAT = 'yyyy-MM-dd HH:mm:ss'
   static log(message: string) {
-    const timestamp = DateUtils.getDateStringWithFormat()
+    const timestamp = DateUtils.build({ format: 'yyyy-MM-dd HH:mm:ss', type: 'iso' })
     // eslint-disable-next-line no-console
     console.log(`${gray('TRACE')} [${timestamp}]: [${blue(name)}] ${green(message)}`)
   }
@@ -55,15 +56,6 @@ export class LoggerService implements ILoggerAdapter {
     this.logger = pinoHttp(this.getPinoHttpConfig(pinoLogger))
   }
 
-  getLokiInterval(): number | undefined {
-    const env = process.env.NODE_ENV as EnvEnum
-    if (env === EnvEnum.PRD) {
-      return 5
-    }
-
-    return 1
-  }
-
   setApplication(app: string): void {
     this.app = app
   }
@@ -77,12 +69,12 @@ export class LoggerService implements ILoggerAdapter {
   }
 
   debug({ message, context, obj = {} }: MessageInputType): void {
-    Object.assign(obj, { context, createdAt: DateUtils.getISODateString() })
+    Object.assign(obj, { context, createdAt: DateUtils.now({ type: 'iso' }) })
     this.logger.logger.debug([obj, gray(message)].find(Boolean), gray(message))
   }
 
   info({ message, context, obj = {} }: MessageInputType): void {
-    Object.assign(obj, { context, createdAt: DateUtils.getISODateString() })
+    Object.assign(obj, { context, createdAt: DateUtils.now({ type: 'iso' }) })
     this.logger.logger.info([obj, message].find(Boolean), message)
   }
 
@@ -90,7 +82,7 @@ export class LoggerService implements ILoggerAdapter {
     const { message, context, obj = {} } = input
     Object.assign(obj, {
       context: context ?? (obj as { context?: string })?.['context'],
-      createdAt: DateUtils.getISODateString()
+      createdAt: DateUtils.now({ type: 'iso' })
     })
     const finalMessage = typeof input === 'string' ? input : message
     this.logger.logger.warn([obj, finalMessage].find(Boolean), finalMessage)
@@ -122,7 +114,7 @@ export class LoggerService implements ILoggerAdapter {
         context: error?.context,
         type,
         traceid: this.getTraceId(error),
-        createdAt: DateUtils.getISODateString(),
+        createdAt: DateUtils.now({ type: 'iso' }),
         application: this.app,
         stack: error.stack?.replace(/\n/g, ''),
         ...error?.parameters,
@@ -157,7 +149,7 @@ export class LoggerService implements ILoggerAdapter {
         context: error?.context,
         type: error.name,
         traceid: this.getTraceId(error),
-        createdAt: DateUtils.getISODateString(),
+        createdAt: DateUtils.now({ type: 'iso' }),
         application: this.app,
         stack: error.stack?.replace(/\n/g, '')
       },
@@ -181,7 +173,7 @@ export class LoggerService implements ILoggerAdapter {
       },
       customPrettifiers: {
         time: () => {
-          return `[${DateUtils.getDateStringWithFormat()}]`
+          return `[${DateUtils.build({ format: this.DATE_FORMAT, type: 'iso' })}]`
         }
       }
     }
@@ -226,7 +218,7 @@ export class LoggerService implements ILoggerAdapter {
           traceid,
           application: this.app,
           context,
-          createdAt: DateUtils.getISODateString()
+          createdAt: DateUtils.now({ type: 'iso' })
         })
 
         return {
@@ -234,7 +226,7 @@ export class LoggerService implements ILoggerAdapter {
           application: this.app,
           context,
           path,
-          createdAt: DateUtils.getISODateString()
+          createdAt: DateUtils.now({ type: 'iso' })
         }
       },
       customLogLevel: (req: IncomingMessage, res: ServerResponse, error?: Error): pino.LevelWithSilent => {
@@ -281,5 +273,14 @@ export class LoggerService implements ILoggerAdapter {
   private getTraceId(error: string | { traceid: string }): string {
     if (typeof error === 'string') return IDGeneratorUtils.uuid()
     return [error.traceid, this.logger.logger.bindings()?.traceid].find(Boolean)
+  }
+
+  private getLokiInterval(): number | undefined {
+    const env = process.env.NODE_ENV as EnvEnum
+    if (env === EnvEnum.PRD) {
+      return 5
+    }
+
+    return 1
   }
 }

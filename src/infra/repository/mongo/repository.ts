@@ -1,7 +1,6 @@
 /**
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/infra/repository.md
  */
-import { HttpStatus } from '@nestjs/common'
 import {
   ClientSession,
   Document,
@@ -17,7 +16,7 @@ import {
 import { DateUtils } from '@/utils/date'
 import { ConvertMongoFilterToBaseRepository } from '@/utils/decorators'
 import { IEntity } from '@/utils/entity'
-import { ApiBadRequestException, BaseException, MessageType, ParametersType } from '@/utils/exception'
+import { ApiBadRequestException } from '@/utils/exception'
 import { FilterQuery, MongoRepositoryModelSessionType } from '@/utils/mongoose'
 import { PaginationInput, PaginationOutput } from '@/utils/pagination'
 
@@ -30,16 +29,11 @@ import {
   RemovedModel,
   UpdatedModel
 } from '../types'
-import { validateFindByCommandsFilter } from '../util'
-
-const handleDatabaseError = (error: unknown, context: string): ApiDatabaseException => {
-  return new ApiDatabaseException((error as Error).message ?? String(error), {
-    originalError: error,
-    context: `${MongoRepository.name}/${context}`
-  })
-}
+import { handleDatabaseError, validateFindByCommandsFilter } from '../util'
 
 export class MongoRepository<T extends Document = Document> implements IRepository<T> {
+  private readonly context: string = MongoRepository.name
+
   private paginateModel: MongoRepositoryModelSessionType<PaginateModel<T>>
 
   constructor(private readonly model: Model<T>) {
@@ -56,7 +50,7 @@ export class MongoRepository<T extends Document = Document> implements IReposito
       return result
     } catch (err) {
       await session.abortTransaction()
-      throw handleDatabaseError(err, 'runInTransaction')
+      throw handleDatabaseError({ error: err, context: `${this.context}/runInTransaction` })
     } finally {
       session.endSession()
     }
@@ -80,7 +74,7 @@ export class MongoRepository<T extends Document = Document> implements IReposito
     try {
       await this.model.insertMany(documents, saveOptions as InsertManyOptions)
     } catch (error) {
-      throw handleDatabaseError(error, 'insertMany')
+      throw handleDatabaseError({ error, context: `${this.context}/insertMany` })
     }
   }
 
@@ -93,7 +87,7 @@ export class MongoRepository<T extends Document = Document> implements IReposito
       const savedResult = await createdEntity.save(saveOptions as SaveOptions)
       return { id: savedResult._id.toString(), created: !!savedResult._id }
     } catch (error) {
-      throw handleDatabaseError(error, 'create')
+      throw handleDatabaseError({ error, context: `${this.context}/create` })
     }
   }
 
@@ -123,7 +117,7 @@ export class MongoRepository<T extends Document = Document> implements IReposito
 
       return { id: doc['id'].toString(), created: false, updated: true }
     } catch (error) {
-      throw handleDatabaseError(error, 'createOrUpdate')
+      throw handleDatabaseError({ error, context: `${this.context}/createOrUpdate` })
     }
   }
 
@@ -134,7 +128,7 @@ export class MongoRepository<T extends Document = Document> implements IReposito
       const results = await this.model.find(filter as FilterQuery<T>, undefined, defaultOptions as FilterQuery<IEntity>)
       return results.map((d) => this.toObject(d))
     } catch (error) {
-      throw handleDatabaseError(error, 'find')
+      throw handleDatabaseError({ error, context: `${this.context}/find` })
     }
   }
 
@@ -143,7 +137,7 @@ export class MongoRepository<T extends Document = Document> implements IReposito
       const model = await this.model.findById(id)
       return model ? this.toObject(model) : null
     } catch (error) {
-      throw handleDatabaseError(error, 'findById')
+      throw handleDatabaseError({ error, context: `${this.context}/findById` })
     }
   }
 
@@ -154,7 +148,7 @@ export class MongoRepository<T extends Document = Document> implements IReposito
       const data = await this.model.findOne(filter as FilterQuery<T>, undefined, defaultOptions as FilterQuery<IEntity>)
       return data ? this.toObject(data) : null
     } catch (error) {
-      throw handleDatabaseError(error, 'findOne')
+      throw handleDatabaseError({ error, context: `${this.context}/findOne` })
     }
   }
 
@@ -169,7 +163,7 @@ export class MongoRepository<T extends Document = Document> implements IReposito
       )
       return modelList.map((d) => this.toObject(d))
     } catch (error) {
-      throw handleDatabaseError(error, 'findAll')
+      throw handleDatabaseError({ error, context: `${this.context}/findAll` })
     }
   }
 
@@ -179,7 +173,7 @@ export class MongoRepository<T extends Document = Document> implements IReposito
       const { deletedCount } = await this.model.deleteOne(filter as FilterQuery<T>, options || {})
       return { deletedCount: deletedCount || 0, deleted: !!deletedCount }
     } catch (error) {
-      throw handleDatabaseError(error, 'remove')
+      throw handleDatabaseError({ error, context: `${this.context}/remove` })
     }
   }
 
@@ -196,7 +190,7 @@ export class MongoRepository<T extends Document = Document> implements IReposito
         options as MongooseUpdateQueryOptions
       )
     } catch (error) {
-      throw handleDatabaseError(error, 'updateOne')
+      throw handleDatabaseError({ error, context: `${this.context}/updateOne` })
     }
   }
 
@@ -217,7 +211,7 @@ export class MongoRepository<T extends Document = Document> implements IReposito
 
       return model ? this.toObject(model) : null
     } catch (error) {
-      throw handleDatabaseError(error, 'findOneAndUpdate')
+      throw handleDatabaseError({ error, context: `${this.context}/findOneAndUpdate` })
     }
   }
 
@@ -234,7 +228,7 @@ export class MongoRepository<T extends Document = Document> implements IReposito
         options as MongooseUpdateQueryOptions
       )
     } catch (error) {
-      throw handleDatabaseError(error, 'updateMany')
+      throw handleDatabaseError({ error, context: `${this.context}/updateMany` })
     }
   }
 
@@ -255,7 +249,7 @@ export class MongoRepository<T extends Document = Document> implements IReposito
       const data = await this.model.find(where, undefined, defaultOptions as FilterQuery<IEntity>)
       return data.map((d) => this.toObject(d))
     } catch (error) {
-      throw handleDatabaseError(error, 'findIn')
+      throw handleDatabaseError({ error, context: `${this.context}/findIn` })
     }
   }
 
@@ -277,7 +271,7 @@ export class MongoRepository<T extends Document = Document> implements IReposito
       )
       return data.map((d) => this.toObject(d))
     } catch (error) {
-      throw handleDatabaseError(error, 'findOr')
+      throw handleDatabaseError({ error, context: `${this.context}/findOr` })
     }
   }
 
@@ -291,7 +285,7 @@ export class MongoRepository<T extends Document = Document> implements IReposito
       const data = await this.model.findOne(searchList, undefined, defaultOptions as FilterQuery<IEntity>)
       return data ? this.toObject(data) : null
     } catch (error) {
-      throw handleDatabaseError(error, 'findOneByCommands')
+      throw handleDatabaseError({ error, context: `${this.context}/findOneByCommands` })
     }
   }
 
@@ -305,7 +299,7 @@ export class MongoRepository<T extends Document = Document> implements IReposito
       const data = await this.model.find(searchList, undefined, defaultOptions as FilterQuery<IEntity>)
       return data.map((d) => this.toObject(d))
     } catch (error) {
-      throw handleDatabaseError(error, 'findByCommands')
+      throw handleDatabaseError({ error, context: `${this.context}/findByCommands` })
     }
   }
 
@@ -325,7 +319,7 @@ export class MongoRepository<T extends Document = Document> implements IReposito
 
       return data ? this.toObject(data) : null
     } catch (error) {
-      throw handleDatabaseError(error, 'findOneWithExcludeFields')
+      throw handleDatabaseError({ error, context: `${this.context}/findOneWithExcludeFields` })
     }
   }
 
@@ -345,7 +339,7 @@ export class MongoRepository<T extends Document = Document> implements IReposito
 
       return data.map((d) => this.toObject(d))
     } catch (error) {
-      throw handleDatabaseError(error, 'findAllWithExcludeFields')
+      throw handleDatabaseError({ error, context: `${this.context}/findAllWithExcludeFields` })
     }
   }
 
@@ -365,7 +359,7 @@ export class MongoRepository<T extends Document = Document> implements IReposito
 
       return data ? this.toObject(data) : null
     } catch (error) {
-      throw handleDatabaseError(error, 'findOneWithSelectFields')
+      throw handleDatabaseError({ error, context: `${this.context}/findOneWithSelectFields` })
     }
   }
 
@@ -386,7 +380,7 @@ export class MongoRepository<T extends Document = Document> implements IReposito
 
       return data.map((d) => this.toObject(d))
     } catch (error) {
-      throw handleDatabaseError(error, 'findAllWithSelectFields')
+      throw handleDatabaseError({ error, context: `${this.context}/findAllWithSelectFields` })
     }
   }
 
@@ -439,7 +433,7 @@ export class MongoRepository<T extends Document = Document> implements IReposito
   async softRemove(entity: Partial<T>): Promise<T> {
     return (await this.findOneAndUpdate(
       entity as FilterQuery<T>,
-      { deletedAt: DateUtils.getJSDate() } as UpdateQuery<T>
+      { deletedAt: DateUtils.now() } as UpdateQuery<T>
     )) as T
   }
 
@@ -503,12 +497,5 @@ export class MongoRepository<T extends Document = Document> implements IReposito
 
   private toObject(document: T, options: { virtuals?: boolean } = { virtuals: true }): T {
     return document.toObject({ virtuals: options.virtuals })
-  }
-}
-
-class ApiDatabaseException extends BaseException {
-  static STATUS = HttpStatus.INTERNAL_SERVER_ERROR
-  constructor(message: MessageType, parameters: ParametersType) {
-    super(message, ApiDatabaseException.STATUS, parameters)
   }
 }

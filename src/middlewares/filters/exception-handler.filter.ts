@@ -35,7 +35,7 @@ export class ExceptionHandlerFilter implements AppExceptionFilter {
         details: exception?.parameters?.details,
         name: exception.name || exception?.constructor?.name || Error.name,
         message,
-        timestamp: DateUtils.getDateStringWithFormat(),
+        timestamp: DateUtils.build({ format: 'yyyy-MM-dd HH:mm:ss', type: 'iso' }),
         path: request.url
       }
     }

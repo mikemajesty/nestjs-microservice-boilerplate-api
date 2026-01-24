@@ -12,11 +12,11 @@ export const convertFilterValue = (input: Pick<AllowedFilter<unknown>, 'format'>
   }
 
   if (input.format === 'Date') {
-    return DateUtils.createJSDate({ date: `${input.value}`, utc: false })
+    return DateUtils.build<Date>({ date: `${input.value}`, type: 'js', utc: false })
   }
 
   if (input.format === 'DateIso') {
-    return DateUtils.createISODate({ date: `${input.value}`, utc: false })
+    return DateUtils.build<string>({ date: `${input.value}`, type: 'iso', utc: false })
   }
 
   if (input.format === 'Boolean') {

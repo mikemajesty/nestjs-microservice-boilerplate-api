@@ -28,8 +28,11 @@ import {
   RemovedModel,
   UpdatedModel
 } from '../types'
+import { handleDatabaseError } from '../util'
 
 export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEntity> implements IRepository<T> {
+  private readonly context: string = TypeORMRepository.name
+
   constructor(readonly repository: Repository<T>) {}
 
   async runInTransaction<R>(fn: (manager: EntityManager) => Promise<R>): Promise<R> {
@@ -42,7 +45,7 @@ export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEn
       return result
     } catch (err) {
       await queryRunner.rollbackTransaction()
-      throw err
+      throw handleDatabaseError({ error: err, context: `${this.context}/runInTransaction` })
     } finally {
       await queryRunner.release()
     }
@@ -71,9 +74,13 @@ export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEn
   }
 
   async create<TOptions = SaveOptions>(document: T, saveOptions?: TOptions): Promise<CreatedModel> {
-    const entity = this.repository.create(document)
-    const model = await entity.save(saveOptions as SaveOptions)
-    return { created: model.hasId(), id: model.id }
+    try {
+      const entity = this.repository.create(document)
+      const model = await entity.save(saveOptions as SaveOptions)
+      return { created: model.hasId(), id: model.id }
+    } catch (error) {
+      throw handleDatabaseError({ error, context: `${this.context}/create` })
+    }
   }
 
   async findById(id: string): Promise<T | null> {
@@ -85,25 +92,29 @@ export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEn
   }
 
   async createOrUpdate<TUpdate = Partial<T>>(updated: TUpdate): Promise<CreatedOrUpdateModel> {
-    const documentEntity: IEntity = updated as IEntity
-    if (!documentEntity?.id) {
-      throw new ApiInternalServerException('id is required', { context: `${TypeORMRepository.name}.createOrUpdate` })
+    try {
+      const documentEntity: IEntity = updated as IEntity
+      if (!documentEntity?.id) {
+        throw new ApiInternalServerException('id is required', { context: `${TypeORMRepository.name}.createOrUpdate` })
+      }
+
+      const exists = await this.findById(documentEntity.id)
+
+      if (!exists) {
+        const created = await this.create(updated as unknown as T)
+
+        return { id: created.id, created: true, updated: false }
+      }
+
+      const row = await this.repository.update(
+        { id: exists['id'] } as FindOptionsWhere<T>,
+        { ...exists, ...updated } as object
+      )
+
+      return { id: exists['id'], created: false, updated: (row.affected || 0) > 0 }
+    } catch (error) {
+      throw handleDatabaseError({ error, context: `${this.context}/createOrUpdate` })
     }
-
-    const exists = await this.findById(documentEntity.id)
-
-    if (!exists) {
-      const created = await this.create(updated as unknown as T)
-
-      return { id: created.id, created: true, updated: false }
-    }
-
-    const row = await this.repository.update(
-      { id: exists['id'] } as FindOptionsWhere<T>,
-      { ...exists, ...updated } as object
-    )
-
-    return { id: exists['id'], created: false, updated: (row.affected || 0) > 0 }
   }
 
   async findAll(): Promise<T[]> {
@@ -205,8 +216,12 @@ export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEn
   }
 
   async remove<TQuery = Partial<T>>(filter: TQuery): Promise<RemovedModel> {
-    const data = await this.repository.delete(filter as FindOptionsWhere<T>)
-    return { deletedCount: data.affected || 0, deleted: !!data.affected }
+    try {
+      const data = await this.repository.delete(filter as FindOptionsWhere<T>)
+      return { deletedCount: data.affected || 0, deleted: !!data.affected }
+    } catch (error) {
+      throw handleDatabaseError({ error, context: `${this.context}/remove` })
+    }
   }
 
   async findOne<TQuery = Partial<T>>(filter: TQuery): Promise<T | null> {
@@ -216,13 +231,17 @@ export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEn
   }
 
   async updateOne<TQuery = Partial<T>, TUpdate = Partial<T>>(filter: TQuery, updated: TUpdate): Promise<UpdatedModel> {
-    const data = await this.repository.update(filter as FindOptionsWhere<T>, Object.assign({}, updated))
-    return {
-      modifiedCount: data.affected || 0,
-      upsertedCount: 0,
-      upsertedId: 0,
-      matchedCount: data.affected || 0,
-      acknowledged: !!data.affected
+    try {
+      const data = await this.repository.update(filter as FindOptionsWhere<T>, Object.assign({}, updated))
+      return {
+        modifiedCount: data.affected || 0,
+        upsertedCount: 0,
+        upsertedId: 0,
+        matchedCount: data.affected || 0,
+        acknowledged: !!data.affected
+      }
+    } catch (error) {
+      throw handleDatabaseError({ error, context: `${this.context}/updateOne` })
     }
   }
 
@@ -236,13 +255,17 @@ export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEn
   }
 
   async updateMany<TQuery = Partial<T>, TUpdate = Partial<T>>(filter: TQuery, updated: TUpdate): Promise<UpdatedModel> {
-    const data = await this.repository.update(filter as FindOptionsWhere<T>, updated as object)
-    return {
-      modifiedCount: data.affected || 0,
-      upsertedCount: 0,
-      upsertedId: 0,
-      matchedCount: data.affected || 0,
-      acknowledged: !!data.affected
+    try {
+      const data = await this.repository.update(filter as FindOptionsWhere<T>, updated as object)
+      return {
+        modifiedCount: data.affected || 0,
+        upsertedCount: 0,
+        upsertedId: 0,
+        matchedCount: data.affected || 0,
+        acknowledged: !!data.affected
+      }
+    } catch (error) {
+      throw handleDatabaseError({ error, context: `${this.context}/updateMany` })
     }
   }
 

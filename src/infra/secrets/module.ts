@@ -74,7 +74,8 @@ import { EnvEnum } from './types'
           const message = zodError.issues
             .map((i: ZodExceptionIssue) => `${SecretsService.name}.${i.path.join('.')}: ${i.message}`)
             .join(',')
-          throw new ApiInternalServerException(message)
+          console.error(new ApiInternalServerException(message, { context: SecretsService.name }))
+          process.exit(1)
         }
 
         return SecretsSchema.parse(secret)

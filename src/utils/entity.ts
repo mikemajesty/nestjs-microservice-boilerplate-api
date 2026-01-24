@@ -43,7 +43,7 @@ export const BaseEntity = <T>() => {
     }
 
     deactivate(): this {
-      this.deletedAt = DateUtils.getJSDate()
+      this.deletedAt = DateUtils.now()
       return this
     }
 
@@ -85,7 +85,7 @@ export const BaseEntity = <T>() => {
     addEvent<R>(event: AddEventInput<R>): void {
       const domainEvent: DomainEvent<R> = {
         ...event,
-        occurredAt: DateUtils.getJSDate()
+        occurredAt: DateUtils.now()
       }
       eventsMap.get(this)!.push(domainEvent)
     }
@@ -105,7 +105,7 @@ export const BaseEntity = <T>() => {
     }
 
     initializeTimestamps(): void {
-      const now = DateUtils.getJSDate()
+      const now = DateUtils.now({ type: 'js' }) as Date
       if (!this.createdAt) this.createdAt = now
       this.updatedAt = now
     }
