@@ -2,7 +2,7 @@
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/utils/id-generator.md
  */
 import { randomBytes, UUID } from 'crypto'
-import { v1 as uuidV1, v3 as uuidV3, v4 as uuidV4, v5 as uuidV5, validate } from 'uuid'
+import * as uuid from 'uuid'
 
 import { ApiUnauthorizedException } from './exception'
 
@@ -48,31 +48,31 @@ export class IDGeneratorUtils {
     const { prefix = '', suffix = '', version = 4, namespace } = options
 
     if (version === 4) {
-      return `${prefix}${uuidV4()}${suffix}`
+      return `${prefix}${uuid.v4()}${suffix}`
     }
 
     if (version === 1) {
-      return `${prefix}${uuidV1()}${suffix}`
+      return `${prefix}${uuid.v1()}${suffix}`
     }
 
     if (version === 3) {
       if (!namespace) {
         throw new ApiUnauthorizedException('Namespace is required for UUID version 3')
       }
-      if (!validate(namespace)) {
+      if (!uuid.validate(namespace)) {
         throw new ApiUnauthorizedException('Invalid namespace UUID for UUID version 3')
       }
-      return `${prefix}${uuidV3(uuidV4(), namespace)}${suffix}`
+      return `${prefix}${uuid.v3(uuid.v4(), namespace)}${suffix}`
     }
 
     if (version === 5) {
       if (!namespace) {
         throw new ApiUnauthorizedException('Namespace is required for UUID version 5')
       }
-      if (!validate(namespace)) {
+      if (!uuid.validate(namespace)) {
         throw new ApiUnauthorizedException('Invalid namespace UUID for UUID version 5')
       }
-      return `${prefix}${uuidV5(uuidV4(), namespace)}${suffix}`
+      return `${prefix}${uuid.v5(uuid.v4(), namespace)}${suffix}`
     }
 
     throw new ApiUnauthorizedException(`unsupported UUID version: ${version}`)
