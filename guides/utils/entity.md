@@ -488,6 +488,87 @@ export class OrderEntity extends BaseEntity<OrderEntityProps>() {
 - **Type-safe operations** with full TypeScript support
 - **Clear separation** between domain logic and infrastructure concerns
 
+
+
+
+## Domain Events
+
+BaseEntity natively supports domain events, allowing entities to publish relevant events whenever a significant state change occurs. This enables integration between contexts, traceability, and the implementation of reactive patterns (DDD, Event Sourcing, etc).
+
+### What are Domain Events?
+
+A domain event is an asynchronous notification that represents a meaningful state change in an aggregate (entity or root). It captures something that has happened in the domain that other parts of the system may be interested in, such as "UserPromoted", "OrderCompleted", etc. Domain events are not direct actions—they are facts about the past, emitted after the aggregate's state has changed and committed.
+
+**A domain event is:**
+- An async message/fact about a state change in the aggregate (e.g., user promoted, order shipped)
+- Used to decouple business logic and enable eventual consistency, integration, or side effects
+- Emitted only after the aggregate's invariants and rules have been enforced
+
+**A domain event is NOT:**
+- A direct command to perform an external action (e.g., send email, call payment API)
+- An infrastructure or application event (e.g., log entry, HTTP request, notification)
+- A technical event unrelated to business meaning
+
+For example, sending an email or calling an external service is not a domain event, but you may have a domain event like `UserPromoted` and then, in a separate handler, trigger the email or integration as a reaction to that event.
+
+### How to use
+
+**Adding an event:**
+
+```typescript
+user.addEvent({
+  name: 'UserPromoted',
+  payload: { userId: user.id, promotedAt: new Date() }
+})
+```
+
+**Retrieving events:**
+
+```typescript
+const events = user.getEvents()
+```
+
+**Releasing (consuming) events:**
+
+```typescript
+const events = user.releaseEvents()
+for (const event of events) {
+  await eventBus.publish(event.name, event.payload)
+}
+```
+
+### Best Practices
+
+- Emit events only for relevant business changes (e.g., status, promotions, deletions, etc).
+- Always consume and clear events after publishing them, using `releaseEvents()`.
+- Use clear and standardized names for events (`UserPromoted`, `OrderCancelled`, etc).
+- Include in the payload only the data necessary for the consumer context.
+- Do not use events for internal entity logic, only for integration/communication.
+
+### Complete Example
+
+```typescript
+export class PromoteUserUsecase implements IUsecase {
+  async execute(input: PromoteUserInput): Promise<PromoteUserOutput> {
+    const userData = await this.userRepository.findById(input.userId)
+    const user = new UserEntity(userData)
+    const promotedUser = user.makeAdmin()
+    promotedUser.addEvent({
+      name: 'UserPromoted',
+      payload: { userId: promotedUser.id, promotedAt: new Date() }
+    })
+    await this.userRepository.save(promotedUser)
+    // Publish and clear events
+    for (const event of promotedUser.releaseEvents()) {
+      await this.eventBus.publish(event.name, event.payload)
+    }
+    return { user: promotedUser.toObject() }
+  }
+}
+```
+
+---
+
 ### Production Benefits
 - **Automatic ID generation** prevents missing identifiers
 - **Soft delete** preserves data integrity and audit trails

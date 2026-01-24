@@ -21,7 +21,7 @@ export class RoleRepository extends TypeORMRepository<Model> implements IRoleRep
   @ValidateDatabaseSortAllowed<RoleEntity>({ name: 'name' }, { name: 'createdAt' })
   async paginate(input: RoleListInput): Promise<RoleListOutput> {
     const docs = await this.applyPagination(input)
-    return { ...docs, docs: docs.docs.map((doc) => new RoleEntity(doc).toObject()) }
+    return { ...docs, docs: docs.docs.map((doc: RoleEntity) => new RoleEntity(doc).toObject()) }
   }
 }
 

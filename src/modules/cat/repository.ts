@@ -27,6 +27,6 @@ export class CatRepository extends MongoRepository<CatDocument> implements ICatR
   ])
   async paginate(input: CatListInput): Promise<CatListOutput> {
     const cats = await this.applyPagination(input)
-    return { ...cats, docs: cats.docs.map((doc) => new CatEntity(doc).toObject()) }
+    return { ...cats, docs: cats.docs.map((doc: CatEntity) => new CatEntity(doc).toObject()) }
   }
 }

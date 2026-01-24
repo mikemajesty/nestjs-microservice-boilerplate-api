@@ -26,7 +26,7 @@ export class UserRepository extends TypeORMRepository<Model> implements IUserRep
     const docs = await this.applyPagination(input)
     return {
       ...docs,
-      docs: docs.docs.map((doc) => new UserEntity(doc).toObject())
+      docs: docs.docs.map((doc: UserEntity) => new UserEntity(doc).toObject())
     }
   }
 }
