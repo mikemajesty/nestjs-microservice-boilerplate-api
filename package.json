@@ -128,7 +128,7 @@
     "@types/js-yaml": "^4.0.9",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/luxon": "^3.7.1",
-    "@types/node": "^24.10.1",
+    "@types/node": "^25.0.10",
     "@types/nodemailer": "^7.0.4",
     "@types/opossum": "^8.1.9",
     "@types/ping": "^0.4.4",
