@@ -8,11 +8,11 @@
     "compile": "npx tsp compile ./src",
     "compile:watch": "npx tsp compile ./src --watch",
     "serve": "browser-sync start --proxy 'localhost:8080' --files './tsp-output/@typespec/openapi3/openapi.api.1.0.yaml'",
-    "dev": "concurrently \"yarn serve\" \"yarn compile:watch\"",
-    "start": "yarn dev",
+    "dev": "concurrently \"npm run serve\" \"npm run compile:watch\"",
+    "start": "npm run dev",
     "setup": "docker-compose up --build --remove-orphans",
     "setup:down": "docker-compose down --volumes",
-    "setup:restart": "yarn setup:down && yarn setup"
+    "setup:restart": "npm run setup:down && npm run setup"
   },
   "peerDependencies": {
     "@typespec/compiler": "^1.7.0",
@@ -22,13 +22,13 @@
     "@typespec/versioning": "^0.77.0"
   },
   "devDependencies": {
-    "@typespec/compiler": "^1.7.0",
-    "@typespec/http": "^1.7.0",
-    "@typespec/openapi3": "^1.7.0",
-    "@typespec/rest": "^0.77.0",
-    "@typespec/versioning": "^0.77.0",
-    "browser-sync": "^3.0.3",
-    "concurrently": "^9.1.2"
+    "@typespec/compiler": "^1.8.0",
+    "@typespec/http": "^1.8.0",
+    "@typespec/openapi3": "^1.8.0",
+    "@typespec/rest": "^0.78.0",
+    "@typespec/versioning": "^0.78.0",
+    "browser-sync": "^3.0.4",
+    "concurrently": "^9.2.1"
   },
   "private": true,
   "exports": {
