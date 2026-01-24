@@ -6,12 +6,7 @@ import { MetricsService } from './service'
 
 const OpenTelemetryModuleConfig = OpenTelemetryModule.forRoot({
   metrics: {
-    hostMetrics: true,
-    apiMetrics: {
-      enable: true,
-      ignoreRoutes: ['/favicon.ico'],
-      ignoreUndefinedRoutes: false
-    }
+    hostMetrics: true
   }
 })
 

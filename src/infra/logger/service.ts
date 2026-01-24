@@ -47,7 +47,7 @@ export class LoggerService implements ILoggerAdapter {
           stream: lokiTransport({
             host: process.env.LOKI_URL as string,
             labels: { job: name, env: process.env.NODE_ENV as EnvEnum, version },
-            interval: this.getLokiInterval()
+            batching: { interval: this.getLokiInterval() }
           })
         }
       ])
