@@ -69,7 +69,7 @@ export class UserCreateUsecase implements IUsecase {
       payload: { name: input.name }
     })
 
-    tracing.logEvent('user-created', `user: ${entity.email} created by: ${userData.email}`)
+    tracing.logEvent('user-created', { action: 'created', by: userData.id, entity: entity.id })
 
     return user
   }

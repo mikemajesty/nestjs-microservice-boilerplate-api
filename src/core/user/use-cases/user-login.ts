@@ -42,7 +42,7 @@ export class LoginUsecase implements IUsecase {
 
     passwordEntity.verifyPassword(user.password.password)
 
-    tracing.logEvent('user-login', `${user}`)
+    tracing.logEvent('user-login', { action: 'login', by: user.id, entity: user.id })
 
     const { token } = this.tokenService.sign({
       body: {

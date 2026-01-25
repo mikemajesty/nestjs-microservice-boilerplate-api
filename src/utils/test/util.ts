@@ -1,7 +1,7 @@
 /**
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/tests/util.md
  */
-import { AttributeValue, SpanStatus, TimeInput } from '@opentelemetry/api';
+import { SpanStatus } from '@opentelemetry/api';
 import { Types } from 'mongoose';
 
 import { ApiTrancingInput, TracingType, UserRequest } from '@/utils/request';
@@ -65,7 +65,7 @@ export class TestUtils {
   static getMockTracing = (): ApiTrancingInput => {
     return {
       tracing: {
-        logEvent(key: string, value: AttributeValue | TimeInput) {
+        logEvent(key: string, value: unknown) {
           return key + value;
         },
         setStatus(event: SpanStatus) {

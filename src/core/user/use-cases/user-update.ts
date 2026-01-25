@@ -53,7 +53,7 @@ export class UserUpdateUsecase implements IUsecase {
 
     const entityUpdated = new UserEntity(updated as UserEntity)
 
-    tracing.logEvent('user-updated', `user: ${user.email} updated by: ${userData.email}`)
+    tracing.logEvent('user-updated', { action: 'updated', by: userData.id, entity: entityUpdated.id })
 
     return entityUpdated.toObject()
   }

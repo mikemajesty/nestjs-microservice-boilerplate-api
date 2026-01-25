@@ -30,7 +30,7 @@ export class CatDeleteUsecase implements IUsecase {
     entity.deactivate()
 
     await this.catRepository.softRemove({ id: entity.id })
-    tracing.logEvent('cat-deleted', `cat deleted by: ${user.email}`)
+    tracing.logEvent('cat-deleted', { action: 'deleted', by: user.id, entity: id })
 
     return entity.toObject()
   }

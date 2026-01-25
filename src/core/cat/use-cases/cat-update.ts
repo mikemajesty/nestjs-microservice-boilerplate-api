@@ -38,7 +38,7 @@ export class CatUpdateUsecase implements IUsecase {
 
     const updated = await this.catRepository.findById(entity.id)
 
-    tracing.logEvent('cat-updated', `cat updated by: ${user.email}`)
+    tracing.logEvent('cat-updated', { action: 'updated', by: user.id, entity: entity.id })
 
     return new CatEntity(updated as CatEntity).toObject()
   }

@@ -20,7 +20,7 @@ export class LogoutUsecase implements IUsecase {
   async execute(input: LogoutInput, { tracing, user }: ApiTrancingInput): LogoutOutput {
     await this.redis.set(input.token, input.token, { PX: this.secretes.TOKEN_EXPIRATION })
 
-    tracing.logEvent('user-logout', `${user.email}`)
+    tracing.logEvent('user-logout', { action: 'logout', by: user.id, entity: input.token })
   }
 }
 

@@ -1,7 +1,7 @@
 /**
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/utils/request.md
  */
-import { AttributeValue, Context, Span, SpanStatus, TimeInput, Tracer } from '@opentelemetry/api'
+import { AttributeValue, Context, Span, SpanStatus, Tracer } from '@opentelemetry/api'
 import { AxiosInstance, AxiosRequestConfig } from 'axios'
 
 import { UserEntity } from '@/core/user/entity/user'
@@ -12,7 +12,7 @@ export type TracingType = {
   tracerId: string
   axios: (config?: AxiosRequestConfig) => AxiosInstance
   setStatus: (status: SpanStatus) => void
-  logEvent: (name: string, attributesOrStartTime?: AttributeValue | TimeInput) => void
+  logEvent: (name: string, obj: { action: string } & Record<string, unknown>) => void
   addAttribute: (key: string, value: AttributeValue) => void
   createSpan: (name: string, parent?: Context) => Span
   finish: () => void

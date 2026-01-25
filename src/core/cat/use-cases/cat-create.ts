@@ -26,7 +26,7 @@ export class CatCreateUsecase implements IUsecase {
 
     const created = await this.catRepository.create(entity.toObject())
 
-    tracing.logEvent('cat-created', `cat created by: ${user.email}`)
+    tracing.logEvent('cat-created', { action: 'created', by: user.id, entity: created.id })
 
     return created
   }
