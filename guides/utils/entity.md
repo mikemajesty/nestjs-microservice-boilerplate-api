@@ -165,7 +165,6 @@ export class UpdateUserUsecase implements IUsecase {
   }
 }
 ```
-```
 
 ### API Response Serialization
 ```typescript
