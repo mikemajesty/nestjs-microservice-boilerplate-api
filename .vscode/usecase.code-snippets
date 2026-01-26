@@ -3,7 +3,7 @@
     "scope": "javascript,typescript",
     "prefix": "usecase",
     "body": [
-      "import { z } from 'zod';",
+      "import { Infer } from '@/utils/validator';",
       "$1",
       "import { ValidateSchema } from '@/utils/decorators';",
       "import { IUsecase } from '@/utils/usecase';",
@@ -19,7 +19,7 @@
       "  }",
       "}",
       "$5",
-      "export type ${TM_FILENAME_BASE/([a-zA-Z]+)-?([a-zA-Z]*)-?([a-zA-Z]*)-?([a-zA-Z]*)?-?([a-zA-Z]*)?-?([a-zA-Z]*)?/${1:/capitalize}${2:/capitalize}${3:/capitalize}${4:/capitalize}${5:/capitalize}${6:/capitalize}/}Input = z.infer<typeof ${TM_FILENAME_BASE/([a-zA-Z]+)-?([a-zA-Z]*)-?([a-zA-Z]*)-?([a-zA-Z]*)?-?([a-zA-Z]*)?-?([a-zA-Z]*)?/${1:/capitalize}${2:/capitalize}${3:/capitalize}${4:/capitalize}${5:/capitalize}${6:/capitalize}/}InputSchema>;",
+      "export type ${TM_FILENAME_BASE/([a-zA-Z]+)-?([a-zA-Z]*)-?([a-zA-Z]*)-?([a-zA-Z]*)?-?([a-zA-Z]*)?-?([a-zA-Z]*)?/${1:/capitalize}${2:/capitalize}${3:/capitalize}${4:/capitalize}${5:/capitalize}${6:/capitalize}/}Input = Infer<typeof ${TM_FILENAME_BASE/([a-zA-Z]+)-?([a-zA-Z]*)-?([a-zA-Z]*)-?([a-zA-Z]*)?-?([a-zA-Z]*)?-?([a-zA-Z]*)?/${1:/capitalize}${2:/capitalize}${3:/capitalize}${4:/capitalize}${5:/capitalize}${6:/capitalize}/}InputSchema>;",
       "export type ${TM_FILENAME_BASE/([a-zA-Z]+)-?([a-zA-Z]*)-?([a-zA-Z]*)-?([a-zA-Z]*)?-?([a-zA-Z]*)?-?([a-zA-Z]*)?/${1:/capitalize}${2:/capitalize}${3:/capitalize}${4:/capitalize}${5:/capitalize}${6:/capitalize}/}Output = ${TM_FILENAME_BASE/([a-zA-Z]+)-?([a-zA-Z]*)-?([a-zA-Z]*)-?([a-zA-Z]*)?-?([a-zA-Z]*)?-?([a-zA-Z]*)?/${1:/capitalize}${2:/capitalize}${3:/capitalize}${4:/capitalize}${5:/capitalize}${6:/capitalize}/}Input;",
       "$4"
     ],

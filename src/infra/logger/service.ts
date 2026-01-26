@@ -20,11 +20,12 @@ import { EnvEnum } from '../secrets/types'
 import { ILoggerAdapter } from './adapter'
 import { ErrorType, MessageInputType } from './types'
 
+const DATE_FORMAT = 'yyyy-MM-dd HH:mm:ss'
+
 @Injectable({ scope: Scope.REQUEST })
 export class LoggerService implements ILoggerAdapter {
-  private readonly DATE_FORMAT = 'yyyy-MM-dd HH:mm:ss'
   static log(message: string) {
-    const timestamp = DateUtils.build({ format: 'yyyy-MM-dd HH:mm:ss', type: 'iso' })
+    const timestamp = DateUtils.build({ format: DATE_FORMAT, type: 'iso' })
     // eslint-disable-next-line no-console
     console.log(`${gray('TRACE')} [${timestamp}]: [${blue(name)}] ${green(message)}`)
   }
@@ -173,7 +174,7 @@ export class LoggerService implements ILoggerAdapter {
       },
       customPrettifiers: {
         time: () => {
-          return `[${DateUtils.build({ format: this.DATE_FORMAT, type: 'iso' })}]`
+          return `[${DateUtils.build({ format: DATE_FORMAT, type: 'iso' })}]`
         }
       }
     }
