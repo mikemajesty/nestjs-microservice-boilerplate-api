@@ -11,7 +11,7 @@ export class AlertController {
 
   @Post()
   handleAlert(@Body() body: unknown) {
-    this.logger.warn({ message: '🔔 Alerta received:\n' + JSON.stringify(body, null, 2) })
+    this.logger.warn({ message: '🔔 Alert received:\n' + JSON.stringify(body, null, 2) })
     return { status: 'ok' }
   }
 }

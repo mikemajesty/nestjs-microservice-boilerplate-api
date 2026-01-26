@@ -67,7 +67,9 @@ const updateSpanName = (span: Span, request: IncomingMessage | ClientRequest): s
 const httpInstrumentation = new HttpInstrumentation({
   ignoreIncomingRequestHook: (request: IncomingMessage) => {
     const path = request.url
-    return ['/health', '/favicon.ico', '/api-docs'].some((ignorePath) => path?.startsWith(ignorePath))
+    return ['/health', '/health/live', '/health/ready', `/health/startup`, '/favicon.ico', '/api-docs'].some(
+      (ignorePath) => path?.startsWith(ignorePath)
+    )
   },
   ignoreOutgoingRequestHook: (request: RequestOptions) => {
     const path = request.path
