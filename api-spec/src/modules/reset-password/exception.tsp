@@ -3,7 +3,6 @@ import "../../utils/exceptions.tsp";
 
 using TypeSpec.Http;
 using api.Utils.Exception;
-using api.Utils.Model;
 
 namespace api.ResetPassword;
 

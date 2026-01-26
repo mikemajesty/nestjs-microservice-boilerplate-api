@@ -12,6 +12,7 @@ import "./modules/permission/controller.tsp";
 import "./modules/logout/controller.tsp";
 import "./modules/health/controller.tsp";
 import "./modules/cat/controller.tsp";
+import "./modules/bird/controller.tsp";
 
 using TypeSpec.Http;
 using TypeSpec.Versioning;
