@@ -1,6 +1,6 @@
 # Repository
 
-A **database-agnostic repository layer** that provides a unified interface for both MongoDB and PostgreSQL. Write your business logic once, switch databases without changing a single line of application code.
+A **database-agnostic repository layer** that provides a unified interface for both MongoDB and PostgreSQL. Write your business logic once, switch databases without changing a single line of application core.
 
 ## The Database Lock-in Problem
 
