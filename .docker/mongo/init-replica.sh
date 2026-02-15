@@ -1,8 +1,8 @@
 #!/bin/sh
 set -e
 
-echo "⏳ Aguardando MongoDB ficar healthy..."
-sleep 15
+echo "⏳ Aguardando MongoDB ficar healthy (30s extra)..."
+sleep 30
 
 echo "🔧 Configurando ReplicaSet..."
 

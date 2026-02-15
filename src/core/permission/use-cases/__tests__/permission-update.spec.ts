@@ -8,7 +8,7 @@ import { ILoggerAdapter } from '@/infra/logger'
 import { UpdatedModel } from '@/infra/repository'
 import { IPermissionUpdateAdapter } from '@/modules/permission/adapter'
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception'
-import { TestUtils } from '@/utils/test/util'
+import { TestUtils } from '@/utils/test/utils'
 import { ZodExceptionIssue } from '@/utils/validator'
 
 import { IPermissionRepository } from '../../repository/permission'

@@ -9,7 +9,7 @@ import { LoggerModule } from '@/infra/logger'
 import { CreatedModel } from '@/infra/repository'
 import { IUserChangePasswordAdapter } from '@/modules/user/adapter'
 import { ApiBadRequestException, ApiNotFoundException } from '@/utils/exception'
-import { TestUtils } from '@/utils/test/util'
+import { TestUtils } from '@/utils/test/utils'
 import { ZodExceptionIssue } from '@/utils/validator'
 
 import { UserEntity, UserEntitySchema } from '../../entity/user'

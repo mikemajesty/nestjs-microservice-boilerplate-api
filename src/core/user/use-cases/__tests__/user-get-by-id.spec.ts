@@ -7,7 +7,7 @@ import { Test } from '@nestjs/testing'
 import { RoleEntity, RoleEntitySchema } from '@/core/role/entity/role'
 import { IUserGetByIdAdapter } from '@/modules/user/adapter'
 import { ApiNotFoundException } from '@/utils/exception'
-import { TestUtils } from '@/utils/test/util'
+import { TestUtils } from '@/utils/test/utils'
 import { ZodExceptionIssue } from '@/utils/validator'
 
 import { UserEntity, UserEntitySchema } from '../../entity/user'
@@ -57,7 +57,7 @@ describe(UserGetByIdUsecase.name, () => {
   test('when user not found, should expect an error', async () => {
     repository.findOne = TestUtils.mockResolvedValue<UserEntity>(null)
 
-    await expect(usecase.execute({ id: TestUtils.getMockUUID() })).rejects.toThrow(ApiNotFoundException)
+    await expect(usecase.execute({ id: TestUtils.mockUUID() })).rejects.toThrow(ApiNotFoundException)
   })
 
   const roleMock = new ZodMockSchema(RoleEntitySchema)
@@ -77,6 +77,6 @@ describe(UserGetByIdUsecase.name, () => {
   test('when user getById successfully, should expect a user', async () => {
     repository.findOne = TestUtils.mockResolvedValue<UserEntity>(user)
 
-    await expect(usecase.execute({ id: TestUtils.getMockUUID() })).resolves.toEqual(user)
+    await expect(usecase.execute({ id: TestUtils.mockUUID() })).resolves.toEqual(user)
   })
 })

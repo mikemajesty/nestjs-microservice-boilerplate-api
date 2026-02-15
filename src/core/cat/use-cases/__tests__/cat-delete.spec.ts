@@ -8,7 +8,7 @@ import { CatDeleteInput, CatDeleteUsecase } from '@/core/cat/use-cases/cat-delet
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger'
 import { ICatDeleteAdapter } from '@/modules/cat/adapter'
 import { ApiNotFoundException } from '@/utils/exception'
-import { TestUtils } from '@/utils/test/util'
+import { TestUtils } from '@/utils/test/utils'
 import { ZodExceptionIssue } from '@/utils/validator'
 
 import { CatEntity, CatEntitySchema } from '../../entity/cat'
@@ -57,7 +57,7 @@ describe(CatDeleteUsecase.name, () => {
   test('when cat not found, should expect an error', async () => {
     repository.findById = TestUtils.mockResolvedValue<CatEntity>(null)
 
-    await expect(usecase.execute({ id: TestUtils.getMockUUID() }, TestUtils.getMockTracing())).rejects.toThrow(
+    await expect(usecase.execute({ id: TestUtils.mockUUID() }, TestUtils.getMockTracing())).rejects.toThrow(
       ApiNotFoundException
     )
   })
@@ -69,7 +69,7 @@ describe(CatDeleteUsecase.name, () => {
     repository.findById = TestUtils.mockResolvedValue<CatEntity>(input)
     repository.softRemove = TestUtils.mockResolvedValue<CatEntity>()
 
-    await expect(usecase.execute({ id: TestUtils.getMockUUID() }, TestUtils.getMockTracing())).resolves.toEqual({
+    await expect(usecase.execute({ id: TestUtils.mockUUID() }, TestUtils.getMockTracing())).resolves.toEqual({
       ...input,
       deletedAt: expect.any(Date)
     })

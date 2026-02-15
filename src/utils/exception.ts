@@ -3,6 +3,8 @@
  */
 import { HttpException, HttpStatus } from '@nestjs/common'
 
+import { AnyType } from './types'
+
 export class BaseException extends HttpException {
   traceid!: string
   readonly context!: string
@@ -99,8 +101,7 @@ export type ApiErrorType = {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type ParametersType = { [key: string]: any; context?: string; details?: unknown[]; stack?: string }
+export type ParametersType = { [key: string]: AnyType; context?: string; details?: unknown[]; stack?: string }
 
 export type MessageType = string
 

@@ -12,8 +12,8 @@ import { TypeORMRepository } from '@/infra/repository/postgres/repository'
 import { ConvertTypeOrmFilter, SearchTypeEnum, ValidateDatabaseSortAllowed } from '@/utils/decorators'
 
 @Injectable()
-export class PermissionRepository extends TypeORMRepository<Model> implements IPermissionRepository {
-  constructor(readonly repository: Repository<Model>) {
+export class PermissionRepository extends TypeORMRepository<PermissionModel> implements IPermissionRepository {
+  constructor(readonly repository: Repository<PermissionModel>) {
     super(repository)
   }
 
@@ -31,4 +31,4 @@ export class PermissionRepository extends TypeORMRepository<Model> implements IP
   }
 }
 
-type Model = PermissionSchema & PermissionEntity
+export type PermissionModel = PermissionSchema & PermissionEntity

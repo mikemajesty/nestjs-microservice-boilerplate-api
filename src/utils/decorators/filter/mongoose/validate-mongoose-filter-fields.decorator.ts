@@ -6,7 +6,7 @@ import { ApiBadRequestException } from '@/utils/exception'
 import { FilterQuery, MongoUtils } from '@/utils/mongoose'
 
 import { AllowedFilter, SearchTypeEnum } from '../../types'
-import { convertFilterValue } from '../utils'
+import { convertFilterValue } from '../filter-utils'
 
 export function ConvertMongooseFilter<T>(allowedFilterList: AllowedFilter<T>[] = []) {
   return function (target: unknown, propertyKey: string, descriptor: PropertyDescriptor) {

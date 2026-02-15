@@ -12,8 +12,8 @@ import { TypeORMRepository } from '@/infra/repository/postgres/repository'
 import { ConvertTypeOrmFilter, SearchTypeEnum, ValidateDatabaseSortAllowed } from '@/utils/decorators'
 
 @Injectable()
-export class UserRepository extends TypeORMRepository<Model> implements IUserRepository {
-  constructor(readonly repository: Repository<Model>) {
+export class UserRepository extends TypeORMRepository<UserModel> implements IUserRepository {
+  constructor(readonly repository: Repository<UserModel>) {
     super(repository)
   }
 
@@ -31,4 +31,4 @@ export class UserRepository extends TypeORMRepository<Model> implements IUserRep
   }
 }
 
-type Model = UserSchema & UserEntity
+export type UserModel = UserSchema & UserEntity

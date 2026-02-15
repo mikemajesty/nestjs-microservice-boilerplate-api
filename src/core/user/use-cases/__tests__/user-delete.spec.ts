@@ -7,7 +7,7 @@ import { Test } from '@nestjs/testing'
 import { RoleEntity, RoleEntitySchema } from '@/core/role/entity/role'
 import { IUserDeleteAdapter } from '@/modules/user/adapter'
 import { ApiNotFoundException } from '@/utils/exception'
-import { TestUtils } from '@/utils/test/util'
+import { TestUtils } from '@/utils/test/utils'
 import { ZodExceptionIssue } from '@/utils/validator'
 
 import { UserEntity, UserEntitySchema } from '../../entity/user'
@@ -52,7 +52,7 @@ describe(UserDeleteUsecase.name, () => {
   test('when user not found, should expect an error', async () => {
     repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(null)
 
-    await expect(usecase.execute({ id: TestUtils.getMockUUID() }, TestUtils.getMockTracing())).rejects.toThrow(
+    await expect(usecase.execute({ id: TestUtils.mockUUID() }, TestUtils.getMockTracing())).rejects.toThrow(
       ApiNotFoundException
     )
   })
@@ -75,7 +75,7 @@ describe(UserDeleteUsecase.name, () => {
     repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(user)
     repository.softRemove = TestUtils.mockResolvedValue<UserEntity>()
 
-    await expect(usecase.execute({ id: TestUtils.getMockUUID() }, TestUtils.getMockTracing())).resolves.toEqual(
+    await expect(usecase.execute({ id: TestUtils.mockUUID() }, TestUtils.getMockTracing())).resolves.toEqual(
       expect.any(Object)
     )
     expect(repository.softRemove).toHaveBeenCalled()

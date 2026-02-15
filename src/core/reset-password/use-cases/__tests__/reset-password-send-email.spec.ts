@@ -14,7 +14,7 @@ import { EmitEventOutput, IEventAdapter } from '@/libs/event'
 import { ITokenAdapter, TokenSignOutput } from '@/libs/token'
 import { IConfirmResetPasswordAdapter, ISendEmailResetPasswordAdapter } from '@/modules/reset-password/adapter'
 import { ApiNotFoundException } from '@/utils/exception'
-import { TestUtils } from '@/utils/test/util'
+import { TestUtils } from '@/utils/test/utils'
 import { ZodExceptionIssue } from '@/utils/validator'
 
 import { ResetPasswordEntity } from '../../entity/reset-password'
@@ -102,7 +102,7 @@ describe(ResetPasswordSendEmailUsecase.name, () => {
   const userMock = new ZodMockSchema(UserEntitySchema)
   const user = userMock.generate<UserEntity>({
     overrides: {
-      roles: [new RoleEntity({ id: TestUtils.getMockUUID(), name: RoleEnum.USER })]
+      roles: [new RoleEntity({ id: TestUtils.mockUUID(), name: RoleEnum.USER })]
     }
   })
 

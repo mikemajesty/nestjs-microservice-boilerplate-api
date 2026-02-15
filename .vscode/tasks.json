@@ -1,0 +1,12 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Run all tests",
+			"type": "shell",
+			"command": "npm test",
+			"isBackground": false,
+			"group": "test"
+		}
+	]
+}

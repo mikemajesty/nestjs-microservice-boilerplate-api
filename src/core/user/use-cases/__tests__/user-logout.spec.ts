@@ -7,7 +7,7 @@ import { ICacheAdapter } from '@/infra/cache'
 import { ISecretsAdapter, SecretsModule } from '@/infra/secrets'
 import { TokenLibModule } from '@/libs/token'
 import { ILogoutAdapter } from '@/modules/logout/adapter'
-import { TestUtils } from '@/utils/test/util'
+import { TestUtils } from '@/utils/test/utils'
 import { ZodExceptionIssue } from '@/utils/validator'
 
 import { LogoutInput, LogoutUsecase } from '../user-logout'

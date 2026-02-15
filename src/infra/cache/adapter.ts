@@ -1,11 +1,12 @@
 /**
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/infra/cache.md
  */
+import { AnyType } from '@/utils/types'
+
 import { MemoryCacheSetType } from './memory/types'
 import { RedisCacheKeyArgument, RedisCacheKeyValue, RedisCacheValueArgument } from './redis/types'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export abstract class ICacheAdapter<T = any> {
+export abstract class ICacheAdapter<T = AnyType> {
   client!: T
 
   abstract ping(): Promise<string>

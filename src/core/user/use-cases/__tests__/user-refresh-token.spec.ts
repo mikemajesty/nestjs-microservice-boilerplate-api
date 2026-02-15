@@ -8,7 +8,7 @@ import { RoleEntity, RoleEntitySchema } from '@/core/role/entity/role'
 import { ITokenAdapter, TokenSignOutput } from '@/libs/token'
 import { IRefreshTokenAdapter } from '@/modules/login/adapter'
 import { ApiBadRequestException, ApiNotFoundException } from '@/utils/exception'
-import { TestUtils } from '@/utils/test/util'
+import { TestUtils } from '@/utils/test/utils'
 import { ZodExceptionIssue } from '@/utils/validator'
 
 import { UserEntity, UserEntitySchema } from '../../entity/user'
@@ -82,7 +82,7 @@ describe(RefreshTokenUsecase.name, () => {
   test('when user not found, should expect an error', async () => {
     token.verify = TestUtils.mockImplementation<UserRefreshTokenVerifyInput>(() => {
       return {
-        userId: TestUtils.getMockUUID()
+        userId: TestUtils.mockUUID()
       }
     })
     repository.findOne = TestUtils.mockResolvedValue<UserEntity>(null)
@@ -113,7 +113,7 @@ describe(RefreshTokenUsecase.name, () => {
     })
     token.verify = TestUtils.mockImplementation<UserRefreshTokenVerifyInput>(() => {
       return {
-        userId: TestUtils.getMockUUID()
+        userId: TestUtils.mockUUID()
       }
     })
     repository.findOne = TestUtils.mockResolvedValue<UserEntity>({ ...user, roles: [] })
@@ -123,7 +123,7 @@ describe(RefreshTokenUsecase.name, () => {
 
   test('when user refresh token successfully, should expect a token', async () => {
     token.verify = TestUtils.mockImplementation<UserRefreshTokenVerifyInput>(() => ({
-      userId: TestUtils.getMockUUID()
+      userId: TestUtils.mockUUID()
     }))
     token.sign = TestUtils.mockReturnValue<TokenSignOutput>({ token: '<token>' })
     const user = userMock.generate<UserEntity>({

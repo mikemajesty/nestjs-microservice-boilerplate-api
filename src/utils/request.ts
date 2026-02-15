@@ -6,6 +6,8 @@ import { AxiosInstance, AxiosRequestConfig } from 'axios'
 
 import { UserEntity } from '@/core/user/entity/user'
 
+import { AnyType } from './types'
+
 export type TracingType = {
   span: Span
   tracer: Tracer
@@ -21,9 +23,8 @@ export type TracingType = {
 export type UserRequest = Pick<UserEntity, 'email' | 'name' | 'id'>
 
 export interface ApiRequest {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  readonly body: any
-  readonly tracing: TracingType
+  readonly body: AnyType
+  tracing: TracingType
   readonly user: UserRequest
   readonly params: { [key: string]: string | number }
   readonly query: { [key: string]: string | number }

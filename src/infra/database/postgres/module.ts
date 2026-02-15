@@ -8,6 +8,7 @@ import { ISecretsAdapter, SecretsModule } from '@/infra/secrets'
 
 import { name } from '../../../../package.json'
 import { PostgresService } from './service'
+
 @Module({
   imports: [
     TypeOrmModule.forRootAsync({

@@ -13,7 +13,7 @@ import { RoleEntity, RoleEnum } from '@/core/role/entity/role'
 import { CreatedModel } from '@/infra/repository'
 import { IPermissionDeleteAdapter } from '@/modules/permission/adapter'
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception'
-import { TestUtils } from '@/utils/test/util'
+import { TestUtils } from '@/utils/test/utils'
 import { ZodExceptionIssue } from '@/utils/validator'
 
 import { IPermissionRepository } from '../../repository/permission'

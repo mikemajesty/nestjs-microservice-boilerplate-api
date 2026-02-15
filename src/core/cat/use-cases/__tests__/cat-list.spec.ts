@@ -7,7 +7,7 @@ import { Test } from '@nestjs/testing'
 import { CatListInput, CatListOutput, CatListSchema, CatListUsecase } from '@/core/cat/use-cases/cat-list'
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger'
 import { ICatListAdapter } from '@/modules/cat/adapter'
-import { TestUtils } from '@/utils/test/util'
+import { TestUtils } from '@/utils/test/utils'
 import { ZodExceptionIssue } from '@/utils/validator'
 
 import { CatEntity, CatEntitySchema } from '../../entity/cat'
@@ -54,7 +54,7 @@ describe(CatListUsecase.name, () => {
   })
 
   const mock = new ZodMockSchema(CatEntitySchema)
-  const docs = mock.generateMany(2, {
+  const docs = mock.generateMany<CatEntity>(2, {
     overrides: {
       deletedAt: null
     }
@@ -62,7 +62,7 @@ describe(CatListUsecase.name, () => {
 
   const input = new ZodMockSchema(CatListSchema).generate()
   test('when cats are found, should expect a cat list', async () => {
-    const output = { docs: docs as CatEntity[], page: 1, limit: 1, total: 1 }
+    const output = { docs, page: 1, limit: 1, total: 1 }
     repository.paginate = TestUtils.mockResolvedValue<CatListOutput>(output)
 
     await expect(usecase.execute(input)).resolves.toEqual({
@@ -74,7 +74,7 @@ describe(CatListUsecase.name, () => {
   })
 
   test('when cats not found, should expect an empty list', async () => {
-    const output = { docs: docs as CatEntity[], page: 1, limit: 1, total: 1 }
+    const output = { docs, page: 1, limit: 1, total: 1 }
     repository.paginate = TestUtils.mockResolvedValue<CatListOutput>(output)
 
     await expect(usecase.execute(input)).resolves.toEqual(output)

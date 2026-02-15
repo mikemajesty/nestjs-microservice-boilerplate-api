@@ -41,20 +41,17 @@ export class AuthenticationMiddleware implements NestMiddleware {
 
     const token = tokenHeader?.split(' ')[1] || ''
 
-    const expiredToken = await this.redisService.get(token)
+    const blackListToken = await this.redisService.get(token)
 
     request.id = request.headers.traceid as string
 
-    if (expiredToken) {
+    if (blackListToken) {
       this.finishTracing(request, ApiUnauthorizedException.STATUS, 'you have been logged out')
       next(new ApiUnauthorizedException('you have been logged out'))
     }
 
     const userDecoded = (await this.tokenService.verify<UserRequest>({ token }).catch((error) => {
       error.status = ApiUnauthorizedException.STATUS
-      if (process.env.NODE_ENV !== 'test') {
-        this.loggerService?.logger(request, response)
-      }
       this.finishTracing(request, ApiUnauthorizedException.STATUS, 'invalidToken')
       next(error)
     })) as UserRequest

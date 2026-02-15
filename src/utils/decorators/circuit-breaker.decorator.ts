@@ -3,6 +3,8 @@
  */
 import OpossumCircuitBreaker, { Options } from 'opossum'
 
+import { AnyType } from '../types'
+
 // 🗂️ State management
 const events = new Map<string, Map<string, Map<string, string>>>()
 const breakerInstances = new Map<string, OpossumCircuitBreaker>()
@@ -59,22 +61,17 @@ export function CircuitBreaker(params: CircuitBreakerInput = { options: {}, circ
           console.error(`🟡 Circuit breaker HALF-OPEN: ${instanceKey}`)
         })
 
-        // No failure logs to avoid spam
-
         const classEvents = events.get(className) || new Map()
         const circuitEvents = classEvents.get(opt.group) || new Map()
 
         for (const [eventName, methodName] of circuitEvents) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          if (eventName !== 'fallback' && typeof (this as any)[`${methodName}`] === 'function') {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            breaker.on(eventName as any, (this as any)[`${methodName}`].bind(this))
+          if (eventName !== 'fallback' && typeof (this as AnyType)[`${methodName}`] === 'function') {
+            breaker.on(eventName as AnyType, (this as AnyType)[`${methodName}`].bind(this))
           }
         }
 
         const fallbackMethod = circuitEvents.get('fallback')
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        if (fallbackMethod && typeof (this as any)[`${fallbackMethod}`] === 'function') {
+        if (fallbackMethod && typeof (this as AnyType)[`${fallbackMethod}`] === 'function') {
           breaker.fallback(async (args: unknown, error: Error) => {
             console.error(`🔄 Circuit breaker FALLBACK triggered: ${instanceKey}`, {
               className,
@@ -82,8 +79,7 @@ export function CircuitBreaker(params: CircuitBreakerInput = { options: {}, circ
               group: opt.group,
               error: error.message
             })
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            return await (this as any)[`${fallbackMethod}`]({ input: args, err: error })
+            return await (this as AnyType)[`${fallbackMethod}`]({ input: args, err: error })
           })
         }
       }
@@ -91,7 +87,6 @@ export function CircuitBreaker(params: CircuitBreakerInput = { options: {}, circ
       try {
         return await breakerInstances.get(instanceKey)!.fire(...args)
       } catch (error) {
-        // 📊 Structured error log
         console.error(`💥 Circuit breaker execution failed: ${instanceKey}`, {
           className,
           method: methodName,
@@ -272,8 +267,7 @@ export type OnFireInput = {
  * Input data for the `onSuccess` event.
  * Triggered when the request has successfully executed without errors.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type OnSuccessInput<T = any> = {
+export type OnSuccessInput<T = AnyType> = {
   /**
    * The input data that was passed to the original method.
    */
@@ -289,8 +283,7 @@ export type OnSuccessInput<T = any> = {
  * Input data for the `onFallback` event.
  * Triggered when a fallback occurs after a failure in the original request.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type OnFallbackInput<T = any> = {
+export type OnFallbackInput<T = AnyType> = {
   /**
    * The input data that was passed to the original method.
    */

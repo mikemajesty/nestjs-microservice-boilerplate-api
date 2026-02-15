@@ -67,7 +67,7 @@ export const BaseEntity = <T>() => {
     }
 
     toObject(): T {
-      return this._schema.safeParse(this).data as T
+      return this._schema.safeParse({ ...this, _schema: undefined }).data as T
     }
 
     clone(): this {
@@ -76,10 +76,11 @@ export const BaseEntity = <T>() => {
       return new Constructor(obj as T)
     }
 
-    merge(partial: Partial<T>): this {
+    merge(partial: Partial<T>) {
       const current = this.toObject()
       const merged = { ...current, ...partial }
-      return new (this.constructor as new (entity: T) => this)(merged as T)
+      this.validate(merged)
+      Object.assign(this, merged)
     }
 
     addEvent<R>(event: AddEventInput<R>): void {

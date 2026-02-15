@@ -3,6 +3,8 @@
  */
 import { Connection, Types } from 'mongoose'
 
+import { AnyType } from './types'
+
 export class MongoUtils {
   static createObjectId = (id?: string): Types.ObjectId => {
     return new Types.ObjectId(id)
@@ -92,6 +94,5 @@ export type FieldQuery<T> = T | MongoOperators<T>
 export type FilterQuery<T> = {
   [K in keyof T]?: T[K] extends object ? FilterQuery<T[K]> | FieldQuery<T[K]> : FieldQuery<T[K]>
 } & {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any
+  [key: string]: AnyType
 }

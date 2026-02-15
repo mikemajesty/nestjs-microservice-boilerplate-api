@@ -6,7 +6,7 @@ import { Test } from '@nestjs/testing'
 
 import { RoleEntity, RoleEntitySchema } from '@/core/role/entity/role'
 import { IUserListAdapter } from '@/modules/user/adapter'
-import { TestUtils } from '@/utils/test/util'
+import { TestUtils } from '@/utils/test/utils'
 import { ZodExceptionIssue } from '@/utils/validator'
 
 import { UserEntity, UserEntitySchema } from '../../entity/user'

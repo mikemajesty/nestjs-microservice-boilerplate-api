@@ -14,6 +14,7 @@ import pinoPretty, { PrettyOptions } from 'pino-pretty'
 import { DateUtils } from '@/utils/date'
 import { ApiBadRequestException, ApiInternalServerException, BaseException } from '@/utils/exception'
 import { IDGeneratorUtils } from '@/utils/id-generator'
+import { AnyType } from '@/utils/types'
 
 import { name, version } from '../../../package.json'
 import { EnvEnum } from '../secrets/types'
@@ -25,6 +26,7 @@ const DATE_FORMAT = 'yyyy-MM-dd HH:mm:ss'
 @Injectable({ scope: Scope.REQUEST })
 export class LoggerService implements ILoggerAdapter {
   static log(message: string) {
+    if (process.env.NODE_ENV === EnvEnum.TEST) return
     const timestamp = DateUtils.build({ format: DATE_FORMAT, type: 'iso' })
     // eslint-disable-next-line no-console
     console.log(`${gray('TRACE')} [${timestamp}]: [${blue(name)}] ${green(message)}`)
@@ -244,8 +246,7 @@ export class LoggerService implements ILoggerAdapter {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private getErrorResponse(error: ErrorType): any {
+  private getErrorResponse(error: ErrorType): AnyType {
     const isFunction = typeof error?.getResponse === 'function'
     return [
       {

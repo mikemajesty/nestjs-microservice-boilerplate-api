@@ -18,3 +18,9 @@ export type ZodInferSchema<T extends object> = {
 export type MakePartial<T> = {
   [P in keyof T]: T[P] extends object ? MakePartial<T[P]> : T[P]
 }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type AnyType = any
+
+// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+export type AnyFunction = Function

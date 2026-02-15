@@ -12,7 +12,7 @@ import { EmitEventOutput, IEventAdapter } from '@/libs/event'
 import { ITokenAdapter } from '@/libs/token'
 import { IConfirmResetPasswordAdapter } from '@/modules/reset-password/adapter'
 import { ApiBadRequestException, ApiNotFoundException, ApiUnauthorizedException } from '@/utils/exception'
-import { TestUtils } from '@/utils/test/util'
+import { TestUtils } from '@/utils/test/utils'
 import { ZodExceptionIssue } from '@/utils/validator'
 
 import { ResetPasswordEntity } from '../../entity/reset-password'
@@ -43,7 +43,7 @@ describe(ResetPasswordConfirmUsecase.name, () => {
         {
           provide: ITokenAdapter,
           useValue: {
-            verify: TestUtils.mockReturnValue<ResetPasswordConfirmVerify>({ id: TestUtils.getMockUUID() })
+            verify: TestUtils.mockReturnValue<ResetPasswordConfirmVerify>({ id: TestUtils.mockUUID() })
           }
         },
         {
@@ -129,7 +129,7 @@ describe(ResetPasswordConfirmUsecase.name, () => {
     await expect(usecase.execute(input)).rejects.toThrow(ApiUnauthorizedException)
   })
 
-  const defaultResetPassword = new ResetPasswordEntity({ id: TestUtils.getMockUUID(), token: 'token', user })
+  const defaultResetPassword = new ResetPasswordEntity({ id: TestUtils.mockUUID(), token: 'token', user })
   test('when confirm successfully, should expect a void', async () => {
     userRepository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(user)
     userRepository.create = TestUtils.mockResolvedValue<CreatedModel>()

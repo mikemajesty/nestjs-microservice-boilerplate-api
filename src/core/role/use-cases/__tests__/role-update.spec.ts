@@ -8,7 +8,7 @@ import { ILoggerAdapter } from '@/infra/logger'
 import { CreatedModel } from '@/infra/repository'
 import { IRoleUpdateAdapter } from '@/modules/role/adapter'
 import { ApiNotFoundException } from '@/utils/exception'
-import { TestUtils } from '@/utils/test/util'
+import { TestUtils } from '@/utils/test/utils'
 import { ZodExceptionIssue } from '@/utils/validator'
 
 import { IRoleRepository } from '../../repository/role'

@@ -2,15 +2,18 @@
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/tests/util.md
  */
 import { SpanStatus } from '@opentelemetry/api';
-import { Types } from 'mongoose';
 
 import { ApiTrancingInput, TracingType, UserRequest } from '@/utils/request';
 
 import { BaseException } from '@/utils/exception';
 import { ZodExceptionIssue } from '@/utils/validator';
+import { faker } from '@faker-js/faker';
 import { z } from 'zod';
+import { AnyFunction } from '../types';
 
 export class TestUtils {
+  static faker: typeof faker = faker;
+
   static mock(): jest.Mock {
     return jest.fn();
   }
@@ -35,13 +38,11 @@ export class TestUtils {
     return jest.fn().mockReturnValue(mock as NoInfer<T> | null);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   static mockImplementation<T = void>(mock?: (...args: unknown[]) => Partial<NoInfer<T>> | null): jest.Mock<any> {
     return jest.fn().mockImplementation(mock);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-  static expectZodError = async (callback: Function, expected: Function) => {
+  static expectZodError = async (callback: AnyFunction, expected: AnyFunction) => {
     try {
       await callback();
     } catch (error) {
@@ -56,11 +57,23 @@ export class TestUtils {
     return name;
   }
 
-  static getMockUUID = () => '9269248e-54cc-46f9-80c0-7029c989c0e3';
+  static mockUUID = () => faker.string.uuid();
 
-  static getMockObjectId = () => new Types.ObjectId('671d15ddd0bcb68467b767d0');
+  static mockObjectId = () => faker.string.hexadecimal({ length: 24, casing: 'lower', prefix: '' });
 
-  static getMockDate = () => new Date('Sat Feb 10 2024 14:00:35');
+  static mockDate = () => faker.date.past();
+
+  static mockISODate = () => faker.date.past().toISOString();
+
+  static mockText = (length: number = 10) => faker.lorem.words(length);
+
+  static mockNumber = (min: number = 0, max: number = 100) => faker.number.int({ min, max });
+
+  static mockBoolean = () => faker.datatype.boolean();
+
+  static mockArray<T>(item: T, length: number = 3): T[] {
+    return Array.from({ length }, () => item);
+  }
 
   static getMockTracing = (): ApiTrancingInput => {
     return {
@@ -70,13 +83,19 @@ export class TestUtils {
         },
         setStatus(event: SpanStatus) {
           return event;
-        }
+        },
+        addAttribute(key, value) {
+          return key + value;
+        },
+        finish() {
+          return true;
+        },
       } as Partial<TracingType> as TracingType,
-      user: this.getMockUser()
+      user: this.mockUser()
     };
   };
 
-  static getMockUser = (): UserRequest => {
-    return { email: 'test', name: 'test', id: this.getMockUUID() } as UserRequest;
+  static mockUser = (): UserRequest => {
+    return { email: 'test', name: 'test', id: this.mockUUID() } as UserRequest;
   };
 }

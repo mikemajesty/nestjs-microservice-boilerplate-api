@@ -9,7 +9,7 @@ import { IPermissionRepository } from '@/core/permission/repository/permission'
 import { CreatedModel } from '@/infra/repository'
 import { IRoleAddPermissionAdapter } from '@/modules/role/adapter'
 import { ApiNotFoundException } from '@/utils/exception'
-import { TestUtils } from '@/utils/test/util'
+import { TestUtils } from '@/utils/test/utils'
 import { ZodExceptionIssue } from '@/utils/validator'
 
 import { RoleEntity, RoleEntitySchema } from '../../entity/role'

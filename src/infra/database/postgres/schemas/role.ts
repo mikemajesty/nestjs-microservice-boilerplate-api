@@ -32,7 +32,7 @@ export class RoleSchema extends BaseEntity {
   @Column('text', { unique: true })
   name!: RoleEnum
 
-  @ManyToMany(() => PermissionSchema, { eager: true, cascade: ['insert', 'recover', 'update'] })
+  @ManyToMany(() => PermissionSchema, { eager: true, cascade: ['recover', 'update'] })
   @JoinTable({ name: 'permissions_roles' })
   permissions!: Relation<PermissionSchema[]>
 

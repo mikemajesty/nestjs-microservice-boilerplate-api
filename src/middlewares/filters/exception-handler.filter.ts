@@ -9,6 +9,7 @@ import { ILoggerAdapter } from '@/infra/logger/adapter'
 import { DateUtils } from '@/utils/date'
 import { ApiBadRequestException, ApiErrorType, ApiInternalServerException, BaseException } from '@/utils/exception'
 import { DefaultErrorMessage } from '@/utils/http-status'
+import { AnyType } from '@/utils/types'
 
 @Catch()
 export class ExceptionHandlerFilter implements AppExceptionFilter {
@@ -65,8 +66,7 @@ export class ExceptionHandlerFilter implements AppExceptionFilter {
   }
 
   private formatZodErrors(exception: ZodError): string[] {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return exception.issues.map((issue: any) => {
+    return exception.issues.map((issue: AnyType) => {
       const isUnrecognizedKeys = issue.code === 'unrecognized_keys'
 
       const path = isUnrecognizedKeys
@@ -86,8 +86,7 @@ export class ExceptionHandlerFilter implements AppExceptionFilter {
 
   private formatAxiosError(exception: AxiosError): string[] {
     if (exception.response?.data) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const responseData = exception.response.data as any
+      const responseData = exception.response.data as AnyType
       if (typeof responseData === 'string') {
         return [responseData]
       }

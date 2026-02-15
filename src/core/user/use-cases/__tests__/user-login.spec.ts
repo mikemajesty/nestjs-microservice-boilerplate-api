@@ -5,7 +5,7 @@ import { RoleEntity, RoleEntitySchema } from '@/core/role/entity/role'
 import { ITokenAdapter, TokenLibModule } from '@/libs/token'
 import { ILoginAdapter } from '@/modules/login/adapter'
 import { ApiBadRequestException, ApiNotFoundException } from '@/utils/exception'
-import { TestUtils } from '@/utils/test/util'
+import { TestUtils } from '@/utils/test/utils'
 import { ZodExceptionIssue } from '@/utils/validator'
 
 import { UserEntity, UserEntitySchema } from '../../entity/user'

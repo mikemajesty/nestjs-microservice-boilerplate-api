@@ -6,7 +6,7 @@ import { Test } from '@nestjs/testing'
 
 import { RoleListInput, RoleListOutput, RoleListSchema, RoleListUsecase } from '@/core/role/use-cases/role-list'
 import { IRoleListAdapter } from '@/modules/role/adapter'
-import { TestUtils } from '@/utils/test/util'
+import { TestUtils } from '@/utils/test/utils'
 import { ZodExceptionIssue } from '@/utils/validator'
 
 import { IRoleRepository } from '../../repository/role'

@@ -9,7 +9,7 @@ import { RoleDeleteInput, RoleDeleteSchema, RoleDeleteUsecase } from '@/core/rol
 import { CreatedModel } from '@/infra/repository'
 import { IRoleDeleteAdapter } from '@/modules/role/adapter'
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception'
-import { TestUtils } from '@/utils/test/util'
+import { TestUtils } from '@/utils/test/utils'
 import { ZodExceptionIssue } from '@/utils/validator'
 
 import { IRoleRepository } from '../../repository/role'

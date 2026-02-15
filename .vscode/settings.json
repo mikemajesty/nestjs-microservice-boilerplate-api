@@ -27,5 +27,27 @@
       "source.fixAll": "always",
       "source.organizeImports": "always"
     }
-  }
+  },
+  "jestrunner.jestPath": "./node_modules/.bin/jest",
+  "jestrunner.configPath": "test/jest.config.ts",
+  "jestrunner.debugOptions": {
+    "runtimeExecutable": "node",
+    "runtimeArgs": [
+      "--inspect=9229",
+      "-r",
+      "ts-node/register",
+      "-r",
+      "tsconfig-paths/register"
+    ],
+    "console": "integratedTerminal",
+    "internalConsoleOptions": "neverOpen",
+    "env": {
+      "TS_NODE_PROJECT": "tsconfig.json"
+    }
+  },
+  "jest.jestCommandLine": "npm run test",
+  "jest.rootPath": ".",
+  "jest.testMatch": [
+    "**/__tests__/**/*.spec.ts"
+  ]
 }

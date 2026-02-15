@@ -91,7 +91,7 @@ export class HttpBuilder implements IHttpBuilder {
       return response.data
     } catch (error) {
       const duration = Date.now() - startTime
-      throw this.convertToApiException(error, duration)
+      throw this.convertToApiException(error as CustomAxiosError, duration)
     }
   }
 
@@ -117,7 +117,7 @@ export class HttpBuilder implements IHttpBuilder {
       }
     } catch (error) {
       const duration = Date.now() - startTime
-      const apiError = this.convertToApiException(error, duration)
+      const apiError = this.convertToApiException(error as CustomAxiosError, duration)
 
       return {
         data: null,
@@ -130,8 +130,7 @@ export class HttpBuilder implements IHttpBuilder {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private convertToApiException(error: any, duration: number): BaseException {
+  private convertToApiException(error: CustomAxiosError, duration: number): BaseException {
     const status = (error as CustomAxiosError)?.response?.status || 500
     const message = (error as CustomAxiosError)?.response?.data?.message || error.message
 

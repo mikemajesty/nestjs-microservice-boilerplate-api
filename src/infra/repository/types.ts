@@ -1,4 +1,5 @@
-import { ObjectId } from 'mongoose'
+import { ClientSession, ObjectId } from 'mongoose'
+import { EntityManager } from 'typeorm'
 
 export type UpdatedModel = {
   matchedCount: number
@@ -53,3 +54,5 @@ export type JoinType<T> = {
           ? boolean | (keyof T[K])[]
           : never
 }
+
+export type RunInTransactionType = EntityManager | ClientSession

@@ -11,7 +11,7 @@ import { CreatedModel } from '@/infra/repository'
 import { IUserUpdateAdapter } from '@/modules/user/adapter'
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception'
 import { IDGeneratorUtils } from '@/utils/id-generator'
-import { TestUtils } from '@/utils/test/util'
+import { TestUtils } from '@/utils/test/utils'
 import { ZodExceptionIssue } from '@/utils/validator'
 
 import { UserEntity, UserEntitySchema } from '../../entity/user'

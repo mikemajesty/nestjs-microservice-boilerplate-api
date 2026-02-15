@@ -10,7 +10,7 @@ import { CreatedModel } from '@/infra/repository'
 import { IRoleDeletePermissionAdapter } from '@/modules/role/adapter'
 import { ApiNotFoundException } from '@/utils/exception'
 import { IDGeneratorUtils } from '@/utils/id-generator'
-import { TestUtils } from '@/utils/test/util'
+import { TestUtils } from '@/utils/test/utils'
 import { ZodExceptionIssue } from '@/utils/validator'
 
 import { RoleEntity, RoleEnum } from '../../entity/role'

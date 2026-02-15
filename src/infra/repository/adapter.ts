@@ -9,6 +9,7 @@ import {
   DatabaseOperationCommand,
   JoinType,
   RemovedModel,
+  RunInTransactionType,
   UpdatedModel
 } from './types'
 
@@ -32,7 +33,7 @@ export abstract class IRepository<T> {
    *     await repo.updateOne({ id: '1' }, { name: 'bar' });
    *   });
    */
-  abstract runInTransaction<R>(fn: (context: unknown) => Promise<R>): Promise<R>
+  abstract runInTransaction<R>(fn: (context: RunInTransactionType) => Promise<R>): Promise<R>
 
   /**
    * Creates a new document.

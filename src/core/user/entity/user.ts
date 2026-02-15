@@ -20,7 +20,7 @@ export const UserEntitySchema = InputValidator.object({
   id: ID,
   name: Name,
   email: Email,
-  roles: InputValidator.array(Role.optional()).min(1),
+  roles: InputValidator.array(Role.optional()),
   password: Password.optional(),
   createdAt: CreatedAt,
   updatedAt: UpdatedAt,

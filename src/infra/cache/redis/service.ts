@@ -24,7 +24,9 @@ export class RedisService implements Partial<ICacheAdapter<RedisClientType>> {
 
   async ping(): Promise<string> {
     try {
-      const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('Redis ping timeout')), 100))
+      const timeout = new Promise((_, reject) =>
+        setTimeout(() => reject(new ApiInternalServerException('Redis ping timeout')), 100)
+      )
       const ping = this.client.ping()
       const result = await Promise.race([ping, timeout])
 

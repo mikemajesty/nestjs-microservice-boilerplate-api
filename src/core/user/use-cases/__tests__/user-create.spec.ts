@@ -11,7 +11,7 @@ import { CreatedModel } from '@/infra/repository'
 import { EmitEventOutput, IEventAdapter } from '@/libs/event'
 import { IUserCreateAdapter } from '@/modules/user/adapter'
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception'
-import { TestUtils } from '@/utils/test/util'
+import { TestUtils } from '@/utils/test/utils'
 import { ZodExceptionIssue } from '@/utils/validator'
 
 import { UserEntity, UserEntitySchema } from '../../entity/user'
@@ -129,7 +129,7 @@ describe(UserCreateUsecase.name, () => {
   test('when user created successfully, should expect a user', async () => {
     roleRepository.findIn = TestUtils.mockResolvedValue<RoleEntity[]>(roles)
     repository.findOne = TestUtils.mockResolvedValue<UserEntity>(null)
-    const createOutput = { created: true, id: TestUtils.getMockUUID() }
+    const createOutput = { created: true, id: TestUtils.mockUUID() }
     repository.create = TestUtils.mockResolvedValue<CreatedModel>(createOutput)
 
     await expect(usecase.execute(input, TestUtils.getMockTracing())).resolves.toEqual(createOutput)

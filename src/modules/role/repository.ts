@@ -12,8 +12,8 @@ import { TypeORMRepository } from '@/infra/repository/postgres/repository'
 import { ConvertTypeOrmFilter, SearchTypeEnum, ValidateDatabaseSortAllowed } from '@/utils/decorators'
 
 @Injectable()
-export class RoleRepository extends TypeORMRepository<Model> implements IRoleRepository {
-  constructor(readonly repository: Repository<Model>) {
+export class RoleRepository extends TypeORMRepository<RoleModel> implements IRoleRepository {
+  constructor(readonly repository: Repository<RoleModel>) {
     super(repository)
   }
 
@@ -25,4 +25,4 @@ export class RoleRepository extends TypeORMRepository<Model> implements IRoleRep
   }
 }
 
-type Model = RoleSchema & RoleEntity
+export type RoleModel = RoleSchema & RoleEntity

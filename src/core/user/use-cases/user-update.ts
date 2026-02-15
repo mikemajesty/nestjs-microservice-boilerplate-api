@@ -37,6 +37,7 @@ export class UserUpdateUsecase implements IUsecase {
     const roles = await this.getRoles(input, user.roles as RoleEntity[])
 
     const entity = new UserEntity(user)
+
     entity.merge({ ...input, roles })
 
     const userExists = await this.userRepository.existsOnUpdate({ email: entity.email }, entity.id)

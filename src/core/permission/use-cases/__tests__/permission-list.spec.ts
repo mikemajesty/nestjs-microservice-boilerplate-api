@@ -11,7 +11,7 @@ import {
   PermissionListUsecase
 } from '@/core/permission/use-cases/permission-list'
 import { IPermissionListAdapter } from '@/modules/permission/adapter'
-import { TestUtils } from '@/utils/test/util'
+import { TestUtils } from '@/utils/test/utils'
 import { ZodExceptionIssue } from '@/utils/validator'
 
 import { IPermissionRepository } from '../../repository/permission'

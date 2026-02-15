@@ -7,7 +7,7 @@ import { Test } from '@nestjs/testing'
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger'
 import { ICatGetByIdAdapter } from '@/modules/cat/adapter'
 import { ApiNotFoundException } from '@/utils/exception'
-import { TestUtils } from '@/utils/test/util'
+import { TestUtils } from '@/utils/test/utils'
 import { ZodExceptionIssue } from '@/utils/validator'
 
 import { CatEntity, CatEntitySchema } from '../../entity/cat'
@@ -57,7 +57,7 @@ describe(CatGetByIdUsecase.name, () => {
   test('when cat not found, should expect an error', async () => {
     repository.findById = TestUtils.mockResolvedValue<CatEntity>(null)
 
-    await expect(usecase.execute({ id: TestUtils.getMockUUID() })).rejects.toThrow(ApiNotFoundException)
+    await expect(usecase.execute({ id: TestUtils.mockUUID() })).rejects.toThrow(ApiNotFoundException)
   })
 
   const mock = new ZodMockSchema(CatEntitySchema)
@@ -66,6 +66,6 @@ describe(CatGetByIdUsecase.name, () => {
   test('when cat found, should expect a cat found', async () => {
     repository.findById = TestUtils.mockResolvedValue<CatEntity>(input)
 
-    await expect(usecase.execute({ id: TestUtils.getMockUUID() })).resolves.toEqual(input)
+    await expect(usecase.execute({ id: TestUtils.mockUUID() })).resolves.toEqual(input)
   })
 })

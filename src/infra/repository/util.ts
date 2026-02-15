@@ -37,7 +37,8 @@ export const validateFindByCommandsFilter = <T>(filterList: DatabaseOperationCom
 export const handleDatabaseError = ({ error, context }: { error: unknown; context: string }): ApiDatabaseException => {
   return new ApiDatabaseException((error as Error).message ?? String(error), {
     originalError: error,
-    context
+    context,
+    stack: (error as Error).stack
   })
 }
 

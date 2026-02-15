@@ -7,7 +7,7 @@ import { IEntity } from '@/utils/entity'
 import { ApiBadRequestException } from '@/utils/exception'
 
 import { AllowedFilter, SearchTypeEnum } from '../../types'
-import { convertFilterValue } from '../utils'
+import { convertFilterValue } from '../filter-utils'
 
 type ConvertTypeOrmFilterInput = {
   [key: string]: FindOperator<IEntity> | string | string[] | unknown
