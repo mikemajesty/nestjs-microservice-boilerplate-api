@@ -4,6 +4,7 @@ import { APP_GUARD, APP_INTERCEPTOR, Reflector } from '@nestjs/core'
 import { InfraModule } from '@/infra/module'
 import { ISecretsAdapter } from '@/infra/secrets'
 import { AuthorizationRoleGuard } from '@/middlewares/guards'
+import { BirdModule } from '@/modules/bird/module'
 import { CatModule } from '@/modules/cat/module'
 import { HealthModule } from '@/modules/health/module'
 import { LoginModule } from '@/modules/login/module'
@@ -38,7 +39,8 @@ import { RoleModule } from './modules/role/module'
     ResetPasswordModule,
     RoleModule,
     PermissionModule,
-    LoggerModule
+    LoggerModule,
+    BirdModule
   ],
   providers: [
     {

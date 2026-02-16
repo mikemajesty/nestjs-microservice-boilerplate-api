@@ -108,7 +108,7 @@
   "devDependencies": {
     "@commitlint/cli": "^20.3.1",
     "@commitlint/config-conventional": "^20.3.1",
-    "@mikemajesty/microservice-crud": "7.1.5",
+    "@mikemajesty/microservice-crud": "7.1.6",
     "@nestjs/cli": "^11.0.16",
     "@nestjs/schematics": "^11.0.9",
     "@nestjs/testing": "^11.1.12",
