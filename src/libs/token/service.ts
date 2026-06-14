@@ -20,6 +20,10 @@ export const TokenGetSchema = UserEntitySchema.pick({
 export class TokenService implements ITokenAdapter {
   constructor(private readonly secret: ISecretsAdapter) {}
 
+  get refreshSecret(): string {
+    return this.secret.JWT_REFRESH_SECRET_KEY
+  }
+
   sign(input: TokenSignInput): TokenSignOutput {
     const token = jwt.sign(
       input.body as jwt.JwtPayload,

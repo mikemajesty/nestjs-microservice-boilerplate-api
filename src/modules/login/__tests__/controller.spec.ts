@@ -3,6 +3,7 @@ import { Test } from '@nestjs/testing'
 import request from 'supertest'
 
 import { IUserRepository } from '@/core/user/repository/user'
+import { ICacheAdapter } from '@/infra/cache'
 import { UserModule } from '@/modules/user/module'
 import { TestPostgresContainer, TestRedisContainer } from '@/utils/test/e2e/containers'
 import { UserFixture } from '@/utils/test/e2e/fixtures/user'
@@ -14,6 +15,7 @@ import { LoginModule } from '../module'
 describe(LoginController.name, () => {
   let app: INestApplication
   let userRepository: IUserRepository
+  let redisService: ICacheAdapter
 
   const userFixture = new UserFixture()
   const postgresContainer = new TestPostgresContainer()
@@ -21,17 +23,14 @@ describe(LoginController.name, () => {
 
   beforeAll(async () => {
     const { postgresConfig } = await postgresContainer.getPostgres()
+    redisService = await redisContainer.getTestRedis()
+
     const moduleRef = await Test.createTestingModule({
-      imports: [LoginModule, UserModule, TestEnd2EndUtils.getPostgresModule(postgresContainer, postgresConfig)],
-      providers: [
-        {
-          provide: 'ICacheAdapter',
-          useFactory: async () => {
-            return await redisContainer.getTestRedis()
-          }
-        }
-      ]
-    }).compile()
+      imports: [LoginModule, UserModule, TestEnd2EndUtils.getPostgresModule(postgresContainer, postgresConfig)]
+    })
+      .overrideProvider(ICacheAdapter)
+      .useValue(redisService)
+      .compile()
 
     app = moduleRef.createNestApplication()
     TestEnd2EndUtils.addTracing(app)

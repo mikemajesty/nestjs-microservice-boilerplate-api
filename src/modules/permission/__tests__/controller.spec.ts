@@ -8,6 +8,7 @@ import { PermissionListOutput } from '@/core/permission/use-cases/permission-lis
 import { PermissionUpdateInput } from '@/core/permission/use-cases/permission-update'
 import { IRoleRepository } from '@/core/role/repository/role'
 import { IUserRepository } from '@/core/user/repository/user'
+import { ICacheAdapter } from '@/infra/cache'
 import { ITokenAdapter } from '@/libs/token'
 import { UserModule } from '@/modules/user/module'
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception'
@@ -48,6 +49,8 @@ describe(PermissionController.name, () => {
           id: userFixture.entity.id
         })
       })
+      .overrideProvider(ICacheAdapter)
+      .useFactory({ factory: async () => redisContainer.getTestRedis() })
       .compile()
 
     app = moduleRef.createNestApplication()

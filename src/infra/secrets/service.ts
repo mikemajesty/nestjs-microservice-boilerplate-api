@@ -62,6 +62,7 @@ export class SecretsService implements ISecretsAdapter {
   REFRESH_TOKEN_EXPIRATION = this.config.get<number | string>('REFRESH_TOKEN_EXPIRATION') as string
 
   JWT_SECRET_KEY = this.config.get('JWT_SECRET_KEY')
+  JWT_REFRESH_SECRET_KEY = this.config.get('JWT_REFRESH_SECRET_KEY')
 
   AUTH = {
     GOOGLE: {

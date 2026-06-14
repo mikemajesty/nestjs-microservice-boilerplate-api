@@ -63,7 +63,8 @@ import { EnvEnum } from './types'
               CLIENT_SECRET: InputValidator.string(),
               REDIRECT_URL: InputValidator.url()
             })
-          })
+          }),
+          JWT_REFRESH_SECRET_KEY: InputValidator.string()
         })
         const secret = new SecretsService(config)
 

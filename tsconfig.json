@@ -12,12 +12,8 @@
     "sourceMap": true,
     "outDir": "./dist",
     "paths": {
-      "@/*": [
-        "./src/*"
-      ],
-      "@/test/*": [
-        "./test/*"
-      ]
+      "@/*": ["./src/*"],
+      "@/test/*": ["./test/*"]
     },
     "baseUrl": "./",
     "incremental": true,
@@ -27,6 +23,7 @@
     "noImplicitAny": true,
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
-    "noFallthroughCasesInSwitch": false
+    "noFallthroughCasesInSwitch": false,
+    "types": ["jest", "node"]
   }
 }

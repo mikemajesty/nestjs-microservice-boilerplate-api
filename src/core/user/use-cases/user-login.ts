@@ -52,7 +52,10 @@ export class LoginUsecase implements IUsecase {
       } as UserRequest
     })
 
-    const { token: refreshToken } = this.tokenService.sign({ body: { userId: user.id } })
+    const { token: refreshToken } = this.tokenService.sign({
+      body: { userId: user.id },
+      secret: this.tokenService.refreshSecret
+    })
 
     return { accessToken: token, refreshToken }
   }

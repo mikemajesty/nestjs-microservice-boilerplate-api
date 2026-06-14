@@ -5,6 +5,7 @@ import request from 'supertest'
 
 import { IResetPasswordRepository } from '@/core/reset-password/repository/reset-password'
 import { IUserRepository } from '@/core/user/repository/user'
+import { ICacheAdapter } from '@/infra/cache'
 import { TokenSignOutput } from '@/libs/token'
 import { ITokenAdapter } from '@/libs/token/adapter'
 import { ApiBadRequestException, ApiNotFoundException } from '@/utils/exception'
@@ -45,6 +46,8 @@ describe(ResetPasswordController.name, () => {
           id: userFixture.entity.id
         })
       })
+      .overrideProvider(ICacheAdapter)
+      .useFactory({ factory: async () => redisContainer.getTestRedis() })
       .compile()
 
     app = moduleRef.createNestApplication()

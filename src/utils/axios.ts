@@ -9,6 +9,7 @@ import { ILoggerAdapter } from '@/infra/logger'
 
 import { ApiInternalServerException } from './exception'
 import { DefaultErrorMessage } from './http-status'
+import { ObjectUtil } from './object'
 
 export class AxiosUtils {
   static interceptAxiosResponseError = (error: CustomAxiosError): void => {
@@ -32,10 +33,10 @@ export class AxiosUtils {
 
   private static extractErrorStatus(error: CustomAxiosError): number {
     const statusCandidates = [
-      error.response?.data?.code,
-      error.response?.data?.error?.code,
-      error.response?.status,
-      error.status,
+      ObjectUtil.reach(error, (e) => e.response.data.code),
+      ObjectUtil.reach(error, (e) => e.response.data.error.code),
+      ObjectUtil.reach(error, (e) => e.response.status),
+      ObjectUtil.reach(error, (e) => e.status),
       500
     ]
 
@@ -48,11 +49,11 @@ export class AxiosUtils {
 
   private static extractErrorMessage(error: CustomAxiosError): string {
     const messageCandidates = [
-      error.response?.data?.description,
-      error.response?.data?.error?.message,
-      error.response?.data?.message,
-      error.response?.statusText,
-      error.message,
+      ObjectUtil.reach(error, (e) => e.response.data.description),
+      ObjectUtil.reach(error, (e) => e.response.data.error.message),
+      ObjectUtil.reach(error, (e) => e.response.data.message),
+      ObjectUtil.reach(error, (e) => e.response.statusText),
+      ObjectUtil.reach(error, (e) => e.message),
       DefaultErrorMessage[ApiInternalServerException.STATUS]
     ]
 
@@ -65,14 +66,15 @@ export class AxiosUtils {
       retries: 3,
 
       retryDelay: (retryCount: number, error: AxiosError | CustomAxiosError) => {
-        const statusText = [(error.response?.data as CustomAxiosError)?.message, error.message].find(Boolean)
+        const axiosError = error as CustomAxiosError
+        const statusText = ObjectUtil.reach(axiosError, (e) => e.response.data.message)
 
-        const status = this.extractErrorStatus(error as CustomAxiosError)
+        const status = this.extractErrorStatus(axiosError)
 
         logger.warn({
           message: `Retry attempt: ${retryCount}`,
           obj: {
-            statusText,
+            statusText: statusText ?? error.message,
             status,
             url: error.config?.url,
             method: error.config?.method?.toUpperCase()

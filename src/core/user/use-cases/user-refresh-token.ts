@@ -20,7 +20,10 @@ export class RefreshTokenUsecase implements IUsecase {
 
   @ValidateSchema(RefreshTokenSchema)
   async execute(input: RefreshTokenInput): Promise<RefreshTokenOutput> {
-    const userToken = await this.tokenService.verify<UserRefreshTokenVerifyInput>({ token: input.refreshToken })
+    const userToken = await this.tokenService.verify<UserRefreshTokenVerifyInput>({
+      token: input.refreshToken,
+      secret: this.tokenService.refreshSecret
+    })
 
     if (!userToken.userId) {
       throw new ApiBadRequestException('incorrectToken')
@@ -46,7 +49,10 @@ export class RefreshTokenUsecase implements IUsecase {
       } as UserRequest
     })
 
-    const { token: refreshToken } = this.tokenService.sign({ body: { userId: user.id } })
+    const { token: refreshToken } = this.tokenService.sign({
+      body: { userId: user.id },
+      secret: this.tokenService.refreshSecret
+    })
 
     return { accessToken: token, refreshToken }
   }

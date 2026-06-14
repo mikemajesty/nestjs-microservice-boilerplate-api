@@ -4,6 +4,7 @@
 import { TokenSignInput, TokenSignOutput, TokenVerifyInput } from './service'
 
 export abstract class ITokenAdapter {
+  abstract refreshSecret: string
   abstract sign(input: TokenSignInput): TokenSignOutput
   abstract verify<T = void>(input: TokenVerifyInput): Promise<NoInfer<T>>
 }

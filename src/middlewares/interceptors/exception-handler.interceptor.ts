@@ -9,6 +9,7 @@ import { catchError } from 'rxjs/operators'
 import { ZodError } from 'zod'
 
 import { ApiBadRequestException, ApiInternalServerException, ApiTimeoutException } from '@/utils/exception'
+import { ObjectUtil } from '@/utils/object'
 import { TracingType } from '@/utils/request'
 
 @Injectable()
@@ -53,20 +54,23 @@ export class ExceptionHandlerInterceptor implements NestInterceptor {
       return ApiTimeoutException.STATUS
     }
 
-    const data = error?.response?.data
-    const nested = data?.error
+    const data = ObjectUtil.reach(error, (o) => o.response.data, {})
+    const nested = ObjectUtil.reach(data, (o) => o.error, {})
 
-    return nested?.code ?? data?.code ?? error?.response?.status ?? error.status ?? ApiInternalServerException.STATUS
+    return (
+      ObjectUtil.firstDefined(nested.code, data.code, error?.response?.status, error.status) ??
+      ApiInternalServerException.STATUS
+    )
   }
 
   private sanitizeExternalError(error: AxiosError<ExternalErrorResponse> & SanitizedAxiosError) {
     if (!error?.isAxiosError || typeof error?.response !== 'object') return
 
-    const data = error.response?.data
-    const nested = data?.error
+    const data = ObjectUtil.reach(error, (o) => o.response.data, {})
+    const nested = ObjectUtil.reach(data, (o) => o.error, {})
 
-    const status = data?.code ?? nested?.code ?? error.status
-    const message = data?.message ?? nested?.message ?? error.message
+    const status = ObjectUtil.firstDefined(data.code, nested.code, error.status)
+    const message = ObjectUtil.firstDefined(data.message, nested.message, error.message)
 
     error.message = message as string
     error.getResponse = () => nested ?? data

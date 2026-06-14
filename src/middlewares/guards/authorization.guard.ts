@@ -9,6 +9,7 @@ import { IUserRepository } from '@/core/user/repository/user'
 import { PERMISSION_GUARD } from '@/utils/decorators'
 import { ApiForbiddenException, ApiUnauthorizedException } from '@/utils/exception'
 import { DefaultErrorMessage } from '@/utils/http-status'
+import { ObjectUtil } from '@/utils/object'
 import { TracingType } from '@/utils/request'
 
 @Injectable()
@@ -30,7 +31,7 @@ export class AuthorizationRoleGuard implements CanActivate {
 
     const request = context.switchToHttp().getRequest()
 
-    const userId = request?.user?.id
+    const userId = ObjectUtil.reach(request, (o) => o.user.id)
 
     if (!userId) {
       this.finishTracing(request, ApiUnauthorizedException.STATUS, 'invalidToken')

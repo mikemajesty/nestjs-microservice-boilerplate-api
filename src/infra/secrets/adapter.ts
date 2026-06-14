@@ -45,6 +45,7 @@ export abstract class ISecretsAdapter {
   REFRESH_TOKEN_EXPIRATION!: number | string
 
   JWT_SECRET_KEY!: string
+  JWT_REFRESH_SECRET_KEY!: string
 
   IS_LOCAL!: boolean
 

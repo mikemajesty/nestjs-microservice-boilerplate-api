@@ -12,6 +12,7 @@ import {
   ApiUnprocessableEntityException,
   BaseException
 } from '@/utils/exception'
+import { ObjectUtil } from '@/utils/object'
 
 import { IHttpBuilder } from './adapter'
 import { HttpData, HttpMethod, HttpResponse } from './types'
@@ -119,11 +120,12 @@ export class HttpBuilder implements IHttpBuilder {
       const duration = Date.now() - startTime
       const apiError = this.convertToApiException(error as CustomAxiosError, duration)
 
+      const customAxiosError = error as CustomAxiosError
       return {
         data: null,
         error: apiError,
-        headers: ((error as CustomAxiosError)?.response?.headers || {}) as Record<string, string>,
-        status: (error as CustomAxiosError)?.response?.status || 500,
+        headers: ObjectUtil.reach(customAxiosError, (e) => e.response.headers, {}),
+        status: ObjectUtil.reach(customAxiosError, (e) => e.response.status, 500),
         success: false,
         duration
       }
@@ -131,8 +133,9 @@ export class HttpBuilder implements IHttpBuilder {
   }
 
   private convertToApiException(error: CustomAxiosError, duration: number): BaseException {
-    const status = (error as CustomAxiosError)?.response?.status || 500
-    const message = (error as CustomAxiosError)?.response?.data?.message || error.message
+    const customAxiosError = error as CustomAxiosError
+    const status = ObjectUtil.reach(customAxiosError, (e) => e.response.status, 500)
+    const message = ObjectUtil.reach(customAxiosError, (e) => e.response.data.message, error.message)
 
     const parameters = {
       context: 'HttpBuilder',

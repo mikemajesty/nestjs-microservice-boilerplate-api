@@ -42,16 +42,11 @@ describe(LogoutController.name, () => {
         LogoutModule,
         TestEnd2EndUtils.getPostgresModule(postgresContainer, postgresConfig)
       ],
-      providers: [
-        TestEnd2EndUtils.getGuardProvider([IUserRepository]),
-        {
-          provide: ICacheAdapter,
-          useFactory: async () => {
-            return await redisContainer.getTestRedis()
-          }
-        }
-      ]
-    }).compile()
+      providers: [TestEnd2EndUtils.getGuardProvider([IUserRepository])]
+    })
+      .overrideProvider(ICacheAdapter)
+      .useFactory({ factory: async () => redisContainer.getTestRedis() })
+      .compile()
 
     app = moduleRef.createNestApplication()
     TestEnd2EndUtils.addTracing(app)

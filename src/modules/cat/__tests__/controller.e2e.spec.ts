@@ -15,6 +15,7 @@ import { CatUpdateOutput } from '@/core/cat/use-cases/cat-update'
 import { IPermissionRepository } from '@/core/permission/repository/permission'
 import { IRoleRepository } from '@/core/role/repository/role'
 import { IUserRepository } from '@/core/user/repository/user'
+import { ICacheAdapter } from '@/infra/cache'
 import { ConnectionName } from '@/infra/database/enum'
 import { Cat, CatDocument, CatSchema } from '@/infra/database/mongo/schemas/cat'
 import { ITokenAdapter } from '@/libs/token'
@@ -34,6 +35,7 @@ import { CatRepository } from '../repository'
 
 describe(CatController.name, () => {
   let app: INestApplication
+  let redisService: ICacheAdapter
 
   let roleRepository: IRoleRepository
   let permissionRepository: IPermissionRepository
@@ -50,6 +52,7 @@ describe(CatController.name, () => {
   beforeAll(async () => {
     const { mongoConnection } = await mongoContainer.getTestMongo(ConnectionName.CATS)
     const { postgresConfig } = await postgresContainer.getPostgres()
+    redisService = await redisContainer.getTestRedis()
 
     const moduleRef = await Test.createTestingModule({
       imports: [UserModule, CatModule, TestEnd2EndUtils.getPostgresModule(postgresContainer, postgresConfig)],
@@ -77,6 +80,8 @@ describe(CatController.name, () => {
           id: userFixture.entity.id
         })
       })
+      .overrideProvider(ICacheAdapter)
+      .useValue(redisService)
       .compile()
 
     app = moduleRef.createNestApplication()

@@ -14,6 +14,7 @@ import pinoPretty, { PrettyOptions } from 'pino-pretty'
 import { DateUtils } from '@/utils/date'
 import { ApiBadRequestException, ApiInternalServerException, BaseException } from '@/utils/exception'
 import { IDGeneratorUtils } from '@/utils/id-generator'
+import { ObjectUtil } from '@/utils/object'
 import { AnyType } from '@/utils/types'
 
 import { name, version } from '../../../package.json'
@@ -84,7 +85,7 @@ export class LoggerService implements ILoggerAdapter {
   warn(input: MessageInputType): void {
     const { message, context, obj = {} } = input
     Object.assign(obj, {
-      context: context ?? (obj as { context?: string })?.['context'],
+      context: context ?? obj?.context,
       createdAt: DateUtils.now({ type: 'iso' })
     })
     const finalMessage = typeof input === 'string' ? input : message
@@ -94,17 +95,26 @@ export class LoggerService implements ILoggerAdapter {
   error(error: ErrorType, message?: string): void {
     const errorResponse = this.getErrorResponse(error)
 
-    const response =
-      error instanceof BaseException
-        ? { statusCode: error.statusCode, message: error?.message, ...error?.parameters }
-        : errorResponse?.value()
+    const extractResponse = () => {
+      if (error instanceof BaseException) {
+        return {
+          statusCode: error.statusCode,
+          message: ObjectUtil.reach(error, (o) => o.message),
+          ...error?.parameters
+        }
+      }
+
+      return errorResponse?.value()
+    }
+
+    const response = extractResponse()
 
     const type =
       {
         Error: BaseException.name
       }[error?.name] || ApiInternalServerException.name
 
-    const messages = [message, response?.message, error.message].find(Boolean)
+    const messages = [message, ObjectUtil.reach(response, (o) => o.message, error.message)].find(Boolean)
 
     if (error?.name === 'QueryFailedError') {
       Object.assign(error, { parameters: undefined })
@@ -114,7 +124,7 @@ export class LoggerService implements ILoggerAdapter {
     this.logger.logger.error(
       {
         ...response,
-        context: error?.context,
+        context: ObjectUtil.reach(error, (o) => o.context),
         type,
         traceid: this.getTraceId(error),
         createdAt: DateUtils.now({ type: 'iso' }),
