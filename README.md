@@ -2,19 +2,20 @@
   <h1>🚀 NestJS Microservice Boilerplate API</h1>
   <p><strong>Enterprise-grade, production-ready NestJS boilerplate with modern architecture patterns</strong></p>
 
-  [![Node.js Version][node-image]][node-url]
-  [![TypeScript](https://img.shields.io/badge/TypeScript-5.9.3-blue.svg?style=flat-square)](https://www.typescriptlang.org/)
-  [![NestJS](https://img.shields.io/badge/NestJS-11.x-E0234E.svg?style=flat-square&logo=nestjs)](https://nestjs.com/)
-  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
+[![Node.js Version][node-image]][node-url]
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9.3-blue.svg?style=flat-square)](https://www.typescriptlang.org/)
+[![NestJS](https://img.shields.io/badge/NestJS-11.x-E0234E.svg?style=flat-square&logo=nestjs)](https://nestjs.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 
-  [node-image]: https://img.shields.io/badge/node.js-%3E=_22.0.0-green.svg?style=flat-square
-  [node-url]: http://nodejs.org/download/
+[node-image]: https://img.shields.io/badge/node.js-%3E=_22.0.0-green.svg?style=flat-square
+[node-url]: http://nodejs.org/download/
 
   <h3>Code Coverage</h3>
 
-  | Statements | Branches | Functions | Lines |
-  |------------|----------|-----------|-------|
-  | ![Statements](https://img.shields.io/badge/statements-100%25-brightgreen.svg?style=flat) | ![Branches](https://img.shields.io/badge/branches-100%25-brightgreen.svg?style=flat) | ![Functions](https://img.shields.io/badge/functions-100%25-brightgreen.svg?style=flat) | ![Lines](https://img.shields.io/badge/lines-100%25-brightgreen.svg?style=flat) |
+| Statements                                                                               | Branches                                                                             | Functions                                                                              | Lines                                                                          |
+| ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| ![Statements](https://img.shields.io/badge/statements-100%25-brightgreen.svg?style=flat) | ![Branches](https://img.shields.io/badge/branches-100%25-brightgreen.svg?style=flat) | ![Functions](https://img.shields.io/badge/functions-100%25-brightgreen.svg?style=flat) | ![Lines](https://img.shields.io/badge/lines-100%25-brightgreen.svg?style=flat) |
+
 </div>
 
 ---
@@ -54,11 +55,12 @@ The architecture is built around one fundamental principle: **protect your busin
 Clean Architecture organizes code into concentric circles where dependencies point inward. The innermost circle contains business rules, and outer circles contain implementation details.
 
 **How we implement it:**
+
 - **Entities** live in `src/core/*/entity` — pure business objects
 - **Use Cases** live in `src/core/*/use-cases` — application-specific business rules
 - **Interfaces** live in `src/core/*/repository` — contracts for external dependencies
 - **Frameworks** live in `src/modules` and `src/infra` — NestJS controllers and database implementations
-**What we simplified:**
+  **What we simplified:**
 - No explicit Interactors or Presenters
 - No input/output boundary classes
 
@@ -67,12 +69,14 @@ Clean Architecture organizes code into concentric circles where dependencies poi
 DDD focuses on modeling your business domain. It introduces concepts like Entities, Value Objects, Aggregates, and Repositories.
 
 **How we implement it:**
+
 - **Entities**: Objects with identity that persist over time (`UserEntity`, `RoleEntity`)
 - **Repository Pattern**: Abstract interfaces defining data access contracts
 - **Use Cases**: Encapsulate business operations (similar to Application Services in DDD)
 - **Bounded Contexts**: Each module represents a bounded context
 
 **What we simplified:**
+
 - No Value Objects as separate classes
 - Unified service layer (no Domain/Application Service split)
 
@@ -120,11 +124,13 @@ Hexagonal Architecture separates the application from external concerns through 
 ```
 
 **Ports (Interfaces):**
+
 - `ICatRepository` — defines what operations are available
 - `IHttpAdapter` — defines HTTP client contract
 - `ICacheAdapter` — defines caching contract
 
 **Adapters (Implementations):**
+
 - `CatRepository` in `modules/` — implements `ICatRepository` with TypeORM/Mongoose
 - `HttpService` in `infra/` — implements `IHttpAdapter` with Axios
 - `RedisService` in `infra/` — implements `ICacheAdapter` with Redis
@@ -134,7 +140,7 @@ Hexagonal Architecture separates the application from external concerns through 
 ## Design Decisions
 
 > ⚠️ **Important Notes About This Architecture**
-> 
+>
 > This section explains some deliberate choices that differ from traditional implementations. Understanding these decisions will help you work with the codebase effectively.
 
 ### Why We Call Interfaces "Adapters"
@@ -166,12 +172,12 @@ We use "Adapter" in interface names because, conceptually, **both are abstractio
 
 ```typescript
 // Traditional naming
-interface IUserRepository { }      // Port
-class PostgresUserRepository { }   // Adapter
+interface IUserRepository {} // Port
+class PostgresUserRepository {} // Adapter
 
 // Our naming (simplified)
-interface IHttpAdapter { }         // Still an abstraction (contract)
-class HttpService { }              // Still an implementation
+interface IHttpAdapter {} // Still an abstraction (contract)
+class HttpService {} // Still an implementation
 ```
 
 **Why this simplification?**
@@ -240,6 +246,7 @@ TypeScript interfaces are erased at runtime — they don't exist in the compiled
 ### Why the "Middlewares" Folder Contains More Than Middlewares
 
 Yes, we know. The `src/middlewares/` folder contains:
+
 - Middlewares (authentication)
 - Guards (authorization)
 - Interceptors (logging, tracing)
@@ -250,12 +257,14 @@ Yes, we know. The `src/middlewares/` folder contains:
 Honestly? We couldn't find a better name. 🤷
 
 We tried:
+
 - `http-pipeline/` — too generic
 - `request-handlers/` — not quite right
 - `cross-cutting/` — sounds like a buzzword bingo winner
 - `stuff-that-runs-before-and-after-your-code/` — accurate but... no
 
 So we stuck with `middlewares/` because:
+
 1. They all operate in the HTTP request/response lifecycle
 2. They're all "things that wrap your controller logic"
 3. Everyone knows where to find them
@@ -287,36 +296,36 @@ We validate inputs **inside** the Use Case using Zod schemas.
 **Why we made this choice:**
 
 1. **Testability**
-   
+
    When you test a Use Case, you should test the complete behavior — including validation. It's unacceptable to have a Use Case that passes tests but fails in production because validation was bypassed.
 
    ```typescript
    // Our tests validate the complete use case behavior
    it('should throw validation error for invalid email', async () => {
-     const input = { email: 'invalid-email', name: 'John' };
-     await expect(useCase.execute(input)).rejects.toThrow(ValidationException);
-   });
+     const input = { email: 'invalid-email', name: 'John' }
+     await expect(useCase.execute(input)).rejects.toThrow(ValidationException)
+   })
    ```
 
 2. **Use Case Integrity**
-   
+
    A Use Case is a complete unit of business logic. If `CreateUserUseCase` requires a valid email, that validation IS part of the use case — not something external to it.
 
 3. **Self-Documenting Code**
-   
+
    Looking at a Use Case, you immediately see what inputs it expects and how they're validated. No need to hunt through multiple layers.
 
 4. **Reduced Duplication**
-   
+
    If multiple controllers call the same Use Case, validations are automatically applied. No risk of one controller forgetting to validate.
 
 **Comparison with other approaches:**
 
-| Approach | Validation Location | Pros | Cons |
-|----------|---------------------|------|------|
-| **Traditional Clean** | Controller/Validator layer | Thin use cases | Validation can be bypassed, harder to test |
-| **DDD** | Domain entities (Value Objects) | Rich domain model | Complex, verbose |
-| **Our Approach** | Inside Use Case | Complete testability, self-contained | See trade-offs below |
+| Approach              | Validation Location             | Pros                                 | Cons                                       |
+| --------------------- | ------------------------------- | ------------------------------------ | ------------------------------------------ |
+| **Traditional Clean** | Controller/Validator layer      | Thin use cases                       | Validation can be bypassed, harder to test |
+| **DDD**               | Domain entities (Value Objects) | Rich domain model                    | Complex, verbose                           |
+| **Our Approach**      | Inside Use Case                 | Complete testability, self-contained | See trade-offs below                       |
 
 **The trade-off:**
 
@@ -353,11 +362,11 @@ The `core/` folder is sacred — it contains your business logic and must remain
 
 An **anemic entity** is just a data container with no behavior — essentially a DTO. This is an anti-pattern because business logic ends up scattered across use cases and services.
 
-| ❌ Avoid | ✅ Prefer |
-|----------|-----------|
-| Entity with only properties | Entity with properties **and** behavior |
+| ❌ Avoid                    | ✅ Prefer                                                 |
+| --------------------------- | --------------------------------------------------------- |
+| Entity with only properties | Entity with properties **and** behavior                   |
 | Business logic in Use Cases | Business logic **in the Entity** when it relates to state |
-| Calculations outside entity | Calculations as entity methods |
+| Calculations outside entity | Calculations as entity methods                            |
 
 **Ask yourself:** "Does this logic relate to the entity's state?" If yes, it belongs in the entity.
 
@@ -369,9 +378,9 @@ An **anemic entity** is just a data container with no behavior — essentially a
 
 Every Entity **must extend** the `BaseEntity` class. This is mandatory in this project.
 
-| ❌ Avoid | ✅ Prefer |
-|----------|-----------|
-| `class UserEntity { }` | `class UserEntity extends BaseEntity<UserEntity>() { }` |
+| ❌ Avoid                     | ✅ Prefer                                                    |
+| ---------------------------- | ------------------------------------------------------------ |
+| `class UserEntity { }`       | `class UserEntity extends BaseEntity<UserEntity>() { }`      |
 | `export class CatEntity { }` | `export class CatEntity extends BaseEntity<CatEntity>() { }` |
 
 ```typescript
@@ -443,26 +452,26 @@ This is the most important rule: **the Use Case receives abstractions, never imp
 - ✅ Utils and decorators (`utils/`)
 - ✅ Types and interfaces
 
-| ❌ Avoid | ✅ Prefer |
-|----------|-----------|
-| `import { Controller } from '@nestjs/common'` | No framework imports |
-| `import { UserRepository } from 'modules/user/repository'` | `import { IUserRepository } from 'core/user/repository'` |
-| `import { HttpService } from 'infra/http'` | `import { IHttpAdapter } from 'infra/http'` (interface only) |
-| Direct database calls (TypeORM, Mongoose) | Repository interface methods |
-| `new RedisService()` | Receive `ICacheAdapter` via constructor |
+| ❌ Avoid                                                   | ✅ Prefer                                                    |
+| ---------------------------------------------------------- | ------------------------------------------------------------ |
+| `import { Controller } from '@nestjs/common'`              | No framework imports                                         |
+| `import { UserRepository } from 'modules/user/repository'` | `import { IUserRepository } from 'core/user/repository'`     |
+| `import { HttpService } from 'infra/http'`                 | `import { IHttpAdapter } from 'infra/http'` (interface only) |
+| Direct database calls (TypeORM, Mongoose)                  | Repository interface methods                                 |
+| `new RedisService()`                                       | Receive `ICacheAdapter` via constructor                      |
 
 **The golden rule:**
 
 ```typescript
 // ❌ WRONG - Use Case knows the implementation
-import { HttpService } from '@/infra/http/service';
+import { HttpService } from '@/infra/http/service'
 
 class MyUseCase {
   constructor(private http: HttpService) {} // Concrete class!
 }
 
 // ✅ CORRECT - Use Case only knows the abstraction
-import { IHttpAdapter } from '@/infra/http/adapter';
+import { IHttpAdapter } from '@/infra/http/adapter'
 
 class MyUseCase implements IUsecase {
   constructor(private http: IHttpAdapter) {} // Interface!
@@ -470,6 +479,7 @@ class MyUseCase implements IUsecase {
 ```
 
 **Why?** The Use Case should work identically whether:
+
 - Called from a REST controller, GraphQL resolver, CLI, or message queue
 - Using Redis or Memcached for cache
 - Using Axios or Fetch for HTTP
@@ -481,12 +491,12 @@ class MyUseCase implements IUsecase {
 
 Every Use Case **must implement** the `IUsecase` interface. This is mandatory in this project.
 
-| ❌ Avoid | ✅ Prefer |
-|----------|-----------|
-| `class MyUseCase { }` | `class MyUseCase implements IUsecase { }` |
+| ❌ Avoid                             | ✅ Prefer                                                |
+| ------------------------------------ | -------------------------------------------------------- |
+| `class MyUseCase { }`                | `class MyUseCase implements IUsecase { }`                |
 | `export class CreateUserUseCase { }` | `export class CreateUserUseCase implements IUsecase { }` |
 
-```typescript
+````typescript
 // ❌ WRONG - Not implementing IUsecase
 export class CatCreateUsecase {
   constructor(private readonly catRepository: ICatRepository) {}
@@ -538,7 +548,7 @@ export abstract class ICatRepository extends IRepository<CatEntity> {
   abstract paginate(input: CatListInput): Promise<CatListOutput>
   abstract findByBreed(breed: string): Promise<CatEntity[]>
 }
-```
+````
 
 📖 **See full method list:** [Repository Guide](guides/core/repository.md) — includes `IRepository<T>` generic methods and examples
 
@@ -551,12 +561,12 @@ Controllers must **never contain business logic**. Their responsibility is limit
 1. **Orchestration** — Receive request, call use case, return response
 2. **Input standardization** — Transform and normalize inputs for the use case
 
-| ❌ Avoid | ✅ Prefer |
-|----------|-----------|
+| ❌ Avoid                   | ✅ Prefer                  |
+| -------------------------- | -------------------------- |
 | Calculations in controller | Move to Use Case or Entity |
-| Conditional business rules | Move to Use Case |
-| Data manipulation | Move to Use Case |
-| Multiple repository calls | Move to Use Case |
+| Conditional business rules | Move to Use Case           |
+| Data manipulation          | Move to Use Case           |
+| Multiple repository calls  | Move to Use Case           |
 
 **When input standardization is OK:**
 
@@ -600,47 +610,49 @@ async create(@Req() { body }: ApiRequest): Promise<CatCreateOutput> {
 
 The `core/` folder must remain **pure and framework-agnostic**. Never import external libraries directly into entities or use cases.
 
-| ❌ Avoid in Core | ✅ Prefer |
-|-----------------|-----------|
-| `import axios from 'axios'` | Use `IHttpAdapter` interface |
-| `import { Repository } from 'typeorm'` | Use `IRepository<T>` interface |
-| `import moment from 'moment'` | Use `utils/date` or native Date |
-| `import _ from 'lodash'` | Use `utils/collection` or native methods |
-| `import Redis from 'ioredis'` | Use `ICacheAdapter` interface |
+| ❌ Avoid in Core                       | ✅ Prefer                                |
+| -------------------------------------- | ---------------------------------------- |
+| `import axios from 'axios'`            | Use `IHttpAdapter` interface             |
+| `import { Repository } from 'typeorm'` | Use `IRepository<T>` interface           |
+| `import moment from 'moment'`          | Use `utils/date` or native Date          |
+| `import _ from 'lodash'`               | Use `utils/collection` or native methods |
+| `import Redis from 'ioredis'`          | Use `ICacheAdapter` interface            |
 
 **Why?**
 
 If you import `axios` directly into a Use Case:
+
 - You can't easily test it (need to mock axios globally)
 - You can't swap to `fetch` or another HTTP client
 - Your core business logic is coupled to a specific library
 
 ```typescript
 // ❌ WRONG - External library in Use Case
-import axios from 'axios';
+import axios from 'axios'
 
 export class GetExternalDataUseCase {
   async execute(): Promise<ExternalData> {
-    const response = await axios.get('https://api.example.com/data');
-    return response.data;
+    const response = await axios.get('https://api.example.com/data')
+    return response.data
   }
 }
 
 // ✅ CORRECT - Use abstraction
-import { IHttpAdapter } from '@/infra/http/adapter';
-import { IUsecase } from '@/utils/usecase';
+import { IHttpAdapter } from '@/infra/http/adapter'
+import { IUsecase } from '@/utils/usecase'
 
 export class GetExternalDataUseCase implements IUsecase {
   constructor(private readonly http: IHttpAdapter) {}
-  
+
   async execute(): Promise<ExternalData> {
-    const response = await this.http.get({ url: 'https://api.example.com/data' });
-    return response.data;
+    const response = await this.http.get({ url: 'https://api.example.com/data' })
+    return response.data
   }
 }
 ```
 
 **Allowed in Core:**
+
 - ✅ Zod (validation is part of domain logic)
 - ✅ Native Node.js/JavaScript APIs
 - ✅ Your own `utils/` functions
@@ -649,36 +661,37 @@ export class GetExternalDataUseCase implements IUsecase {
 
 ```typescript
 // ❌ WRONG - Using lodash directly in Use Case
-import _ from 'lodash';
+import _ from 'lodash'
 
 export class MyUseCase {
   execute(data: Product[]): Record<string, Product[]> {
-    return _.groupBy(data, 'category'); // Direct lodash usage
+    return _.groupBy(data, 'category') // Direct lodash usage
   }
 }
 
 // ✅ CORRECT - Create a centralized wrapper
 // utils/collection.ts
-import _ from 'lodash';
+import _ from 'lodash'
 
 export const CollectionUtil = {
   groupBy: <T>(array: T[], key: keyof T) => _.groupBy(array, key),
-  uniqBy: <T>(array: T[], key: keyof T) => _.uniqBy(array, key),
+  uniqBy: <T>(array: T[], key: keyof T) => _.uniqBy(array, key)
   // ... expose only what you need
-};
+}
 
 // Then in Use Case
-import { CollectionUtil } from '@/utils/collection';
-import { IUsecase } from '@/utils/usecase';
+import { CollectionUtil } from '@/utils/collection'
+import { IUsecase } from '@/utils/usecase'
 
 export class MyUseCase implements IUsecase {
   execute(data: Product[]): Record<string, Product[]> {
-    return CollectionUtil.groupBy(data, 'category'); // ✅ Uses wrapper
+    return CollectionUtil.groupBy(data, 'category') // ✅ Uses wrapper
   }
 }
 ```
 
 **Benefits of centralization:**
+
 - Single point of change if you need to swap libraries
 - Easier to mock in tests
 - Controls which functions are exposed
@@ -695,19 +708,19 @@ When creating Input/Output types, **always derive them from the Entity**. This i
 ```typescript
 // ❌ WRONG - Duplicating properties that exist in Entity
 type UserCreateInput = {
-  name: string;      // Already in UserEntity!
-  email: string;     // Already in UserEntity!
-  password: string;  // Already in UserEntity!
-};
+  name: string // Already in UserEntity!
+  email: string // Already in UserEntity!
+  password: string // Already in UserEntity!
+}
 
 // ✅ CORRECT - Compose from Entity
-type UserCreateInput = Pick<UserEntity, 'name' | 'email' | 'password'>;
+type UserCreateInput = Pick<UserEntity, 'name' | 'email' | 'password'>
 
 // ✅ CORRECT - Extend when needed
-type UserUpdateInput = Pick<UserEntity, 'id'> & Partial<Pick<UserEntity, 'name' | 'email'>>;
+type UserUpdateInput = Pick<UserEntity, 'id'> & Partial<Pick<UserEntity, 'name' | 'email'>>
 
 // ✅ CORRECT - Omit sensitive fields for output
-type UserOutput = Omit<UserEntity, 'password' | 'deletedAt'>;
+type UserOutput = Omit<UserEntity, 'password' | 'deletedAt'>
 ```
 
 #### Rule 2: Use `z.infer` for Validated Types
@@ -719,47 +732,46 @@ When you need runtime validation, use Zod schema with `z.infer`. Zod has built-i
 const UserCreateSchema = UserEntitySchema.pick({
   name: true,
   email: true,
-  password: true,
-});
+  password: true
+})
 
 // ✅ Schema using omit (exclude fields)
 const UserOutputSchema = UserEntitySchema.omit({
   password: true,
-  deletedAt: true,
-});
+  deletedAt: true
+})
 
 // ✅ Infer type from schema
-type UserCreateInput = z.infer<typeof UserCreateSchema>;
-type UserOutput = z.infer<typeof UserOutputSchema>;
+type UserCreateInput = z.infer<typeof UserCreateSchema>
+type UserOutput = z.infer<typeof UserOutputSchema>
 ```
 
 📖 **See detailed patterns:** [Entity Guide](guides/core/entity.md) — includes schema composition examples
-
 
 #### Rule 3: Naming Convention — Input and Output Only
 
 **Never use** prefixes or suffixes like `DTO`, `ViewModel`, `Request`, `Response`. The standard naming convention is:
 
-| ❌ Avoid | ✅ Use |
-|----------|--------|
-| `CreateUserDTO` | `UserCreateInput` |
-| `UserResponseDTO` | `UserCreateOutput` |
-| `UserViewModel` | `UserOutput` |
-| `GetUserRequest` | `UserGetInput` |
-| `UserListResponse` | `UserListOutput` |
+| ❌ Avoid           | ✅ Use             |
+| ------------------ | ------------------ |
+| `CreateUserDTO`    | `UserCreateInput`  |
+| `UserResponseDTO`  | `UserCreateOutput` |
+| `UserViewModel`    | `UserOutput`       |
+| `GetUserRequest`   | `UserGetInput`     |
+| `UserListResponse` | `UserListOutput`   |
 
 **Pattern:** `{Entity}{Action}{Input|Output}`
 
 ```typescript
 // Naming examples
-type UserCreateInput = Pick<UserEntity, 'name' | 'email' | 'password'>;
-type UserCreateOutput = Pick<UserEntity, 'id' | 'name' | 'email' | 'createdAt'>;
+type UserCreateInput = Pick<UserEntity, 'name' | 'email' | 'password'>
+type UserCreateOutput = Pick<UserEntity, 'id' | 'name' | 'email' | 'createdAt'>
 
-type UserUpdateInput = Pick<UserEntity, 'id'> & Partial<Pick<UserEntity, 'name'>>;
-type UserUpdateOutput = Pick<UserEntity, 'id' | 'name' | 'updatedAt'>;
+type UserUpdateInput = Pick<UserEntity, 'id'> & Partial<Pick<UserEntity, 'name'>>
+type UserUpdateOutput = Pick<UserEntity, 'id' | 'name' | 'updatedAt'>
 
-type UserListInput = { pagination: PaginationInput; search?: string };
-type UserListOutput = { data: UserOutput[]; pagination: PaginationOutput };
+type UserListInput = { pagination: PaginationInput; search?: string }
+type UserListOutput = { data: UserOutput[]; pagination: PaginationOutput }
 ```
 
 ---
@@ -768,11 +780,11 @@ type UserListOutput = { data: UserOutput[]; pagination: PaginationOutput };
 
 The `any` type defeats the purpose of TypeScript. **Always provide explicit types** when it makes sense and doesn't create unnecessary complexity.
 
-| ❌ Avoid | ✅ Prefer |
-|----------|-----------|
-| `function process(data: any)` | `function process(data: UserEntity)` |
+| ❌ Avoid                            | ✅ Prefer                                   |
+| ----------------------------------- | ------------------------------------------- |
+| `function process(data: any)`       | `function process(data: UserEntity)`        |
 | `const result: any = await fetch()` | `const result: ApiResponse = await fetch()` |
-| `items.map((item: any) => ...)` | `items.map((item: OrderItem) => ...)` |
+| `items.map((item: any) => ...)`     | `items.map((item: OrderItem) => ...)`       |
 
 **When to type:**
 
@@ -784,17 +796,17 @@ The `any` type defeats the purpose of TypeScript. **Always provide explicit type
 ```typescript
 // ❌ WRONG - Using any
 const processItems = (items: any[]): any => {
-  return items.map((item: any) => item.value);
+  return items.map((item: any) => item.value)
 }
 
 // ✅ CORRECT - Properly typed
 const processItems = <T extends { value: number }>(items: T[]): number[] => {
-  return items.map((item) => item.value);
+  return items.map((item) => item.value)
 }
 
 // ✅ CORRECT - Using unknown when type is truly unknown
 const parseJson = (json: string): unknown => {
-  return JSON.parse(json);
+  return JSON.parse(json)
 }
 ```
 
@@ -807,19 +819,20 @@ Sometimes you genuinely can't type something properly (third-party libraries, co
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const handleLegacyApi = (response: any): ProcessedData => {
   // Legacy API with unpredictable structure
-  return transformLegacyResponse(response);
+  return transformLegacyResponse(response)
 }
 
 // ✅ OK - Type assertion after validation
 const processExternalData = (data: unknown): UserData => {
   if (!isValidUserData(data)) {
-    throw new Error('Invalid data');
+    throw new Error('Invalid data')
   }
-  return data as UserData;
+  return data as UserData
 }
 ```
 
 **The rule of thumb:** If you're reaching for `any`, ask yourself:
+
 1. Can I use a specific type? → Use it
 2. Can I use a generic? → Use `<T>`
 3. Can I use `unknown`? → Safer than `any`
@@ -831,11 +844,11 @@ const processExternalData = (data: unknown): UserData => {
 
 This is a **project standard**: every function must have an explicit return type. TypeScript can infer return types, but explicit declarations improve code readability and catch errors earlier.
 
-| ❌ Avoid | ✅ Prefer |
-|----------|-----------|
-| `async getUser()` | `async getUser(): Promise<UserEntity>` |
+| ❌ Avoid                | ✅ Prefer                                       |
+| ----------------------- | ----------------------------------------------- |
+| `async getUser()`       | `async getUser(): Promise<UserEntity>`          |
 | `const sum = (a, b) =>` | `const sum = (a: number, b: number): number =>` |
-| `execute(input)` | `execute(input: CreateInput): Promise<void>` |
+| `execute(input)`        | `execute(input: CreateInput): Promise<void>`    |
 
 ```typescript
 // ❌ WRONG - No explicit return type
@@ -872,13 +885,13 @@ const calculateTotal = (items: OrderItem[]): number => {
 
 **Common return types:**
 
-| Scenario | Return Type |
-|----------|-------------|
-| Async operation that returns data | `Promise<EntityType>` |
-| Async operation with no return | `Promise<void>` |
-| Sync function returning value | `string`, `number`, `boolean`, etc. |
-| Function returning nothing | `void` |
-| Function that may return null | `Promise<Entity \| null>` |
+| Scenario                          | Return Type                         |
+| --------------------------------- | ----------------------------------- |
+| Async operation that returns data | `Promise<EntityType>`               |
+| Async operation with no return    | `Promise<void>`                     |
+| Sync function returning value     | `string`, `number`, `boolean`, etc. |
+| Function returning nothing        | `void`                              |
+| Function that may return null     | `Promise<Entity \| null>`           |
 
 ---
 
@@ -906,13 +919,13 @@ core/
 
 **When to use aggregates:**
 
-| Scenario | Same Folder (Aggregate) | Separate Folders |
-|----------|-------------------------|------------------|
-| Entities always created together | ✅ | — |
-| Child has no meaning without parent | ✅ | — |
-| Shared business rules | ✅ | — |
-| Entities are independent | — | ✅ |
-| Different lifecycles | — | ✅ |
+| Scenario                            | Same Folder (Aggregate) | Separate Folders |
+| ----------------------------------- | ----------------------- | ---------------- |
+| Entities always created together    | ✅                      | —                |
+| Child has no meaning without parent | ✅                      | —                |
+| Shared business rules               | ✅                      | —                |
+| Entities are independent            | —                       | ✅               |
+| Different lifecycles                | —                       | ✅               |
 
 **Key rules:**
 
@@ -925,23 +938,23 @@ core/
 
 ```typescript
 // user-create.ts - Creates User with Address in same transaction
-import { IUsecase } from '@/utils/usecase';
+import { IUsecase } from '@/utils/usecase'
 
 export class UserCreateUseCase implements IUsecase {
   constructor(
     private readonly userRepository: IUserRepository,
-    private readonly addressRepository: IAddressRepository,
+    private readonly addressRepository: IAddressRepository
   ) {}
 
   async execute(input: UserCreateInput): Promise<UserCreateOutput> {
     // Create both as part of the same aggregate operation
-    const user = new UserEntity(input.user);
-    const address = new AddressEntity({ ...input.address, userId: user.id });
-    
-    await this.userRepository.create(user);
-    await this.addressRepository.create(address);
-    
-    return new UserCreateOutput(user);
+    const user = new UserEntity(input.user)
+    const address = new AddressEntity({ ...input.address, userId: user.id })
+
+    await this.userRepository.create(user)
+    await this.addressRepository.create(address)
+
+    return new UserCreateOutput(user)
   }
 }
 ```
@@ -960,14 +973,14 @@ Understanding which layers can communicate with which is crucial for maintaining
 
 ### Communication Matrix
 
-| Layer | Can Access | Cannot Access |
-|-------|------------|---------------|
-| **Core (Entities)** | Nothing | Everything else |
-| **Core (Use Cases)** | Entities, Repository Interfaces | Modules, Infra, Libs |
-| **Core (Repositories)** | Entities | Everything else (it's just an interface) |
-| **Modules** | Core (all), Infra, Libs | — |
-| **Infra** | Core Interfaces | Core Use Cases, Modules |
-| **Libs** | Nothing from src/ | — |
+| Layer                   | Can Access                      | Cannot Access                            |
+| ----------------------- | ------------------------------- | ---------------------------------------- |
+| **Core (Entities)**     | Nothing                         | Everything else                          |
+| **Core (Use Cases)**    | Entities, Repository Interfaces | Modules, Infra, Libs                     |
+| **Core (Repositories)** | Entities                        | Everything else (it's just an interface) |
+| **Modules**             | Core (all), Infra, Libs         | —                                        |
+| **Infra**               | Core Interfaces                 | Core Use Cases, Modules                  |
+| **Libs**                | Nothing from src/               | —                                        |
 
 ### Visual Representation
 
@@ -1060,13 +1073,13 @@ src/
 
 ### Folder Responsibilities
 
-| Folder | Responsibility | Can Import From |
-|--------|---------------|-----------------|
-| `core/` | Pure business logic, entities, use cases, repository contracts | Only itself |
-| `modules/` | NestJS controllers, dependency injection, route handling | `core/`, `infra/`, `libs/` |
-| `infra/` | External services, databases, cache, HTTP clients | `core/` (interfaces only) |
-| `libs/` | Reusable libraries, framework-agnostic utilities | Nothing from `src/` |
-| `utils/` | Helper functions, decorators, middlewares | Anything |
+| Folder     | Responsibility                                                 | Can Import From            |
+| ---------- | -------------------------------------------------------------- | -------------------------- |
+| `core/`    | Pure business logic, entities, use cases, repository contracts | Only itself                |
+| `modules/` | NestJS controllers, dependency injection, route handling       | `core/`, `infra/`, `libs/` |
+| `infra/`   | External services, databases, cache, HTTP clients              | `core/` (interfaces only)  |
+| `libs/`    | Reusable libraries, framework-agnostic utilities               | Nothing from `src/`        |
+| `utils/`   | Helper functions, decorators, middlewares                      | Anything                   |
 
 ---
 
@@ -1153,119 +1166,119 @@ Complete documentation for every aspect of this project is available in the `gui
 
 Business logic layer documentation.
 
-| Guide | Description |
-|-------|-------------|
-| [Entity](guides/core/entity.md) | Domain entities with Zod validation |
-| [Use Case](guides/core/usecase.md) | Business rules and operations |
-| [Repository](guides/core/repository.md) | Repository interface patterns |
-| [Test](guides/core/test.md) | Testing use cases |
+| Guide                                   | Description                         |
+| --------------------------------------- | ----------------------------------- |
+| [Entity](guides/core/entity.md)         | Domain entities with Zod validation |
+| [Use Case](guides/core/usecase.md)      | Business rules and operations       |
+| [Repository](guides/core/repository.md) | Repository interface patterns       |
+| [Test](guides/core/test.md)             | Testing use cases                   |
 
 ### 📂 [Modules](guides/modules/)
 
 NestJS application layer documentation.
 
-| Guide | Description |
-|-------|-------------|
-| [Module](guides/modules/module.md) | NestJS module structure |
-| [Controller](guides/modules/controller.md) | HTTP endpoints |
-| [Adapter](guides/modules/adapter.md) | Use case adapters |
+| Guide                                      | Description                |
+| ------------------------------------------ | -------------------------- |
+| [Module](guides/modules/module.md)         | NestJS module structure    |
+| [Controller](guides/modules/controller.md) | HTTP endpoints             |
+| [Adapter](guides/modules/adapter.md)       | Use case adapters          |
 | [Repository](guides/modules/repository.md) | Repository implementations |
-| [Test](guides/modules/test.md) | Module testing |
+| [Test](guides/modules/test.md)             | Module testing             |
 
 ### 📂 [Infrastructure](guides/infra/)
 
 External services and integrations.
 
-| Guide | Description |
-|-------|-------------|
-| [Database](guides/infra/database.md) | PostgreSQL and MongoDB setup |
-| [Cache](guides/infra/cache.md) | Redis and in-memory caching |
-| [HTTP](guides/infra/http.md) | HTTP client with circuit breaker |
-| [Logger](guides/infra/logger.md) | Pino logging configuration |
-| [Secrets](guides/infra/secrets.md) | Environment variables |
-| [Repository](guides/infra/repository.md) | Base repository patterns |
-| [Email](guides/infra/email.md) | Email sending with templates |
+| Guide                                    | Description                      |
+| ---------------------------------------- | -------------------------------- |
+| [Database](guides/infra/database.md)     | PostgreSQL and MongoDB setup     |
+| [Cache](guides/infra/cache.md)           | Redis and in-memory caching      |
+| [HTTP](guides/infra/http.md)             | HTTP client with circuit breaker |
+| [Logger](guides/infra/logger.md)         | Pino logging configuration       |
+| [Secrets](guides/infra/secrets.md)       | Environment variables            |
+| [Repository](guides/infra/repository.md) | Base repository patterns         |
+| [Email](guides/infra/email.md)           | Email sending with templates     |
 
 ### 📂 [Libraries](guides/libs/)
 
 Shared libraries and utilities.
 
-| Guide | Description |
-|-------|-------------|
-| [Token](guides/libs/token.md) | JWT management |
-| [Event](guides/libs/event.md) | Event emitter system |
-| [i18n](guides/libs/i18n.md) | Internationalization |
-| [Metrics](guides/libs/metrics.md) | Prometheus metrics |
+| Guide                             | Description          |
+| --------------------------------- | -------------------- |
+| [Token](guides/libs/token.md)     | JWT management       |
+| [Event](guides/libs/event.md)     | Event emitter system |
+| [i18n](guides/libs/i18n.md)       | Internationalization |
+| [Metrics](guides/libs/metrics.md) | Prometheus metrics   |
 
 ### 📂 [Decorators](guides/decorators/)
 
 Custom decorators for common patterns.
 
-| Guide | Description |
-|-------|-------------|
-| [Circuit Breaker](guides/decorators/circuit-breaker.md) | Resilience pattern |
-| [Permission](guides/decorators/permission.md) | Authorization decorator |
-| [Validate Schema](guides/decorators/validate-schema.md) | Input validation |
-| [Log Execution Time](guides/decorators/log-execution-time.md) | Performance logging |
-| [Request Timeout](guides/decorators/request-timeout.md) | Timeout handling |
-| [Process](guides/decorators/process.md) | Background processing |
-| [Thread](guides/decorators/thread.md) | Worker threads |
+| Guide                                                         | Description             |
+| ------------------------------------------------------------- | ----------------------- |
+| [Circuit Breaker](guides/decorators/circuit-breaker.md)       | Resilience pattern      |
+| [Permission](guides/decorators/permission.md)                 | Authorization decorator |
+| [Validate Schema](guides/decorators/validate-schema.md)       | Input validation        |
+| [Log Execution Time](guides/decorators/log-execution-time.md) | Performance logging     |
+| [Request Timeout](guides/decorators/request-timeout.md)       | Timeout handling        |
+| [Process](guides/decorators/process.md)                       | Background processing   |
+| [Thread](guides/decorators/thread.md)                         | Worker threads          |
 
 ### 📂 [Middlewares](guides/middlewares/)
 
 HTTP middleware components.
 
-| Guide | Description |
-|-------|-------------|
-| [Authentication](guides/middlewares/authentication.middleware.md) | JWT authentication |
-| [Authorization](guides/middlewares/authorization.guard.md) | Role-based access |
-| [HTTP Logger](guides/middlewares/http-logger.interceptor.md) | Request/response logging |
-| [Tracing](guides/middlewares/tracing.interceptor.md) | Distributed tracing |
-| [Exception Handler](guides/middlewares/exception-handler.filter.md) | Error handling |
+| Guide                                                               | Description              |
+| ------------------------------------------------------------------- | ------------------------ |
+| [Authentication](guides/middlewares/authentication.middleware.md)   | JWT authentication       |
+| [Authorization](guides/middlewares/authorization.guard.md)          | Role-based access        |
+| [HTTP Logger](guides/middlewares/http-logger.interceptor.md)        | Request/response logging |
+| [Tracing](guides/middlewares/tracing.interceptor.md)                | Distributed tracing      |
+| [Exception Handler](guides/middlewares/exception-handler.filter.md) | Error handling           |
 
 ### 📂 [Tests](guides/tests/)
 
 Testing utilities and patterns.
 
-| Guide | Description |
-|-------|-------------|
-| [Mock](guides/tests/mock.md) | Mock data generation |
+| Guide                                    | Description          |
+| ---------------------------------------- | -------------------- |
+| [Mock](guides/tests/mock.md)             | Mock data generation |
 | [Containers](guides/tests/containers.md) | Testcontainers setup |
-| [Util](guides/tests/util.md) | Test utilities |
+| [Util](guides/tests/util.md)             | Test utilities       |
 
 ### 📂 [Setup](guides/setup/)
 
 Project configuration and setup.
 
-| Guide | Description |
-|-------|-------------|
+| Guide                                      | Description           |
+| ------------------------------------------ | --------------------- |
 | [Environment](guides/setup/environment.md) | Environment variables |
-| [Docker](guides/setup/docker.md) | Docker configuration |
-| [Husky](guides/setup/husky.md) | Git hooks |
-| [Package](guides/setup/package.md) | NPM scripts |
+| [Docker](guides/setup/docker.md)           | Docker configuration  |
+| [Husky](guides/setup/husky.md)             | Git hooks             |
+| [Package](guides/setup/package.md)         | NPM scripts           |
 
 ### 📂 [Deploy](guides/deploy/)
 
 Deployment and CI/CD documentation.
 
-| Guide | Description |
-|-------|-------------|
+| Guide                             | Description               |
+| --------------------------------- | ------------------------- |
 | [Readme](guides/deploy/readme.md) | Complete deployment guide |
-| [Action](guides/deploy/action.md) | GitHub Actions workflows |
+| [Action](guides/deploy/action.md) | GitHub Actions workflows  |
 
 ### 📂 [Utils](guides/utils/)
 
 Utility functions and helpers.
 
-| Guide | Description |
-|-------|-------------|
+| Guide                                    | Description          |
+| ---------------------------------------- | -------------------- |
 | [Pagination](guides/utils/pagination.md) | Pagination utilities |
-| [Exception](guides/utils/exception.md) | Exception handling |
-| [Crypto](guides/utils/crypto.md) | Encryption utilities |
-| [Date](guides/utils/date.md) | Date manipulation |
-| [Validator](guides/utils/validator.md) | Validation helpers |
-| [Collection](guides/utils/collection.md) | Array utilities |
-| [Search](guides/utils/search.md) | Search utilities |
+| [Exception](guides/utils/exception.md)   | Exception handling   |
+| [Crypto](guides/utils/crypto.md)         | Encryption utilities |
+| [Date](guides/utils/date.md)             | Date manipulation    |
+| [Validator](guides/utils/validator.md)   | Validation helpers   |
+| [Collection](guides/utils/collection.md) | Array utilities      |
+| [Search](guides/utils/search.md)         | Search utilities     |
 
 ---
 
@@ -1308,15 +1321,15 @@ Utility functions and helpers.
 
 ## Tech Stack
 
-| Category | Technologies |
-|----------|-------------|
-| **Framework** | NestJS 11.x, TypeScript 5.9.3 |
-| **Databases** | PostgreSQL (TypeORM), MongoDB (Mongoose), Redis |
+| Category          | Technologies                                           |
+| ----------------- | ------------------------------------------------------ |
+| **Framework**     | NestJS 11.x, TypeScript 5.9.3                          |
+| **Databases**     | PostgreSQL (TypeORM), MongoDB (Mongoose), Redis        |
 | **Observability** | OpenTelemetry, Zipkin, Pino, Prometheus, Grafana, Loki |
-| **Testing** | Jest, Supertest, Testcontainers |
-| **Code Quality** | ESLint, Prettier, Husky, Commitlint |
-| **DevOps** | Docker, Docker Compose, PM2, GitHub Actions |
-| **Documentation** | Swagger, TypeSpec |
+| **Testing**       | Jest, Supertest, Testcontainers                        |
+| **Code Quality**  | ESLint, Prettier, Husky, Commitlint                    |
+| **DevOps**        | Docker, Docker Compose, GitHub Actions                 |
+| **Documentation** | Swagger, TypeSpec                                      |
 
 ---
 

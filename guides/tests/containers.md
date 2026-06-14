@@ -33,7 +33,7 @@ const { mongoConnection } = await mongoContainer.getTestMongo(ConnectionName.USE
 
 // Tests run against real MongoDB with:
 // - Actual query execution
-// - Real indexing behavior  
+// - Real indexing behavior
 // - Genuine constraint enforcement
 // - Transaction consistency
 ```
@@ -45,7 +45,7 @@ const { mongoConnection } = await mongoContainer.getTestMongo(ConnectionName.USE
 Perfect for testing document-based operations, aggregations, and text search:
 
 ```typescript
-import { TestMongoContainer } from '@/utils/test/containers'
+import { TestMongoContainer } from '@/utils/test/e2e/containers'
 
 describe('User Repository Integration', () => {
   let mongoContainer: TestMongoContainer
@@ -54,7 +54,7 @@ describe('User Repository Integration', () => {
   beforeAll(async () => {
     mongoContainer = new TestMongoContainer()
     const { mongoConnection } = await mongoContainer.getTestMongo(ConnectionName.USER)
-    
+
     userRepository = new UserRepository(mongoConnection.model('User', userSchema))
   })
 
@@ -82,19 +82,27 @@ describe('User Repository Integration', () => {
     // Test actual MongoDB operations
     await userRepository.save(new UserEntity(userData))
     const foundUser = await userRepository.findById(userData.id)
-    
+
     expect(foundUser).toBeDefined()
     expect(foundUser.profile.preferences.theme).toBe('dark')
     expect(foundUser.profile.metadata.loginCount).toBe(5)
   })
 
   it('should handle MongoDB text search', async () => {
-    await userRepository.save(new UserEntity({
-      id: '1', name: 'João Silva', email: 'joao@example.com'
-    }))
-    await userRepository.save(new UserEntity({
-      id: '2', name: 'Maria Santos', email: 'maria@example.com'
-    }))
+    await userRepository.save(
+      new UserEntity({
+        id: '1',
+        name: 'João Silva',
+        email: 'joao@example.com'
+      })
+    )
+    await userRepository.save(
+      new UserEntity({
+        id: '2',
+        name: 'Maria Santos',
+        email: 'maria@example.com'
+      })
+    )
 
     // Test MongoDB text search capabilities
     const results = await userRepository.searchByText('João')
@@ -109,59 +117,58 @@ describe('User Repository Integration', () => {
 Ideal for testing relational data, constraints, transactions, and complex queries:
 
 ```typescript
-import { TestPostgresContainer } from '@/utils/test/containers'
+import { ICacheAdapter } from '@/infra/cache'
+import { TestPostgresContainer, TestRedisContainer } from '@/utils/test/e2e/containers'
+import { TestEnd2EndUtils } from '@/utils/test/e2e/utils'
 
 describe('Order Service Integration', () => {
-  let postgresContainer: TestPostgresContainer
-  let dataSource: DataSource
-  let orderService: OrderService
+  let app: INestApplication
+  let redisService: ICacheAdapter
+
+  const postgresContainer = new TestPostgresContainer()
+  const redisContainer = new TestRedisContainer()
 
   beforeAll(async () => {
-    postgresContainer = new TestPostgresContainer()
-    const container = await postgresContainer.getTestPostgres()
-    
-    const config = postgresContainer.getConfiguration(container, __dirname)
-    dataSource = await postgresContainer.getDataSource(config)
-    
-    orderService = new OrderService(dataSource)
+    const { postgresConfig } = await postgresContainer.getPostgres()
+    redisService = await redisContainer.getTestRedis()
+
+    const moduleRef = await Test.createTestingModule({
+      imports: [OrderModule, TestEnd2EndUtils.getPostgresModule(postgresContainer, postgresConfig)]
+    })
+      .overrideProvider(IOrderRepository)
+      .useFactory({
+        factory(repository: Repository<OrderModel>) {
+          return new OrderRepository(repository)
+        },
+        inject: [getRepositoryToken(OrderSchema)]
+      })
+      .overrideProvider(ICacheAdapter)
+      .useValue(redisService)
+      .compile()
+
+    app = moduleRef.createNestApplication()
+    await app.init()
   })
 
   afterAll(async () => {
-    await dataSource.destroy()
     await postgresContainer.close()
+    await redisContainer.close()
+    await app.close()
   })
 
-  it('should handle complex order transactions', async () => {
-    const orderData = {
-      customerId: TestUtils.getMockUUID(),
-      items: [
-        { productId: 'prod-1', quantity: 2, price: 99.99 },
-        { productId: 'prod-2', quantity: 1, price: 149.99 }
-      ],
-      total: 349.97
-    }
+  it('should create an order', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/orders')
+      .send({ customerId: TestUtils.getMockUUID(), total: 99.99 })
+      .expect(201)
 
-    // Test actual PostgreSQL transaction
-    await dataSource.transaction(async (manager) => {
-      const order = await orderService.create(orderData, manager)
-      const inventory = await orderService.updateInventory(order.items, manager)
-      
-      expect(order.id).toBeDefined()
-      expect(order.status).toBe('pending')
-      expect(inventory.updated).toBe(true)
-    })
+    expect(response.body).toHaveProperty('id')
+    expect(response.body).toHaveProperty('created', true)
   })
 
-  it('should enforce foreign key constraints', async () => {
-    const invalidOrder = {
-      customerId: 'invalid-customer-id', // Non-existent customer
-      items: [],
-      total: 0
-    }
-
-    // Test actual database constraints
-    await expect(orderService.create(invalidOrder))
-      .rejects.toThrow(/foreign key constraint/)
+  it('should enforce unique constraints', async () => {
+    const response = await request(app.getHttpServer()).post('/orders').send({ customerId: 'invalid-id', total: 0 })
+    expect(response.status).toBe(400)
   })
 })
 ```
@@ -171,11 +178,12 @@ describe('Order Service Integration', () => {
 Perfect for testing caching, session management, and real-time features:
 
 ```typescript
-import { TestRedisContainer } from '@/utils/test/containers'
+import { ICacheAdapter } from '@/infra/cache'
+import { TestRedisContainer } from '@/utils/test/e2e/containers'
 
 describe('Cache Service Integration', () => {
   let redisContainer: TestRedisContainer
-  let cacheService: CacheService
+  let cacheService: ICacheAdapter
 
   beforeAll(async () => {
     redisContainer = new TestRedisContainer()
@@ -186,58 +194,26 @@ describe('Cache Service Integration', () => {
     await redisContainer.close()
   })
 
-  it('should cache and retrieve complex objects', async () => {
-    const cacheKey = 'user:profile:123'
-    const userData = {
-      id: '123',
-      name: 'John Doe',
-      preferences: {
-        theme: 'dark',
-        notifications: true
-      },
-      lastAccess: new Date()
-    }
+  it('should cache and retrieve a value', async () => {
+    const key = 'user:profile:123'
+    const value = JSON.stringify({ id: '123', name: 'John Doe' })
 
-    // Test actual Redis operations
-    await cacheService.set(cacheKey, userData, 3600) // 1 hour TTL
-    const cached = await cacheService.get(cacheKey)
-    
-    expect(cached).toEqual(userData)
-    expect(cached.preferences.theme).toBe('dark')
+    await cacheService.set(key, value)
+    const cached = await cacheService.get(key)
+
+    expect(cached).toBe(value)
   })
 
-  it('should handle cache expiration', async () => {
-    const shortLivedKey = 'temp:data'
-    
-    await cacheService.set(shortLivedKey, { value: 'test' }, 1) // 1 second TTL
-    
-    // Immediately available
-    expect(await cacheService.get(shortLivedKey)).toBeDefined()
-    
-    // Wait for expiration
-    await new Promise(resolve => setTimeout(resolve, 1100))
-    expect(await cacheService.get(shortLivedKey)).toBeNull()
+  it('should return null for a missing key', async () => {
+    const result = await cacheService.get('non:existent:key')
+    expect(result).toBeNull()
   })
 
-  it('should handle Redis pub/sub for real-time features', async () => {
-    const channel = 'notifications'
-    const messages: string[] = []
-
-    // Subscribe to channel
-    await cacheService.subscribe(channel, (message) => {
-      messages.push(message)
-    })
-
-    // Publish messages
-    await cacheService.publish(channel, 'User logged in')
-    await cacheService.publish(channel, 'New order received')
-
-    // Allow time for message processing
-    await new Promise(resolve => setTimeout(resolve, 100))
-
-    expect(messages).toHaveLength(2)
-    expect(messages[0]).toBe('User logged in')
-    expect(messages[1]).toBe('New order received')
+  it('should delete a key', async () => {
+    const key = 'temp:data'
+    await cacheService.set(key, 'value')
+    await cacheService.del(key)
+    expect(await cacheService.get(key)).toBeNull()
   })
 })
 ```
@@ -245,72 +221,49 @@ describe('Cache Service Integration', () => {
 ## End-to-End Testing with Multiple Containers
 
 ```typescript
-describe('Complete Order Flow E2E', () => {
-  let mongoContainer: TestMongoContainer
-  let postgresContainer: TestPostgresContainer
-  let redisContainer: TestRedisContainer
+import { ICacheAdapter } from '@/infra/cache'
+import { TestMongoContainer, TestPostgresContainer, TestRedisContainer } from '@/utils/test/e2e/containers'
+import { TestEnd2EndUtils } from '@/utils/test/e2e/utils'
+
+describe(CatController.name, () => {
   let app: INestApplication
+  let redisService: ICacheAdapter
+
+  const mongoContainer = new TestMongoContainer()
+  const postgresContainer = new TestPostgresContainer()
+  const redisContainer = new TestRedisContainer()
 
   beforeAll(async () => {
-    // Start all infrastructure containers
-    mongoContainer = new TestMongoContainer()
-    postgresContainer = new TestPostgresContainer()
-    redisContainer = new TestRedisContainer()
+    const { mongoConnection } = await mongoContainer.getTestMongo(ConnectionName.CATS)
+    const { postgresConfig } = await postgresContainer.getPostgres()
+    redisService = await redisContainer.getTestRedis()
 
-    const { mongoConnection } = await mongoContainer.getTestMongo(ConnectionName.USER)
-    const pgContainer = await postgresContainer.getTestPostgres()
-    const cacheService = await redisContainer.getTestRedis()
-
-    // Configure test application with real infrastructure
     const moduleRef = await Test.createTestingModule({
-      imports: [AppModule],
+      imports: [CatModule, TestEnd2EndUtils.getPostgresModule(postgresContainer, postgresConfig)]
     })
-    .overrideProvider('MongoConnection').useValue(mongoConnection)
-    .overrideProvider('PostgresConnection').useValue(pgContainer)
-    .overrideProvider('CacheService').useValue(cacheService)
-    .compile()
+      .overrideProvider(ICatRepository)
+      .useFactory({
+        factory() {
+          const repository = mongoConnection.model<CatDocument, PaginateModel<CatDocument>>(
+            Cat.name,
+            CatSchema as Schema
+          )
+          return new CatRepository(repository)
+        }
+      })
+      .overrideProvider(ICacheAdapter)
+      .useValue(redisService)
+      .compile()
 
     app = moduleRef.createNestApplication()
     await app.init()
   })
 
   afterAll(async () => {
-    await app.close()
     await mongoContainer.close()
-    await postgresContainer.close()
     await redisContainer.close()
-  })
-
-  it('should process complete order with real infrastructure', async () => {
-    // 1. Create user in MongoDB
-    const userResponse = await request(app.getHttpServer())
-      .post('/users')
-      .send({
-        name: 'John Doe',
-        email: 'john@example.com'
-      })
-      .expect(201)
-
-    // 2. Create order in PostgreSQL
-    const orderResponse = await request(app.getHttpServer())
-      .post('/orders')
-      .send({
-        customerId: userResponse.body.data.id,
-        items: [
-          { productId: 'prod-1', quantity: 2, price: 99.99 }
-        ]
-      })
-      .expect(201)
-
-    // 3. Verify cache was updated in Redis
-    const cacheKey = `order:${orderResponse.body.data.id}`
-    const cachedOrder = await cacheService.get(cacheKey)
-    expect(cachedOrder).toBeDefined()
-
-    // 4. Verify data consistency across all systems
-    expect(userResponse.body.data.id).toBeDefined()
-    expect(orderResponse.body.data.customerId).toBe(userResponse.body.data.id)
-    expect(cachedOrder.id).toBe(orderResponse.body.data.id)
+    await postgresContainer.close()
+    await app.close()
   })
 })
 ```
@@ -323,14 +276,14 @@ Containers automatically use environment variables for database names:
 
 ```typescript
 // Required environment variables
-MONGO_DATABASE=test_app_db
-POSTGRES_DATABASE=test_app_db
+MONGO_DATABASE = test_app_db
+POSTGRES_DATABASE = test_app_db
 
 // Containers use these for consistent naming
 const mongoContainer = new TestMongoContainer()
 // Uses MONGO_DATABASE for database name
 
-const postgresContainer = new TestPostgresContainer() 
+const postgresContainer = new TestPostgresContainer()
 // Uses POSTGRES_DATABASE for database name
 ```
 
@@ -338,36 +291,43 @@ const postgresContainer = new TestPostgresContainer()
 
 ```typescript
 // Automatically loads migrations and entities
-const config = postgresContainer.getConfiguration(container, __dirname)
+const { postgresConfig } = await postgresContainer.getPostgres()
 
-// Includes:
-// - Migrations: ../../../infra/database/postgres/migrations/
-// - Entities: ../../../infra/database/postgres/schemas/
+// postgresConfig includes:
+// - Migrations: /src/infra/database/postgres/migrations/
+// - Entities: /src/infra/database/postgres/schemas/
 // - Naming strategy: SnakeNamingStrategy
 // - Auto-run migrations: true
+
+// Pass to module setup:
+TestEnd2EndUtils.getPostgresModule(postgresContainer, postgresConfig)
 ```
 
 ## Benefits of Real Infrastructure Testing
 
 ### 🎯 **Catches Real Issues**
+
 - **Database constraint violations** caught before production
 - **Query performance problems** identified early
 - **Transaction isolation** issues discovered
 - **Index behavior** tested with real data
 
 ### 🚀 **Confidence in Deployments**
+
 - **Production-like behavior** in tests
 - **Infrastructure compatibility** verified
 - **Data migration scripts** tested
 - **Performance characteristics** measured
 
 ### 🔧 **Developer Experience**
+
 - **Easy setup** with single container start
 - **Isolated test runs** prevent interference
 - **Consistent environments** across team
 - **No external dependencies** required
 
 ### 🛡️ **Reliability Benefits**
+
 - **No mock maintenance** for infrastructure
 - **Real error conditions** tested
 - **Actual network timeouts** handled
@@ -375,25 +335,15 @@ const config = postgresContainer.getConfiguration(container, __dirname)
 
 Testcontainers transforms testing from **mocked simulations** into **real infrastructure validation**, providing confidence that your code works with actual databases and services in production environments.
 
----
+let app: INestApplication
+let repository: ICatRepository
 
-## Implementação Real no Projeto
+const containerMongo = new TestMongoContainer()
+const containerRedis = new TestRedisContainer()
 
-### Cat Controller E2E - MongoDB + Redis
-
-Testes end-to-end com MongoDB para persistência de documentos e Redis para cache:
-
-```typescript
-describe('CatController', () => {
-  let app: INestApplication
-  let repository: ICatRepository
-
-  const containerMongo = new TestMongoContainer()
-  const containerRedis = new TestRedisContainer()
-
-  beforeAll(async () => {
-    // Configuração do MongoDB com ConnectionName específico
-    const { mongoConnection } = await containerMongo.getTestMongo(ConnectionName.CATS)
+beforeAll(async () => {
+// Configuração do MongoDB com ConnectionName específico
+const { mongoConnection } = await containerMongo.getTestMongo(ConnectionName.CATS)
 
     const moduleRef = await Test.createTestingModule({
       imports: [CatModule]
@@ -423,27 +373,30 @@ describe('CatController', () => {
     app = moduleRef.createNestApplication()
     repository = app.get(ICatRepository)
     await app.init()
-  })
 
-  it('/GET /v1/cats', async () => {
-    // Geração automática de mock com Zod
-    const catMock = new ZodMockSchema(CatEntitySchema)
-    const input = catMock.generate()
-    await repository.create(new CatEntity(input))
+})
+
+it('/GET /v1/cats', async () => {
+// Geração automática de mock com Zod
+const catMock = new ZodMockSchema(CatEntitySchema)
+const input = catMock.generate()
+await repository.create(new CatEntity(input))
 
     return request(app.getHttpServer())
       .get('/cats')
       .set('Authorization', `Bearer ${process.env.TOKEN_TEST}`)
       .expect(200)
-  })
 
-  afterAll(async () => {
-    await containerMongo.close()
-    await containerRedis.close()
-    await app.close()
-  })
 })
-```
+
+afterAll(async () => {
+await containerMongo.close()
+await containerRedis.close()
+await app.close()
+})
+})
+
+````
 
 ### User Controller Integration - PostgreSQL + Redis
 
@@ -502,22 +455,25 @@ describe('UserController', () => {
     await app.close()
   })
 })
-```
+````
 
 ### Padrões de Implementação
 
 #### 1. **NestJS Testing Module Override**
+
 - Override de providers com instâncias reais dos containers
 - Configuração TypeORM dinâmica com PostgreSQL
 - Mongoose connection override para MongoDB
 - Redis service injection para cache
 
 #### 2. **Cleanup Pattern**
+
 - `afterAll` sempre fecha todos os containers
 - Ordem específica: database → cache → app
 - Evita vazamento de recursos entre testes
 
 #### 3. **Integration com Mocking**
+
 - `ZodMockSchema` para geração de dados de teste
 - Combinação de infraestrutura real + dados mock
 - Testes realistas sem setup manual de dados
