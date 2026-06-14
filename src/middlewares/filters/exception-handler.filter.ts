@@ -87,7 +87,7 @@ export class ExceptionHandlerFilter implements AppExceptionFilter {
 
   private formatAxiosError(exception: AxiosError): string[] {
     if (ObjectUtil.reach(exception, (o) => o.response.data)) {
-      const responseData = exception.response.data as AnyType
+      const responseData = ObjectUtil.reach(exception, (o) => o.response.data) as AnyType
       if (typeof responseData === 'string') {
         return [responseData]
       }
