@@ -8,14 +8,13 @@ import mongoose from 'mongoose'
 import path from 'path'
 import { createClient, RedisClientType } from 'redis'
 import { DataSource, DataSourceOptions } from 'typeorm'
-import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions'
-import { SnakeNamingStrategy } from 'typeorm-naming-strategies'
 
 import { ICacheAdapter } from '@/infra/cache'
 import { RedisService } from '@/infra/cache/redis'
 import { ConnectionName } from '@/infra/database/enum'
 import { PostgresService } from '@/infra/database/postgres'
 import { ILoggerAdapter, LoggerService } from '@/infra/logger'
+import { SnakeNamingStrategy } from '@/infra/repository/util'
 
 import { ApiUnprocessableEntityException } from '../../exception'
 
@@ -42,9 +41,10 @@ export class TestMongoContainer {
 export class TestPostgresContainer {
   postgresDatabase = process.env.POSTGRES_DATABASE
   postgresContainer!: StartedPostgreSqlContainer
+  private readonly postgresImage = 'postgres:16.1-alpine'
 
   private getTestPostgres = async (): Promise<StartedPostgreSqlContainer> => {
-    const postgres = new PostgreSqlContainer('postgres:16.1-alpine')
+    const postgres = new PostgreSqlContainer(this.postgresImage)
     if (!this.postgresDatabase) {
       throw new ApiUnprocessableEntityException('POSTGRES_DATABASE env var is not set')
     }
@@ -55,13 +55,11 @@ export class TestPostgresContainer {
     return this.postgresContainer
   }
 
-  getPostgres = async (): Promise<{ postgresConfig: PostgresConnectionOptions }> => {
-    const postgres = new PostgreSqlContainer('14.1')
+  getPostgres = async (): Promise<{ postgresConfig: DataSourceOptions }> => {
     const database = process.env.POSTGRES_DATABASE
     if (!database) {
       throw new ApiUnprocessableEntityException('POSTGRES_DATABASE env var is not set')
     }
-    postgres.withDatabase(database)
 
     const postgresConection = await this.getTestPostgres()
     const postgresConfig = this.getConfiguration(postgresConection)
@@ -74,9 +72,9 @@ export class TestPostgresContainer {
     return source
   }
 
-  private getConfiguration = (postgresConection: StartedPostgreSqlContainer): PostgresConnectionOptions => {
+  private getConfiguration = (postgresConection: StartedPostgreSqlContainer): DataSourceOptions => {
     const conn = new PostgresService().getConnection({ URI: postgresConection.getConnectionUri() }) as Omit<
-      PostgresConnectionOptions,
+      DataSourceOptions,
       'type'
     >
     const mihrationPath = path.join(process.cwd(), '/src/infra/database/postgres/migrations/*.{ts,js}')
@@ -93,7 +91,7 @@ export class TestPostgresContainer {
       autoLoadEntities: true,
       namingStrategy: new SnakeNamingStrategy(),
       entities: [entitiesPath]
-    } as PostgresConnectionOptions
+    } as DataSourceOptions
   }
 
   async close() {

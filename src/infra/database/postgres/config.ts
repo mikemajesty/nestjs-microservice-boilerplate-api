@@ -2,9 +2,9 @@
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/infra/database.md
  */
 import { config } from 'dotenv'
-import { DataSource } from 'typeorm'
-import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions'
-import { SnakeNamingStrategy } from 'typeorm-naming-strategies'
+import { DataSource, DataSourceOptions } from 'typeorm'
+
+import { SnakeNamingStrategy } from '@/infra/repository/util'
 
 config()
 
@@ -49,6 +49,6 @@ const dataSource = new DataSource({
   entities,
   synchronize: false,
   metadataTableName: 'typeorm_metadata'
-} as PostgresConnectionOptions)
+} as DataSourceOptions)
 
 export default dataSource

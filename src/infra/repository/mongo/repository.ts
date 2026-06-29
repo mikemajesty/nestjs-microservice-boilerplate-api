@@ -8,6 +8,7 @@ import {
   Model,
   MongooseUpdateQueryOptions,
   PaginateModel,
+  QueryOptions,
   SaveOptions,
   UpdateQuery,
   UpdateWithAggregationPipeline
@@ -201,7 +202,7 @@ export class MongoRepository<T extends Document = Document> implements IReposito
     options: unknown = {}
   ): Promise<T | null> {
     try {
-      const updateOptions = { ...(options as FilterQuery<IEntity>), new: true }
+      const updateOptions = { ...(options as FilterQuery<IEntity>), returnDocument: 'after' as const } as QueryOptions
 
       const model = await this.model.findOneAndUpdate(
         filter as FilterQuery<T>,

@@ -6,15 +6,34 @@
       "type": "node",
       "request": "launch",
       "restart": true,
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
+      "skipFiles": ["<node_internals>/**"],
       "console": "integratedTerminal",
       "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run-script",
-        "start:debug"
-      ]
+      "runtimeArgs": ["run-script", "start:debug"]
+    },
+    {
+      "name": "Run Mongo Migration",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "migration-mongo:run"],
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Run Mongo Migration Rollback",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "migration-mongo:rollback"],
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Run Mongo Migration Status",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "migration-mongo:status"],
+      "console": "integratedTerminal"
     }
   ]
 }

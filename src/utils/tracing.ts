@@ -11,7 +11,7 @@ import { MongoDBInstrumentation } from '@opentelemetry/instrumentation-mongodb'
 import { PgInstrumentation } from '@opentelemetry/instrumentation-pg'
 import { RedisInstrumentation } from '@opentelemetry/instrumentation-redis-4'
 import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics'
-import { NodeSDK } from '@opentelemetry/sdk-node'
+import { NodeSDK, NodeSDKConfiguration } from '@opentelemetry/sdk-node'
 
 import { LoggerService } from '@/infra/logger'
 
@@ -164,12 +164,14 @@ const pgInstrumentation = new PgInstrumentation({
   }
 })
 
-const sdk = new NodeSDK({
+const sdkConfig: Partial<NodeSDKConfiguration> = {
   traceExporter: tracerExporter,
   metricReader,
   instrumentations: [httpInstrumentation, redisInstrumentation, mongodbInstrumentation, pgInstrumentation],
   serviceName: name
-})
+}
+
+const sdk = new NodeSDK(sdkConfig)
 
 let isInitialized = false
 

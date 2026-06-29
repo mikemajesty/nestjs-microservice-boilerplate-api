@@ -9,9 +9,8 @@ type NonUndefined<T> = Exclude<T, undefined>
 
 export type ZodInferSchema<T extends object> = {
   [Key in keyof T]-?: Equals<T[Key], NonUndefined<T[Key]>> extends false
-    ?
-        | z.ZodOptional<z.ZodType<NonNullable<T[Key]>>>
-        | z.core.$ZodPipe<z.ZodOptional<z.ZodType<unknown>>, z.ZodType<T[Key]>>
+    ? | z.ZodOptional<z.ZodType<NonNullable<T[Key]>>>
+      | z.core.$ZodPipe<z.ZodOptional<z.ZodType<unknown>>, z.ZodType<T[Key]>>
     : z.ZodType<T[Key]> | z.core.$ZodPipe<z.ZodType<unknown>, z.ZodType<T[Key]>>
 }
 

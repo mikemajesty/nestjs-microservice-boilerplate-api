@@ -26,6 +26,8 @@ export class ExceptionHandlerFilter implements AppExceptionFilter {
     const requestId = (request as { id: string }).id
     exception.traceid = [exception.traceid, requestId].find(Boolean) as string
 
+    response.status(status)
+    this.loggerService.logger(request, response)
     this.logError(exception)
     const message = this.getErrorMessage(exception, status)
 
@@ -42,7 +44,7 @@ export class ExceptionHandlerFilter implements AppExceptionFilter {
       }
     }
 
-    response.status(status).json(errorResponse)
+    response.json(errorResponse)
   }
 
   private logError(exception: BaseException): void {

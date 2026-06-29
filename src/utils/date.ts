@@ -76,5 +76,5 @@ type GetDateWithFormatFormatInput = {
 } & DateInput
 
 type DateInput = {
-  type: 'iso' | 'js'
+  type: 'iso' | 'js' | 'timestamp'
 }

@@ -6,6 +6,7 @@ import { UserPasswordEntity } from '@/core/user/entity/user-password'
 import { IUserRepository } from '@/core/user/repository/user'
 import { UserSchema } from '@/infra/database/postgres/schemas/user'
 import { RunInTransactionType } from '@/infra/repository'
+import { createRelations } from '@/infra/repository/util'
 import { UserModel } from '@/modules/user/repository'
 import { CryptoUtils } from '@/utils/crypto'
 import { IDGeneratorUtils } from '@/utils/id-generator'
@@ -43,7 +44,10 @@ export class UserFixture implements TestFixture<UserEntity> {
   async removeRoles(userRepository: IUserRepository, role: RoleEntity): Promise<void> {
     await userRepository.runInTransaction(async (ctx: RunInTransactionType) => {
       const context = ctx as EntityManager
-      const user = await context.findOne(UserSchema, { where: { id: this.entity.id }, relations: ['roles'] })
+      const user = await context.findOne(UserSchema, {
+        where: { id: this.entity.id },
+        relations: createRelations<UserEntity>({ roles: true })
+      })
       if (user) {
         user.roles = user.roles.filter((r) => r.id !== role.id)
         await context.save(UserSchema, user)

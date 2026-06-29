@@ -2,8 +2,8 @@ import { Module } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import path from 'path'
 import { DataSource, DataSourceOptions } from 'typeorm'
-import { SnakeNamingStrategy } from 'typeorm-naming-strategies'
 
+import { SnakeNamingStrategy } from '@/infra/repository/util'
 import { ISecretsAdapter, SecretsModule } from '@/infra/secrets'
 
 import { name } from '../../../../package.json'

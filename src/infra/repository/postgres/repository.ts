@@ -7,8 +7,10 @@ import {
   FindManyOptions,
   FindOneOptions,
   FindOptionsOrder,
+  FindOptionsSelect,
   FindOptionsWhere,
   In,
+  IsNull,
   Not,
   Raw,
   Repository,
@@ -28,7 +30,7 @@ import {
   RemovedModel,
   UpdatedModel
 } from '../types'
-import { handleDatabaseError } from '../util'
+import { createRelations, handleDatabaseError } from '../util'
 
 export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEntity> implements IRepository<T> {
   private readonly context: string = TypeORMRepository.name
@@ -123,17 +125,19 @@ export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEn
 
   async find<TQuery = Partial<T>>(filter: TQuery): Promise<T[]> {
     return this.repository.find({
-      where: { ...filter, deleted_at: null }
+      where: { ...filter, deletedAt: null }
     } as FindOneOptions<T>)
   }
 
   async findIn(filter: { [key in keyof Partial<T>]: string[] }): Promise<T[]> {
     const where: { [key: string]: unknown } = {
-      deletedAt: null
+      deletedAt: IsNull()
     }
+
     for (const key of Object.keys(filter)) {
-      where[`${key}`] = In((filter as { [key: string]: string[] })[`${key}`])
+      where[key] = In((filter as { [key: string]: string[] })[key])
     }
+
     return this.repository.find({
       where
     } as FindOneOptions<T>)
@@ -276,7 +280,7 @@ export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEn
     const select = includeProperties.map((e) => `${e.toString()}`) as (keyof T)[]
     return this.repository.findOne({
       where: filter as FindOptionsWhere<T>,
-      select
+      select: this.createSelect(select)
     })
   }
 
@@ -284,7 +288,7 @@ export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEn
     const select = includeProperties.map((e) => `${e.toString()}`) as (keyof T)[]
     return this.repository.find({
       where: filter as FindOptionsWhere<T>,
-      select
+      select: this.createSelect(select)
     })
   }
 
@@ -292,7 +296,7 @@ export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEn
     const select = excludeProperties.map((e) => `${e.toString()}`)
     return this.repository.findOne({
       where: filter as FindOptionsWhere<T>,
-      select: this.excludeColumns(select) as (keyof T)[]
+      select: this.excludeColumns(select)
     })
   }
 
@@ -300,18 +304,18 @@ export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEn
     const select = excludeProperties.map((e) => `${e.toString()}`)
     return this.repository.find({
       where: filter as FindOptionsWhere<T>,
-      select: this.excludeColumns(select) as (keyof T)[]
+      select: this.excludeColumns(select)
     })
   }
 
   async findOneWithRelation<Filter = Partial<T>>(filter: Filter, joins?: JoinType<T>): Promise<T | null> {
-    const { relations } = this.convertJoins(joins)
+    const relations = createRelations(joins)
 
     const options: FindOneOptions<T> = {
       where: filter as FindOptionsWhere<T>
     }
 
-    if (relations.length > 0) {
+    if (Object.keys(relations).length > 0) {
       options.relations = relations
     }
 
@@ -319,17 +323,16 @@ export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEn
   }
 
   async findAllWithRelation<Filter = Partial<T>>(filter?: Filter, joins?: JoinType<T>): Promise<T[]> {
-    const { relations } = this.convertJoins(joins)
+    const relations = createRelations(joins)
 
-    const where: FindOptionsWhere<T> = filter
-      ? ({ ...filter, deletedAt: null } as FindOptionsWhere<T>)
-      : ({ deletedAt: null } as unknown as FindOptionsWhere<T>)
+    const where: FindOptionsWhere<T> = {
+      deletedAt: null,
+      ...(filter as FindOptionsWhere<T>)
+    } as FindOptionsWhere<T>
 
-    const options: FindManyOptions<T> = {
-      where
-    }
+    const options: FindManyOptions<T> = { where }
 
-    if (relations.length > 0) {
+    if (Object.keys(relations).length > 0) {
       options.relations = relations
     }
 
@@ -352,37 +355,30 @@ export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEn
     return await this.repository.softRemove(entity as T)
   }
 
-  private convertJoins(joins?: JoinType<T>): {
-    relations: string[]
-  } {
-    if (!joins) return { relations: [] }
-
-    const result = {
-      relations: [] as string[],
-      select: {} as Record<string, boolean>
+  private createSelect(includeProperties: (keyof T)[]): FindOptionsSelect<T> {
+    if (includeProperties.length === 0) {
+      return {}
     }
+    const select: Record<string, boolean> = {}
 
-    for (const key in joins) {
-      if (!joins.hasOwnProperty(key)) continue
+    includeProperties.forEach((property) => {
+      select[String(property)] = true
+    })
 
-      const value = joins[`${key}` as keyof JoinType<T>]
-      const propertyKey = String(key)
-
-      if (value === true) {
-        result.relations.push(propertyKey)
-      } else if (Array.isArray(value)) {
-        result.relations.push(propertyKey)
-        value.forEach((field: string | number | symbol) => {
-          const selectKey = `${propertyKey}.${String(field)}`
-          result.select[`${selectKey}`] = true
-        })
-      }
-    }
-    return result
+    return select as FindOptionsSelect<T>
   }
 
-  private excludeColumns = (columnsToExclude: string[]): string[] =>
-    this.repository.metadata.columns
-      .map((column) => column.databaseName)
-      .filter((columnName) => !columnsToExclude.includes(columnName))
+  private excludeColumns(columnsToExclude: string[]): FindOptionsSelect<T> {
+    const excludeSet = new Set(columnsToExclude)
+    const select: Record<string, boolean> = {}
+
+    this.repository.metadata.columns.forEach((column) => {
+      const columnName = column.databaseName
+      if (!excludeSet.has(columnName)) {
+        select[columnName] = true
+      }
+    })
+
+    return select as FindOptionsSelect<T>
+  }
 }

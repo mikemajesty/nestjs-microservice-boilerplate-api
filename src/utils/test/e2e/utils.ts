@@ -2,7 +2,7 @@ import { FactoryProvider, INestApplication, InjectionToken } from '@nestjs/commo
 import { APP_GUARD, Reflector } from '@nestjs/core'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { NextFunction } from 'express'
-import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions'
+import { DataSourceOptions } from 'typeorm'
 
 import { UserEntity } from '@/core/user/entity/user'
 import { IUserRepository } from '@/core/user/repository/user'
@@ -74,7 +74,7 @@ export class TestEnd2EndUtils {
     })
   }
 
-  static getPostgresModule(postgresContainer: TestPostgresContainer, postgresConfig: PostgresConnectionOptions) {
+  static getPostgresModule(postgresContainer: TestPostgresContainer, postgresConfig: DataSourceOptions) {
     return TypeOrmModule.forRootAsync({
       useFactory: async () => {
         return postgresConfig

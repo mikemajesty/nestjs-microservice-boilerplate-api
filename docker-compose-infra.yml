@@ -5,7 +5,7 @@ services:
     networks:
       - mongo-network
     healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')", "--quiet"]
+      test: ['CMD', 'mongosh', '--eval', "db.adminCommand('ping')", '--quiet']
       interval: 10s
       timeout: 10s
       retries: 5
@@ -15,8 +15,8 @@ services:
       - mongo-keyfile:/keyfile-source
       - .docker/mongo/primary-start.sh:/docker-entrypoint-initdb.d/primary-start.sh
     ports:
-      - "27017:27017"
-    entrypoint: ["/bin/sh", "/docker-entrypoint-initdb.d/primary-start.sh"]
+      - '27017:27017'
+    entrypoint: ['/bin/sh', '/docker-entrypoint-initdb.d/primary-start.sh']
     env_file:
       - .env
 
@@ -24,12 +24,12 @@ services:
     container_name: nestjs-microservice-secondary
     image: mongo:7.0
     healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')", "--quiet"]
+      test: ['CMD', 'mongosh', '--eval', "db.adminCommand('ping')", '--quiet']
       interval: 10s
       timeout: 10s
       retries: 5
       start_period: 30s
-    command: 
+    command:
       - /bin/sh
       - -c
       - |
@@ -39,13 +39,13 @@ services:
           echo '⏳ Keyfile not yet available, waiting 2s...'
           sleep 2
         done
-        
+
         echo '📋 Keyfile found, copying...'
         mkdir -p /etc/mongo
         cp /keyfile-source/mongodb-keyfile /etc/mongo/keyfile
         chmod 400 /etc/mongo/keyfile
         chown mongodb:mongodb /etc/mongo/keyfile
-        
+
         echo '🚀 Starting MongoDB secondary...'
         exec mongod --bind_ip_all --replSet rs0 --keyFile /etc/mongo/keyfile
     volumes:
@@ -56,17 +56,17 @@ services:
     depends_on:
       - nestjs-microservice-primary
     ports:
-      - "27018:27017"
+      - '27018:27017'
   nestjs-microservice-tertiary:
     container_name: nestjs-microservice-tertiary
     image: mongo:7.0
     healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')", "--quiet"]
+      test: ['CMD', 'mongosh', '--eval', "db.adminCommand('ping')", '--quiet']
       interval: 10s
       timeout: 10s
       retries: 5
       start_period: 30s
-    command: 
+    command:
       - /bin/sh
       - -c
       - |
@@ -76,13 +76,13 @@ services:
           echo '⏳ Keyfile not yet available, waiting 2s...'
           sleep 2
         done
-        
+
         echo '📋 Keyfile found, copying...'
         mkdir -p /etc/mongo
         cp /keyfile-source/mongodb-keyfile /etc/mongo/keyfile
         chmod 400 /etc/mongo/keyfile
         chown mongodb:mongodb /etc/mongo/keyfile
-        
+
         echo '🚀 Starting MongoDB tertiary...'
         exec mongod --bind_ip_all --replSet rs0 --keyFile /etc/mongo/keyfile
     volumes:
@@ -93,8 +93,8 @@ services:
     depends_on:
       - nestjs-microservice-primary
     ports:
-      - "27019:27017"
-      
+      - '27019:27017'
+
   mongo-init-replica:
     container_name: mongo-init-replica
     image: mongo:7.0
@@ -107,10 +107,10 @@ services:
         condition: service_healthy
     networks:
       - mongo-network
-    restart: "no"
+    restart: 'no'
     volumes:
       - .docker/mongo/init-replica.sh:/init-replica.sh
-    entrypoint: ["/bin/sh", "/init-replica.sh"]
+    entrypoint: ['/bin/sh', '/init-replica.sh']
 
   postgres:
     container_name: nestjs-microservice-postgres
@@ -201,7 +201,7 @@ services:
     networks:
       - collector-network
     ports:
-      - "9093:9093"
+      - '9093:9093'
     volumes:
       - .docker/prometheus/alertmanager.yml:/etc/alertmanager/alertmanager.yml
       - alertmanager-data:/alertmanager
@@ -218,12 +218,9 @@ services:
       nestjs-microservice-tertiary:
         condition: service_healthy
     environment:
-      - ME_CONFIG_MONGODB_URL=mongodb://admin:admin123@nestjs-microservice-primary:27017,nestjs-microservice-secondary:27017,nestjs-microservice-tertiary:27017/nestjs_microservice?replicaSet=app&authSource=admin&readPreference=primaryPreferred&ssl=false
-      - ME_CONFIG_MONGODB_REPLICA_SET=app
-      - ME_CONFIG_MONGODB_REPLICA_SET_NAME=app
-      - ME_CONFIG_MONGODB_READ_PREFERENCE=primaryPreferred
-      - ME_CONFIG_SITE_BASEURL=/
-      - ME_CONFIG_SITE_HOST=0.0.0.0
+      - ME_CONFIG_MONGODB_URL=mongodb://admin:admin123@nestjs-microservice-primary:27017,nestjs-microservice-secondary:27017,nestjs-microservice-tertiary:27017/nestjs_microservice?replicaSet=rs0&authSource=admin&readPreference=primaryPreferred&ssl=false
+      - ME_CONFIG_MONGODB_REPLICA_SET=rs0
+      - ME_CONFIG_MONGODB_REPLICA_SET_NAME=rs0
     ports:
       - '8081:8081'
     networks:
@@ -272,7 +269,7 @@ services:
     image: grafana/loki:2.9.4
     command: -config.file=/etc/loki/local-config.yaml
     ports:
-      - "3100:3100"
+      - '3100:3100'
     volumes:
       - loki-data:/loki
     networks:

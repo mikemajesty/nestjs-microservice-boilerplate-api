@@ -7,7 +7,8 @@
   "license": "MIT",
   "@see": "https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/setup/package.md",
   "overrides": {
-    "@opentelemetry/api": "^1.9.0"
+    "@opentelemetry/api": "^1.9.0",
+    "mongodb": "7.4.0"
   },
   "scripts": {
     "prepare": "husky",
@@ -30,9 +31,9 @@
     "migration-postgres:create": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:create ./src/infra/database/postgres/migrations/Name",
     "migration-postgres:run": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:run --dataSource ./src/infra/database/postgres/config.ts",
     "migration-postgres:undo": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:revert --dataSource ./src/infra/database/postgres/config.ts",
-    "migration-mongo:create": "ts-node -r tsconfig-paths/register ./src/infra/database/mongo/config.ts new -n rename",
-    "migration-mongo:run": "ts-node -r tsconfig-paths/register ./src/infra/database/mongo/config.ts up",
-    "migration-mongo:undo": "ts-node -r tsconfig-paths/register ./src/infra/database/mongo/config.ts down",
+    "migration-mongo:run": "ts-node -r tsconfig-paths/register ./src/infra/database/mongo/migrations/cli.ts migration:run",
+    "migration-mongo:rollback": "ts-node -r tsconfig-paths/register ./src/infra/database/mongo/migrations/cli.ts migration:rollback",
+    "migration-mongo:status": "ts-node -r tsconfig-paths/register ./src/infra/database/mongo/migrations/cli.ts migration:status",
     "migration:run": "concurrently --kill-others-on-fail \"npm run migration-postgres:run\" \"npm run migration-mongo:run\"",
     "test:load": "npx artillery run .artillery/config.yaml --record --key <token> ",
     "check-newest:deps": "npx npm-check-updates",
@@ -40,6 +41,7 @@
   },
   "dependencies": {
     "@faker-js/faker": "^10.2.0",
+    "@mikemajesty/mongo-migration": "0.0.3",
     "@mikemajesty/zod-mock-schema": "1.0.18",
     "@nestjs/common": "^11.1.12",
     "@nestjs/config": "^4.0.2",
@@ -70,7 +72,6 @@
     "js-yaml": "^4.1.1",
     "jsonwebtoken": "^9.0.3",
     "luxon": "^3.7.2",
-    "mongo-migrate-ts": "^2.0.0",
     "mongoose": "^9.1.5",
     "mongoose-paginate-v2": "^1.9.1",
     "nestjs-convert-to-curl": "^2.0.7",
@@ -93,8 +94,7 @@
     "swagger-ui-express": "^5.0.1",
     "systeminformation": "^5.30.5",
     "ts-jest": "^29.4.6",
-    "typeorm": "^0.3.28",
-    "typeorm-naming-strategies": "^4.1.0",
+    "typeorm": "^1.0.0-nightly.20260628",
     "typescript": "5.9.3",
     "uuid": "^13.0.0",
     "v8": "^0.1.0",
@@ -133,7 +133,6 @@
     "@types/ping": "^0.4.4",
     "@types/supertest": "^6.0.3",
     "@types/swagger-ui-express": "^4.1.8",
-    "@types/uuid": "^11.0.0",
     "@typescript-eslint/eslint-plugin": "^8.53.1",
     "@typescript-eslint/parser": "^8.53.1",
     "@typespec/compiler": "^1.8.0",

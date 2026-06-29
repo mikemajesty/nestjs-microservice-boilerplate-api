@@ -109,10 +109,7 @@ export class LoggerService implements ILoggerAdapter {
 
     const response = extractResponse()
 
-    const type =
-      {
-        Error: BaseException.name
-      }[error?.name] || ApiInternalServerException.name
+    const type = error?.name ?? ApiInternalServerException.name
 
     const messages = [message, ObjectUtil.reach(response, (o) => o.message, error.message)].find(Boolean)
 
@@ -125,7 +122,7 @@ export class LoggerService implements ILoggerAdapter {
       {
         ...response,
         context: ObjectUtil.reach(error, (o) => o.context),
-        type,
+        type: typeError,
         traceid: this.getTraceId(error),
         createdAt: DateUtils.now({ type: 'iso' }),
         application: this.app,
@@ -142,7 +139,12 @@ export class LoggerService implements ILoggerAdapter {
       return messages
     }
     if (messages.includes(`\n`)) {
-      return JSON.parse(messages)
+      const message = messages.split('\n')
+      return message
+    }
+
+    if (typeof messages === 'object') {
+      return [JSON.stringify(messages)]
     }
 
     return [messages]
@@ -151,16 +153,14 @@ export class LoggerService implements ILoggerAdapter {
   fatal(error: ErrorType, message?: string): void {
     const messages = [error.message, message].find(Boolean)
 
-    const type = {
-      Error: BaseException.name
-    }[error?.name]
+    const type = error?.name ?? BaseException.name
     const typeError = [type, error?.name === 'ZodError' ? ApiBadRequestException.name : error?.name].find(Boolean)
 
     this.logger.logger.fatal(
       {
         message: typeof messages === 'string' ? [messages] : messages,
         context: error?.context,
-        type: error.name,
+        type: typeError,
         traceid: this.getTraceId(error),
         createdAt: DateUtils.now({ type: 'iso' }),
         application: this.app,
