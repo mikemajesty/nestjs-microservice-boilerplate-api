@@ -1,5 +1,5 @@
 #!/bin/bash
-AUDIT_OUTPUT=$(npm audit --omit=dev --audit-level=low 2>&1)
+AUDIT_OUTPUT=$(npm audit --omit=dev --audit-level=high 2>&1)
 EXIT_CODE=$?
 
 if [ $EXIT_CODE -ne 0 ]; then
