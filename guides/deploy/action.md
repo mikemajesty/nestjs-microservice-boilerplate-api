@@ -23,12 +23,12 @@ This guide explains the CI/CD pipeline, release workflow, and best practices for
 
 The project uses **4 GitHub Actions workflows** that work together:
 
-| Workflow | File | Trigger | Purpose |
-|----------|------|---------|---------|
-| CI | `ci.yml` | Push/PR to master | Lint, test, security audit |
-| Validate PR | `validate-pr.yml` | PR opened/edited | Enforce conventional commits |
-| Create Release Tag | `create-release-tag.yml` | Manual | Create version tag with optional merge |
-| Release | `release.yml` | Manual | Deploy to environment + Docker build |
+| Workflow           | File                     | Trigger           | Purpose                                |
+| ------------------ | ------------------------ | ----------------- | -------------------------------------- |
+| CI                 | `ci.yml`                 | Push/PR to master | Lint, test, security audit             |
+| Validate PR        | `validate-pr.yml`        | PR opened/edited  | Enforce conventional commits           |
+| Create Release Tag | `create-release-tag.yml` | Manual            | Create version tag with optional merge |
+| Release            | `release.yml`            | Manual            | Deploy to environment + Docker build   |
 
 ### Execution Sequence
 
@@ -95,12 +95,12 @@ master (production-ready)
 
 ### Version Increment Guide
 
-| Scenario | Increment | Example |
-|----------|-----------|---------|
-| Bug fixes | `patch` | `1.0.0` → `1.0.1` |
-| New features | `minor` | `1.0.0` → `1.1.0` |
-| Breaking changes | `major` | `1.0.0` → `2.0.0` |
-| Re-deploy same version | `none` | `1.0.0` → `1.0.0` |
+| Scenario               | Increment | Example           |
+| ---------------------- | --------- | ----------------- |
+| Bug fixes              | `patch`   | `1.0.0` → `1.0.1` |
+| New features           | `minor`   | `1.0.0` → `1.1.0` |
+| Breaking changes       | `major`   | `1.0.0` → `2.0.0` |
+| Re-deploy same version | `none`    | `1.0.0` → `1.0.0` |
 
 ### Conventional Commits
 
@@ -155,7 +155,8 @@ BREAKING CHANGE: remove legacy API   # major bump
   uses: codecov/codecov-action@v4
 ```
 
-**Purpose:** 
+**Purpose:**
+
 - Runs test suite with Testcontainers
 - Generates coverage report
 - Uploads to Codecov for tracking
@@ -166,7 +167,7 @@ BREAKING CHANGE: remove legacy API   # major bump
 
 ```yaml
 - name: Run security audit
-  run: npm audit --audit-level=moderate
+  run: npm audit  --omit=dev --audit-level=moderate
   continue-on-error: true
 ```
 
@@ -208,11 +209,11 @@ BREAKING CHANGE: remove legacy API   # major bump
 
 **Inputs:**
 
-| Input | Description | Options |
-|-------|-------------|---------|
-| `branch_from` | Source branch | Any branch (default: master) |
-| `increment_type` | Version bump | patch, minor, major, none |
-| `merge_from_master` | Sync with master | true/false |
+| Input               | Description      | Options                      |
+| ------------------- | ---------------- | ---------------------------- |
+| `branch_from`       | Source branch    | Any branch (default: master) |
+| `increment_type`    | Version bump     | patch, minor, major, none    |
+| `merge_from_master` | Sync with master | true/false                   |
 
 #### Step 1: Smart Merge from Master
 
@@ -290,10 +291,10 @@ BREAKING CHANGE: remove legacy API   # major bump
 
 **Inputs:**
 
-| Input | Description | Options |
-|-------|-------------|---------|
+| Input         | Description        | Options            |
+| ------------- | ------------------ | ------------------ |
 | `environment` | Target environment | dev, preprod, prod |
-| `tag` | Version tag | e.g., v1.2.3 |
+| `tag`         | Version tag        | e.g., v1.2.3       |
 
 #### Step 1: Validate Tag Format
 
@@ -324,7 +325,8 @@ BREAKING CHANGE: remove legacy API   # major bump
   run: npm run build
 ```
 
-**Purpose:** 
+**Purpose:**
+
 - Clean install dependencies
 - Install SWC compiler (required for build)
 - Compile TypeScript to JavaScript
@@ -344,7 +346,8 @@ BREAKING CHANGE: remove legacy API   # major bump
     platforms: linux/amd64,linux/arm64
 ```
 
-**Purpose:** 
+**Purpose:**
+
 - Builds multi-platform Docker image
 - Tags with version number AND environment name
 - Pushes to DockerHub
@@ -371,11 +374,11 @@ BREAKING CHANGE: remove legacy API   # major bump
 
 Configure these secrets in repository settings (Settings → Secrets → Actions):
 
-| Secret | Description | How to Get |
-|--------|-------------|------------|
-| `GITHUB_TOKEN` | Auto-provided | Automatic by GitHub |
-| `DOCKERHUB_USERNAME` | DockerHub username | Your DockerHub account |
-| `DOCKERHUB_TOKEN` | DockerHub access token | DockerHub → Account Settings → Security → New Access Token |
+| Secret               | Description            | How to Get                                                 |
+| -------------------- | ---------------------- | ---------------------------------------------------------- |
+| `GITHUB_TOKEN`       | Auto-provided          | Automatic by GitHub                                        |
+| `DOCKERHUB_USERNAME` | DockerHub username     | Your DockerHub account                                     |
+| `DOCKERHUB_TOKEN`    | DockerHub access token | DockerHub → Account Settings → Security → New Access Token |
 
 ### Setting Up DockerHub Token
 
