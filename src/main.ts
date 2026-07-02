@@ -5,6 +5,7 @@ import './utils/tracing'
 
 import { RequestMethod, VersioningType } from '@nestjs/common'
 import { NestFactory } from '@nestjs/core'
+import { FastifyAdapter } from '@nestjs/platform-fastify'
 import bodyParser from 'body-parser'
 import { bold } from 'colorette'
 import compression from 'compression'
@@ -25,7 +26,7 @@ import { ErrorType } from './infra/logger'
 import { changeLanguage, initI18n, normalizeLocale } from './utils/validator'
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
+  const app = await NestFactory.create(AppModule, new FastifyAdapter(), {
     bufferLogs: true,
     cors: true
   })

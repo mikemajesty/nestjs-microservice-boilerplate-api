@@ -7,8 +7,10 @@
   "license": "MIT",
   "@see": "https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/setup/package.md",
   "overrides": {
-    "@opentelemetry/api": "^1.9.0",
-    "mongodb": "7.4.0"
+    "mongodb": "7.4.0",
+    "multer": "2.2.0",
+    "undici": "6.27.0",
+    "js-yaml": "^4.3.0"
   },
   "scripts": {
     "prepare": "husky",
@@ -31,26 +33,27 @@
     "migration-postgres:create": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:create ./src/infra/database/postgres/migrations/Name",
     "migration-postgres:run": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:run --dataSource ./src/infra/database/postgres/config.ts",
     "migration-postgres:undo": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:revert --dataSource ./src/infra/database/postgres/config.ts",
+    "migration-mongo:create": "ts-node -r tsconfig-paths/register ./src/infra/database/mongo/migrations/cli.ts migration:create",
     "migration-mongo:run": "ts-node -r tsconfig-paths/register ./src/infra/database/mongo/migrations/cli.ts migration:run",
     "migration-mongo:rollback": "ts-node -r tsconfig-paths/register ./src/infra/database/mongo/migrations/cli.ts migration:rollback",
     "migration-mongo:status": "ts-node -r tsconfig-paths/register ./src/infra/database/mongo/migrations/cli.ts migration:status",
     "migration:run": "concurrently --kill-others-on-fail \"npm run migration-postgres:run\" \"npm run migration-mongo:run\"",
     "test:load": "npx artillery run .artillery/config.yaml --record --key <token> ",
     "check-newest:deps": "npx npm-check-updates",
-    "make-badges": "istanbul-badges-readme"
+    "audit": "npm audit --omit=dev --audit-level=high"
   },
   "dependencies": {
     "@faker-js/faker": "^10.2.0",
-    "@mikemajesty/mongo-migration": "0.0.3",
+    "@mikemajesty/mongo-migration": "^0.0.9",
     "@mikemajesty/zod-mock-schema": "1.0.18",
     "@nestjs/common": "^11.1.12",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.1.12",
     "@nestjs/event-emitter": "^3.0.1",
     "@nestjs/mongoose": "^11.0.4",
-    "@nestjs/platform-express": "^11.1.27",
-    "@nestjs/typeorm": "^11.0.0",
-    "@opentelemetry/api": "^1.9.0",
+    "@nestjs/platform-fastify": "^11.1.27",
+    "@nestjs/typeorm": "^11.0.3",
+    "@opentelemetry/api": "^1.9.1",
     "@opentelemetry/exporter-metrics-otlp-http": "^0.219.0",
     "@opentelemetry/exporter-trace-otlp-proto": "^0.219.0",
     "@opentelemetry/instrumentation-http": "^0.219.0",
