@@ -1,0 +1,15 @@
+{
+    "name": "nestjs-boilerplate",
+    "main": "index.ts",
+    "devDependencies": {
+        "@types/node": "^18",
+        "typescript": "^5.0.0"
+    },
+    "dependencies": {
+        "@pulumi/aws": "^7.0.0",
+        "@pulumi/awsx": "^3.0.0",
+        "@pulumi/docker": "^5.1.0",
+        "@pulumi/kubernetes": "^4.32.0",
+        "@pulumi/pulumi": "^3.113.0"
+    }
+}

@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: nestjs-boilerplate-dev-smoke-app
+  labels:
+    app.kubernetes.io/name: nestjs-boilerplate-dev-smoke-app
+    app.kubernetes.io/part-of: nestjs-boilerplate
+    app.kubernetes.io/managed-by: argocd
+    app.kubernetes.io/environment: dev
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: nestjs-boilerplate-dev-smoke-app
+    app.kubernetes.io/part-of: nestjs-boilerplate
+    app.kubernetes.io/managed-by: argocd
+    app.kubernetes.io/environment: dev
+  ports:
+    - name: http
+      port: 5000
+      targetPort: http

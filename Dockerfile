@@ -30,6 +30,7 @@ LABEL description="NestJS Microservice Boilerplate API"
 
 # Set NODE_ENV
 ENV NODE_ENV=prod
+ENV APP_MAIN=main
 
 WORKDIR /app
 
@@ -61,5 +62,5 @@ EXPOSE 5000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:5000/health || exit 1
 
-# Start the application
-CMD ["node", "dist/main.js"]
+# Start the selected application entrypoint
+CMD ["sh", "-c", "node dist/${APP_MAIN}.js"]

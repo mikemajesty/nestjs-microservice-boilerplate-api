@@ -21,6 +21,7 @@ test
 
 # Development files
 scripts
+IaC
 .git
 .gitignore
 .github

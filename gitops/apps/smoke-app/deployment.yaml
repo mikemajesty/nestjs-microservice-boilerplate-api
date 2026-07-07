@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nestjs-boilerplate-dev-smoke-app
+  labels:
+    app.kubernetes.io/name: nestjs-boilerplate-dev-smoke-app
+    app.kubernetes.io/part-of: nestjs-boilerplate
+    app.kubernetes.io/managed-by: argocd
+    app.kubernetes.io/environment: dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: nestjs-boilerplate-dev-smoke-app
+      app.kubernetes.io/part-of: nestjs-boilerplate
+      app.kubernetes.io/managed-by: argocd
+      app.kubernetes.io/environment: dev
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: nestjs-boilerplate-dev-smoke-app
+        app.kubernetes.io/part-of: nestjs-boilerplate
+        app.kubernetes.io/managed-by: argocd
+        app.kubernetes.io/environment: dev
+    spec:
+      containers:
+        - name: nestjs-boilerplate-dev-smoke-app
+          image: public.ecr.aws/o5e1h1p5/nestjs-boilerplate-dev-app@sha256:7806f030d00c50b19b1c0e75b5652ed357e7c3ba0cbff9965f77942da1eed223
+          env:
+            - name: APP_MAIN
+              value: main-smoke
+          ports:
+            - name: http
+              containerPort: 5000
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http

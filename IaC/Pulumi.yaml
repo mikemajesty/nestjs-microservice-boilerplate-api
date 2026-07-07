@@ -1,0 +1,20 @@
+name: nestjs-boilerplate
+description: A minimal AWS TypeScript Pulumi program
+runtime:
+  name: nodejs
+  options:
+    packagemanager: npm
+config:
+  aws:region: us-east-1
+  aws:profile: IaC-profile
+  nestjs-boilerplate:projectName: nestjs-boilerplate
+  nestjs-boilerplate:environment: dev
+  nestjs-boilerplate:vpcCidr: 10.0.0.0/16
+  nestjs-boilerplate:availabilityZoneCount: 2
+  nestjs-boilerplate:singleNatGateway: true
+  nestjs-boilerplate:internalDomainName: boilerplate.internal
+  nestjs-boilerplate:enableAppContainerRegistry: true
+  nestjs-boilerplate:appImageTag: latest
+  pulumi:tags:
+    value:
+      pulumi:template: aws-typescript
