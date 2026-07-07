@@ -307,13 +307,10 @@ workloads Kubernetes nao sao mais modelados diretamente no Pulumi
 Evolucoes PoC depois:
 
 ```text
-criar componente IaC/src/addon/addon-argocd.ts
-instalar Argo CD via Pulumi Helm como bootstrap da plataforma
-rodar Argo CD dentro do EKS, nos nodes das subnets privadas
-criar pasta gitops/ na raiz do repositorio
-usar gitops/ para apps, add-ons Kubernetes e manifests do Argo
-acessar Argo inicialmente por kubectl port-forward
-migrar primeiro a smoke app para GitOps
+criar acesso privado do Argo via Ingress internal gerenciado pelo AWS Load Balancer Controller
+acessar Argo pelo DNS interno do ALB antes de criar DNS amigavel
+adicionar certificado para o acesso privado do Argo
+avaliar ACM privado/publico ou cert-manager para emitir o certificado
 migrar Gateway/HTTPRoute e futuros add-ons para GitOps
 manter IAM, IRSA, EKS, VPC, ECR e DNS base no Pulumi
 ```

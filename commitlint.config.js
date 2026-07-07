@@ -1,17 +1,17 @@
 /**
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/setup/husky.md
  */
-const { readdirSync } = require('fs');
+const { readdirSync } = require('fs')
 
 const getDirectories = (source) =>
   readdirSync(source, { withFileTypes: true })
     .filter((dirent) => dirent.isDirectory())
-    .map((dirent) => dirent.name);
+    .map((dirent) => dirent.name)
 
-const scopes = [];
+const scopes = []
 for (const path of getDirectories('./src').map((p) => `./src/${p}`)) {
-  const files = readdirSync(path, { withFileTypes: true });
-  scopes.push(...files.filter((item) => item.isDirectory()).map((item) => item.name));
+  const files = readdirSync(path, { withFileTypes: true })
+  scopes.push(...files.filter((item) => item.isDirectory()).map((item) => item.name))
 }
 
 scopes.push(
@@ -34,8 +34,10 @@ scopes.push(
   'none',
   `coverage`,
   `build`,
-  `changelog`
-);
+  `changelog`,
+  `IaC`,
+  `gitops`
+)
 
 module.exports = {
   extends: ['@commitlint/config-conventional'],
@@ -44,4 +46,4 @@ module.exports = {
     'scope-empty': [2, 'never'],
     'scope-enum': [2, 'always', scopes]
   }
-};
+}
