@@ -1,4 +1,5 @@
 import { ArgoCd } from './src/addon/addon-argocd'
+import { ArgoCdRootApplication } from './src/addon/addon-argocd-root-application'
 import { AwsLoadBalancerController } from './src/addon/addon-aws-load-balancer-controller'
 import { AwsLoadBalancerControllerIam } from './src/addon/addon-aws-load-balancer-controller-iam'
 import { ApplicationContainerRegistry } from './src/app/app-container-registry'
@@ -13,7 +14,6 @@ import { resourceName, ResourceNameSuffix } from './src/names'
 import { NetworkSecurityGroups } from './src/network/network-security-groups'
 import { VPCNetwork } from './src/network/network-vpc'
 import { WorkloadK8sProvider } from './src/workload/workload-k8s-provider'
-import { WorkloadNamespace } from './src/workload/workload-namespace'
 
 const network = new VPCNetwork(resourceName(config, ResourceNameSuffix.VPC_NETWORK), { config })
 const networkSecurityGroups = new NetworkSecurityGroups(
@@ -84,13 +84,14 @@ const argoCd = new ArgoCd(
   },
   { dependsOn: [eksNodeGroup.nodeGroup] }
 )
-const workloadNamespace = new WorkloadNamespace(
-  resourceName(config, ResourceNameSuffix.WORKLOAD_NAMESPACE),
+const argoCdRootApplication = new ArgoCdRootApplication(
+  resourceName(config, ResourceNameSuffix.ARGOCD_ROOT_APPLICATION),
   {
     config,
+    namespaceName: argoCd.namespaceName,
     provider: workloadK8sProvider.provider
   },
-  { dependsOn: [eksNodeGroup.nodeGroup] }
+  { dependsOn: [argoCd.release] }
 )
 
 export const vpc = {
@@ -144,6 +145,7 @@ export const eks = {
 }
 
 export const addons = {
+  argoCdRootApplicationName: argoCdRootApplication.applicationName,
   argoCdNamespaceName: argoCd.namespaceName,
   argoCdReleaseName: argoCd.releaseName,
   awsLoadBalancerControllerPolicyArn: awsLoadBalancerControllerIam.policyArn,
@@ -155,6 +157,4 @@ export const addons = {
   awsLoadBalancerControllerServiceAccountNamespace: awsLoadBalancerControllerIam.serviceAccountNamespace
 }
 
-export const workload = {
-  namespaceName: workloadNamespace.namespaceName
-}
+export const workload = {}

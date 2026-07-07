@@ -6,6 +6,7 @@ import { resourceName, ResourceNameSuffix } from '../names'
 
 export type ArgoCdResources = {
   namespaceName: pulumi.Output<string>
+  release: k8s.helm.v3.Release
   releaseName: pulumi.Output<string>
 }
 
@@ -23,6 +24,7 @@ const DISABLED_REPLICAS = 0
 
 export class ArgoCd extends pulumi.ComponentResource implements ArgoCdResources {
   readonly namespaceName: pulumi.Output<string>
+  readonly release: k8s.helm.v3.Release
   readonly releaseName: pulumi.Output<string>
 
   constructor(name: string, args: ArgoCdArgs, opts?: pulumi.ComponentResourceOptions) {
@@ -79,6 +81,7 @@ export class ArgoCd extends pulumi.ComponentResource implements ArgoCdResources 
     )
 
     this.namespaceName = namespace.metadata.name
+    this.release = release
     this.releaseName = release.name
 
     this.registerOutputs({

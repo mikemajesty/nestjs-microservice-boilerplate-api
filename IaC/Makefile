@@ -89,10 +89,13 @@ select-account-stack:
 teardown: check-auth select-account-stack cleanup-k8s wait-load-balancers-gone
 	AWS_PROFILE=$(AWS_PROFILE) PULUMI_K8S_DELETE_UNREACHABLE=true pulumi destroy --yes
 
-# The sandbox account resets every day, so refresh the Pulumi state before recreating resources.
+# The sandbox account resets every day, so the previous EKS endpoint can be gone during refresh.
 reset: refresh up
 
-recreate: refresh up
+recreate: preflight select-account-stack
+	AWS_PROFILE=$(AWS_PROFILE) PULUMI_K8S_DELETE_UNREACHABLE=true pulumi refresh --yes
+	AWS_PROFILE=$(AWS_PROFILE) PULUMI_K8S_DELETE_UNREACHABLE=true pulumi preview
+	AWS_PROFILE=$(AWS_PROFILE) PULUMI_K8S_DELETE_UNREACHABLE=true pulumi up --yes
 	@echo "Recreation finished. Use 'make argocd' and 'make argocd-password' to access Argo CD."
 
 argocd:

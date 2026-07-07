@@ -32,6 +32,7 @@ export enum ResourceNameSuffix {
   AWS_LOAD_BALANCER_CONTROLLER_ROLE = 'aws-load-balancer-controller-role',
   AWS_LOAD_BALANCER_CONTROLLER_POLICY_ATTACHMENT = 'aws-load-balancer-controller-policy-attachment',
   ARGOCD = 'argocd',
+  ARGOCD_ROOT_APPLICATION = 'argocd-root-application',
   EKS_NODE_IAM = 'eks-node-iam',
   EKS_NODE_ROLE = 'eks-node-role',
   EKS_NODE_WORKER_POLICY_ATTACHMENT = 'eks-node-worker-policy-attachment',

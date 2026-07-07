@@ -297,8 +297,11 @@ manter manifests/Helm/Kustomize reconciliados pelo Argo fora de IaC/
 Estado atual:
 
 ```text
-Argo CD ainda nao criado
-workloads e add-ons Kubernetes ainda sao modelados diretamente no Pulumi
+Argo CD criado via Pulumi Helm
+root Application criada pelo Pulumi como bootstrap app-of-apps
+gitops/ criado na raiz do repositorio
+smoke app migrada para manifests GitOps com Kustomize
+workloads Kubernetes nao sao mais modelados diretamente no Pulumi
 ```
 
 Evolucoes PoC depois:
@@ -318,13 +321,55 @@ manter IAM, IRSA, EKS, VPC, ECR e DNS base no Pulumi
 Evolucoes projeto maior:
 
 ```text
-criar AppProject e Application app-of-apps
+criar AppProject para organizar permissoes do Argo
 avaliar Ingress privado para argocd.boilerplate.internal
 usar ALB internal ou Gateway interno para acesso privado ao Argo
 associar DNS na Private Hosted Zone boilerplate.internal
 definir TLS interno para a URL privada do Argo
 integrar login com SSO/OIDC
 evitar exposicao publica do Argo CD
+```
+
+## Pulumi Kubernetes Operator
+
+Estado atual:
+
+```text
+nao usado
+Pulumi ainda roda pela maquina local ou Makefile
+Argo CD reconcilia apenas manifests Kubernetes e Applications
+```
+
+Evolucao avancada para aprendizado:
+
+```text
+estudar Pulumi Kubernetes Operator somente no final da stack
+usar como laboratorio de platform engineering e GitOps para infraestrutura
+entender Stack CR, control loop, status de reconciliacao e execucao de Pulumi dentro do cluster
+avaliar como preview, update e outputs funcionam quando a stack e reconciliada por operador
+comparar com o modelo CI/CD rodando pulumi preview/up fora do cluster
+```
+
+Pre-requisitos antes de estudar PKO:
+
+```text
+Argo CD app-of-apps estabilizado
+workloads da app reconciliados por GitOps
+Envoy Gateway e rotas definidos
+secrets resolvidos com estrategia segura, como External Secrets e AWS Secrets Manager
+CI publicando imagem e rodando validacoes
+RBAC, IRSA e boundaries bem entendidos
+```
+
+Cuidados para projeto maior:
+
+```text
+cluster passa a ter permissoes para criar ou alterar infraestrutura cloud
+IRSA do operador precisa seguir menor privilegio
+Stack CRs precisam de controle por RBAC e revisao
+secrets/config de stacks nao devem ficar em texto claro no Git
+preview em PR continua importante antes do merge
+PKO complementa Argo CD, mas nao substitui Argo para workloads Kubernetes
 ```
 
 ## Add-ons do EKS
