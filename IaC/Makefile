@@ -1,8 +1,13 @@
 AWS_PROFILE ?= IaC-profile
 AWS_ACCOUNT_ID ?= $(shell AWS_PAGER= AWS_PROFILE=$(AWS_PROFILE) aws sts get-caller-identity --query Account --output text 2>/dev/null)
+AWS_REGION ?= us-east-1
 ACCOUNT_STACK ?= dev
 PROJECT ?= nestjs-boilerplate
 ENVIRONMENT ?= dev
+EKS_CLUSTER_NAME ?= $(PROJECT)-$(ENVIRONMENT)-eks-cluster
+K8S_CONTEXT ?= $(EKS_CLUSTER_NAME)
+K8S_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
+K8S_COMMAND ?= $(K8S_ARGS)
 WORKLOAD_NAMESPACE ?= $(PROJECT)-$(ENVIRONMENT)-workload
 SMOKE_INGRESS ?= $(PROJECT)-$(ENVIRONMENT)-smoke-app-public-ingress
 AWS_LBC_RELEASE ?= aws-load-balancer-controller
@@ -13,7 +18,11 @@ ARGOCD_SERVER_SERVICE ?= argo-cd-argocd-server
 ARGOCD_LOCAL_PORT ?= 8080
 ARGOCD_INITIAL_ADMIN_SECRET ?= argocd-initial-admin-secret
 
-.PHONY: status login identity stack config check-auth check-leftovers preflight cleanup-k8s wait-load-balancers-gone preview up destroy refresh select-account-stack teardown reset recreate argocd argocd-password
+.PHONY: status login identity stack config check-auth check-leftovers preflight cleanup-k8s wait-load-balancers-gone preview up destroy refresh select-account-stack kubeconfig k8s teardown reset recreate argocd argocd-password
+
+ifeq ($(firstword $(MAKECMDGOALS)),k8s)
+$(eval $(K8S_ARGS):;@:)
+endif
 
 status: identity stack config preview
 
@@ -84,6 +93,13 @@ refresh: check-auth select-account-stack
 # The selected AWS account comes from AWS_PROFILE; keep the Pulumi stack name environment-based.
 select-account-stack:
 	AWS_PROFILE=$(AWS_PROFILE) pulumi stack select $(ACCOUNT_STACK) || AWS_PROFILE=$(AWS_PROFILE) pulumi stack init $(ACCOUNT_STACK)
+
+kubeconfig: check-auth
+	AWS_PROFILE=$(AWS_PROFILE) aws eks update-kubeconfig --region $(AWS_REGION) --name $(EKS_CLUSTER_NAME) --alias $(K8S_CONTEXT)
+
+k8s: kubeconfig
+	@test -n "$(K8S_COMMAND)" || (echo "Usage: make k8s K8S_COMMAND=\"<kubectl args>\""; exit 1)
+	AWS_PROFILE=$(AWS_PROFILE) kubectl --context $(K8S_CONTEXT) $(K8S_COMMAND)
 
 # End-of-day cleanup: destroy everything created in the Pulumi stack for the current AWS account.
 teardown: check-auth select-account-stack cleanup-k8s wait-load-balancers-gone

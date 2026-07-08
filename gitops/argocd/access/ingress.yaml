@@ -10,10 +10,12 @@ metadata:
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
     alb.ingress.kubernetes.io/scheme: internal
     alb.ingress.kubernetes.io/target-type: ip
+    external-dns.alpha.kubernetes.io/hostname: argocd.boilerplate.internal
 spec:
   ingressClassName: alb
   rules:
-    - http:
+    - host: argocd.boilerplate.internal
+      http:
         paths:
           - path: /
             pathType: Prefix

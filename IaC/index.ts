@@ -2,6 +2,8 @@ import { ArgoCd } from './src/addon/addon-argocd'
 import { ArgoCdRootApplication } from './src/addon/addon-argocd-root-application'
 import { AwsLoadBalancerController } from './src/addon/addon-aws-load-balancer-controller'
 import { AwsLoadBalancerControllerIam } from './src/addon/addon-aws-load-balancer-controller-iam'
+import { ExternalDns } from './src/addon/addon-external-dns'
+import { ExternalDnsIam } from './src/addon/addon-external-dns-iam'
 import { ApplicationContainerRegistry } from './src/app/app-container-registry'
 import { EksCluster } from './src/cluster/cluster-eks'
 import { EksClusterIam } from './src/cluster/cluster-eks-iam'
@@ -50,6 +52,12 @@ const awsLoadBalancerControllerIam = new AwsLoadBalancerControllerIam(
     oidcProviderUrl: eksOidcProvider.oidcProviderUrl
   }
 )
+const externalDnsIam = new ExternalDnsIam(resourceName(config, ResourceNameSuffix.EXTERNAL_DNS_IAM), {
+  config,
+  oidcProviderArn: eksOidcProvider.oidcProviderArn,
+  oidcProviderUrl: eksOidcProvider.oidcProviderUrl,
+  privateHostedZoneId: internalDns.privateHostedZoneId
+})
 const eksNodeIam = new EksNodeIam(resourceName(config, ResourceNameSuffix.EKS_NODE_IAM), { config })
 const eksNodeGroup = new EksNodeGroup(resourceName(config, ResourceNameSuffix.EKS_NODE_GROUP), {
   config,
@@ -81,6 +89,17 @@ const argoCd = new ArgoCd(
   {
     config,
     provider: workloadK8sProvider.provider
+  },
+  { dependsOn: [eksNodeGroup.nodeGroup] }
+)
+const externalDns = new ExternalDns(
+  resourceName(config, ResourceNameSuffix.EXTERNAL_DNS),
+  {
+    config,
+    provider: workloadK8sProvider.provider,
+    roleArn: externalDnsIam.roleArn,
+    serviceAccountName: externalDnsIam.serviceAccountName,
+    serviceAccountNamespace: externalDnsIam.serviceAccountNamespace
   },
   { dependsOn: [eksNodeGroup.nodeGroup] }
 )
@@ -154,7 +173,14 @@ export const addons = {
   awsLoadBalancerControllerRoleName: awsLoadBalancerControllerIam.roleName,
   awsLoadBalancerControllerReleaseName: awsLoadBalancerController.releaseName,
   awsLoadBalancerControllerServiceAccountName: awsLoadBalancerControllerIam.serviceAccountName,
-  awsLoadBalancerControllerServiceAccountNamespace: awsLoadBalancerControllerIam.serviceAccountNamespace
+  awsLoadBalancerControllerServiceAccountNamespace: awsLoadBalancerControllerIam.serviceAccountNamespace,
+  externalDnsPolicyArn: externalDnsIam.policyArn,
+  externalDnsPolicyName: externalDnsIam.policyName,
+  externalDnsReleaseName: externalDns.releaseName,
+  externalDnsRoleArn: externalDnsIam.roleArn,
+  externalDnsRoleName: externalDnsIam.roleName,
+  externalDnsServiceAccountName: externalDnsIam.serviceAccountName,
+  externalDnsServiceAccountNamespace: externalDnsIam.serviceAccountNamespace
 }
 
 export const workload = {}
