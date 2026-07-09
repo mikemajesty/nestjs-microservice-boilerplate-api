@@ -2,7 +2,7 @@ import * as k8s from '@pulumi/kubernetes'
 import * as pulumi from '@pulumi/pulumi'
 
 import type { InfrastructureConfig } from '../config'
-import { resourceName, ResourceNameSuffix } from '../names'
+import { resourceName, resourceNameSuffix } from '../names'
 
 export type AwsLoadBalancerControllerResources = {
   releaseName: pulumi.Output<string>
@@ -30,7 +30,7 @@ export class AwsLoadBalancerController extends pulumi.ComponentResource implemen
     super(AWS_LOAD_BALANCER_CONTROLLER_COMPONENT_TYPE, name, {}, opts)
 
     const { clusterName, config, provider, roleArn, serviceAccountName, serviceAccountNamespace, vpcId } = args
-    const releaseName = resourceName(config, ResourceNameSuffix.AWS_LOAD_BALANCER_CONTROLLER)
+    const releaseName = resourceName(config, resourceNameSuffix.addon.awsLoadBalancerController.release)
 
     const release = new k8s.helm.v3.Release(
       releaseName,

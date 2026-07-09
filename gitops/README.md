@@ -14,5 +14,6 @@ Initial layout:
 gitops/
   apps/                 application workloads
   addons/               Kubernetes platform add-ons
+  addons/*-config/      shared platform configuration for add-ons
   argocd/applications/  Argo CD Application manifests
 ```

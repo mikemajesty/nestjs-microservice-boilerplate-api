@@ -2,7 +2,7 @@ import * as k8s from '@pulumi/kubernetes'
 import * as pulumi from '@pulumi/pulumi'
 
 import type { InfrastructureConfig } from '../config'
-import { resourceName, ResourceNameSuffix } from '../names'
+import { resourceName, resourceNameSuffix } from '../names'
 
 export type ArgoCdRootApplicationResources = {
   applicationName: pulumi.Output<string>
@@ -30,7 +30,7 @@ export class ArgoCdRootApplication extends pulumi.ComponentResource implements A
     super(ARGOCD_ROOT_APPLICATION_COMPONENT_TYPE, name, {}, opts)
 
     const { config, namespaceName, provider } = args
-    const applicationName = resourceName(config, ResourceNameSuffix.ARGOCD_ROOT_APPLICATION)
+    const applicationName = resourceName(config, resourceNameSuffix.addon.argoCd.rootApplication)
 
     const application = new k8s.apiextensions.CustomResource(
       applicationName,

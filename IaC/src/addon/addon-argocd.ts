@@ -2,7 +2,7 @@ import * as k8s from '@pulumi/kubernetes'
 import * as pulumi from '@pulumi/pulumi'
 
 import type { InfrastructureConfig } from '../config'
-import { resourceName, ResourceNameSuffix } from '../names'
+import { resourceName, resourceNameSuffix } from '../names'
 
 export type ArgoCdResources = {
   namespaceName: pulumi.Output<string>
@@ -31,7 +31,7 @@ export class ArgoCd extends pulumi.ComponentResource implements ArgoCdResources 
     super(ARGOCD_COMPONENT_TYPE, name, {}, opts)
 
     const { config, provider } = args
-    const releaseName = resourceName(config, ResourceNameSuffix.ARGOCD)
+    const releaseName = resourceName(config, resourceNameSuffix.addon.argoCd.release)
 
     const namespace = new k8s.core.v1.Namespace(
       ARGOCD_NAMESPACE_NAME,

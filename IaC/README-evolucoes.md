@@ -302,15 +302,19 @@ root Application criada pelo Pulumi como bootstrap app-of-apps
 gitops/ criado na raiz do repositorio
 smoke app migrada para manifests GitOps com Kustomize
 workloads Kubernetes nao sao mais modelados diretamente no Pulumi
+acesso privado do Argo via Ingress internal criado em gitops/argocd/access
+ALB internal do Argo reconciliado pelo AWS Load Balancer Controller
+ExternalDNS criado via Pulumi Helm com IRSA
+argocd.boilerplate.internal criado na Private Hosted Zone boilerplate.internal
+acesso HTTP ao Argo validado de dentro da VPC/cluster
 ```
 
 Evolucoes PoC depois:
 
 ```text
-criar acesso privado do Argo via Ingress internal gerenciado pelo AWS Load Balancer Controller
-acessar Argo pelo DNS interno do ALB antes de criar DNS amigavel
 adicionar certificado para o acesso privado do Argo
 avaliar ACM privado/publico ou cert-manager para emitir o certificado
+mapeamento de rede/DNS corporativo para acessar argocd.boilerplate.internal fora da VPC, se necessario
 migrar Gateway/HTTPRoute e futuros add-ons para GitOps
 manter IAM, IRSA, EKS, VPC, ECR e DNS base no Pulumi
 ```
@@ -466,30 +470,36 @@ Estado atual:
 
 ```text
 app ainda nao implantada no EKS
+namespace da smoke app criado em GitOps
+Deployment e ClusterIP Service basicos da smoke app criados em GitOps
+readiness/liveness probes basicas configuradas
+imagem da smoke app pinada por digest do ECR Public
 ```
 
 Evolucoes PoC depois:
 
 ```text
-namespace da app
 service account da app
+RBAC minimo da app para aprendizado de ServiceAccount, Role e RoleBinding
 ConfigMap basico
-Secret ou integracao futura com Secrets Manager
-Deployment
-ClusterIP Service
-readiness/liveness probes
-usar imagem do ECR
+Secret da app via AWS Secrets Manager e External Secrets Operator
+Deployment consumindo ConfigMap e Secret via envFrom
+requests/limits iniciais
+securityContext de pod/container
+ajustar readiness/liveness probes com tempos explicitos
+validar imagem do ECR Public ou evoluir para ECR privado quando fizer sentido
 ```
 
 Evolucoes projeto maior:
 
 ```text
-requests/limits por workload
 HPA/KEDA se necessario
 Pod Disruption Budget
 Pod Security Standards
 NetworkPolicy
 separacao entre API, worker e jobs
+RBAC por workload com menor privilegio e justificativa explicita para cada permissao
+ServiceAccount com IRSA para workloads que acessam AWS APIs
 ```
 
 ## Runtime secrets
@@ -503,10 +513,13 @@ nao criado
 Evolucoes PoC depois:
 
 ```text
-escolher Secrets Manager ou SSM Parameter Store
-criar secrets da app
-permitir acesso via IRSA
-avaliar External Secrets Operator ou Secrets Store CSI Driver
+usar AWS Secrets Manager como backend de secrets da app
+instalar External Secrets Operator no EKS
+criar IAM role IRSA para o External Secrets Operator ler secrets permitidos
+criar SecretStore ou ClusterSecretStore apontando para AWS Secrets Manager
+criar ExternalSecret da smoke app em GitOps
+Deployment da app consumindo o Kubernetes Secret gerado pelo External Secrets Operator
+manter valores sensiveis fora do Git
 ```
 
 Evolucoes projeto maior:
@@ -517,6 +530,7 @@ KMS customizado
 separacao por ambiente
 auditoria de acesso
 politica de menor privilegio por secret
+avaliar Secrets Store CSI Driver quando secrets como arquivos forem preferiveis a env vars
 ```
 
 ## Banco e cache

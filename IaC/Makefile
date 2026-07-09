@@ -18,27 +18,31 @@ ARGOCD_SERVER_SERVICE ?= argo-cd-argocd-server
 ARGOCD_LOCAL_PORT ?= 8080
 ARGOCD_INITIAL_ADMIN_SECRET ?= argocd-initial-admin-secret
 
-.PHONY: status login identity stack config check-auth check-leftovers preflight cleanup-k8s wait-load-balancers-gone preview up destroy refresh select-account-stack kubeconfig k8s teardown reset recreate argocd argocd-password
+.PHONY: status login identity stack config check-docker check-auth check-leftovers preflight cleanup-k8s wait-load-balancers-gone preview up destroy refresh select-account-stack kubeconfig k8s teardown reset reset-app-image-state recreate argocd argocd-password
 
 ifeq ($(firstword $(MAKECMDGOALS)),k8s)
 $(eval $(K8S_ARGS):;@:)
 endif
 
-status: identity stack config preview
+status: check-docker identity stack config preview
 
-login:
+login: check-docker
 	aws sso login --profile $(AWS_PROFILE)
 
-identity:
+identity: check-docker
 	AWS_PROFILE=$(AWS_PROFILE) aws sts get-caller-identity
 
-stack:
+stack: check-docker
 	AWS_PROFILE=$(AWS_PROFILE) pulumi stack
 
-config:
+config: check-docker
 	pulumi config
 
-check-auth:
+check-docker:
+	@command -v docker >/dev/null 2>&1 || (echo "Docker is not installed or is not available in PATH."; exit 1)
+	@docker info >/dev/null 2>&1 || (echo "Docker is not running. Start Docker before running this command."; exit 1)
+
+check-auth: check-docker
 	@test -n "$(AWS_ACCOUNT_ID)" || (echo "AWS auth failed for profile $(AWS_PROFILE). Run: make login"; exit 1)
 	@AWS_PAGER= AWS_PROFILE=$(AWS_PROFILE) aws sts get-caller-identity --query Account --output text >/dev/null
 	@pulumi whoami >/dev/null
@@ -46,7 +50,7 @@ check-auth:
 preflight: check-auth
 	npm exec tsc -- --noEmit
 
-check-leftovers: check-auth select-account-stack
+check-leftovers: check-docker check-auth select-account-stack
 	@stack_resources=$$(pulumi stack --show-urns | sed -n 's/^Current stack resources (\([0-9][0-9]*\)):.*/\1/p'); \
 	vpcs=$$(AWS_PAGER= AWS_PROFILE=$(AWS_PROFILE) aws ec2 describe-vpcs --filters Name=tag:Project,Values=$(PROJECT) Name=tag:Environment,Values=$(ENVIRONMENT) --query 'Vpcs[].VpcId' --output text); \
 	eips=$$(AWS_PAGER= AWS_PROFILE=$(AWS_PROFILE) aws ec2 describe-addresses --filters Name=tag:Project,Values=$(PROJECT) Name=tag:Environment,Values=$(ENVIRONMENT) --query 'Addresses[].AllocationId' --output text); \
@@ -58,10 +62,10 @@ check-leftovers: check-auth select-account-stack
 		exit 1; \
 	fi
 
-cleanup-k8s: check-auth
+cleanup-k8s: check-docker check-auth kubeconfig
 	@if command -v kubectl >/dev/null 2>&1; then \
-		kubectl delete ingress $(SMOKE_INGRESS) -n $(WORKLOAD_NAMESPACE) --ignore-not-found --wait=true || true; \
-		kubectl delete namespace $(WORKLOAD_NAMESPACE) --ignore-not-found --wait=true || true; \
+		AWS_PROFILE=$(AWS_PROFILE) kubectl --context $(K8S_CONTEXT) delete ingress $(SMOKE_INGRESS) -n $(WORKLOAD_NAMESPACE) --ignore-not-found --wait=true || true; \
+		AWS_PROFILE=$(AWS_PROFILE) kubectl --context $(K8S_CONTEXT) delete namespace $(WORKLOAD_NAMESPACE) --ignore-not-found --wait=true || true; \
 	else \
 		echo "kubectl not found; skipping Kubernetes object cleanup"; \
 	fi
@@ -71,51 +75,61 @@ cleanup-k8s: check-auth
 		echo "helm not found; skipping Helm release cleanup"; \
 	fi
 
-wait-load-balancers-gone: check-auth
+wait-load-balancers-gone: check-docker check-auth
 	@arns=$$(AWS_PAGER= AWS_PROFILE=$(AWS_PROFILE) aws elbv2 describe-load-balancers --query 'LoadBalancers[?contains(LoadBalancerName, `$(K8S_LB_NAME_PREFIX)`)].LoadBalancerArn' --output text); \
 	if [ -n "$$arns" ]; then \
 		echo "Waiting for Kubernetes load balancers to be deleted: $$arns"; \
 		AWS_PAGER= AWS_PROFILE=$(AWS_PROFILE) aws elbv2 wait load-balancers-deleted --load-balancer-arns $$arns || true; \
 	fi
 
-up: preflight check-leftovers
+up: check-docker preflight check-leftovers
 	AWS_PROFILE=$(AWS_PROFILE) pulumi up --yes
 
-destroy: check-auth select-account-stack
+destroy: check-docker check-auth select-account-stack
 	AWS_PROFILE=$(AWS_PROFILE) pulumi destroy
 
-preview: preflight select-account-stack
+preview: check-docker preflight select-account-stack
 	AWS_PROFILE=$(AWS_PROFILE) pulumi preview
 
-refresh: check-auth select-account-stack
+refresh: check-docker check-auth select-account-stack
 	AWS_PROFILE=$(AWS_PROFILE)  pulumi refresh
 
 # The selected AWS account comes from AWS_PROFILE; keep the Pulumi stack name environment-based.
-select-account-stack:
+select-account-stack: check-docker
 	AWS_PROFILE=$(AWS_PROFILE) pulumi stack select $(ACCOUNT_STACK) || AWS_PROFILE=$(AWS_PROFILE) pulumi stack init $(ACCOUNT_STACK)
 
-kubeconfig: check-auth
+kubeconfig: check-docker check-auth
 	AWS_PROFILE=$(AWS_PROFILE) aws eks update-kubeconfig --region $(AWS_REGION) --name $(EKS_CLUSTER_NAME) --alias $(K8S_CONTEXT)
 
-k8s: kubeconfig
+k8s: check-docker kubeconfig
 	@test -n "$(K8S_COMMAND)" || (echo "Usage: make k8s K8S_COMMAND=\"<kubectl args>\""; exit 1)
 	AWS_PROFILE=$(AWS_PROFILE) kubectl --context $(K8S_CONTEXT) $(K8S_COMMAND)
 
 # End-of-day cleanup: destroy everything created in the Pulumi stack for the current AWS account.
-teardown: check-auth select-account-stack cleanup-k8s wait-load-balancers-gone
+teardown: check-docker check-auth select-account-stack cleanup-k8s wait-load-balancers-gone
 	AWS_PROFILE=$(AWS_PROFILE) PULUMI_K8S_DELETE_UNREACHABLE=true pulumi destroy --yes
 
 # The sandbox account resets every day, so the previous EKS endpoint can be gone during refresh.
 reset: refresh up
 
-recreate: preflight select-account-stack
+reset-app-image-state: check-docker select-account-stack
+	@image_urns=$$(pulumi stack export | jq -r '.deployment.resources[] | select(.type == "docker:index/image:Image") | .urn'); \
+	if [ -z "$$image_urns" ]; then \
+		echo "No docker.Image resources found in Pulumi state."; \
+	else \
+		echo "$$image_urns" | while IFS= read -r image_urn; do \
+			[ -z "$$image_urn" ] || pulumi state delete "$$image_urn" --yes; \
+		done; \
+	fi
+
+recreate: check-docker preflight select-account-stack reset-app-image-state
 	AWS_PROFILE=$(AWS_PROFILE) PULUMI_K8S_DELETE_UNREACHABLE=true pulumi refresh --yes
 	AWS_PROFILE=$(AWS_PROFILE) PULUMI_K8S_DELETE_UNREACHABLE=true pulumi preview
 	AWS_PROFILE=$(AWS_PROFILE) PULUMI_K8S_DELETE_UNREACHABLE=true pulumi up --yes
 	@echo "Recreation finished. Use 'make argocd' and 'make argocd-password' to access Argo CD."
 
-argocd:
-	kubectl port-forward svc/$(ARGOCD_SERVER_SERVICE) -n $(ARGOCD_NAMESPACE) $(ARGOCD_LOCAL_PORT):443
+argocd: check-docker kubeconfig
+	AWS_PROFILE=$(AWS_PROFILE) kubectl --context $(K8S_CONTEXT) port-forward svc/$(ARGOCD_SERVER_SERVICE) -n $(ARGOCD_NAMESPACE) $(ARGOCD_LOCAL_PORT):443
 
-argocd-password:
-	kubectl get secret $(ARGOCD_INITIAL_ADMIN_SECRET) -n $(ARGOCD_NAMESPACE) -o jsonpath='{.data.password}' | base64 -d; echo
+argocd-password: check-docker kubeconfig
+	AWS_PROFILE=$(AWS_PROFILE) kubectl --context $(K8S_CONTEXT) get secret $(ARGOCD_INITIAL_ADMIN_SECRET) -n $(ARGOCD_NAMESPACE) -o jsonpath='{.data.password}' | base64 -d; echo

@@ -2,7 +2,7 @@ import * as k8s from '@pulumi/kubernetes'
 import * as pulumi from '@pulumi/pulumi'
 
 import type { InfrastructureConfig } from '../config'
-import { resourceName, ResourceNameSuffix } from '../names'
+import { resourceName, resourceNameSuffix } from '../names'
 
 export type ExternalDnsResources = {
   releaseName: pulumi.Output<string>
@@ -28,7 +28,7 @@ export class ExternalDns extends pulumi.ComponentResource implements ExternalDns
     super(EXTERNAL_DNS_COMPONENT_TYPE, name, {}, opts)
 
     const { config, provider, roleArn, serviceAccountName, serviceAccountNamespace } = args
-    const releaseName = resourceName(config, ResourceNameSuffix.EXTERNAL_DNS)
+    const releaseName = resourceName(config, resourceNameSuffix.addon.externalDns.release)
 
     const release = new k8s.helm.v3.Release(
       releaseName,

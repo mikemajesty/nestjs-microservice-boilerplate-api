@@ -2,7 +2,7 @@ import * as aws from '@pulumi/aws'
 import * as pulumi from '@pulumi/pulumi'
 
 import type { InfrastructureConfig } from '../config'
-import { resourceName, ResourceNameSuffix } from '../names'
+import { resourceName, resourceNameSuffix } from '../names'
 import { createTags } from '../tags'
 
 export type EksClusterResources = {
@@ -33,7 +33,7 @@ export class EksCluster extends pulumi.ComponentResource implements EksClusterRe
     super(EKS_CLUSTER_COMPONENT_TYPE, name, {}, opts)
 
     const { config, clusterRoleArn, subnetIds } = args
-    const clusterName = resourceName(config, ResourceNameSuffix.EKS_CLUSTER)
+    const clusterName = resourceName(config, resourceNameSuffix.cluster.eks.cluster)
 
     const cluster = new aws.eks.Cluster(
       clusterName,
@@ -51,7 +51,12 @@ export class EksCluster extends pulumi.ComponentResource implements EksClusterRe
           Name: clusterName
         })
       },
-      { parent: this, deleteBeforeReplace: true }
+      {
+        parent: this,
+        deleteBeforeReplace: true,
+        dependsOn: opts?.dependsOn,
+        customTimeouts: opts?.customTimeouts
+      }
     )
 
     this.clusterArn = cluster.arn

@@ -1,21 +1,22 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: smoke-app
+  name: envoy-gateway-platform
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: '20'
+    argocd.argoproj.io/sync-wave: '15'
 spec:
   project: default
   source:
     repoURL: https://github.com/mikemajesty/nestjs-microservice-boilerplate-api.git
     targetRevision: master
-    path: gitops/apps/smoke-app
+    path: gitops/addons/envoy-gateway
   destination:
     server: https://kubernetes.default.svc
-    namespace: nestjs-boilerplate-dev-workload
+    namespace: envoy-gateway-system
   syncPolicy:
     syncOptions:
+      - CreateNamespace=true
       - SkipDryRunOnMissingResource=true
     automated:
       prune: true

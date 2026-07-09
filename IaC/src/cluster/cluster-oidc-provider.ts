@@ -2,7 +2,7 @@ import * as aws from '@pulumi/aws'
 import * as pulumi from '@pulumi/pulumi'
 
 import type { InfrastructureConfig } from '../config'
-import { resourceName, ResourceNameSuffix } from '../names'
+import { resourceName, resourceNameSuffix } from '../names'
 import { createTags } from '../tags'
 
 export type EksOidcProviderResources = {
@@ -26,7 +26,7 @@ export class EksOidcProvider extends pulumi.ComponentResource implements EksOidc
     super(EKS_OIDC_PROVIDER_COMPONENT_TYPE, name, {}, opts)
 
     const { config, clusterOidcIssuerUrl } = args
-    const oidcProviderName = resourceName(config, ResourceNameSuffix.EKS_CLUSTER_OIDC_PROVIDER)
+    const oidcProviderName = resourceName(config, resourceNameSuffix.cluster.eks.oidcProvider)
 
     const oidcProvider = new aws.iam.OpenIdConnectProvider(
       oidcProviderName,

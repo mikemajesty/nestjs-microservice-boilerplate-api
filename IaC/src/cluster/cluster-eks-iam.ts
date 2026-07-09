@@ -2,7 +2,7 @@ import * as aws from '@pulumi/aws'
 import * as pulumi from '@pulumi/pulumi'
 
 import type { InfrastructureConfig } from '../config'
-import { resourceName, ResourceNameSuffix } from '../names'
+import { resourceName, resourceNameSuffix } from '../names'
 import { createTags } from '../tags'
 
 export type EksClusterIamResources = {
@@ -25,7 +25,7 @@ export class EksClusterIam extends pulumi.ComponentResource implements EksCluste
     super(EKS_CLUSTER_IAM_COMPONENT_TYPE, name, {}, opts)
 
     const { config } = args
-    const clusterRoleName = resourceName(config, ResourceNameSuffix.EKS_CLUSTER_ROLE)
+    const clusterRoleName = resourceName(config, resourceNameSuffix.cluster.eks.role)
 
     const clusterRole = new aws.iam.Role(
       clusterRoleName,
@@ -42,7 +42,7 @@ export class EksClusterIam extends pulumi.ComponentResource implements EksCluste
     )
 
     const clusterRolePolicyAttachment = new aws.iam.RolePolicyAttachment(
-      resourceName(config, ResourceNameSuffix.EKS_CLUSTER_ROLE_POLICY_ATTACHMENT),
+      resourceName(config, resourceNameSuffix.cluster.eks.rolePolicyAttachment),
       {
         role: clusterRole.name,
         policyArn: aws.iam.ManagedPolicy.AmazonEKSClusterPolicy

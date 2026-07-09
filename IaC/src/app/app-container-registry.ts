@@ -3,7 +3,7 @@ import * as docker from '@pulumi/docker'
 import * as pulumi from '@pulumi/pulumi'
 
 import type { InfrastructureConfig } from '../config'
-import { resourceName, ResourceNameSuffix } from '../names'
+import { resourceName, resourceNameSuffix } from '../names'
 import { createTags } from '../tags'
 
 export type ApplicationContainerRegistryResources = {
@@ -35,7 +35,7 @@ export class ApplicationContainerRegistry
     super(APPLICATION_CONTAINER_REGISTRY_COMPONENT_TYPE, name, {}, opts)
 
     const { config } = args
-    const appRepositoryName = resourceName(config, ResourceNameSuffix.APPLICATION_CONTAINER_REPOSITORY)
+    const appRepositoryName = resourceName(config, resourceNameSuffix.app.containerRepository)
     const appRepository = new aws.ecrpublic.Repository(
       appRepositoryName,
       {

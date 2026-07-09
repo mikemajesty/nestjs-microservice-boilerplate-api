@@ -2,7 +2,7 @@ import * as aws from '@pulumi/aws'
 import * as pulumi from '@pulumi/pulumi'
 
 import type { InfrastructureConfig } from '../config'
-import { resourceName, ResourceNameSuffix } from '../names'
+import { resourceName, resourceNameSuffix } from '../names'
 import { createTags } from '../tags'
 
 export type EksNodeIamResources = {
@@ -27,7 +27,7 @@ export class EksNodeIam extends pulumi.ComponentResource implements EksNodeIamRe
     super(EKS_NODE_IAM_COMPONENT_TYPE, name, {}, opts)
 
     const { config } = args
-    const nodeRoleName = resourceName(config, ResourceNameSuffix.EKS_NODE_ROLE)
+    const nodeRoleName = resourceName(config, resourceNameSuffix.cluster.eks.nodeRole)
 
     const nodeRole = new aws.iam.Role(
       nodeRoleName,
@@ -44,7 +44,7 @@ export class EksNodeIam extends pulumi.ComponentResource implements EksNodeIamRe
     )
 
     const workerPolicyAttachment = new aws.iam.RolePolicyAttachment(
-      resourceName(config, ResourceNameSuffix.EKS_NODE_WORKER_POLICY_ATTACHMENT),
+      resourceName(config, resourceNameSuffix.cluster.eks.nodeWorkerPolicyAttachment),
       {
         role: nodeRole.name,
         policyArn: aws.iam.ManagedPolicy.AmazonEKSWorkerNodePolicy
@@ -53,7 +53,7 @@ export class EksNodeIam extends pulumi.ComponentResource implements EksNodeIamRe
     )
 
     const cniPolicyAttachment = new aws.iam.RolePolicyAttachment(
-      resourceName(config, ResourceNameSuffix.EKS_NODE_CNI_POLICY_ATTACHMENT),
+      resourceName(config, resourceNameSuffix.cluster.eks.nodeCniPolicyAttachment),
       {
         role: nodeRole.name,
         policyArn: aws.iam.ManagedPolicy.AmazonEKS_CNI_Policy
@@ -62,7 +62,7 @@ export class EksNodeIam extends pulumi.ComponentResource implements EksNodeIamRe
     )
 
     const ecrPolicyAttachment = new aws.iam.RolePolicyAttachment(
-      resourceName(config, ResourceNameSuffix.EKS_NODE_ECR_POLICY_ATTACHMENT),
+      resourceName(config, resourceNameSuffix.cluster.eks.nodeEcrPolicyAttachment),
       {
         role: nodeRole.name,
         policyArn: aws.iam.ManagedPolicy.AmazonEC2ContainerRegistryReadOnly
@@ -71,7 +71,7 @@ export class EksNodeIam extends pulumi.ComponentResource implements EksNodeIamRe
     )
 
     const ssmManagedInstancePolicyAttachment = new aws.iam.RolePolicyAttachment(
-      resourceName(config, ResourceNameSuffix.EKS_NODE_SSM_MANAGED_INSTANCE_POLICY_ATTACHMENT),
+      resourceName(config, resourceNameSuffix.cluster.eks.nodeSsmManagedInstancePolicyAttachment),
       {
         role: nodeRole.name,
         policyArn: AMAZON_SSM_MANAGED_INSTANCE_CORE_POLICY_ARN
@@ -80,7 +80,7 @@ export class EksNodeIam extends pulumi.ComponentResource implements EksNodeIamRe
     )
 
     const ssmPatchPolicyAttachment = new aws.iam.RolePolicyAttachment(
-      resourceName(config, ResourceNameSuffix.EKS_NODE_SSM_PATCH_POLICY_ATTACHMENT),
+      resourceName(config, resourceNameSuffix.cluster.eks.nodeSsmPatchPolicyAttachment),
       {
         role: nodeRole.name,
         policyArn: AMAZON_SSM_PATCH_ASSOCIATION_POLICY_ARN

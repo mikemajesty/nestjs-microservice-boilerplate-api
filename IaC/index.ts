@@ -12,67 +12,79 @@ import { EksNodeIam } from './src/cluster/cluster-eks-node-iam'
 import { EksOidcProvider } from './src/cluster/cluster-oidc-provider'
 import { config } from './src/config'
 import { InternalDns } from './src/dns/dns-private-zone'
-import { resourceName, ResourceNameSuffix } from './src/names'
+import { resourceName, resourceNameSuffix } from './src/names'
 import { NetworkSecurityGroups } from './src/network/network-security-groups'
 import { VPCNetwork } from './src/network/network-vpc'
 import { WorkloadK8sProvider } from './src/workload/workload-k8s-provider'
 
-const network = new VPCNetwork(resourceName(config, ResourceNameSuffix.VPC_NETWORK), { config })
+const network = new VPCNetwork(resourceName(config, resourceNameSuffix.network.vpcNetwork), { config })
 const networkSecurityGroups = new NetworkSecurityGroups(
-  resourceName(config, ResourceNameSuffix.NETWORK_SECURITY_GROUPS),
+  resourceName(config, resourceNameSuffix.network.securityGroups),
   {
     config,
     vpcId: network.vpcId
   }
 )
-const internalDns = new InternalDns(resourceName(config, ResourceNameSuffix.INTERNAL_DNS), {
+const internalDns = new InternalDns(resourceName(config, resourceNameSuffix.dns.internal), {
   config,
   vpcId: network.vpcId
 })
 const applicationContainerRegistry = config.enableAppContainerRegistry
-  ? new ApplicationContainerRegistry(resourceName(config, ResourceNameSuffix.APPLICATION_CONTAINER_REGISTRY), {
+  ? new ApplicationContainerRegistry(resourceName(config, resourceNameSuffix.app.containerRegistry), {
       config
     })
   : undefined
-const eksClusterIam = new EksClusterIam(resourceName(config, ResourceNameSuffix.EKS_CLUSTER_IAM), { config })
-const eksCluster = new EksCluster(resourceName(config, ResourceNameSuffix.EKS_CLUSTER), {
-  config,
-  clusterRoleArn: eksClusterIam.clusterRoleArn,
-  subnetIds: network.privateSubnetIds
-})
-const eksOidcProvider = new EksOidcProvider(resourceName(config, ResourceNameSuffix.EKS_CLUSTER_OIDC_PROVIDER), {
+const eksClusterIam = new EksClusterIam(resourceName(config, resourceNameSuffix.cluster.eks.iam), { config })
+const eksCluster = new EksCluster(
+  resourceName(config, resourceNameSuffix.cluster.eks.cluster),
+  {
+    config,
+    clusterRoleArn: eksClusterIam.clusterRoleArn,
+    subnetIds: network.privateSubnetIds
+  },
+  { customTimeouts: { delete: '30m' }, dependsOn: [network, eksClusterIam] }
+)
+const eksOidcProvider = new EksOidcProvider(resourceName(config, resourceNameSuffix.cluster.eks.oidcProvider), {
   config,
   clusterOidcIssuerUrl: eksCluster.clusterOidcIssuerUrl
 })
 const awsLoadBalancerControllerIam = new AwsLoadBalancerControllerIam(
-  resourceName(config, ResourceNameSuffix.AWS_LOAD_BALANCER_CONTROLLER_IAM),
+  resourceName(config, resourceNameSuffix.addon.awsLoadBalancerController.iam),
   {
     config,
     oidcProviderArn: eksOidcProvider.oidcProviderArn,
     oidcProviderUrl: eksOidcProvider.oidcProviderUrl
   }
 )
-const externalDnsIam = new ExternalDnsIam(resourceName(config, ResourceNameSuffix.EXTERNAL_DNS_IAM), {
+const externalDnsIam = new ExternalDnsIam(resourceName(config, resourceNameSuffix.addon.externalDns.iam), {
   config,
   oidcProviderArn: eksOidcProvider.oidcProviderArn,
   oidcProviderUrl: eksOidcProvider.oidcProviderUrl,
   privateHostedZoneId: internalDns.privateHostedZoneId
 })
-const eksNodeIam = new EksNodeIam(resourceName(config, ResourceNameSuffix.EKS_NODE_IAM), { config })
-const eksNodeGroup = new EksNodeGroup(resourceName(config, ResourceNameSuffix.EKS_NODE_GROUP), {
-  config,
-  clusterName: eksCluster.clusterName,
-  nodeRoleArn: eksNodeIam.nodeRoleArn,
-  subnetIds: network.privateSubnetIds
-})
-const workloadK8sProvider = new WorkloadK8sProvider(resourceName(config, ResourceNameSuffix.WORKLOAD_K8S_PROVIDER), {
-  config,
-  clusterCertificateAuthorityData: eksCluster.clusterCertificateAuthorityData,
-  clusterEndpoint: eksCluster.clusterEndpoint,
-  clusterName: eksCluster.clusterName
-})
+const eksNodeIam = new EksNodeIam(resourceName(config, resourceNameSuffix.cluster.eks.nodeIam), { config })
+const eksNodeGroup = new EksNodeGroup(
+  resourceName(config, resourceNameSuffix.cluster.eks.nodeGroup),
+  {
+    config,
+    clusterName: eksCluster.clusterName,
+    nodeRoleArn: eksNodeIam.nodeRoleArn,
+    subnetIds: network.privateSubnetIds
+  },
+  { customTimeouts: { delete: '30m' }, dependsOn: [eksCluster, eksNodeIam] }
+)
+const workloadK8sProvider = new WorkloadK8sProvider(
+  resourceName(config, resourceNameSuffix.workload.k8sProvider),
+  {
+    config,
+    clusterCertificateAuthorityData: eksCluster.clusterCertificateAuthorityData,
+    clusterEndpoint: eksCluster.clusterEndpoint,
+    clusterName: eksCluster.clusterName
+  },
+  { dependsOn: [eksCluster] }
+)
 const awsLoadBalancerController = new AwsLoadBalancerController(
-  resourceName(config, ResourceNameSuffix.AWS_LOAD_BALANCER_CONTROLLER),
+  resourceName(config, resourceNameSuffix.addon.awsLoadBalancerController.release),
   {
     clusterName: eksCluster.clusterName,
     config,
@@ -85,7 +97,7 @@ const awsLoadBalancerController = new AwsLoadBalancerController(
   { dependsOn: [eksNodeGroup.nodeGroup] }
 )
 const argoCd = new ArgoCd(
-  resourceName(config, ResourceNameSuffix.ARGOCD),
+  resourceName(config, resourceNameSuffix.addon.argoCd.release),
   {
     config,
     provider: workloadK8sProvider.provider
@@ -93,7 +105,7 @@ const argoCd = new ArgoCd(
   { dependsOn: [eksNodeGroup.nodeGroup] }
 )
 const externalDns = new ExternalDns(
-  resourceName(config, ResourceNameSuffix.EXTERNAL_DNS),
+  resourceName(config, resourceNameSuffix.addon.externalDns.release),
   {
     config,
     provider: workloadK8sProvider.provider,
@@ -104,7 +116,7 @@ const externalDns = new ExternalDns(
   { dependsOn: [eksNodeGroup.nodeGroup] }
 )
 const argoCdRootApplication = new ArgoCdRootApplication(
-  resourceName(config, ResourceNameSuffix.ARGOCD_ROOT_APPLICATION),
+  resourceName(config, resourceNameSuffix.addon.argoCd.rootApplication),
   {
     config,
     namespaceName: argoCd.namespaceName,

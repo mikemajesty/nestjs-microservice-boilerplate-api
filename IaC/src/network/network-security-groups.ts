@@ -2,7 +2,7 @@ import * as aws from '@pulumi/aws'
 import * as pulumi from '@pulumi/pulumi'
 
 import type { InfrastructureConfig } from '../config'
-import { resourceName, ResourceNameSuffix } from '../names'
+import { resourceName, resourceNameSuffix } from '../names'
 import { createTags } from '../tags'
 
 export type NetworkSecurityGroupResources = {
@@ -29,7 +29,7 @@ export class NetworkSecurityGroups extends pulumi.ComponentResource implements N
     const { config, vpcId } = args
     const publicLoadBalancerSecurityGroupName = resourceName(
       config,
-      ResourceNameSuffix.PUBLIC_LOAD_BALANCER_SECURITY_GROUP
+      resourceNameSuffix.network.publicLoadBalancerSecurityGroup
     )
 
     // Este grupo nasce antes do Load Balancer para a futura entrada publica reutilizar uma fronteira de rede conhecida.
@@ -51,7 +51,7 @@ export class NetworkSecurityGroups extends pulumi.ComponentResource implements N
 
     // Ingress responde: quem pode entrar neste futuro Load Balancer?
     new aws.vpc.SecurityGroupIngressRule(
-      resourceName(config, ResourceNameSuffix.PUBLIC_LOAD_BALANCER_HTTP_INGRESS_RULE),
+      resourceName(config, resourceNameSuffix.network.publicLoadBalancerHttpIngressRule),
       {
         securityGroupId: publicLoadBalancerSecurityGroup.id,
         cidrIpv4: PUBLIC_INTERNET_IPV4_CIDR,
@@ -65,7 +65,7 @@ export class NetworkSecurityGroups extends pulumi.ComponentResource implements N
 
     // Egress temporario responde: para onde este futuro Load Balancer pode enviar trafego enquanto o Envoy ainda nao existe?
     new aws.vpc.SecurityGroupEgressRule(
-      resourceName(config, ResourceNameSuffix.PUBLIC_LOAD_BALANCER_TEMPORARY_EGRESS_RULE),
+      resourceName(config, resourceNameSuffix.network.publicLoadBalancerTemporaryEgressRule),
       {
         securityGroupId: publicLoadBalancerSecurityGroup.id,
         cidrIpv4: PUBLIC_INTERNET_IPV4_CIDR,

@@ -2,7 +2,7 @@ import * as aws from '@pulumi/aws'
 import * as pulumi from '@pulumi/pulumi'
 
 import type { InfrastructureConfig } from '../config'
-import { resourceName, ResourceNameSuffix } from '../names'
+import { resourceName, resourceNameSuffix } from '../names'
 import { createTags } from '../tags'
 
 export type AwsLoadBalancerControllerIamResources = {
@@ -176,8 +176,8 @@ export class AwsLoadBalancerControllerIam
     super(AWS_LOAD_BALANCER_CONTROLLER_IAM_COMPONENT_TYPE, name, {}, opts)
 
     const { config, oidcProviderArn, oidcProviderUrl } = args
-    const policyName = resourceName(config, ResourceNameSuffix.AWS_LOAD_BALANCER_CONTROLLER_POLICY)
-    const roleName = resourceName(config, ResourceNameSuffix.AWS_LOAD_BALANCER_CONTROLLER_ROLE)
+    const policyName = resourceName(config, resourceNameSuffix.addon.awsLoadBalancerController.policy)
+    const roleName = resourceName(config, resourceNameSuffix.addon.awsLoadBalancerController.role)
     const serviceAccountSubject = `system:serviceaccount:${SERVICE_ACCOUNT_NAMESPACE}:${SERVICE_ACCOUNT_NAME}`
     const oidcProviderConditionKey = pulumi
       .output(oidcProviderUrl)
@@ -231,7 +231,7 @@ export class AwsLoadBalancerControllerIam
     )
 
     new aws.iam.RolePolicyAttachment(
-      resourceName(config, ResourceNameSuffix.AWS_LOAD_BALANCER_CONTROLLER_POLICY_ATTACHMENT),
+      resourceName(config, resourceNameSuffix.addon.awsLoadBalancerController.policyAttachment),
       {
         role: role.name,
         policyArn: policy.arn

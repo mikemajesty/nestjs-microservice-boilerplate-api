@@ -2,7 +2,7 @@ import * as awsx from '@pulumi/awsx'
 import * as pulumi from '@pulumi/pulumi'
 
 import type { InfrastructureConfig } from '../config'
-import { resourceName, ResourceNameSuffix } from '../names'
+import { resourceName, resourceNameSuffix } from '../names'
 import { createTags } from '../tags'
 
 export type NetworkResources = {
@@ -33,7 +33,7 @@ export class VPCNetwork extends pulumi.ComponentResource implements NetworkResou
     super(VPC_NETWORK_COMPONENT_TYPE, name, {}, opts)
 
     const { config } = args
-    const vpcName = resourceName(config, ResourceNameSuffix.VPC)
+    const vpcName = resourceName(config, resourceNameSuffix.network.vpc)
 
     const vpc = new awsx.ec2.Vpc(
       vpcName,

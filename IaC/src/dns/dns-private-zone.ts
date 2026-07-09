@@ -2,7 +2,7 @@ import * as aws from '@pulumi/aws'
 import * as pulumi from '@pulumi/pulumi'
 
 import type { InfrastructureConfig } from '../config'
-import { resourceName, ResourceNameSuffix } from '../names'
+import { resourceName, resourceNameSuffix } from '../names'
 import { createTags } from '../tags'
 
 export type InternalDnsResources = {
@@ -25,7 +25,7 @@ export class InternalDns extends pulumi.ComponentResource implements InternalDns
     super(INTERNAL_DNS_COMPONENT_TYPE, name, {}, opts)
 
     const { config, vpcId } = args
-    const privateHostedZoneName = resourceName(config, ResourceNameSuffix.PRIVATE_HOSTED_ZONE)
+    const privateHostedZoneName = resourceName(config, resourceNameSuffix.dns.privateHostedZone)
 
     // A Private Hosted Zone cria o dominio interno, mas nao cria records ainda.
     const privateHostedZone = new aws.route53.Zone(

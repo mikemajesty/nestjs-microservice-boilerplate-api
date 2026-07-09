@@ -2,7 +2,7 @@ import * as aws from '@pulumi/aws'
 import * as pulumi from '@pulumi/pulumi'
 
 import type { InfrastructureConfig } from '../config'
-import { resourceName, ResourceNameSuffix } from '../names'
+import { resourceName, resourceNameSuffix } from '../names'
 import { createTags } from '../tags'
 
 export type ExternalDnsIamResources = {
@@ -39,8 +39,8 @@ export class ExternalDnsIam extends pulumi.ComponentResource implements External
     super(EXTERNAL_DNS_IAM_COMPONENT_TYPE, name, {}, opts)
 
     const { config, oidcProviderArn, oidcProviderUrl, privateHostedZoneId } = args
-    const policyName = resourceName(config, ResourceNameSuffix.EXTERNAL_DNS_POLICY)
-    const roleName = resourceName(config, ResourceNameSuffix.EXTERNAL_DNS_ROLE)
+    const policyName = resourceName(config, resourceNameSuffix.addon.externalDns.policy)
+    const roleName = resourceName(config, resourceNameSuffix.addon.externalDns.role)
     const serviceAccountSubject = `system:serviceaccount:${SERVICE_ACCOUNT_NAMESPACE}:${SERVICE_ACCOUNT_NAME}`
     const oidcProviderConditionKey = pulumi
       .output(oidcProviderUrl)
@@ -118,7 +118,7 @@ export class ExternalDnsIam extends pulumi.ComponentResource implements External
     )
 
     new aws.iam.RolePolicyAttachment(
-      resourceName(config, ResourceNameSuffix.EXTERNAL_DNS_POLICY_ATTACHMENT),
+      resourceName(config, resourceNameSuffix.addon.externalDns.policyAttachment),
       {
         role: role.name,
         policyArn: policy.arn

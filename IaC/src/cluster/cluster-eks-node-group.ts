@@ -2,7 +2,7 @@ import * as aws from '@pulumi/aws'
 import * as pulumi from '@pulumi/pulumi'
 
 import type { InfrastructureConfig } from '../config'
-import { resourceName, ResourceNameSuffix } from '../names'
+import { resourceName, resourceNameSuffix } from '../names'
 import { createTags } from '../tags'
 
 export type EksNodeGroupResources = {
@@ -36,7 +36,7 @@ export class EksNodeGroup extends pulumi.ComponentResource implements EksNodeGro
     super(EKS_NODE_GROUP_COMPONENT_TYPE, name, {}, opts)
 
     const { config, clusterName, nodeRoleArn, subnetIds } = args
-    const nodeGroupName = resourceName(config, ResourceNameSuffix.EKS_NODE_GROUP)
+    const nodeGroupName = resourceName(config, resourceNameSuffix.cluster.eks.nodeGroup)
 
     const nodeGroup = new aws.eks.NodeGroup(
       nodeGroupName,
@@ -58,7 +58,11 @@ export class EksNodeGroup extends pulumi.ComponentResource implements EksNodeGro
           Name: nodeGroupName
         })
       },
-      { parent: this }
+      {
+        parent: this,
+        dependsOn: opts?.dependsOn,
+        customTimeouts: opts?.customTimeouts
+      }
     )
 
     this.nodeGroup = nodeGroup
