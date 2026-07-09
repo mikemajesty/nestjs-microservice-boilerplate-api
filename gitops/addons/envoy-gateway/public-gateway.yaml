@@ -5,6 +5,11 @@ metadata:
   namespace: envoy-gateway-system
 spec:
   gatewayClassName: envoy-gateway
+  infrastructure:
+    parametersRef:
+      group: gateway.envoyproxy.io
+      kind: EnvoyProxy
+      name: public-envoy-proxy
   listeners:
     - name: http
       protocol: HTTP
