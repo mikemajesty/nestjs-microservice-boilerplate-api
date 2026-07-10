@@ -1,23 +1,18 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: envoy-gateway-platform
+  name: argocd-internal-access
   namespace: argocd
-  annotations:
-    argocd.argoproj.io/sync-wave: '15'
 spec:
   project: default
   source:
     repoURL: https://github.com/mikemajesty/nestjs-microservice-boilerplate-api.git
     targetRevision: master
-    path: gitops/addons/envoy-gateway
+    path: gitops/argocd/internal-access
   destination:
     server: https://kubernetes.default.svc
-    namespace: envoy-gateway-system
+    namespace: argocd
   syncPolicy:
-    syncOptions:
-      - CreateNamespace=true
-      - SkipDryRunOnMissingResource=true
     automated:
       prune: true
       selfHeal: true

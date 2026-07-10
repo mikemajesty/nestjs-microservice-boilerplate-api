@@ -4,6 +4,7 @@ AWS_REGION ?= us-east-1
 ACCOUNT_STACK ?= dev
 PROJECT ?= nestjs-boilerplate
 ENVIRONMENT ?= dev
+INTERNAL_DOMAIN_NAME ?= boilerplate.internal
 EKS_CLUSTER_NAME ?= $(PROJECT)-$(ENVIRONMENT)-eks-cluster
 K8S_CONTEXT ?= $(EKS_CLUSTER_NAME)
 K8S_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
@@ -18,7 +19,7 @@ ARGOCD_SERVER_SERVICE ?= argo-cd-argocd-server
 ARGOCD_LOCAL_PORT ?= 8080
 ARGOCD_INITIAL_ADMIN_SECRET ?= argocd-initial-admin-secret
 
-.PHONY: status login identity stack config check-docker check-auth check-leftovers preflight cleanup-k8s wait-load-balancers-gone preview up destroy refresh select-account-stack kubeconfig k8s teardown reset reset-app-image-state recreate argocd argocd-password
+.PHONY: status login identity stack config check-docker check-auth check-leftovers preflight cleanup-k8s cleanup-route53-records wait-load-balancers-gone preview up destroy refresh select-account-stack kubeconfig k8s teardown reset reset-app-image-state recreate argocd argocd-password
 
 ifeq ($(firstword $(MAKECMDGOALS)),k8s)
 $(eval $(K8S_ARGS):;@:)
@@ -75,6 +76,27 @@ cleanup-k8s: check-docker check-auth kubeconfig
 		echo "helm not found; skipping Helm release cleanup"; \
 	fi
 
+cleanup-route53-records: check-docker check-auth
+	@zone_id=$$(AWS_PAGER= AWS_PROFILE=$(AWS_PROFILE) aws route53 list-hosted-zones-by-name --dns-name $(INTERNAL_DOMAIN_NAME). --query 'HostedZones[?Name==`$(INTERNAL_DOMAIN_NAME).` && Config.PrivateZone==`true`].Id | [0]' --output text | sed 's|/hostedzone/||'); \
+	if [ -z "$$zone_id" ] || [ "$$zone_id" = "None" ]; then \
+		echo "Private hosted zone $(INTERNAL_DOMAIN_NAME) not found; skipping Route 53 record cleanup"; \
+	else \
+		change_batch=$$(mktemp); \
+		AWS_PAGER= AWS_PROFILE=$(AWS_PROFILE) aws route53 list-resource-record-sets --hosted-zone-id "$$zone_id" \
+			--query '{Changes: ResourceRecordSets[?Type!=`NS` && Type!=`SOA`].{Action:`DELETE`,ResourceRecordSet:@}}' \
+			--output json > "$$change_batch"; \
+			change_count=$$(jq '.Changes | length' "$$change_batch"); \
+		if [ "$$change_count" = "0" ]; then \
+			echo "No non-default Route 53 records to delete in $(INTERNAL_DOMAIN_NAME)."; \
+			rm -f "$$change_batch"; \
+		else \
+			echo "Deleting $$change_count Route 53 records from $(INTERNAL_DOMAIN_NAME)."; \
+			change_id=$$(AWS_PAGER= AWS_PROFILE=$(AWS_PROFILE) aws route53 change-resource-record-sets --hosted-zone-id "$$zone_id" --change-batch "file://$$change_batch" --query 'ChangeInfo.Id' --output text); \
+			rm -f "$$change_batch"; \
+			AWS_PAGER= AWS_PROFILE=$(AWS_PROFILE) aws route53 wait resource-record-sets-changed --id "$$change_id"; \
+		fi; \
+	fi
+
 wait-load-balancers-gone: check-docker check-auth
 	@arns=$$(AWS_PAGER= AWS_PROFILE=$(AWS_PROFILE) aws elbv2 describe-load-balancers --query 'LoadBalancers[?contains(LoadBalancerName, `$(K8S_LB_NAME_PREFIX)`)].LoadBalancerArn' --output text); \
 	if [ -n "$$arns" ]; then \
@@ -106,7 +128,7 @@ k8s: check-docker kubeconfig
 	AWS_PROFILE=$(AWS_PROFILE) kubectl --context $(K8S_CONTEXT) $(K8S_COMMAND)
 
 # End-of-day cleanup: destroy everything created in the Pulumi stack for the current AWS account.
-teardown: check-docker check-auth select-account-stack cleanup-k8s wait-load-balancers-gone
+teardown: check-docker check-auth select-account-stack cleanup-k8s cleanup-route53-records wait-load-balancers-gone
 	AWS_PROFILE=$(AWS_PROFILE) PULUMI_K8S_DELETE_UNREACHABLE=true pulumi destroy --yes
 
 # The sandbox account resets every day, so the previous EKS endpoint can be gone during refresh.
@@ -126,10 +148,10 @@ recreate: check-docker preflight select-account-stack reset-app-image-state
 	AWS_PROFILE=$(AWS_PROFILE) PULUMI_K8S_DELETE_UNREACHABLE=true pulumi refresh --yes
 	AWS_PROFILE=$(AWS_PROFILE) PULUMI_K8S_DELETE_UNREACHABLE=true pulumi preview
 	AWS_PROFILE=$(AWS_PROFILE) PULUMI_K8S_DELETE_UNREACHABLE=true pulumi up --yes
-	@echo "Recreation finished. Use 'make argocd' and 'make argocd-password' to access Argo CD."
+	@echo "Recreation finished. Use 'make argo' and 'make argo-pass' to access Argo CD."
 
-argocd: check-docker kubeconfig
+argo: check-docker kubeconfig
 	AWS_PROFILE=$(AWS_PROFILE) kubectl --context $(K8S_CONTEXT) port-forward svc/$(ARGOCD_SERVER_SERVICE) -n $(ARGOCD_NAMESPACE) $(ARGOCD_LOCAL_PORT):443
 
-argocd-password: check-docker kubeconfig
+argo-pass: check-docker kubeconfig
 	AWS_PROFILE=$(AWS_PROFILE) kubectl --context $(K8S_CONTEXT) get secret $(ARGOCD_INITIAL_ADMIN_SECRET) -n $(ARGOCD_NAMESPACE) -o jsonpath='{.data.password}' | base64 -d; echo
