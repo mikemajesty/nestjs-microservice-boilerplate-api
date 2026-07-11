@@ -378,14 +378,15 @@ PKO complementa Argo CD, mas nao substitui Argo para workloads Kubernetes
 Estado atual:
 
 ```text
-nao criados
+CoreDNS criado pelo EKS e reduzido para 1 replica via patch Pulumi para caber na PoC single-node
+AWS Load Balancer Controller reduzido para 1 replica na PoC single-node
 ```
 
 Evolucoes PoC depois:
 
 ```text
 VPC CNI
-CoreDNS
+CoreDNS com 2 replicas quando o node group voltar a ter capacidade adequada
 kube-proxy
 Metrics Server
 EBS CSI Driver se houver volumes
@@ -440,15 +441,16 @@ Envoy Gateway instalado via GitOps como add-on/control plane
 GatewayClass envoy-gateway criado
 Gateway interno compartilhado criado em gitops/cluster/internal-gateway
 EnvoyProxy internal-envoy-proxy criado para customizar o data plane
-NLB internal criado para o Envoy data plane
+NLB internet-facing criado temporariamente para o Envoy data plane, permitindo acesso direto pelo browser na PoC
 cross-zone load balancing habilitado no NLB para a PoC com node group pequeno
-HTTPRoute da smoke app roteando pelo internal-gateway
-fluxo HTTPS api.boilerplate.internal -> NLB internal -> Envoy -> HTTPRoute -> Service interno validado via resolucao controlada
+HTTPRoute da smoke app roteando pelo internal-gateway sem hostname fixo para aceitar o hostname bruto do ELB na PoC
+fluxo browser -> NLB publico -> Envoy -> HTTPRoute -> Service interno validado como atalho temporario de PoC
 ```
 
 Evolucoes PoC depois:
 
 ```text
+voltar o NLB do Envoy para internal quando houver VPN/bastion/resolucao privada adequada
 validar resolucao DNS privada de api.boilerplate.internal a partir de rede/VPN com acesso a Private Hosted Zone
 manter Envoy -> app em HTTP enquanto o foco for TLS norte-sul
 validar fluxo HTTPS cliente -> NLB -> Envoy -> HTTPRoute -> Service interno

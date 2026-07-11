@@ -62,6 +62,9 @@ export const resourceNameSuffix = {
     argoCd: {
       release: 'argocd',
       rootApplication: 'argocd-root-application'
+    },
+    coreDns: {
+      capacityPatch: 'coredns-capacity-patch'
     }
   },
   workload: {
