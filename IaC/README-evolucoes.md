@@ -438,10 +438,10 @@ Estado atual:
 ```text
 Envoy Gateway instalado via GitOps como add-on/control plane
 GatewayClass envoy-gateway criado
-Gateway publico compartilhado criado em gitops/cluster/public-gateway
-EnvoyProxy public-envoy-proxy criado para customizar o data plane
+Gateway interno compartilhado criado em gitops/cluster/internal-gateway
+EnvoyProxy internal-envoy-proxy criado para customizar o data plane
 NLB internal criado para o Envoy data plane
-HTTPRoute da smoke app roteando pelo public-gateway
+HTTPRoute da smoke app roteando pelo internal-gateway
 fluxo HTTPS api.boilerplate.internal -> NLB internal -> Envoy -> HTTPRoute -> Service interno validado via resolucao controlada
 ```
 
@@ -449,7 +449,6 @@ Evolucoes PoC depois:
 
 ```text
 validar resolucao DNS privada de api.boilerplate.internal a partir de rede/VPN com acesso a Private Hosted Zone
-avaliar renomear manifests public-gateway/public-envoy-proxy para internal-gateway/internal-envoy-proxy
 manter Envoy -> app em HTTP enquanto o foco for TLS norte-sul
 validar fluxo HTTPS cliente -> NLB -> Envoy -> HTTPRoute -> Service interno
 ```
@@ -680,11 +679,11 @@ estrategia de destroy por ambiente nao produtivo
 Ordem sugerida a partir do estado atual:
 
 ```text
-1. Sincronizar e validar os renames GitOps de escopo: cluster-public-gateway e argocd-internal-access
-2. Adicionar hostname publico para o Gateway
-3. Escolher fluxo de certificado para TLS no Envoy: cert-manager ou secret gerenciado inicialmente
-4. Adicionar listener HTTPS no Gateway com tls.mode Terminate
-5. Validar fluxo HTTPS cliente -> NLB -> Envoy -> HTTPRoute -> Service interno
+1. Sincronizar cluster-public-gateway apontando para gitops/cluster/internal-gateway e validar prune dos recursos public-*
+2. Renomear a Application do Argo de cluster-public-gateway para cluster-internal-gateway depois do prune validado
+3. Validar resolucao DNS privada de api.boilerplate.internal a partir de rede/VPN com acesso a Private Hosted Zone
+4. Adicionar certificado para o acesso privado do Argo
+5. Comecar endurecimento da app: ServiceAccount, RBAC minimo, ConfigMap, Secrets e resources
 6. Depois avaliar Linkerd ou Istio para mTLS interno entre workloads
 ```
 

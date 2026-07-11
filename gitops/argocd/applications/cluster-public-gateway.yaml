@@ -10,7 +10,7 @@ spec:
   source:
     repoURL: https://github.com/mikemajesty/nestjs-microservice-boilerplate-api.git
     targetRevision: master
-    path: gitops/cluster/public-gateway
+    path: gitops/cluster/internal-gateway
   destination:
     server: https://kubernetes.default.svc
     namespace: envoy-gateway-system
