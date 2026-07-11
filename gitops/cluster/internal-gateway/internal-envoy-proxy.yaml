@@ -9,4 +9,5 @@ spec:
     kubernetes:
       envoyService:
         annotations:
+          service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: 'true'
           service.beta.kubernetes.io/aws-load-balancer-scheme: internal

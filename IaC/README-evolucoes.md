@@ -441,6 +441,7 @@ GatewayClass envoy-gateway criado
 Gateway interno compartilhado criado em gitops/cluster/internal-gateway
 EnvoyProxy internal-envoy-proxy criado para customizar o data plane
 NLB internal criado para o Envoy data plane
+cross-zone load balancing habilitado no NLB para a PoC com node group pequeno
 HTTPRoute da smoke app roteando pelo internal-gateway
 fluxo HTTPS api.boilerplate.internal -> NLB internal -> Envoy -> HTTPRoute -> Service interno validado via resolucao controlada
 ```
