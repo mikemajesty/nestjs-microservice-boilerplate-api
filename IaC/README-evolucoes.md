@@ -440,18 +440,16 @@ Envoy Gateway instalado via GitOps como add-on/control plane
 GatewayClass envoy-gateway criado
 Gateway publico compartilhado criado em gitops/cluster/public-gateway
 EnvoyProxy public-envoy-proxy criado para customizar o data plane
-NLB publico internet-facing criado para o Envoy data plane
+NLB internal criado para o Envoy data plane
 HTTPRoute da smoke app roteando pelo public-gateway
-fluxo HTTP NLB publico -> Envoy -> HTTPRoute -> Service interno validado
+fluxo HTTPS api.boilerplate.internal -> NLB internal -> Envoy -> HTTPRoute -> Service interno validado via resolucao controlada
 ```
 
 Evolucoes PoC depois:
 
 ```text
-adicionar hostname publico para o Gateway
-adicionar cert-manager ou outro fluxo para emitir/gerenciar certificado TLS no cluster
-adicionar listener HTTPS no Gateway com tls.mode Terminate
-terminar TLS de entrada no Envoy, mantendo o NLB como camada L4/passthrough
+validar resolucao DNS privada de api.boilerplate.internal a partir de rede/VPN com acesso a Private Hosted Zone
+avaliar renomear manifests public-gateway/public-envoy-proxy para internal-gateway/internal-envoy-proxy
 manter Envoy -> app em HTTP enquanto o foco for TLS norte-sul
 validar fluxo HTTPS cliente -> NLB -> Envoy -> HTTPRoute -> Service interno
 ```
