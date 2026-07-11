@@ -302,7 +302,7 @@ root Application criada pelo Pulumi como bootstrap app-of-apps
 gitops/ criado na raiz do repositorio
 smoke app migrada para manifests GitOps com Kustomize
 workloads Kubernetes nao sao mais modelados diretamente no Pulumi
-acesso privado do Argo via Ingress internal criado em gitops/argocd/access
+acesso privado do Argo via Ingress internal criado em gitops/argocd/internal-access
 ALB internal do Argo reconciliado pelo AWS Load Balancer Controller
 ExternalDNS criado via Pulumi Helm com IRSA
 argocd.boilerplate.internal criado na Private Hosted Zone boilerplate.internal
@@ -436,32 +436,55 @@ evitar ALB como camada L7 redundante quando Envoy assumir a borda HTTP
 Estado atual:
 
 ```text
-nao criado
+Envoy Gateway instalado via GitOps como add-on/control plane
+GatewayClass envoy-gateway criado
+Gateway publico compartilhado criado em gitops/cluster/public-gateway
+EnvoyProxy public-envoy-proxy criado para customizar o data plane
+NLB publico internet-facing criado para o Envoy data plane
+HTTPRoute da smoke app roteando pelo public-gateway
+fluxo HTTP NLB publico -> Envoy -> HTTPRoute -> Service interno validado
 ```
 
 Evolucoes PoC depois:
 
 ```text
-instalar Gateway API CRDs
-instalar Envoy Gateway controller
-criar GatewayClass
-criar Gateway
-criar HTTPRoute para app
-validar fluxo Load Balancer -> Envoy -> Service interno
-validar NLB publico -> Envoy -> HTTPRoute -> Service interno
+adicionar hostname publico para o Gateway
+adicionar cert-manager ou outro fluxo para emitir/gerenciar certificado TLS no cluster
+adicionar listener HTTPS no Gateway com tls.mode Terminate
+terminar TLS de entrada no Envoy, mantendo o NLB como camada L4/passthrough
+manter Envoy -> app em HTTP enquanto o foco for TLS norte-sul
+validar fluxo HTTPS cliente -> NLB -> Envoy -> HTTPRoute -> Service interno
 ```
 
 Evolucoes projeto maior:
 
 ```text
 remover Ingress classico quando Envoy Gateway estiver pronto
-HTTPS/TLS publico
-mTLS interno se fizer sentido
+avaliar Linkerd ou Istio para mTLS interno entre workloads
+definir estrategia de identidade de workloads para trafego leste-oeste
+avaliar BackendTLSPolicy apenas para casos Envoy -> backend com TLS direto
 rate limiting
 timeouts e retries padronizados
 traffic splitting/canary
 observabilidade de access logs e metricas
 politicas de seguranca no gateway
+```
+
+Roadmap de seguranca de trafego:
+
+```text
+1. Manter Envoy Gateway para entrada norte-sul.
+2. Adicionar TLS termination no Envoy para trafego cliente -> gateway.
+3. Depois avaliar Linkerd ou Istio para mTLS interno app -> app.
+```
+
+Decisao PoC:
+
+```text
+Nao terminar TLS no NLB nesta etapa.
+O NLB deve continuar como transporte L4, e o Gateway API deve declarar o listener HTTPS.
+BackendTLSPolicy nao substitui service mesh para trafego interno entre apps.
+BackendTLSPolicy e util apenas para controlar TLS no trecho Envoy -> backend especifico.
 ```
 
 ## App Kubernetes
@@ -659,14 +682,12 @@ estrategia de destroy por ambiente nao produtivo
 Ordem sugerida a partir do estado atual:
 
 ```text
-1. Criar bootstrap do Argo CD via Pulumi em IaC/src/addon/addon-argocd.ts
-2. Criar pasta gitops/ na raiz do repositorio
-3. Acessar Argo inicialmente via kubectl port-forward
-4. Migrar smoke app para GitOps
-5. Migrar ou substituir Ingress temporario por Gateway/HTTPRoute gerenciado pelo Argo
-6. Instalar Gateway API e Envoy Gateway pelo fluxo GitOps
-7. Validar fluxo NLB publico -> Envoy -> HTTPRoute -> Service interno
-8. Avaliar Ingress privado para argocd.boilerplate.internal
+1. Sincronizar e validar os renames GitOps de escopo: cluster-public-gateway e argocd-internal-access
+2. Adicionar hostname publico para o Gateway
+3. Escolher fluxo de certificado para TLS no Envoy: cert-manager ou secret gerenciado inicialmente
+4. Adicionar listener HTTPS no Gateway com tls.mode Terminate
+5. Validar fluxo HTTPS cliente -> NLB -> Envoy -> HTTPRoute -> Service interno
+6. Depois avaliar Linkerd ou Istio para mTLS interno entre workloads
 ```
 
 Este documento deve continuar acompanhando a PoC conforme cada etapa sair do backlog e virar infraestrutura real.

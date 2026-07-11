@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cluster-certificates
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: '25'
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/mikemajesty/nestjs-microservice-boilerplate-api.git
+    targetRevision: master
+    path: gitops/cluster/certificates
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: cert-manager
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - SkipDryRunOnMissingResource=true
+    automated:
+      prune: true
+      selfHeal: true
