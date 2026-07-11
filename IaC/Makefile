@@ -113,9 +113,6 @@ destroy: check-docker check-auth select-account-stack
 preview: check-docker preflight select-account-stack
 	AWS_PROFILE=$(AWS_PROFILE) pulumi preview
 
-refresh: check-docker check-auth select-account-stack
-	AWS_PROFILE=$(AWS_PROFILE)  pulumi refresh
-
 # The selected AWS account comes from AWS_PROFILE; keep the Pulumi stack name environment-based.
 select-account-stack: check-docker
 	AWS_PROFILE=$(AWS_PROFILE) pulumi stack select $(ACCOUNT_STACK) || AWS_PROFILE=$(AWS_PROFILE) pulumi stack init $(ACCOUNT_STACK)
@@ -130,9 +127,6 @@ k8s: check-docker kubeconfig
 # End-of-day cleanup: destroy everything created in the Pulumi stack for the current AWS account.
 teardown: check-docker check-auth select-account-stack cleanup-k8s cleanup-route53-records wait-load-balancers-gone
 	AWS_PROFILE=$(AWS_PROFILE) PULUMI_K8S_DELETE_UNREACHABLE=true pulumi destroy --yes
-
-# The sandbox account resets every day, so the previous EKS endpoint can be gone during refresh.
-reset: refresh up
 
 reset-app-image-state: check-docker select-account-stack
 	@image_urns=$$(pulumi stack export | jq -r '.deployment.resources[] | select(.type == "docker:index/image:Image") | .urn'); \

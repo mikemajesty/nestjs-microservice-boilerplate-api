@@ -48,6 +48,7 @@ export class ExternalDns extends pulumi.ComponentResource implements ExternalDns
             name: 'aws'
           },
           registry: 'txt',
+          sources: ['service', 'ingress', 'gateway-httproute'],
           serviceAccount: {
             annotations: {
               [SERVICE_ACCOUNT_ROLE_ARN_ANNOTATION]: roleArn
