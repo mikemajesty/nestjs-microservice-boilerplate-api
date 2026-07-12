@@ -6,7 +6,7 @@ metadata:
 spec:
   secretName: internal-gateway-tls
   issuerRef:
-    name: self-signed-cluster-issuer
+    name: internal-ca-cluster-issuer
     kind: ClusterIssuer
   commonName: api.boilerplate.internal
   dnsNames:

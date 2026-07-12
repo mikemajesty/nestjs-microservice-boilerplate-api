@@ -1,0 +1,15 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: internal-root-ca
+  namespace: cert-manager
+spec:
+  isCA: true
+  commonName: boilerplate-internal-root-ca
+  secretName: internal-root-ca
+  privateKey:
+    algorithm: RSA
+    size: 2048
+  issuerRef:
+    name: self-signed-cluster-issuer
+    kind: ClusterIssuer
