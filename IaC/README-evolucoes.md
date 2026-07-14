@@ -682,12 +682,10 @@ estrategia de destroy por ambiente nao produtivo
 Ordem sugerida a partir do estado atual:
 
 ```text
-1. Sincronizar cluster-public-gateway apontando para gitops/cluster/internal-gateway e validar prune dos recursos public-*
-2. Renomear a Application do Argo de cluster-public-gateway para cluster-internal-gateway depois do prune validado
-3. Validar resolucao DNS privada de api.boilerplate.internal a partir de rede/VPN com acesso a Private Hosted Zone
-4. Adicionar certificado para o acesso privado do Argo
-5. Comecar endurecimento da app: ServiceAccount, RBAC minimo, ConfigMap, Secrets e resources
-6. Depois avaliar Linkerd ou Istio para mTLS interno entre workloads
+1. Validar resolucao DNS privada de api.boilerplate.internal a partir de rede/VPN com acesso a Private Hosted Zone
+2. Adicionar certificado para o acesso privado do Argo
+3. Comecar endurecimento da app: ServiceAccount, RBAC minimo, ConfigMap, Secrets e resources
+4. Depois avaliar Linkerd ou Istio para mTLS interno entre workloads
 ```
 
 Este documento deve continuar acompanhando a PoC conforme cada etapa sair do backlog e virar infraestrutura real.
