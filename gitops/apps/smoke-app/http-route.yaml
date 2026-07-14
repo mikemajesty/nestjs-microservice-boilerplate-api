@@ -7,8 +7,6 @@ spec:
   parentRefs:
     - name: internal-gateway
       namespace: envoy-gateway-system
-  hostnames:
-    - api.boilerplate.internal
   rules:
     - matches:
         - path:

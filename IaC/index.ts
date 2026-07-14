@@ -2,7 +2,6 @@ import { ArgoCd } from './src/addon/addon-argocd'
 import { ArgoCdRootApplication } from './src/addon/addon-argocd-root-application'
 import { AwsLoadBalancerController } from './src/addon/addon-aws-load-balancer-controller'
 import { AwsLoadBalancerControllerIam } from './src/addon/addon-aws-load-balancer-controller-iam'
-import { CoreDnsCapacityPatch } from './src/addon/addon-coredns-capacity-patch'
 import { ExternalDns } from './src/addon/addon-external-dns'
 import { ExternalDnsIam } from './src/addon/addon-external-dns-iam'
 import { ApplicationContainerRegistry } from './src/app/app-container-registry'
@@ -83,14 +82,6 @@ const workloadK8sProvider = new WorkloadK8sProvider(
     clusterName: eksCluster.clusterName
   },
   { dependsOn: [eksCluster] }
-)
-const coreDnsCapacityPatch = new CoreDnsCapacityPatch(
-  resourceName(config, resourceNameSuffix.addon.coreDns.capacityPatch),
-  {
-    config,
-    provider: workloadK8sProvider.provider
-  },
-  { dependsOn: [eksNodeGroup.nodeGroup] }
 )
 const awsLoadBalancerController = new AwsLoadBalancerController(
   resourceName(config, resourceNameSuffix.addon.awsLoadBalancerController.release),
@@ -195,7 +186,6 @@ export const addons = {
   awsLoadBalancerControllerReleaseName: awsLoadBalancerController.releaseName,
   awsLoadBalancerControllerServiceAccountName: awsLoadBalancerControllerIam.serviceAccountName,
   awsLoadBalancerControllerServiceAccountNamespace: awsLoadBalancerControllerIam.serviceAccountNamespace,
-  coreDnsDeploymentName: coreDnsCapacityPatch.deploymentName,
   externalDnsPolicyArn: externalDnsIam.policyArn,
   externalDnsPolicyName: externalDnsIam.policyName,
   externalDnsReleaseName: externalDns.releaseName,
