@@ -251,6 +251,28 @@ criar OIDC provider do EKS
 estudar como o aws-node usa permissoes de rede via AmazonEKS_CNI_Policy
 criar roles para service accounts de controllers
 criar role da app quando ela precisar acessar AWS APIs
+estudar EKS Pod Identity como alternativa moderna ao IRSA
+```
+
+### EKS Pod Identity
+
+Objetivo de aprendizado:
+
+```text
+comparar IRSA com EKS Pod Identity para permissao IAM de workloads no EKS
+entender o papel do EKS Pod Identity Agent
+criar uma Pod Identity Association entre namespace, service account e IAM role
+testar acesso AWS a partir de um pod sem ampliar permissoes da node role
+avaliar operacao, troubleshooting e seguranca em relacao ao IRSA
+```
+
+Diretriz:
+
+```text
+manter IRSA como base inicial da PoC
+usar EKS Pod Identity como evolucao controlada depois que IRSA estiver entendido
+comecar por uma app simples que acesse uma AWS API pequena, como S3, SSM ou Secrets Manager
+evitar migrar controllers criticos antes de validar bem o fluxo
 ```
 
 Evolucoes projeto maior:
