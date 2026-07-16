@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nestjs-boilerplate-dev-smoke-app
+  namespace: nestjs-boilerplate-dev-workload
+  labels:
+    app.kubernetes.io/name: nestjs-boilerplate-dev-smoke-app
+    app.kubernetes.io/part-of: nestjs-boilerplate
+    app.kubernetes.io/managed-by: argocd
+    app.kubernetes.io/environment: dev
+data:
+  APP_MAIN: main-smoke

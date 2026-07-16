@@ -414,13 +414,22 @@ Metrics Server
 EBS CSI Driver se houver volumes
 ```
 
+Ordem sugerida para autoscaling:
+
+```text
+instalar Metrics Server antes de criar HPA baseado em CPU/memoria
+validar kubectl top pods e kubectl top nodes
+criar HPA no smoke app depois que requests/limits estiverem definidos
+estudar Karpenter depois do HPA, quando fizer sentido escalar nodes alem de pods
+```
+
 Evolucoes projeto maior:
 
 ```text
 versoes pinadas dos add-ons
 monitoramento de saude dos add-ons
 politicas de upgrade
-Karpenter ou Cluster Autoscaler
+Karpenter ou Cluster Autoscaler para autoscaling de nodes
 reconciliar add-ons via Argo CD em vez de Pulumi Helm quando a plataforma GitOps existir
 ```
 
@@ -530,6 +539,7 @@ ConfigMap basico
 Secret da app via AWS Secrets Manager e External Secrets Operator
 Deployment consumindo ConfigMap e Secret via envFrom
 requests/limits iniciais
+HPA basico depois de Metrics Server e requests/limits
 securityContext de pod/container
 ajustar readiness/liveness probes com tempos explicitos
 validar imagem do ECR Public ou evoluir para ECR privado quando fizer sentido
@@ -538,7 +548,7 @@ validar imagem do ECR Public ou evoluir para ECR privado quando fizer sentido
 Evolucoes projeto maior:
 
 ```text
-HPA/KEDA se necessario
+KEDA se necessario para eventos ou metricas externas
 Pod Disruption Budget
 Pod Security Standards
 NetworkPolicy

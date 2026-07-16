@@ -28,12 +28,19 @@ spec:
       containers:
         - name: nestjs-boilerplate-dev-smoke-app
           image: public.ecr.aws/o5e1h1p5/nestjs-boilerplate-dev-app@sha256:7806f030d00c50b19b1c0e75b5652ed357e7c3ba0cbff9965f77942da1eed223
-          env:
-            - name: APP_MAIN
-              value: main-smoke
+          envFrom:
+            - configMapRef:
+                name: nestjs-boilerplate-dev-smoke-app
           ports:
             - name: http
               containerPort: 5000
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
           readinessProbe:
             httpGet:
               path: /health

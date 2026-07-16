@@ -18,8 +18,9 @@ ARGOCD_NAMESPACE ?= argocd
 ARGOCD_SERVER_SERVICE ?= argo-cd-argocd-server
 ARGOCD_LOCAL_PORT ?= 8080
 ARGOCD_INITIAL_ADMIN_SECRET ?= argocd-initial-admin-secret
+K8S_CLEANUP_NAMESPACES ?= $(WORKLOAD_NAMESPACE) $(ARGOCD_NAMESPACE) cert-manager envoy-gateway-system
 
-.PHONY: status login identity stack config check-docker check-auth check-leftovers preflight cleanup-k8s cleanup-route53-records wait-load-balancers-gone preview up destroy refresh select-account-stack kubeconfig k8s teardown reset reset-app-image-state recreate argocd argocd-password
+.PHONY: status login identity stack config check-docker check-auth check-leftovers preflight cleanup-k8s cleanup-pulumi-k8s-state cleanup-route53-records wait-load-balancers-gone preview up destroy refresh select-account-stack kubeconfig k8s teardown reset reset-app-image-state recreate argocd argocd-password
 
 ifeq ($(firstword $(MAKECMDGOALS)),k8s)
 $(eval $(K8S_ARGS):;@:)
@@ -66,7 +67,7 @@ check-leftovers: check-docker check-auth select-account-stack
 cleanup-k8s: check-docker check-auth kubeconfig
 	@if command -v kubectl >/dev/null 2>&1; then \
 		AWS_PROFILE=$(AWS_PROFILE) kubectl --context $(K8S_CONTEXT) delete ingress $(SMOKE_INGRESS) -n $(WORKLOAD_NAMESPACE) --ignore-not-found --wait=true || true; \
-		AWS_PROFILE=$(AWS_PROFILE) kubectl --context $(K8S_CONTEXT) delete namespace $(WORKLOAD_NAMESPACE) --ignore-not-found --wait=true || true; \
+		AWS_PROFILE=$(AWS_PROFILE) kubectl --context $(K8S_CONTEXT) delete namespace $(K8S_CLEANUP_NAMESPACES) --ignore-not-found --wait=false || true; \
 	else \
 		echo "kubectl not found; skipping Kubernetes object cleanup"; \
 	fi
@@ -74,6 +75,17 @@ cleanup-k8s: check-docker check-auth kubeconfig
 		helm uninstall $(AWS_LBC_RELEASE) -n $(AWS_LBC_NAMESPACE) || true; \
 	else \
 		echo "helm not found; skipping Helm release cleanup"; \
+	fi
+
+cleanup-pulumi-k8s-state: check-docker check-auth select-account-stack
+	@k8s_urns=$$(pulumi stack export | jq -r '.deployment.resources[] | select(.type | startswith("kubernetes:")) | .urn' | sed '1!G;h;$$!d'); \
+	if [ -z "$$k8s_urns" ]; then \
+		echo "No Kubernetes resources found in Pulumi state."; \
+	else \
+		echo "Removing Kubernetes resources from Pulumi state before destroying EKS."; \
+		echo "$$k8s_urns" | while IFS= read -r k8s_urn; do \
+			[ -z "$$k8s_urn" ] || pulumi state delete "$$k8s_urn" --yes; \
+		done; \
 	fi
 
 cleanup-route53-records: check-docker check-auth
@@ -125,7 +137,7 @@ k8s: check-docker kubeconfig
 	AWS_PROFILE=$(AWS_PROFILE) kubectl --context $(K8S_CONTEXT) $(K8S_COMMAND)
 
 # End-of-day cleanup: destroy everything created in the Pulumi stack for the current AWS account.
-teardown: check-docker check-auth select-account-stack cleanup-k8s cleanup-route53-records wait-load-balancers-gone
+teardown: check-docker check-auth select-account-stack cleanup-k8s cleanup-route53-records wait-load-balancers-gone cleanup-pulumi-k8s-state
 	AWS_PROFILE=$(AWS_PROFILE) PULUMI_K8S_DELETE_UNREACHABLE=true pulumi destroy --yes
 
 reset-app-image-state: check-docker select-account-stack

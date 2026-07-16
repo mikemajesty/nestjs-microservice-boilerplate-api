@@ -5,6 +5,7 @@ resources:
   - service-account.yaml
   - role.yaml
   - role-binding.yaml
+  - config-map.yaml
   - deployment.yaml
   - service.yaml
   - http-route.yaml
