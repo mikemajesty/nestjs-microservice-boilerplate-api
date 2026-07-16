@@ -7,5 +7,7 @@ resources:
   - role-binding.yaml
   - config-map.yaml
   - deployment.yaml
+  - pod-disruption-budget.yaml
+  - horizontal-pod-autoscaler.yaml
   - service.yaml
   - http-route.yaml

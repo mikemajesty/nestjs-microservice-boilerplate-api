@@ -8,7 +8,12 @@ metadata:
     app.kubernetes.io/managed-by: argocd
     app.kubernetes.io/environment: dev
 spec:
-  replicas: 1
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
   selector:
     matchLabels:
       app.kubernetes.io/name: nestjs-boilerplate-dev-smoke-app
@@ -23,6 +28,37 @@ spec:
         app.kubernetes.io/managed-by: argocd
         app.kubernetes.io/environment: dev
     spec:
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: nestjs-boilerplate-dev-smoke-app
+              app.kubernetes.io/part-of: nestjs-boilerplate
+              app.kubernetes.io/managed-by: argocd
+              app.kubernetes.io/environment: dev
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: nestjs-boilerplate-dev-smoke-app
+              app.kubernetes.io/part-of: nestjs-boilerplate
+              app.kubernetes.io/managed-by: argocd
+              app.kubernetes.io/environment: dev
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: nestjs-boilerplate-dev-smoke-app
+                    app.kubernetes.io/part-of: nestjs-boilerplate
+                    app.kubernetes.io/managed-by: argocd
+                    app.kubernetes.io/environment: dev
       serviceAccountName: nestjs-boilerplate-dev-smoke-app
       automountServiceAccountToken: true
       securityContext:
