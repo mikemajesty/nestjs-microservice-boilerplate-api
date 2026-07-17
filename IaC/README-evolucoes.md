@@ -402,6 +402,7 @@ Estado atual:
 ```text
 CoreDNS criado pelo EKS e reduzido para 1 replica via patch Pulumi para caber na PoC single-node
 AWS Load Balancer Controller reduzido para 1 replica na PoC single-node
+Metrics Server declarado como add-on via Argo CD para habilitar a API metrics.k8s.io usada pelo HPA
 ```
 
 Evolucoes PoC depois:
@@ -410,16 +411,15 @@ Evolucoes PoC depois:
 VPC CNI
 CoreDNS com 2 replicas quando o node group voltar a ter capacidade adequada
 kube-proxy
-Metrics Server
 EBS CSI Driver se houver volumes
 ```
 
 Ordem sugerida para autoscaling:
 
 ```text
-instalar Metrics Server antes de criar HPA baseado em CPU/memoria
+sincronizar o Metrics Server pelo Argo CD
 validar kubectl top pods e kubectl top nodes
-criar HPA no smoke app depois que requests/limits estiverem definidos
+validar HPA do smoke app depois que metrics.k8s.io estiver disponivel
 estudar Karpenter depois do HPA, quando fizer sentido escalar nodes alem de pods
 ```
 
