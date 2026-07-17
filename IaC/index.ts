@@ -4,7 +4,9 @@ import { AwsLoadBalancerController } from './src/addon/addon-aws-load-balancer-c
 import { AwsLoadBalancerControllerIam } from './src/addon/addon-aws-load-balancer-controller-iam'
 import { ExternalDns } from './src/addon/addon-external-dns'
 import { ExternalDnsIam } from './src/addon/addon-external-dns-iam'
+import { ExternalSecretsIam } from './src/addon/addon-external-secrets-iam'
 import { ApplicationContainerRegistry } from './src/app/app-container-registry'
+import { ApplicationRuntimeSecret } from './src/app/app-runtime-secret'
 import { EksCluster } from './src/cluster/cluster-eks'
 import { EksClusterIam } from './src/cluster/cluster-eks-iam'
 import { EksNodeGroup } from './src/cluster/cluster-eks-node-group'
@@ -34,6 +36,12 @@ const applicationContainerRegistry = config.enableAppContainerRegistry
       config
     })
   : undefined
+const applicationRuntimeSecret = new ApplicationRuntimeSecret(
+  resourceName(config, resourceNameSuffix.app.runtimeSecret),
+  {
+    config
+  }
+)
 const eksClusterIam = new EksClusterIam(resourceName(config, resourceNameSuffix.cluster.eks.iam), { config })
 const eksCluster = new EksCluster(
   resourceName(config, resourceNameSuffix.cluster.eks.cluster),
@@ -61,6 +69,12 @@ const externalDnsIam = new ExternalDnsIam(resourceName(config, resourceNameSuffi
   oidcProviderArn: eksOidcProvider.oidcProviderArn,
   oidcProviderUrl: eksOidcProvider.oidcProviderUrl,
   privateHostedZoneId: internalDns.privateHostedZoneId
+})
+const externalSecretsIam = new ExternalSecretsIam(resourceName(config, resourceNameSuffix.addon.externalSecrets.iam), {
+  config,
+  oidcProviderArn: eksOidcProvider.oidcProviderArn,
+  oidcProviderUrl: eksOidcProvider.oidcProviderUrl,
+  runtimeSecretArn: applicationRuntimeSecret.secretArn
 })
 const eksNodeIam = new EksNodeIam(resourceName(config, resourceNameSuffix.cluster.eks.nodeIam), { config })
 const eksNodeGroup = new EksNodeGroup(
@@ -158,6 +172,11 @@ export const containerRegistry = applicationContainerRegistry
       appImageTag: config.appImageTag
     }
 
+export const application = {
+  runtimeSecretArn: applicationRuntimeSecret.secretArn,
+  runtimeSecretName: applicationRuntimeSecret.secretName
+}
+
 export const eks = {
   clusterArn: eksCluster.clusterArn,
   clusterCertificateAuthorityData: eksCluster.clusterCertificateAuthorityData,
@@ -192,7 +211,13 @@ export const addons = {
   externalDnsRoleArn: externalDnsIam.roleArn,
   externalDnsRoleName: externalDnsIam.roleName,
   externalDnsServiceAccountName: externalDnsIam.serviceAccountName,
-  externalDnsServiceAccountNamespace: externalDnsIam.serviceAccountNamespace
+  externalDnsServiceAccountNamespace: externalDnsIam.serviceAccountNamespace,
+  externalSecretsPolicyArn: externalSecretsIam.policyArn,
+  externalSecretsPolicyName: externalSecretsIam.policyName,
+  externalSecretsRoleArn: externalSecretsIam.roleArn,
+  externalSecretsRoleName: externalSecretsIam.roleName,
+  externalSecretsServiceAccountName: externalSecretsIam.serviceAccountName,
+  externalSecretsServiceAccountNamespace: externalSecretsIam.serviceAccountNamespace
 }
 
 export const workload = {}

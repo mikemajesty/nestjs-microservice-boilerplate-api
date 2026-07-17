@@ -18,7 +18,7 @@ ARGOCD_NAMESPACE ?= argocd
 ARGOCD_SERVER_SERVICE ?= argo-cd-argocd-server
 ARGOCD_LOCAL_PORT ?= 8080
 ARGOCD_INITIAL_ADMIN_SECRET ?= argocd-initial-admin-secret
-K8S_CLEANUP_NAMESPACES ?= $(WORKLOAD_NAMESPACE) $(ARGOCD_NAMESPACE) cert-manager envoy-gateway-system
+K8S_CLEANUP_NAMESPACES ?= $(WORKLOAD_NAMESPACE) $(ARGOCD_NAMESPACE) cert-manager envoy-gateway-system external-secrets
 
 .PHONY: status login identity stack config check-docker check-auth check-leftovers preflight cleanup-k8s cleanup-pulumi-k8s-state cleanup-route53-records wait-load-balancers-gone preview up destroy refresh select-account-stack kubeconfig k8s teardown reset reset-app-image-state recreate argocd argocd-password
 

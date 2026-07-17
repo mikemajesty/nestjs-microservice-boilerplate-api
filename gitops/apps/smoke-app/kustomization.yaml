@@ -6,6 +6,7 @@ resources:
   - role.yaml
   - role-binding.yaml
   - config-map.yaml
+  - external-secret.yaml
   - deployment.yaml
   - pod-disruption-budget.yaml
   - horizontal-pod-autoscaler.yaml

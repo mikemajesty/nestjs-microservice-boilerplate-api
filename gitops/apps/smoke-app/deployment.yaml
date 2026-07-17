@@ -73,6 +73,8 @@ spec:
           envFrom:
             - configMapRef:
                 name: nestjs-boilerplate-dev-smoke-app
+            - secretRef:
+                name: nestjs-boilerplate-dev-smoke-app-runtime
           ports:
             - name: http
               containerPort: 5000

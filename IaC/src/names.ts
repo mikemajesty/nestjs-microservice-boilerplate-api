@@ -25,7 +25,9 @@ export const resourceNameSuffix = {
   app: {
     containerRegistry: 'app-container-registry',
     containerRepository: 'app',
-    containerRepositoryLifecyclePolicy: 'app-ecr-lifecycle-policy'
+    containerRepositoryLifecyclePolicy: 'app-ecr-lifecycle-policy',
+    runtimeSecret: 'app-runtime-secret',
+    runtimeSecretVersion: 'app-runtime-secret-version'
   },
   cluster: {
     eks: {
@@ -58,6 +60,12 @@ export const resourceNameSuffix = {
       policy: 'external-dns-policy',
       role: 'external-dns-role',
       policyAttachment: 'external-dns-policy-attachment'
+    },
+    externalSecrets: {
+      iam: 'external-secrets-iam',
+      policy: 'external-secrets-policy',
+      role: 'external-secrets-role',
+      policyAttachment: 'external-secrets-policy-attachment'
     },
     argoCd: {
       release: 'argocd',
