@@ -2,6 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: nestjs-boilerplate-dev-smoke-app
+  annotations:
+    argocd.argoproj.io/sync-wave: '10'
   labels:
     app.kubernetes.io/name: nestjs-boilerplate-dev-smoke-app
     app.kubernetes.io/part-of: nestjs-boilerplate
