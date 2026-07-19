@@ -5,6 +5,7 @@ metadata:
   namespace: envoy-gateway-system
 spec:
   secretName: internal-gateway-tls
+  # Change this issuerRef when using an existing company CA.
   issuerRef:
     name: internal-ca-cluster-issuer
     kind: ClusterIssuer

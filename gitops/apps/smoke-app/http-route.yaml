@@ -5,7 +5,7 @@ metadata:
   namespace: nestjs-boilerplate-dev-workload
 spec:
   parentRefs:
-    - name: internal-gateway
+    - name: private-origin-gateway
       namespace: envoy-gateway-system
   rules:
     - matches:

@@ -1,7 +1,7 @@
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: EnvoyProxy
 metadata:
-  name: internal-envoy-proxy
+  name: private-origin-envoy-proxy
   namespace: envoy-gateway-system
 spec:
   provider:
@@ -10,4 +10,4 @@ spec:
       envoyService:
         annotations:
           service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: 'true'
-          service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
+          service.beta.kubernetes.io/aws-load-balancer-scheme: internal

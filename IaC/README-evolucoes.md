@@ -65,6 +65,7 @@ Evolucoes PoC depois:
 ```text
 criar SG do Envoy/Gateway quando o modelo do Gateway estiver definido
 restringir egress do Load Balancer para o SG do Envoy
+criar regras separadas para borda publica e acesso privado quando os dois caminhos coexistirem
 criar SG da app quando existir workload real
 criar SG dos VPC endpoints quando endpoints forem criados
 criar SG do RDS e Redis quando esses recursos existirem
@@ -74,8 +75,6 @@ Evolucoes projeto maior:
 
 ```text
 HTTPS 443 na borda publica
-WAF no Load Balancer publico
-avaliar CloudFront na frente da borda publica para CDN, TLS, WAF e protecao adicional
 regras de SG com menor privilegio
 processo de revisao para regras publicas
 NetworkPolicy dentro do Kubernetes
@@ -93,14 +92,39 @@ sem CloudFront
 sem WAF
 ```
 
+Premissa:
+
+```text
+a aplicacao pode ter dois caminhos de acesso ao mesmo tempo
+publico: usuarios externos acessam por dominio publico e borda protegida
+privado: workloads internos, VPN, bastion ou rede corporativa acessam por DNS privado
+esses caminhos devem ser pensados separadamente, mesmo quando chegam na mesma aplicacao
+```
+
+Evolucoes PoC depois:
+
+```text
+implementar CloudFront como borda publica da API/app
+associar AWS WAF ao CloudFront para protecao HTTP na borda
+definir dominio publico e certificado ACM em us-east-1 para o CloudFront
+usar CloudFront VPC origin para apontar para um NLB privado quando o recurso estiver disponivel na regiao
+manter NLB e Envoy Gateway sem acesso publico direto quando CloudFront for a borda oficial
+validar restricoes do VPC origin: NLB com security group, sem NLB TLS listener e sem gRPC publico por esse caminho
+manter NLB como transporte L4 e Envoy Gateway como camada L7 da plataforma
+desabilitar ou controlar cache para rotas de API dinamica
+encaminhar headers necessarios para autenticacao, host e tracing
+validar logs do CloudFront e do WAF para troubleshooting
+```
+
 Evolucoes projeto maior:
 
 ```text
-CloudFront -> CDN + WAF opcional na frente da borda publica
-usar ACM para TLS publico
-avaliar origin como ALB temporario ou NLB/Envoy quando o gateway estiver pronto
-proteger a origem para receber trafego somente da camada de borda quando possivel
-avaliar cache policy, origin request policy e logs de acesso
+politicas padronizadas de cache, origin request e response headers
+WAF com managed rules, rate limit e excecoes testadas em modo count antes de block
+protecao da origem com VPC origin ou outro desenho que mantenha a origem privada sempre que possivel
+separacao formal entre dominio publico e dominios internos
+logs centralizados de CloudFront, WAF e Gateway
+processo de revisao para mudancas em regras de WAF e exposicao publica
 ```
 
 ## DNS interno
@@ -128,6 +152,7 @@ Evolucoes projeto maior:
 ```text
 padrao de nomes por ambiente
 Private Hosted Zones por ambiente ou dominio
+separar claramente nomes publicos e nomes internos da mesma aplicacao
 associacao com multiplas VPCs
 conta central de DNS
 Route 53 Resolver inbound/outbound endpoints para DNS hibrido
@@ -420,7 +445,8 @@ Ordem sugerida para autoscaling:
 sincronizar o Metrics Server pelo Argo CD
 validar kubectl top pods e kubectl top nodes
 validar HPA do smoke app depois que metrics.k8s.io estiver disponivel
-estudar Karpenter depois do HPA, quando fizer sentido escalar nodes alem de pods
+estudar Karpenter somente depois de borda publica, observabilidade minima, requests/limits e HPA
+estudar KEDA somente se houver workload orientado a eventos, fila ou metrica externa
 ```
 
 Evolucoes projeto maior:
@@ -470,28 +496,27 @@ Estado atual:
 ```text
 Envoy Gateway instalado via GitOps como add-on/control plane
 GatewayClass envoy-gateway criado
-Gateway interno compartilhado criado em gitops/cluster/internal-gateway
-EnvoyProxy internal-envoy-proxy criado para customizar o data plane
-NLB internet-facing criado temporariamente para o Envoy data plane, permitindo acesso direto pelo browser na PoC
+Gateway private-origin-gateway criado em gitops/cluster/private-origin-gateway
+EnvoyProxy private-origin-envoy-proxy criado para customizar o data plane
+NLB internal criado para o Envoy data plane atuar como origem privada do CloudFront VPC Origin
 cross-zone load balancing habilitado no NLB para a PoC com node group pequeno
-HTTPRoute da smoke app roteando pelo internal-gateway sem hostname fixo para aceitar o hostname bruto do ELB na PoC
-fluxo browser -> NLB publico -> Envoy -> HTTPRoute -> Service interno validado como atalho temporario de PoC
+HTTPRoute da smoke app roteando pelo private-origin-gateway
+fluxo interno -> NLB privado -> Envoy -> HTTPRoute -> Service interno preparado para a etapa CloudFront VPC Origin
 ```
 
 Evolucoes PoC depois:
 
 ```text
-voltar o NLB do Envoy para internal quando houver VPN/bastion/resolucao privada adequada
 validar resolucao DNS privada de api.boilerplate.internal a partir de rede/VPN com acesso a Private Hosted Zone
 manter Envoy -> app em HTTP enquanto o foco for TLS norte-sul
-validar fluxo HTTPS cliente -> NLB -> Envoy -> HTTPRoute -> Service interno
+validar fluxo CloudFront VPC Origin -> NLB privado -> Envoy -> HTTPRoute -> Service interno
 ```
 
 Evolucoes projeto maior:
 
 ```text
 remover Ingress classico quando Envoy Gateway estiver pronto
-avaliar Linkerd ou Istio para mTLS interno entre workloads
+avaliar Cilium/WireGuard, Linkerd ou Istio apenas em uma etapa posterior de trafego leste-oeste
 definir estrategia de identidade de workloads para trafego leste-oeste
 avaliar BackendTLSPolicy apenas para casos Envoy -> backend com TLS direto
 rate limiting
@@ -506,7 +531,10 @@ Roadmap de seguranca de trafego:
 ```text
 1. Manter Envoy Gateway para entrada norte-sul.
 2. Adicionar TLS termination no Envoy para trafego cliente -> gateway.
-3. Depois avaliar Linkerd ou Istio para mTLS interno app -> app.
+3. Implementar borda publica com CloudFront + AWS WAF para o caminho externo.
+4. Usar CloudFront VPC origin para chegar em NLB privado quando possivel, mantendo CloudFront como unico ponto publico.
+5. Manter DNS/Gateway interno para o caminho privado.
+6. Depois avaliar Cilium/WireGuard, Linkerd ou Istio se houver requisito claro de trafego leste-oeste.
 ```
 
 Decisao PoC:
@@ -714,10 +742,17 @@ estrategia de destroy por ambiente nao produtivo
 Ordem sugerida a partir do estado atual:
 
 ```text
-1. Validar resolucao DNS privada de api.boilerplate.internal a partir de rede/VPN com acesso a Private Hosted Zone
-2. Adicionar certificado para o acesso privado do Argo
-3. Comecar endurecimento da app: ServiceAccount, RBAC minimo, ConfigMap, Secrets e resources
-4. Depois avaliar Linkerd ou Istio para mTLS interno entre workloads
+1. Fechar o caminho privado atual: DNS privado, certificado e validacao do acesso interno pelo Envoy Gateway
+2. Implementar caminho publico: CloudFront + AWS WAF -> VPC origin -> NLB privado -> Envoy Gateway -> app
+3. Definir dominio publico, certificado ACM em us-east-1, VPC origin, headers, cache policy e logs da borda
+4. Validar restricoes do CloudFront VPC origin para NLB privado: security group no NLB, sem NLB TLS listener e sem gRPC publico por esse caminho
+5. Garantir que CloudFront seja o unico ponto publico e que NLB/Envoy fiquem privados
+6. Comecar endurecimento da app: ServiceAccount, RBAC minimo, ConfigMap, Secrets, resources e securityContext
+7. Validar observabilidade minima da borda, Envoy e app antes de autoscaling avancado
+8. Validar HPA com Metrics Server, requests e limits
+9. Depois estudar Karpenter para escala de nodes, se houver necessidade real de capacidade dinamica
+10. Depois estudar KEDA somente se houver fila, evento ou metrica externa que justifique autoscaling por evento
+11. Avaliar Cilium/WireGuard, Linkerd ou Istio apenas se houver requisito claro de trafego leste-oeste
 ```
 
 Este documento deve continuar acompanhando a PoC conforme cada etapa sair do backlog e virar infraestrutura real.

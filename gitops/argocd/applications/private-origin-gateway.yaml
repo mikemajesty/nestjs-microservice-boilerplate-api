@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: cluster-internal-gateway
+  name: private-origin-gateway
   namespace: argocd
   annotations:
     argocd.argoproj.io/sync-wave: '15'
@@ -10,7 +10,7 @@ spec:
   source:
     repoURL: https://github.com/mikemajesty/nestjs-microservice-boilerplate-api.git
     targetRevision: master
-    path: gitops/cluster/internal-gateway
+    path: gitops/cluster/private-origin-gateway
   destination:
     server: https://kubernetes.default.svc
     namespace: envoy-gateway-system
