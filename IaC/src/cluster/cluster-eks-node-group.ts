@@ -51,6 +51,9 @@ export class EksNodeGroup extends pulumi.ComponentResource implements EksNodeGro
           maxSize: NODE_GROUP_MAX_SIZE
         },
         instanceTypes: NODE_GROUP_INSTANCE_TYPES,
+        labels: {
+          'boilerplate.dev/node-pool': 'gateway'
+        },
         updateConfig: {
           maxUnavailable: NODE_GROUP_MAX_UNAVAILABLE
         },

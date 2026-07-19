@@ -7,7 +7,22 @@ spec:
   provider:
     type: Kubernetes
     kubernetes:
+      envoyDaemonSet:
+        pod:
+          nodeSelector:
+            boilerplate.dev/node-pool: gateway
+        container:
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+      envoyPDB:
+        maxUnavailable: 1
       envoyService:
+        externalTrafficPolicy: Local
         annotations:
           service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: 'true'
           service.beta.kubernetes.io/aws-load-balancer-scheme: internal

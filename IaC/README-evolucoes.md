@@ -504,6 +504,20 @@ HTTPRoute da smoke app roteando pelo private-origin-gateway
 fluxo interno -> NLB privado -> Envoy -> HTTPRoute -> Service interno preparado para a etapa CloudFront VPC Origin
 ```
 
+Passos atuais:
+
+```text
+manter o NLB do Envoy como internal para servir como origem privada do CloudFront VPC Origin
+manter externalTrafficPolicy Local para o NLB registrar somente nodes capazes de atender trafego localmente
+trocar o data plane do Envoy Gateway para DaemonSet, garantindo um Envoy por node elegivel
+marcar o node group atual com label boilerplate.dev/node-pool=gateway
+restringir o DaemonSet do Envoy com nodeSelector boilerplate.dev/node-pool=gateway
+definir requests e limits do Envoy para deixar consumo previsivel
+criar PDB do Envoy com maxUnavailable 1 para upgrades controlados
+validar com o CRD real do EnvoyProxy quando o cluster estiver no ar
+validar target health do NLB depois da reconciliacao do Argo CD
+```
+
 Evolucoes PoC depois:
 
 ```text
