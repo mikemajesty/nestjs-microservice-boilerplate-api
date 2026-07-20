@@ -6,6 +6,7 @@
     "target": "es2020",
     "module": "nodenext",
     "moduleResolution": "nodenext",
+    "resolveJsonModule": true,
     "sourceMap": true,
     "experimentalDecorators": true,
     "pretty": true,

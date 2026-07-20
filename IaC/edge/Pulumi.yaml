@@ -1,0 +1,7 @@
+name: edge
+description: Public edge infrastructure for the NestJS boilerplate
+runtime:
+  name: nodejs
+  options:
+    packagemanager: npm
+main: index.ts

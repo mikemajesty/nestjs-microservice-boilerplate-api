@@ -1,0 +1,8 @@
+config:
+  aws:region: us-east-1
+  aws:profile: IaC-profile
+  edge:environment: dev
+  edge:foundationProjectName: foundation
+  edge:foundationStack: dev
+  pulumi:tags:
+    pulumi:template: aws-typescript

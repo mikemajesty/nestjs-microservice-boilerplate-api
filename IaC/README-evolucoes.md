@@ -86,9 +86,16 @@ Security Groups for Pods se fizer sentido
 Estado atual:
 
 ```text
+IaC reorganizado em projetos Pulumi separados: foundation e edge
+foundation/dev aplicado e criando a base AWS/Kubernetes da PoC
+edge/dev criado, ainda sem recursos AWS de borda, lendo outputs de foundation/dev via StackReference
 NLB internal do Envoy Gateway criado como origem privada
 Envoy Gateway preparado para receber trafego via CloudFront VPC Origin
 smoke app roteando por HTTPRoute pelo private-origin-gateway
+smoke app Synced/Healthy no Argo CD depois de ajustar HPA para sync-wave posterior ao Deployment
+NLB internal do Envoy ativo, com target groups healthy nas portas 80 e 443
+Service da app e Service do Envoy validados de dentro do cluster
+curl local/VPN para o DNS do NLB internal ainda sem conectividade TCP; isso nao bloqueia o desenho com CloudFront VPC Origin
 sem CloudFront
 sem WAF
 ```
@@ -105,12 +112,25 @@ esses caminhos devem ser pensados separadamente, mesmo quando chegam na mesma ap
 Passos atuais:
 
 ```text
-comecar a modelar no Pulumi a borda publica da API/app
+estabilizar o contrato entre foundation, GitOps e edge para a origem privada
+definir nome estavel para o NLB privado do Envoy Gateway
+definir Security Group controlado pela IaC para o NLB privado usado como origem
+fazer o edge localizar o NLB privado por nome/contrato estavel
 criar certificado ACM publico em us-east-1 para uso pelo CloudFront
 criar CloudFront Distribution como ponto publico de entrada
 associar AWS WAF ao CloudFront para protecao HTTP na borda
 criar CloudFront VPC Origin apontando para o NLB privado do Envoy Gateway
 definir policies de cache e origin request para API dinamica
+```
+
+Passo em que estamos agora:
+
+```text
+foundation/dev esta aplicado e saudavel
+GitOps esta reconciliando a plataforma e a smoke app
+edge/dev esta criado como stack separado e consegue ler outputs da foundation
+proximo passo tecnico: transformar o NLB privado do Envoy em uma origem estavel para o edge consumir
+depois disso: implementar CloudFront VPC Origin, WAF e policies da borda no projeto edge
 ```
 
 Evolucoes PoC depois:
