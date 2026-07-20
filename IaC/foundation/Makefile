@@ -1,0 +1,128 @@
+include ../common.mk
+
+K8S_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
+K8S_COMMAND ?= $(K8S_ARGS)
+
+.PHONY: status stack config check-leftovers cleanup-k8s cleanup-pulumi-k8s-state cleanup-route53-records wait-load-balancers-gone preview up destroy refresh select-account-stack kubeconfig k8s teardown reset reset-app-image-state recreate argo argo-pass
+
+ifeq ($(firstword $(MAKECMDGOALS)),k8s)
+$(eval $(K8S_ARGS):;@:)
+endif
+
+status: check-docker identity stack config preview
+
+stack: check-docker
+	AWS_PROFILE=$(AWS_PROFILE) pulumi stack
+
+config: check-docker
+	pulumi config
+
+check-leftovers: check-docker check-auth select-account-stack
+	@stack_resources=$$(pulumi stack --show-urns | sed -n 's/^Current stack resources (\([0-9][0-9]*\)):.*/\1/p'); \
+	vpcs=$$(AWS_PAGER= AWS_PROFILE=$(AWS_PROFILE) aws ec2 describe-vpcs --filters Name=tag:Project,Values=$(PROJECT) Name=tag:Environment,Values=$(ENVIRONMENT) --query 'Vpcs[].VpcId' --output text); \
+	eips=$$(AWS_PAGER= AWS_PROFILE=$(AWS_PROFILE) aws ec2 describe-addresses --filters Name=tag:Project,Values=$(PROJECT) Name=tag:Environment,Values=$(ENVIRONMENT) --query 'Addresses[].AllocationId' --output text); \
+	if [ "$$stack_resources" = "0" ] && { [ -n "$$vpcs" ] || [ -n "$$eips" ]; }; then \
+		echo "AWS leftovers found for Project=$(PROJECT) Environment=$(ENVIRONMENT), but Pulumi state is empty."; \
+		[ -z "$$vpcs" ] || echo "VPCs: $$vpcs"; \
+		[ -z "$$eips" ] || echo "EIPs: $$eips"; \
+		echo "Clean these leftovers before running make up, or set PROJECT/ENVIRONMENT intentionally."; \
+		exit 1; \
+	fi
+
+cleanup-k8s: check-docker check-auth kubeconfig
+	@if command -v kubectl >/dev/null 2>&1; then \
+		AWS_PROFILE=$(AWS_PROFILE) kubectl --context $(K8S_CONTEXT) delete ingress $(SMOKE_INGRESS) -n $(WORKLOAD_NAMESPACE) --ignore-not-found --wait=true || true; \
+		AWS_PROFILE=$(AWS_PROFILE) kubectl --context $(K8S_CONTEXT) delete namespace $(K8S_CLEANUP_NAMESPACES) --ignore-not-found --wait=false || true; \
+	else \
+		echo "kubectl not found; skipping Kubernetes object cleanup"; \
+	fi
+	@if command -v helm >/dev/null 2>&1; then \
+		helm uninstall $(AWS_LBC_RELEASE) -n $(AWS_LBC_NAMESPACE) || true; \
+	else \
+		echo "helm not found; skipping Helm release cleanup"; \
+	fi
+
+cleanup-pulumi-k8s-state: check-docker check-auth select-account-stack
+	@k8s_urns=$$(pulumi stack export | jq -r '.deployment.resources[] | select(.type | startswith("kubernetes:")) | .urn' | sed '1!G;h;$$!d'); \
+	if [ -z "$$k8s_urns" ]; then \
+		echo "No Kubernetes resources found in Pulumi state."; \
+	else \
+		echo "Removing Kubernetes resources from Pulumi state before destroying EKS."; \
+		echo "$$k8s_urns" | while IFS= read -r k8s_urn; do \
+			[ -z "$$k8s_urn" ] || pulumi state delete "$$k8s_urn" --yes; \
+		done; \
+	fi
+
+cleanup-route53-records: check-docker check-auth
+	@zone_id=$$(AWS_PAGER= AWS_PROFILE=$(AWS_PROFILE) aws route53 list-hosted-zones-by-name --dns-name $(INTERNAL_DOMAIN_NAME). --query 'HostedZones[?Name==`$(INTERNAL_DOMAIN_NAME).` && Config.PrivateZone==`true`].Id | [0]' --output text | sed 's|/hostedzone/||'); \
+	if [ -z "$$zone_id" ] || [ "$$zone_id" = "None" ]; then \
+		echo "Private hosted zone $(INTERNAL_DOMAIN_NAME) not found; skipping Route 53 record cleanup"; \
+	else \
+		change_batch=$$(mktemp); \
+		AWS_PAGER= AWS_PROFILE=$(AWS_PROFILE) aws route53 list-resource-record-sets --hosted-zone-id "$$zone_id" \
+			--query '{Changes: ResourceRecordSets[?Type!=`NS` && Type!=`SOA`].{Action:`DELETE`,ResourceRecordSet:@}}' \
+			--output json > "$$change_batch"; \
+			change_count=$$(jq '.Changes | length' "$$change_batch"); \
+		if [ "$$change_count" = "0" ]; then \
+			echo "No non-default Route 53 records to delete in $(INTERNAL_DOMAIN_NAME)."; \
+			rm -f "$$change_batch"; \
+		else \
+			echo "Deleting $$change_count Route 53 records from $(INTERNAL_DOMAIN_NAME)."; \
+			change_id=$$(AWS_PAGER= AWS_PROFILE=$(AWS_PROFILE) aws route53 change-resource-record-sets --hosted-zone-id "$$zone_id" --change-batch "file://$$change_batch" --query 'ChangeInfo.Id' --output text); \
+			rm -f "$$change_batch"; \
+			AWS_PAGER= AWS_PROFILE=$(AWS_PROFILE) aws route53 wait resource-record-sets-changed --id "$$change_id"; \
+		fi; \
+	fi
+
+wait-load-balancers-gone: check-docker check-auth
+	@arns=$$(AWS_PAGER= AWS_PROFILE=$(AWS_PROFILE) aws elbv2 describe-load-balancers --query 'LoadBalancers[?contains(LoadBalancerName, `$(K8S_LB_NAME_PREFIX)`)].LoadBalancerArn' --output text); \
+	if [ -n "$$arns" ]; then \
+		echo "Waiting for Kubernetes load balancers to be deleted: $$arns"; \
+		AWS_PAGER= AWS_PROFILE=$(AWS_PROFILE) aws elbv2 wait load-balancers-deleted --load-balancer-arns $$arns || true; \
+	fi
+
+up: check-docker preflight check-leftovers
+	AWS_PROFILE=$(AWS_PROFILE) pulumi up --yes
+
+destroy: check-docker check-auth select-account-stack
+	AWS_PROFILE=$(AWS_PROFILE) pulumi destroy
+
+preview: check-docker preflight select-account-stack
+	AWS_PROFILE=$(AWS_PROFILE) pulumi preview
+
+# The selected AWS account comes from AWS_PROFILE; keep the Pulumi stack name environment-based.
+select-account-stack: check-docker
+	AWS_PROFILE=$(AWS_PROFILE) pulumi stack select $(ACCOUNT_STACK) || AWS_PROFILE=$(AWS_PROFILE) pulumi stack init $(ACCOUNT_STACK)
+
+kubeconfig: check-docker check-auth
+	AWS_PROFILE=$(AWS_PROFILE) aws eks update-kubeconfig --region $(AWS_REGION) --name $(EKS_CLUSTER_NAME) --alias $(K8S_CONTEXT)
+
+k8s: check-docker kubeconfig
+	@test -n "$(K8S_COMMAND)" || (echo "Usage: make k8s K8S_COMMAND=\"<kubectl args>\""; exit 1)
+	AWS_PROFILE=$(AWS_PROFILE) kubectl --context $(K8S_CONTEXT) $(K8S_COMMAND)
+
+# End-of-day cleanup: destroy everything created in the Pulumi stack for the current AWS account.
+teardown: check-docker check-auth select-account-stack cleanup-k8s cleanup-route53-records wait-load-balancers-gone cleanup-pulumi-k8s-state
+	AWS_PROFILE=$(AWS_PROFILE) PULUMI_K8S_DELETE_UNREACHABLE=true pulumi destroy --yes
+
+reset-app-image-state: check-docker select-account-stack
+	@image_urns=$$(pulumi stack export | jq -r '.deployment.resources[] | select(.type == "docker:index/image:Image") | .urn'); \
+	if [ -z "$$image_urns" ]; then \
+		echo "No docker.Image resources found in Pulumi state."; \
+	else \
+		echo "$$image_urns" | while IFS= read -r image_urn; do \
+			[ -z "$$image_urn" ] || pulumi state delete "$$image_urn" --yes; \
+		done; \
+	fi
+
+recreate: check-docker preflight select-account-stack reset-app-image-state
+	AWS_PROFILE=$(AWS_PROFILE) PULUMI_K8S_DELETE_UNREACHABLE=true pulumi refresh --yes
+	AWS_PROFILE=$(AWS_PROFILE) PULUMI_K8S_DELETE_UNREACHABLE=true pulumi preview
+	AWS_PROFILE=$(AWS_PROFILE) PULUMI_K8S_DELETE_UNREACHABLE=true pulumi up --yes
+	@echo "Recreation finished. Use 'make argo' and 'make argo-pass' to access Argo CD."
+
+argo: check-docker kubeconfig
+	AWS_PROFILE=$(AWS_PROFILE) kubectl --context $(K8S_CONTEXT) port-forward svc/$(ARGOCD_SERVER_SERVICE) -n $(ARGOCD_NAMESPACE) $(ARGOCD_LOCAL_PORT):443
+
+argo-pass: check-docker kubeconfig
+	AWS_PROFILE=$(AWS_PROFILE) kubectl --context $(K8S_CONTEXT) get secret $(ARGOCD_INITIAL_ADMIN_SECRET) -n $(ARGOCD_NAMESPACE) -o jsonpath='{.data.password}' | base64 -d; echo

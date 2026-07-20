@@ -1,0 +1,7 @@
+name: foundation
+description: Foundation infrastructure for the NestJS boilerplate
+runtime:
+  name: nodejs
+  options:
+    packagemanager: npm
+main: index.ts

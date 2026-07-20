@@ -1,0 +1,13 @@
+config:
+  aws:region: us-east-1
+  aws:profile: IaC-profile
+  foundation:projectName: nestjs-boilerplate
+  foundation:environment: dev
+  foundation:vpcCidr: 10.0.0.0/16
+  foundation:availabilityZoneCount: 2
+  foundation:singleNatGateway: true
+  foundation:internalDomainName: boilerplate.internal
+  foundation:enableAppContainerRegistry: true
+  foundation:appImageTag: latest
+  pulumi:tags:
+    pulumi:template: aws-typescript

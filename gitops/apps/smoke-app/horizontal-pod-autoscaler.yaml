@@ -3,6 +3,8 @@ kind: HorizontalPodAutoscaler
 metadata:
   name: nestjs-boilerplate-dev-smoke-app
   namespace: nestjs-boilerplate-dev-workload
+  annotations:
+    argocd.argoproj.io/sync-wave: '20'
   labels:
     app.kubernetes.io/name: nestjs-boilerplate-dev-smoke-app
     app.kubernetes.io/part-of: nestjs-boilerplate

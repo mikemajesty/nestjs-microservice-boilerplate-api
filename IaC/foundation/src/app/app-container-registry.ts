@@ -58,8 +58,8 @@ export class ApplicationContainerRegistry
       `${appRepositoryName}-image`,
       {
         build: {
-          context: '..',
-          dockerfile: '../Dockerfile',
+          context: '../..',
+          dockerfile: '../../Dockerfile',
           platform: 'linux/amd64'
         },
         imageName: pulumi.interpolate`${appRepository.repositoryUri}:${config.appImageTag}`,

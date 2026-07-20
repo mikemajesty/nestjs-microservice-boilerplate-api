@@ -86,8 +86,9 @@ Security Groups for Pods se fizer sentido
 Estado atual:
 
 ```text
-Ingress HTTP 80 publico temporario
-ALB publico criado pelo AWS Load Balancer Controller
+NLB internal do Envoy Gateway criado como origem privada
+Envoy Gateway preparado para receber trafego via CloudFront VPC Origin
+smoke app roteando por HTTPRoute pelo private-origin-gateway
 sem CloudFront
 sem WAF
 ```
@@ -101,13 +102,21 @@ privado: workloads internos, VPN, bastion ou rede corporativa acessam por DNS pr
 esses caminhos devem ser pensados separadamente, mesmo quando chegam na mesma aplicacao
 ```
 
+Passos atuais:
+
+```text
+comecar a modelar no Pulumi a borda publica da API/app
+criar certificado ACM publico em us-east-1 para uso pelo CloudFront
+criar CloudFront Distribution como ponto publico de entrada
+associar AWS WAF ao CloudFront para protecao HTTP na borda
+criar CloudFront VPC Origin apontando para o NLB privado do Envoy Gateway
+definir policies de cache e origin request para API dinamica
+```
+
 Evolucoes PoC depois:
 
 ```text
-implementar CloudFront como borda publica da API/app
-associar AWS WAF ao CloudFront para protecao HTTP na borda
-definir dominio publico e certificado ACM em us-east-1 para o CloudFront
-usar CloudFront VPC origin para apontar para um NLB privado quando o recurso estiver disponivel na regiao
+definir dominio publico para apontar para o CloudFront
 manter NLB e Envoy Gateway sem acesso publico direto quando CloudFront for a borda oficial
 validar restricoes do VPC origin: NLB com security group, sem NLB TLS listener e sem gRPC publico por esse caminho
 manter NLB como transporte L4 e Envoy Gateway como camada L7 da plataforma
@@ -504,18 +513,18 @@ HTTPRoute da smoke app roteando pelo private-origin-gateway
 fluxo interno -> NLB privado -> Envoy -> HTTPRoute -> Service interno preparado para a etapa CloudFront VPC Origin
 ```
 
-Passos atuais:
+Validado nesta etapa:
 
 ```text
-manter o NLB do Envoy como internal para servir como origem privada do CloudFront VPC Origin
-manter externalTrafficPolicy Local para o NLB registrar somente nodes capazes de atender trafego localmente
-trocar o data plane do Envoy Gateway para DaemonSet, garantindo um Envoy por node elegivel
-marcar o node group atual com label boilerplate.dev/node-pool=gateway
-restringir o DaemonSet do Envoy com nodeSelector boilerplate.dev/node-pool=gateway
-definir requests e limits do Envoy para deixar consumo previsivel
-criar PDB do Envoy com maxUnavailable 1 para upgrades controlados
-validar com o CRD real do EnvoyProxy quando o cluster estiver no ar
-validar target health do NLB depois da reconciliacao do Argo CD
+NLB do Envoy mantido como internal para servir como origem privada do CloudFront VPC Origin
+externalTrafficPolicy Local mantido para o NLB registrar somente nodes capazes de atender trafego localmente
+data plane do Envoy Gateway criado como DaemonSet, garantindo um Envoy por node elegivel
+node group atual marcado com label boilerplate.dev/node-pool=gateway
+DaemonSet do Envoy restrito com nodeSelector boilerplate.dev/node-pool=gateway
+requests e limits do Envoy definidos para deixar consumo previsivel
+PDB do Envoy criado com maxUnavailable 1 para upgrades controlados
+CRD real do EnvoyProxy aceitou envoyDaemonSet e envoyPDB
+target health do NLB validado com todos os targets healthy depois da reconciliacao do Argo CD
 ```
 
 Evolucoes PoC depois:
