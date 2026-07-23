@@ -20,12 +20,21 @@ const foundationProjectName = projectConfig.require('foundationProjectName')
 const foundationStack = projectConfig.require('foundationStack')
 const foundationStackName = `${pulumi.getOrganization()}/${foundationProjectName}/${foundationStack}`
 
+const rawAwsRegion = awsConfig.require('region')
+
+if (!Object.values(aws.Region).includes(rawAwsRegion as aws.Region)) {
+  throw new Error(`Região AWS inválida: ${rawAwsRegion}. Use uma região AWS válida.`)
+}
+const awsRegion = rawAwsRegion as aws.Region
+
+const foundation = new pulumi.StackReference(foundationStackName)
+
 export const config: EdgeConfig = {
   projectName: packageName,
   environment: projectConfig.require('environment'),
-  awsRegion: awsConfig.require('region') as aws.Region,
+  awsRegion,
   foundationProjectName,
   foundationStack,
   foundationStackName,
-  foundation: new pulumi.StackReference(foundationStackName)
+  foundation
 }

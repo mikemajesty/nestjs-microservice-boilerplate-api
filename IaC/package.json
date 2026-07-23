@@ -1,6 +1,12 @@
 {
     "name": "nestjs-boilerplate",
     "main": "index.ts",
+    "scripts": {
+        "dir:edge": "make edge-shell",
+        "preview:edge": "make preview",
+        "dir:foundation": "make foundation-shell",
+        "preview:foundation": "make preview"
+    },
     "devDependencies": {
         "@types/node": "^18",
         "typescript": "^5.0.0"
@@ -13,3 +19,4 @@
         "@pulumi/pulumi": "^3.113.0"
     }
 }
+

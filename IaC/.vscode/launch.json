@@ -1,0 +1,45 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "dir: foundation",
+      "type": "node",
+      "request": "launch",
+      "restart": true,
+      "skipFiles": ["<node_internals>/**"],
+      "console": "integratedTerminal",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run-script", "dir:foundation"]
+    },
+    {
+      "name": "preview: foundation",
+      "type": "node",
+      "request": "launch",
+      "restart": true,
+      "skipFiles": ["<node_internals>/**"],
+      "console": "integratedTerminal",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run-script", "preview:foundation"]
+    },
+    {
+      "name": "dir: edge",
+      "type": "node",
+      "request": "launch",
+      "restart": true,
+      "skipFiles": ["<node_internals>/**"],
+      "console": "integratedTerminal",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run-script", "dir:edge"]
+    },
+    {
+      "name": "preview: edge",
+      "type": "node",
+      "request": "launch",
+      "restart": true,
+      "skipFiles": ["<node_internals>/**"],
+      "console": "integratedTerminal",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run-script", "preview:edge"]
+    }
+  ]
+}

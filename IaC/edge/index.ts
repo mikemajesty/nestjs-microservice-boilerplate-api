@@ -1,14 +1,22 @@
+import { CloudFrontVpcOrigin } from './src/cdn/cloudfront-vpc-origin'
 import { config } from './src/config'
+import { resourceName, resourceNameSuffix } from './src/names'
+import { CloudFrontWaf } from './src/security/waf-cloudfront'
 
-export const foundation = {
-  projectName: config.foundationProjectName,
-  privateSubnetIds: config.foundation.getOutput('vpc').apply((vpc) => vpc.privateSubnetIds),
-  stack: config.foundationStack,
-  vpcId: config.foundation.getOutput('vpc').apply((vpc) => vpc.id)
-}
+// Cria recursos na ordem correta de dependência, igual ao foundation
+const cloudFrontWaf = new CloudFrontWaf(resourceName(config, resourceNameSuffix.security.cloudfrontWaf), {
+  name: 'cloudfront-waf'
+})
 
-export const edge = {
-  enabled: false,
-  environment: config.environment,
-  projectName: config.projectName
-}
+const cloudFrontCdn = new CloudFrontVpcOrigin(
+  resourceName(config, resourceNameSuffix.cdn.appCdn),
+  {
+    name: 'app-cdn',
+    wafAclArn: cloudFrontWaf.arn
+  },
+  { dependsOn: [cloudFrontWaf] }
+)
+
+// Exporta outputs úteis para uso em outros recursos ou consultas
+export const cdnDomain = cloudFrontCdn.domainName
+export const wafAclArn = cloudFrontWaf.arn

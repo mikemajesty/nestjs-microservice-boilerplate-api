@@ -23,3 +23,4 @@ foundation-shell:
 
 edge-shell:
 	cd $(EDGE_DIR) && $$SHELL
+

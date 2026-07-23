@@ -114,3 +114,13 @@ pulumi destroy
 - Em CI/CD, prefira OIDC assumindo uma IAM Role em vez de profile local.
 - Secrets do Pulumi sao para valores da aplicacao/infra, nao para configurar o login AWS SSO.
 - Sempre confira a conta AWS com `aws sts get-caller-identity` antes de executar `pulumi up`.
+
+@arquivo: Para mencionar um arquivo específico do seu projeto. Você pode navegar pelos arquivos ou começar a digitar o nome.
+
+@folder: Para mencionar uma pasta inteira.
+
+@codebase: Para dar ao modelo uma visão geral de todo o seu código (útil para perguntas amplas).
+
+@terminal: Para incluir a saída do terminal no contexto.
+
+@docs: Para incluir documentação.
