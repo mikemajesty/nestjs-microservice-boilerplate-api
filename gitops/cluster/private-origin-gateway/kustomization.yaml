@@ -4,3 +4,18 @@ resources:
   - private-origin-envoy-proxy.yaml
   - gateway-class.yaml
   - private-origin-gateway.yaml
+
+replacements:
+  - source:
+      kind: ConfigMap
+      name: envoy-config
+      namespace: envoy-gateway-system
+      fieldPath: data.nlb-security-group-id
+    targets:
+      - select:
+          kind: EnvoyProxy
+          name: private-origin-envoy-proxy
+        fieldPaths:
+          - spec.provider.kubernetes.envoyService.annotations.[service.beta.kubernetes.io/aws-load-balancer-security-groups]
+        options:
+          create: true

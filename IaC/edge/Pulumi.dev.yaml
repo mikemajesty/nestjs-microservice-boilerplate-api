@@ -6,3 +6,4 @@ config:
   edge:foundationStack: dev
   pulumi:tags:
     pulumi:template: aws-typescript
+encryptionsalt: v1:gyCPsGINjd8=:v1:HaZ9isxtTSu4E+li:o4AwpxGG8qIQjoO6kSEz29gXEfbCFw==

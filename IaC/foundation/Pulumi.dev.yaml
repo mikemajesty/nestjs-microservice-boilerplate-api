@@ -10,3 +10,4 @@ config:
   foundation:appImageTag: latest
   pulumi:tags:
     pulumi:template: aws-typescript
+encryptionsalt: v1:lZEv450HkY0=:v1:G9ny5VLRduQsTERx:6d1dhs3epLdzAlQJoDAITFiWu4euFw==

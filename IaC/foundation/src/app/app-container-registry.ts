@@ -46,7 +46,7 @@ export class ApplicationContainerRegistry
           Name: appRepositoryName
         })
       },
-      { parent: this }
+      { parent: this, deleteBeforeReplace: true }
     )
 
     this.appRepositoryArn = appRepository.arn
@@ -69,7 +69,7 @@ export class ApplicationContainerRegistry
           username: authToken.userName
         }
       },
-      { parent: this }
+      { parent: this, dependsOn: [appRepository] }
     )
 
     this.appImageName = appImage.imageName

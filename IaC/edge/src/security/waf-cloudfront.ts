@@ -3,129 +3,68 @@ import * as pulumi from '@pulumi/pulumi'
 
 import { config } from '../config'
 import { resourceName, resourceNameSuffix } from '../names'
-import { commonTags } from '../tags'
+import { createTags } from '../tags'
 
-export type CloudFrontWafProps = {
-  name: string
-  enableBotControl?: boolean
+export type CloudFrontWafResources = {
+  acl: aws.wafv2.WebAcl
+  arn: pulumi.Output<string>
+}
+
+export type CloudFrontWafArgs = {
   rateLimit?: number
 }
 
 const SECURITY_WAF_COMPONENT_TYPE = 'boilerplate:edge:security:CloudFrontWaf'
 
-export class CloudFrontWaf extends pulumi.ComponentResource {
-  public readonly acl: aws.wafv2.WebAcl
-  public readonly arn: pulumi.Output<string>
+type VisibilityConfig = {
+  sampledRequestsEnabled: boolean
+  cloudwatchMetricsEnabled: boolean
+  metricName: string
+}
 
-  constructor(name: string, props: CloudFrontWafProps, opts?: pulumi.ComponentResourceOptions) {
+export class CloudFrontWaf extends pulumi.ComponentResource implements CloudFrontWafResources {
+  readonly acl: aws.wafv2.WebAcl
+  readonly arn: pulumi.Output<string>
+
+  constructor(name: string, args: CloudFrontWafArgs = {}, opts?: pulumi.ComponentResourceOptions) {
     super(SECURITY_WAF_COMPONENT_TYPE, name, {}, opts)
 
-    const { enableBotControl = true, rateLimit = 1000 } = props
+    const { rateLimit = 1000 } = args
+    const baseName = resourceName(config, resourceNameSuffix.security.cloudfrontWaf)
+
+    const visibility = (metricName: string): VisibilityConfig => ({
+      sampledRequestsEnabled: true,
+      cloudwatchMetricsEnabled: true,
+      metricName
+    })
+
+    const rateLimitRule: aws.types.input.wafv2.WebAclRule = {
+      name: 'rate-limit',
+      priority: 1,
+      action: { block: {} },
+      statement: {
+        rateBasedStatement: {
+          limit: rateLimit,
+          aggregateKeyType: 'IP'
+        }
+      },
+      visibilityConfig: visibility('rate-limit')
+    }
 
     this.acl = new aws.wafv2.WebAcl(
-      resourceName(config, resourceNameSuffix.security.cloudfrontWaf),
+      baseName,
       {
         scope: 'CLOUDFRONT',
+        region: 'us-east-1',
         defaultAction: { allow: {} },
-        rules: [
-          {
-            name: 'rate-limit',
-            priority: 1,
-            action: { block: {} },
-            statement: {
-              rateBasedStatement: {
-                limit: rateLimit,
-                aggregateKeyType: 'IP'
-              }
-            },
-            visibilityConfig: {
-              sampledRequestsEnabled: true,
-              cloudwatchMetricsEnabled: true,
-              metricName: 'rate-limit'
-            }
-          },
-          {
-            name: 'AWSManagedRulesCommonRuleSet',
-            priority: 10,
-            overrideAction: { none: {} },
-            statement: {
-              managedRuleGroupStatement: {
-                name: 'AWSManagedRulesCommonRuleSet',
-                vendorName: 'AWS'
-              }
-            },
-            visibilityConfig: {
-              sampledRequestsEnabled: true,
-              cloudwatchMetricsEnabled: true,
-              metricName: 'common-rule-set'
-            }
-          },
-          {
-            name: 'AWSManagedRulesSQLInjectionRuleSet',
-            priority: 20,
-            overrideAction: { none: {} },
-            statement: {
-              managedRuleGroupStatement: {
-                name: 'AWSManagedRulesSQLInjectionRuleSet',
-                vendorName: 'AWS'
-              }
-            },
-            visibilityConfig: {
-              sampledRequestsEnabled: true,
-              cloudwatchMetricsEnabled: true,
-              metricName: 'sql-injection'
-            }
-          },
-          {
-            name: 'AWSManagedRulesXSSRuleSet',
-            priority: 30,
-            overrideAction: { none: {} },
-            statement: {
-              managedRuleGroupStatement: {
-                name: 'AWSManagedRulesXSSRuleSet',
-                vendorName: 'AWS'
-              }
-            },
-            visibilityConfig: {
-              sampledRequestsEnabled: true,
-              cloudwatchMetricsEnabled: true,
-              metricName: 'xss'
-            }
-          },
-          ...(enableBotControl
-            ? [
-                {
-                  name: 'AWSManagedRulesBotControlRuleSet',
-                  priority: 40,
-                  overrideAction: { none: {} },
-                  statement: {
-                    managedRuleGroupStatement: {
-                      name: 'AWSManagedRulesBotControlRuleSet',
-                      vendorName: 'AWS'
-                    }
-                  },
-                  visibilityConfig: {
-                    sampledRequestsEnabled: true,
-                    cloudwatchMetricsEnabled: true,
-                    metricName: 'bot-control'
-                  }
-                }
-              ]
-            : [])
-        ],
-        visibilityConfig: {
-          sampledRequestsEnabled: true,
-          cloudwatchMetricsEnabled: true,
-          metricName: 'cloudfront-waf-main'
-        },
-        tags: { ...commonTags }
+        rules: [rateLimitRule],
+        visibilityConfig: visibility('cloudfront-waf-main'),
+        tags: createTags(config)
       },
       { parent: this }
     )
 
     this.arn = this.acl.arn
-    this.registerOutputs({
-      arn: this.arn
-    })
+    this.registerOutputs({ arn: this.arn })
   }
 }

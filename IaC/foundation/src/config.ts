@@ -24,7 +24,7 @@ export const config: InfrastructureConfig = {
   environment: projectConfig.require('environment'),
   awsRegion: awsConfig.require('region') as aws.Region,
 
-  vpcCidr: projectConfig.get('vpcCidr') ?? '10.0.0.0/16',
+  vpcCidr: projectConfig.require('vpcCidr'),
   availabilityZoneCount: projectConfig.getNumber('availabilityZoneCount') ?? 2,
   singleNatGateway: projectConfig.getBoolean('singleNatGateway') ?? true,
 

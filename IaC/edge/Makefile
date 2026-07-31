@@ -16,11 +16,11 @@ preview: check-docker preflight select-account-stack
 up: check-docker preflight select-account-stack
 	AWS_PROFILE=$(AWS_PROFILE) pulumi up --yes
 
-destroy: check-docker check-auth select-account-stack
-	AWS_PROFILE=$(AWS_PROFILE) pulumi destroy
-
 refresh: check-docker check-auth select-account-stack
 	AWS_PROFILE=$(AWS_PROFILE) pulumi refresh --yes
+
+init:
+	pulumi stack init dev
 
 # The selected AWS account comes from AWS_PROFILE; keep the Pulumi stack name environment-based.
 select-account-stack: check-docker

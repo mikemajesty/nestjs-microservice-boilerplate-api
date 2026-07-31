@@ -11,6 +11,7 @@ export type NetworkResources = {
   privateSubnetIds: pulumi.Output<string[]>
   internetGatewayId: pulumi.Output<string>
   natGatewayId: pulumi.Output<string>
+  vpcCidr: pulumi.Output<string>
 }
 
 export type NetworkArgs = {
@@ -28,6 +29,7 @@ export class VPCNetwork extends pulumi.ComponentResource implements NetworkResou
   readonly privateSubnetIds: pulumi.Output<string[]>
   readonly internetGatewayId: pulumi.Output<string>
   readonly natGatewayId: pulumi.Output<string>
+  readonly vpcCidr: pulumi.Output<string>
 
   constructor(name: string, args: NetworkArgs, opts?: pulumi.ComponentResourceOptions) {
     super(VPC_NETWORK_COMPONENT_TYPE, name, {}, opts)
@@ -74,13 +76,14 @@ export class VPCNetwork extends pulumi.ComponentResource implements NetworkResou
     this.privateSubnetIds = vpc.privateSubnetIds
     this.internetGatewayId = vpc.internetGateway.apply((internetGateway) => internetGateway.id)
     this.natGatewayId = vpc.natGateways.apply((natGateways) => natGateways[0]?.id ?? '')
-
+    this.vpcCidr = vpc.vpc.apply((vpc) => vpc.cidrBlock)
     this.registerOutputs({
       vpcId: this.vpcId,
       publicSubnetIds: this.publicSubnetIds,
       privateSubnetIds: this.privateSubnetIds,
       internetGatewayId: this.internetGatewayId,
-      natGatewayId: this.natGatewayId
+      natGatewayId: this.natGatewayId,
+      vpcCidr: this.vpcCidr
     })
   }
 }

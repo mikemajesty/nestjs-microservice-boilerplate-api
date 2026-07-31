@@ -1,7 +1,12 @@
-import { config } from './config'
+import type { EdgeConfig } from './config'
 
-export const commonTags = {
-  Project: config.projectName,
-  Environment: config.environment,
-  ManagedBy: 'pulumi'
+export type ResourceTags = Record<string, string>
+
+export function createTags(config: EdgeConfig, extraTags: ResourceTags = {}): ResourceTags {
+  return {
+    Project: config.projectName,
+    Environment: config.environment,
+    ManagedBy: 'pulumi',
+    ...extraTags
+  }
 }

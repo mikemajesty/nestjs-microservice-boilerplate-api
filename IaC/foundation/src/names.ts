@@ -14,9 +14,11 @@ export const resourceNameSuffix = {
     vpc: 'vpc',
     vpcNetwork: 'vpc-network',
     securityGroups: 'network-security-groups',
-    publicLoadBalancerSecurityGroup: 'public-lb-sg',
-    publicLoadBalancerHttpIngressRule: 'public-lb-http-ingress',
-    publicLoadBalancerTemporaryEgressRule: 'public-lb-temporary-egress'
+    nlbSecurityGroup: 'private-nlb-sg',
+    envoyNlbHttpIngress: 'envoy-nlb-http-ingress',
+    envoyNlbHttpsIngress: 'envoy-nlb-https-ingress',
+    envoyNlbEgress: 'envoy-nlb-egress',
+    envoyNlbHealthCheck: 'envoy-nlb-health-check'
   },
   dns: {
     internal: 'internal-dns',
@@ -76,12 +78,13 @@ export const resourceNameSuffix = {
     k8sProvider: 'workload-k8s-provider',
     namespace: 'workload',
     smokeApp: 'smoke-app',
-    smokeAppPublicIngress: 'smoke-app-public-ingress'
+    smokeAppPublicIngress: 'smoke-app-public-ingress',
+    k8sProviderForConfigMap: 'workload-k8s-provider-for-configmap'
   }
 } as const
 
 type NestedValue<T> = T extends string ? T : { [Key in keyof T]: NestedValue<T[Key]> }[keyof T]
 export type ResourceNameSuffix = NestedValue<typeof resourceNameSuffix>
-export function resourceName(config: InfrastructureConfig, suffix: ResourceNameSuffix): string {
+export function resourceName(config: InfrastructureConfig, suffix: ResourceNameSuffix | string): string {
   return normalizeName(`${config.projectName}-${config.environment}-${suffix}`)
 }

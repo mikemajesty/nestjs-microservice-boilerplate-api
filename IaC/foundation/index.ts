@@ -1,3 +1,6 @@
+import * as k8s from '@pulumi/kubernetes'
+import * as pulumi from '@pulumi/pulumi'
+
 import { ArgoCd } from './src/addon/addon-argocd'
 import { ArgoCdRootApplication } from './src/addon/addon-argocd-root-application'
 import { AwsLoadBalancerController } from './src/addon/addon-aws-load-balancer-controller'
@@ -5,8 +8,10 @@ import { AwsLoadBalancerControllerIam } from './src/addon/addon-aws-load-balance
 import { ExternalDns } from './src/addon/addon-external-dns'
 import { ExternalDnsIam } from './src/addon/addon-external-dns-iam'
 import { ExternalSecretsIam } from './src/addon/addon-external-secrets-iam'
+import { K8sConfigMap } from './src/addon/addon-k8s-configmap'
 import { ApplicationContainerRegistry } from './src/app/app-container-registry'
 import { ApplicationRuntimeSecret } from './src/app/app-runtime-secret'
+import { ConfigMapK8sProvider } from './src/cluster/cluster-configmap-provider'
 import { EksCluster } from './src/cluster/cluster-eks'
 import { EksClusterIam } from './src/cluster/cluster-eks-iam'
 import { EksNodeGroup } from './src/cluster/cluster-eks-node-group'
@@ -15,34 +20,53 @@ import { EksOidcProvider } from './src/cluster/cluster-oidc-provider'
 import { config } from './src/config'
 import { InternalDns } from './src/dns/dns-private-zone'
 import { resourceName, resourceNameSuffix } from './src/names'
-import { NetworkSecurityGroups } from './src/network/network-security-groups'
+import { NetworkSecurityGroups } from './src/network/network-nlb-security-groups'
 import { VPCNetwork } from './src/network/network-vpc'
 import { WorkloadK8sProvider } from './src/workload/workload-k8s-provider'
 
+// ============================================================
+// 1. NETWORK
+// ============================================================
 const network = new VPCNetwork(resourceName(config, resourceNameSuffix.network.vpcNetwork), { config })
-const networkSecurityGroups = new NetworkSecurityGroups(
+
+// ============================================================
+// 2. NETWORK SECURITY GROUPS
+// ============================================================
+const networkSecurityGroup = new NetworkSecurityGroups(
   resourceName(config, resourceNameSuffix.network.securityGroups),
   {
     config,
-    vpcId: network.vpcId
-  }
+    vpcId: network.vpcId,
+    vpcCidr: network.vpcCidr
+  },
+  { parent: network }
 )
+
+// ============================================================
+// 3. DNS
+// ============================================================
 const internalDns = new InternalDns(resourceName(config, resourceNameSuffix.dns.internal), {
   config,
   vpcId: network.vpcId
 })
+
+// ============================================================
+// 4. APPLICATION
+// ============================================================
 const applicationContainerRegistry = config.enableAppContainerRegistry
-  ? new ApplicationContainerRegistry(resourceName(config, resourceNameSuffix.app.containerRegistry), {
-      config
-    })
+  ? new ApplicationContainerRegistry(resourceName(config, resourceNameSuffix.app.containerRegistry), { config })
   : undefined
+
 const applicationRuntimeSecret = new ApplicationRuntimeSecret(
   resourceName(config, resourceNameSuffix.app.runtimeSecret),
-  {
-    config
-  }
+  { config }
 )
+
+// ============================================================
+// 5. EKS CLUSTER
+// ============================================================
 const eksClusterIam = new EksClusterIam(resourceName(config, resourceNameSuffix.cluster.eks.iam), { config })
+
 const eksCluster = new EksCluster(
   resourceName(config, resourceNameSuffix.cluster.eks.cluster),
   {
@@ -50,33 +74,25 @@ const eksCluster = new EksCluster(
     clusterRoleArn: eksClusterIam.clusterRoleArn,
     subnetIds: network.privateSubnetIds
   },
-  { customTimeouts: { delete: '30m' }, dependsOn: [network, eksClusterIam] }
+  {
+    customTimeouts: { delete: '30m' },
+    dependsOn: [network, eksClusterIam]
+  }
 )
+
+// ============================================================
+// 6. EKS OIDC PROVIDER
+// ============================================================
 const eksOidcProvider = new EksOidcProvider(resourceName(config, resourceNameSuffix.cluster.eks.oidcProvider), {
   config,
   clusterOidcIssuerUrl: eksCluster.clusterOidcIssuerUrl
 })
-const awsLoadBalancerControllerIam = new AwsLoadBalancerControllerIam(
-  resourceName(config, resourceNameSuffix.addon.awsLoadBalancerController.iam),
-  {
-    config,
-    oidcProviderArn: eksOidcProvider.oidcProviderArn,
-    oidcProviderUrl: eksOidcProvider.oidcProviderUrl
-  }
-)
-const externalDnsIam = new ExternalDnsIam(resourceName(config, resourceNameSuffix.addon.externalDns.iam), {
-  config,
-  oidcProviderArn: eksOidcProvider.oidcProviderArn,
-  oidcProviderUrl: eksOidcProvider.oidcProviderUrl,
-  privateHostedZoneId: internalDns.privateHostedZoneId
-})
-const externalSecretsIam = new ExternalSecretsIam(resourceName(config, resourceNameSuffix.addon.externalSecrets.iam), {
-  config,
-  oidcProviderArn: eksOidcProvider.oidcProviderArn,
-  oidcProviderUrl: eksOidcProvider.oidcProviderUrl,
-  runtimeSecretArn: applicationRuntimeSecret.secretArn
-})
+
+// ============================================================
+// 7. EKS NODE GROUP
+// ============================================================
 const eksNodeIam = new EksNodeIam(resourceName(config, resourceNameSuffix.cluster.eks.nodeIam), { config })
+
 const eksNodeGroup = new EksNodeGroup(
   resourceName(config, resourceNameSuffix.cluster.eks.nodeGroup),
   {
@@ -85,8 +101,55 @@ const eksNodeGroup = new EksNodeGroup(
     nodeRoleArn: eksNodeIam.nodeRoleArn,
     subnetIds: network.privateSubnetIds
   },
-  { customTimeouts: { delete: '30m' }, dependsOn: [eksCluster, eksNodeIam] }
+  {
+    customTimeouts: { delete: '30m' },
+    dependsOn: [eksCluster, eksNodeIam]
+  }
 )
+
+// ============================================================
+// 8. CONFIGMAP K8S PROVIDER (ESPECÍFICO PARA CONFIGMAPS)
+// ============================================================
+const configMapK8sProvider = new ConfigMapK8sProvider(
+  resourceName(config, 'configmap-provider'),
+  {
+    config,
+    clusterCertificateAuthorityData: eksCluster.clusterCertificateAuthorityData,
+    clusterEndpoint: eksCluster.clusterEndpoint,
+    clusterName: eksCluster.clusterName
+  },
+  {
+    dependsOn: [eksCluster, eksNodeGroup],
+    customTimeouts: { create: '15m', delete: '15m' }
+  }
+)
+
+// ============================================================
+// 9. K8S CONFIGMAP - AWS AUTH
+// ============================================================
+new K8sConfigMap(
+  resourceName(config, 'aws-auth'),
+  {
+    config,
+    provider: configMapK8sProvider.provider,
+    namespace: 'kube-system',
+    name: 'aws-auth',
+    data: {
+      mapRoles: pulumi.interpolate`- rolearn: ${eksNodeIam.nodeRoleArn}
+        username: system:node:{{EC2PrivateDNSName}}
+        groups:
+          - system:bootstrappers
+          - system:nodes`
+    }
+  },
+  {
+    dependsOn: [eksCluster, eksNodeGroup, configMapK8sProvider]
+  }
+)
+
+// ============================================================
+// 10. WORKLOAD K8S PROVIDER
+// ============================================================
 const workloadK8sProvider = new WorkloadK8sProvider(
   resourceName(config, resourceNameSuffix.workload.k8sProvider),
   {
@@ -95,8 +158,74 @@ const workloadK8sProvider = new WorkloadK8sProvider(
     clusterEndpoint: eksCluster.clusterEndpoint,
     clusterName: eksCluster.clusterName
   },
-  { dependsOn: [eksCluster] }
+  {
+    dependsOn: [eksCluster, eksNodeGroup]
+  }
 )
+
+const envoyNamespace = new k8s.core.v1.Namespace(
+  resourceName(config, 'envoy-namespace'),
+  {
+    metadata: {
+      name: 'envoy-gateway-system'
+    }
+  },
+  {
+    provider: configMapK8sProvider.provider,
+    dependsOn: [configMapK8sProvider]
+  }
+)
+
+// ============================================================
+// 11. CONFIGMAP PARA O SECURITY GROUP DO NLB
+// ============================================================
+new K8sConfigMap(
+  resourceName(config, 'envoy-config'),
+  {
+    config,
+    provider: configMapK8sProvider.provider,
+    namespace: 'envoy-gateway-system',
+    name: 'envoy-config',
+    data: {
+      'nlb-security-group-id': networkSecurityGroup.envoyInternalNlbSecurityGroupId,
+      'vpc-id': network.vpcId,
+      'cluster-name': eksCluster.clusterName
+    }
+  },
+  {
+    dependsOn: [networkSecurityGroup, eksCluster, configMapK8sProvider, envoyNamespace]
+  }
+)
+
+// ============================================================
+// 12. IAM ROLES FOR ADDONS
+// ============================================================
+const awsLoadBalancerControllerIam = new AwsLoadBalancerControllerIam(
+  resourceName(config, resourceNameSuffix.addon.awsLoadBalancerController.iam),
+  {
+    config,
+    oidcProviderArn: eksOidcProvider.oidcProviderArn,
+    oidcProviderUrl: eksOidcProvider.oidcProviderUrl
+  }
+)
+
+const externalDnsIam = new ExternalDnsIam(resourceName(config, resourceNameSuffix.addon.externalDns.iam), {
+  config,
+  oidcProviderArn: eksOidcProvider.oidcProviderArn,
+  oidcProviderUrl: eksOidcProvider.oidcProviderUrl,
+  privateHostedZoneId: internalDns.privateHostedZoneId
+})
+
+const externalSecretsIam = new ExternalSecretsIam(resourceName(config, resourceNameSuffix.addon.externalSecrets.iam), {
+  config,
+  oidcProviderArn: eksOidcProvider.oidcProviderArn,
+  oidcProviderUrl: eksOidcProvider.oidcProviderUrl,
+  runtimeSecretArn: applicationRuntimeSecret.secretArn
+})
+
+// ============================================================
+// 13. ADDONS (USAM O WORKLOAD PROVIDER)
+// ============================================================
 const awsLoadBalancerController = new AwsLoadBalancerController(
   resourceName(config, resourceNameSuffix.addon.awsLoadBalancerController.release),
   {
@@ -108,16 +237,18 @@ const awsLoadBalancerController = new AwsLoadBalancerController(
     serviceAccountNamespace: awsLoadBalancerControllerIam.serviceAccountNamespace,
     vpcId: network.vpcId
   },
-  { dependsOn: [eksNodeGroup.nodeGroup] }
+  { dependsOn: [eksNodeGroup, workloadK8sProvider] } // 👈 ADICIONADO WORKLOAD PROVIDER
 )
+
 const argoCd = new ArgoCd(
   resourceName(config, resourceNameSuffix.addon.argoCd.release),
   {
     config,
     provider: workloadK8sProvider.provider
   },
-  { dependsOn: [eksNodeGroup.nodeGroup] }
+  { dependsOn: [eksNodeGroup, workloadK8sProvider] } // 👈 ADICIONADO WORKLOAD PROVIDER
 )
+
 const externalDns = new ExternalDns(
   resourceName(config, resourceNameSuffix.addon.externalDns.release),
   {
@@ -127,8 +258,9 @@ const externalDns = new ExternalDns(
     serviceAccountName: externalDnsIam.serviceAccountName,
     serviceAccountNamespace: externalDnsIam.serviceAccountNamespace
   },
-  { dependsOn: [eksNodeGroup.nodeGroup] }
+  { dependsOn: [eksNodeGroup, workloadK8sProvider] } // 👈 ADICIONADO WORKLOAD PROVIDER
 )
+
 const argoCdRootApplication = new ArgoCdRootApplication(
   resourceName(config, resourceNameSuffix.addon.argoCd.rootApplication),
   {
@@ -136,9 +268,12 @@ const argoCdRootApplication = new ArgoCdRootApplication(
     namespaceName: argoCd.namespaceName,
     provider: workloadK8sProvider.provider
   },
-  { dependsOn: [argoCd.release] }
+  { dependsOn: [argoCd, workloadK8sProvider] } // 👈 ADICIONADO WORKLOAD PROVIDER
 )
 
+// ============================================================
+// 14. EXPORTS
+// ============================================================
 export const vpc = {
   id: network.vpcId,
   publicSubnetIds: network.publicSubnetIds,
@@ -148,7 +283,7 @@ export const vpc = {
 }
 
 export const securityGroups = {
-  publicLoadBalancerSecurityGroupId: networkSecurityGroups.publicLoadBalancerSecurityGroupId
+  publicLoadBalancerSecurityGroupId: networkSecurityGroup.envoyInternalNlbSecurityGroupId
 }
 
 export const dns = {

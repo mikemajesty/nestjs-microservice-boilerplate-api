@@ -81,11 +81,11 @@ wait-load-balancers-gone: check-docker check-auth
 		AWS_PAGER= AWS_PROFILE=$(AWS_PROFILE) aws elbv2 wait load-balancers-deleted --load-balancer-arns $$arns || true; \
 	fi
 
+refresh: check-docker check-auth select-account-stack
+	AWS_PROFILE=$(AWS_PROFILE) pulumi refresh --yes
+	
 up: check-docker preflight check-leftovers
 	AWS_PROFILE=$(AWS_PROFILE) pulumi up --yes
-
-destroy: check-docker check-auth select-account-stack
-	AWS_PROFILE=$(AWS_PROFILE) pulumi destroy
 
 preview: check-docker preflight select-account-stack
 	AWS_PROFILE=$(AWS_PROFILE) pulumi preview
@@ -104,6 +104,9 @@ k8s: check-docker kubeconfig
 # End-of-day cleanup: destroy everything created in the Pulumi stack for the current AWS account.
 teardown: check-docker check-auth select-account-stack cleanup-k8s cleanup-route53-records wait-load-balancers-gone cleanup-pulumi-k8s-state
 	AWS_PROFILE=$(AWS_PROFILE) PULUMI_K8S_DELETE_UNREACHABLE=true pulumi destroy --yes
+
+init:
+	pulumi stack init dev
 
 reset-app-image-state: check-docker select-account-stack
 	@image_urns=$$(pulumi stack export | jq -r '.deployment.resources[] | select(.type == "docker:index/image:Image") | .urn'); \
