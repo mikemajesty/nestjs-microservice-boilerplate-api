@@ -1,27 +1,85 @@
+
+## [1.1.13](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/v1.1.12...v1.1.13) (2026-08-02)
+
+### Features
+
+* **gitops:** add application dns host ([8c16e16](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/8c16e16c9798bd7f7e53b7ef8803e7ba8f4c3c9f))
+* **gitops:** add argocd ingress ([fa28103](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/fa281036efe013365e58faf42ca05a6417410e56))
+* **gitops:** add certificate ([d2dca18](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/d2dca18f4884eef1311a321db24f30f3f09e07cd))
+* **gitops:** add config map security group ([58c6ad4](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/58c6ad420d23ccd06d88284a78ab894f1583460a))
+* **gitops:** add configmap ([f65ee47](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/f65ee470e946e85385eb0f81586febf30db97849))
+* **gitops:** add deamonset ([6da2f52](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/6da2f522ff9b2dd0dbef29bb6b83c066a4ff21f1))
+* **gitops:** add envoy gateway ([c1158dd](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/c1158dd726441a42ef586ff6f3bdc10a742bf800))
+* **gitops:** add external dns ([c5cd233](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/c5cd2332712546db68793b88178c13ccf2e9fd28))
+* **gitops:** add external sercret ([339c144](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/339c1443ada00540beef79faa71cbf94d4a4ebdb))
+* **gitops:** add metrics server ([68e68ff](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/68e68ff58d6ebb1754b21ec7f964c9d3165ac172))
+* **gitops:** add namespace yaml ([00d5340](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/00d5340ba6dcda2cf3d76da1d9564e270579b6d3))
+* **gitops:** add PodDisruptionBudget ([42b80d5](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/42b80d52bd71f9492a5b80575c7133c2d995c752))
+* **gitops:** add private nlb ([38d91e1](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/38d91e1950f2d5946b5bb967a9eaa5f2b5d819b4))
+* **gitops:** add readOnlyRootFilesystem ([f699f40](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/f699f40b776aed2908f2eb589a96540b29324646))
+* **gitops:** add SA ([5334cd8](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/5334cd85ddede5a1a4672f816396b70898aeb0a6))
+* **gitops:** add secutiry securityContext ([b6ae35f](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/b6ae35fe29ad182b852343872c122b5ff7f08996))
+
+### Bug Fixes
+
+* **deps:** fix deps ([410e3ae](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/410e3ae7c376d7ec86563344a5534756745065e1))
+* **gitops:** add cert ([f82e2bc](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/f82e2bce3e1a84e4547bd2fef1258db72b62e8ef))
+* **gitops:** add nlb hostname ([5f68dae](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/5f68daea66293b09a4c311ffef4b290bbd75d002))
+* **gitops:** add tag to nlb ([6cc8583](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/6cc85836eed0379d54723fb16433a51b505f19fa))
+* **gitops:** add tag to nlb ([452ebdb](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/452ebdbf9f0fc4359903505938a28197f9df5fbc))
+* **gitops:** fix external secret version ([204d563](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/204d5633feb0e3830e83ca2c7d89cf2450ebe22a))
+* **gitops:** fix public gateway ([db91e92](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/db91e921f9bf39e229017c4b64308a8db65530fa))
+* **gitops:** fix securityContext ([43fa8cf](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/43fa8cf8194377c84b3257f198e387e43ade2cd1))
+* **gitops:** fix sincwave ([46a6dcd](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/46a6dcd76a35e660c87c6f8201349c7e0928af7e))
+* **gitops:** remove hostnames ([8ed8aa0](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/8ed8aa063e16044be89c122b3db24bb70006ce0a))
+* **gitops:** revmove hostname from gateway ([407e07d](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/407e07d9d5467016e9bb938a16edd970cacaab78))
+* **IaC:** fix prefix project namee ([c9a425a](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/c9a425a0bbec9503e1622901731ee21cbe059dc1))
+* **test:** refactor tests to use fastify ([4ce94d5](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/4ce94d570845926eea52fa5b4572fd8be45ad412))
+
+## [1.1.12](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/v1.1.11...v1.1.12) (2026-06-14)
+
+### Features
+
+* **entity:** add domain events ([cb1e625](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/cb1e6251d7a08ab230ec5f2d1fce34e962518539))
+
+### Bug Fixes
+
+* **middlewares:** fix type ([44441fe](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/44441fe790ff4a676a221d76f268cffec9d0da1e))
+
 ## [1.1.11](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/v1.1.10...v1.1.11) (2026-01-22)
+
 ## [1.1.10](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/v1.1.9...v1.1.10) (2026-01-18)
 
 ### Features
 
 * **repository:** add exists and existsOnUpdate methods ([626016b](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/626016be732a9273857df3d129e5c910e2c07543))
 * **repository:** add transaction repository and applyPagination ([133efe4](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/133efe4f19022a8e9452b45da898aedf8e15da53))
+
 ## [1.1.9](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/v1.1.8...v1.1.9) (2025-12-21)
+
 ## [1.1.8](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/v1.1.7...v1.1.8) (2025-12-21)
+
 ## [1.1.7](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/v1.1.6...v1.1.7) (2025-12-21)
+
 ## [1.1.6](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/v1.1.5...v1.1.6) (2025-12-20)
+
 ## [1.1.5](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/v1.1.4...v1.1.5) (2025-12-20)
+
 ## [1.1.4](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/v1.1.3...v1.1.4) (2025-12-20)
+
 ## [1.1.3](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/v1.1.2...v1.1.3) (2025-12-20)
 
 ### Bug Fixes
 
 * **build:** fix build ([7fda4e4](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/7fda4e4cd26464c98fe1e1c56316cb52596d59f2))
 * **build:** fix build ([c1f3839](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/c1f38394e51ff58700ab3c73eca7cd0059ed9d4e))
+
 ## [1.1.2](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/v1.1.1...v1.1.2) (2025-12-19)
 
 ### Bug Fixes
 
 * **docs:** fix docs branch ([22abf35](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/22abf3522b0ef5588758e4366cafc3f0aad01234))
+
 ## [1.1.1](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/v1.1.0...v1.1.1) (2025-12-13)
 
 ### Bug Fixes
@@ -32,12 +90,15 @@
 * update Node.js version to 20.x in release workflow for @swc/core compatibility ([86fa3c4](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/86fa3c4e7d0b72fcce13b5555b308b26834a2846))
 * **usecases:** fix error handler ([f5de973](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/f5de973e879210968b85744e76b5f60b8360b1ba))
 * **usecases:** fix error handler ([f141095](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/f141095c6a05b65e79a18cfa494413df26b47a18))
+
 ## [1.1.0](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/v1.0.1...v1.1.0) (2025-12-09)
 
 ### Features
 
 * **repository:** add joins methods ([ecdaba5](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/ecdaba5d2ecc09d46bdd853c1cc148b391913870))
+
 ## [1.0.1](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/v1.0.0...v1.0.1) (2025-12-08)
+
 ## [1.0.0](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/acd31ce5c91851209f5fc9fec2bff2c872795c58...v1.0.0) (2025-11-30)
 
 ### Features
