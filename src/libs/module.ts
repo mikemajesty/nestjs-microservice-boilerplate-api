@@ -6,6 +6,7 @@ import { MetricsLibModule } from './metrics'
 import { TokenLibModule } from './token'
 
 @Module({
-  imports: [TokenLibModule, EventLibModule, I18nLibModule, MetricsLibModule]
+  imports: [TokenLibModule, EventLibModule, I18nLibModule, MetricsLibModule],
+  exports: [TokenLibModule, EventLibModule, I18nLibModule, MetricsLibModule]
 })
 export class LibModule {}

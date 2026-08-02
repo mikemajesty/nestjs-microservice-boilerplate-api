@@ -19,20 +19,6 @@ paths:
                 $ref: '#/components/schemas/LivenessOutput'
       tags:
         - Health
-  /health/:
-    get:
-      operationId: HealthController_healthRoot
-      description: Liveness probe (health root) - checks if application process is alive
-      parameters: []
-      responses:
-        '200':
-          description: Simple status indicating if the application process is running
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/LivenessOutput'
-      tags:
-        - Health
   /health/live:
     get:
       operationId: HealthController_liveness

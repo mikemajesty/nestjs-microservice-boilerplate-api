@@ -3,18 +3,18 @@
  */
 import './utils/tracing'
 
+import { fastifyCompress } from '@fastify/compress'
+import { fastifyHelmet } from '@fastify/helmet'
+import { fastifySwagger } from '@fastify/swagger'
+import { fastifySwaggerUi } from '@fastify/swagger-ui'
 import { RequestMethod, VersioningType } from '@nestjs/common'
 import { NestFactory } from '@nestjs/core'
 import { FastifyAdapter } from '@nestjs/platform-fastify'
-import bodyParser from 'body-parser'
 import { bold } from 'colorette'
-import compression from 'compression'
-import { NextFunction, Request, Response } from 'express'
+import type { FastifyReply, FastifyRequest } from 'fastify'
 import fs from 'fs'
-import helmet from 'helmet'
 import yaml from 'js-yaml'
 import path from 'path'
-import swagger from 'swagger-ui-express'
 
 import { ILoggerAdapter } from '@/infra/logger/adapter'
 import { ISecretsAdapter } from '@/infra/secrets'
@@ -25,11 +25,21 @@ import { AppModule } from './app.module'
 import { ErrorType } from './infra/logger'
 import { changeLanguage, initI18n, normalizeLocale } from './utils/validator'
 
+type LanguageQuery = {
+  lang?: string
+}
+
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, new FastifyAdapter(), {
-    bufferLogs: true,
-    cors: true
-  })
+  const app = await NestFactory.create(
+    AppModule,
+    new FastifyAdapter({
+      bodyLimit: 10 * 1024 * 1024 // 10MB
+    }),
+    {
+      bufferLogs: true,
+      cors: true
+    }
+  )
 
   const loggerService = app.get(ILoggerAdapter)
 
@@ -41,57 +51,65 @@ async function bootstrap() {
   app.setGlobalPrefix('api', {
     exclude: [
       { path: 'alert', method: RequestMethod.POST },
-      { path: '/', method: RequestMethod.GET }
+      { path: '/', method: RequestMethod.GET },
+      { path: 'health', method: RequestMethod.GET },
+      { path: 'health/live', method: RequestMethod.GET },
+      { path: 'health/ready', method: RequestMethod.GET },
+      { path: 'health/startup', method: RequestMethod.GET }
     ]
   })
 
   await initI18n('en-US')
 
-  app.use(async (req: Request, res: Response, next: NextFunction) => {
-    const languegeQuery = req.query.lang as string
-    const acceptLanguage = req.headers['accept-language']
+  const fastify = app.getHttpAdapter().getInstance()
 
-    const rawLocale = [languegeQuery, (acceptLanguage || '').split(',')[0].split(';')[0], 'en-US'].find(
-      Boolean
-    ) as string
+  fastify.addHook(
+    'preHandler',
+    async (request: FastifyRequest<{ Querystring: LanguageQuery }>, reply: FastifyReply) => {
+      const languegeQuery = request.query?.lang as string
+      const acceptLanguage = request.headers['accept-language']
 
-    const locale = normalizeLocale(rawLocale)
+      const rawLocale = [languegeQuery, (acceptLanguage || '').split(',')[0].split(';')[0], 'en-US'].find(
+        Boolean
+      ) as string
 
-    try {
-      await changeLanguage(locale as 'en-US' | 'pt-BR' | 'es-ES')
-    } catch (error) {
-      loggerService.warn({ message: `Failed to change language to ${locale}`, obj: { originalError: error } })
-    }
+      const locale = normalizeLocale(rawLocale)
 
-    if (req.originalUrl && req.originalUrl.split('/').pop() === 'favicon.ico') {
-      return res.sendStatus(204)
-    }
-
-    next()
-  })
-
-  app.use(
-    helmet({
-      xssFilter: true,
-      hsts: {
-        maxAge: 31536000,
-        includeSubDomains: true,
-        preload: true
-      },
-      contentSecurityPolicy: {
-        directives: {
-          defaultSrc: [`'self'`],
-          styleSrc: [`'self'`],
-          frameSrc: ["'none'"],
-          upgradeInsecureRequests: [],
-          imgSrc: [`'self'`, 'data:', 'blob:', 'validator.swagger.io'],
-          scriptSrc: [`'self'`]
-        }
+      try {
+        await changeLanguage(locale as 'en-US' | 'pt-BR' | 'es-ES')
+      } catch (error) {
+        loggerService.warn({ message: `Failed to change language to ${locale}`, obj: { originalError: error } })
       }
-    })
+
+      if (request.raw.url && request.raw.url.split('/').pop() === 'favicon.ico') {
+        reply.code(204).send()
+      }
+    }
   )
 
-  app.use(compression())
+  await fastify.register(fastifyHelmet, {
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: [`'self'`],
+        styleSrc: [`'self'`],
+        frameSrc: ["'none'"],
+        upgradeInsecureRequests: [],
+        imgSrc: [`'self'`, 'data:', 'blob:', 'validator.swagger.io'],
+        scriptSrc: [`'self'`]
+      }
+    },
+    xssFilter: true,
+    hsts: {
+      maxAge: 31536000,
+      includeSubDomains: true,
+      preload: true
+    }
+  })
+
+  await fastify.register(fastifyCompress, {
+    encodings: ['gzip', 'deflate'],
+    threshold: 1024 // 1KB
+  })
 
   const {
     ENV,
@@ -106,10 +124,6 @@ async function bootstrap() {
     IS_PRODUCTION
   } = app.get(ISecretsAdapter)
 
-  setTimeout()
-
-  app.use(bodyParser.urlencoded({ extended: true }))
-
   app.enableVersioning({ type: VersioningType.URI })
 
   process.on('uncaughtException', (error) => {
@@ -121,10 +135,30 @@ async function bootstrap() {
   })
 
   if (!IS_PRODUCTION) {
-    const swaggerDocument = yaml.load(
-      fs.readFileSync(path.join(__dirname, '../api-spec/tsp-output/@typespec/openapi3/openapi.api.1.0.yaml'), 'utf8')
-    )
-    app.use('/api-docs', swagger.serve, swagger.setup(swaggerDocument as swagger.SwaggerOptions))
+    try {
+      const swaggerDocument = yaml.load(
+        fs.readFileSync(path.join(__dirname, '../api-spec/tsp-output/@typespec/openapi3/openapi.api.1.0.yaml'), 'utf8')
+      )
+
+      await fastify.register(fastifySwagger, {
+        mode: 'static',
+        specification: {
+          document: swaggerDocument
+        }
+      })
+
+      await fastify.register(fastifySwaggerUi, {
+        routePrefix: '/api-docs',
+        uiConfig: {
+          docExpansion: 'list',
+          deepLinking: false
+        },
+        staticCSP: true,
+        transformStaticCSP: (header: string) => header
+      })
+    } catch (error) {
+      loggerService.warn({ message: 'Failed to load Swagger documentation', obj: { originalError: error } })
+    }
   }
 
   loggerService.log(`🔵 Postgres listening at ${bold(POSTGRES_URL)}`)
@@ -144,12 +178,10 @@ async function bootstrap() {
     if (!IS_PRODUCTION) loggerService.log(`🟢 Swagger listening at ${bold(`${HOST}/api-docs`)} 🟢`)
   })
 
-  function setTimeout() {
-    const httpServer = app.getHttpServer()
-    httpServer.timeout = TIMEOUT + 1000
-    httpServer.keepAliveTimeout = 60000
-    httpServer.headersTimeout = 61000
-  }
+  const server = fastify.server
+  server.timeout = TIMEOUT + 1000
+  server.keepAliveTimeout = 60000
+  server.headersTimeout = 61000
 }
 
 bootstrap()

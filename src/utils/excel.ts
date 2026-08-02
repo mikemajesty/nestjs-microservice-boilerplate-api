@@ -1,8 +1,7 @@
 /**
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/utils/excel.md
  */
-import { Cell, Row } from 'write-excel-file'
-import writeXlsxFile from 'write-excel-file/node'
+import writeXlsxFile, { Cell, Row } from 'write-excel-file/node'
 
 import { ApiBadRequestException } from './exception'
 
@@ -49,6 +48,10 @@ export class ExcelUtils {
       DATA_ROWS[`${i}`] = row
     }
 
-    return await writeXlsxFile([HEADER_ROW, ...DATA_ROWS], { buffer: true, sheet: sheetName ?? 'default' })
+    const buffer = writeXlsxFile([HEADER_ROW, ...DATA_ROWS], {
+      sheet: sheetName || 'Sheet 1'
+    })
+
+    return buffer.toBuffer()
   }
 }

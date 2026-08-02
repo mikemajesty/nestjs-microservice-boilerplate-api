@@ -2,7 +2,7 @@
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/modules/controller.md
  */
 import { Controller, Get, Post, Req, Res, Version } from '@nestjs/common'
-import { Request, Response } from 'express'
+import { FastifyReply, FastifyRequest } from 'fastify'
 
 import { IUserRepository } from '@/core/user/repository/user'
 import { LoginInput, LoginOutput } from '@/core/user/use-cases/user-login'
@@ -10,11 +10,13 @@ import { RefreshTokenInput, RefreshTokenOutput } from '@/core/user/use-cases/use
 import { IHttpAdapter } from '@/infra/http'
 import { ISecretsAdapter } from '@/infra/secrets'
 import { ITokenAdapter } from '@/libs/token'
+import { Public } from '@/utils/decorators'
 import { ApiRequest } from '@/utils/request'
 
 import { ILoginAdapter, IRefreshTokenAdapter } from './adapter'
 
 @Controller()
+@Public()
 export class LoginController {
   constructor(
     private readonly loginUsecase: ILoginAdapter,
@@ -39,15 +41,21 @@ export class LoginController {
 
   @Get('login/google')
   @Version('1')
-  loginGoogle(@Res() res: Response): void {
+  loginGoogle(@Res() reply: FastifyReply): void {
     const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${this.secret.AUTH.GOOGLE.CLIENT_ID}&redirect_uri=${this.secret.AUTH.GOOGLE.REDIRECT_URL}&response_type=code&scope=profile email`
-    res.redirect(url)
+    reply.redirect(url)
   }
 
   @Get('login/google/callback')
   @Version('1')
-  async loginGoogleCallback(@Res() res: Response, @Req() req: Request): Promise<void> {
-    const { code } = req.query
+  async loginGoogleCallback(@Req() request: FastifyRequest, @Res() reply: FastifyReply): Promise<void> {
+    const { code } = request.query as { code?: string }
+
+    if (!code) {
+      reply.code(400).send({ error: 'Code is required' })
+      return
+    }
+
     const http = this.http.instance()
     const { data } = await http.post('https://oauth2.googleapis.com/token', {
       client_id: this.secret.AUTH.GOOGLE.CLIENT_ID,
@@ -76,7 +84,7 @@ export class LoginController {
     })
 
     if (!user?.password) {
-      res.redirect(`/create-new-password=${tokenNewPassword.token}`)
+      reply.redirect(`/create-new-password=${tokenNewPassword.token}`)
       return
     }
 
@@ -88,6 +96,6 @@ export class LoginController {
       }
     })
 
-    res.redirect(`/home?token=${tokenAuthorization.token}`)
+    reply.redirect(`/home?token=${tokenAuthorization.token}`)
   }
 }

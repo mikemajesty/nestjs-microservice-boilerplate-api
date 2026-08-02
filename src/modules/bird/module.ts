@@ -1,4 +1,4 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common'
+import { Module } from '@nestjs/common'
 import { getRepositoryToken, TypeOrmModule } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 
@@ -13,7 +13,6 @@ import { RedisCacheModule } from '@/infra/cache/redis'
 import { BirdSchema } from '@/infra/database/postgres/schemas/bird'
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger'
 import { TokenLibModule } from '@/libs/token'
-import { AuthenticationMiddleware } from '@/middlewares/middlewares'
 
 import {
   IBirdCreateAdapter,
@@ -71,8 +70,4 @@ import { BirdRepository } from './repository'
     IBirdDeleteAdapter
   ]
 })
-export class BirdModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(AuthenticationMiddleware).forRoutes(BirdController)
-  }
-}
+export class BirdModule {}

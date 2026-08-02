@@ -16,9 +16,11 @@ import { IPermissionRepository } from '@/core/permission/repository/permission'
 import { IRoleRepository } from '@/core/role/repository/role'
 import { IUserRepository } from '@/core/user/repository/user'
 import { ICacheAdapter } from '@/infra/cache'
+import { RedisCacheModule } from '@/infra/cache/redis'
 import { ConnectionName } from '@/infra/database/enum'
 import { Cat, CatDocument, CatSchema } from '@/infra/database/mongo/schemas/cat'
 import { ITokenAdapter } from '@/libs/token'
+import { TokenLibModule } from '@/libs/token/module'
 import { UserModule } from '@/modules/user/module'
 import { UserRequest } from '@/utils/request'
 import { TestMongoContainer, TestPostgresContainer, TestRedisContainer } from '@/utils/test/e2e/containers'
@@ -55,7 +57,13 @@ describe(CatController.name, () => {
     redisService = await redisContainer.getTestRedis()
 
     const moduleRef = await Test.createTestingModule({
-      imports: [UserModule, CatModule, TestEnd2EndUtils.getPostgresModule(postgresContainer, postgresConfig)],
+      imports: [
+        UserModule,
+        CatModule,
+        TokenLibModule,
+        RedisCacheModule,
+        TestEnd2EndUtils.getPostgresModule(postgresContainer, postgresConfig)
+      ],
       providers: [TestEnd2EndUtils.getGuardProvider([IUserRepository])]
     })
       .overrideProvider(ICatRepository)
@@ -84,13 +92,10 @@ describe(CatController.name, () => {
       .useValue(redisService)
       .compile()
 
-    app = moduleRef.createNestApplication()
+    app = await TestEnd2EndUtils.createApp(moduleRef)
     permissionRepository = moduleRef.get<IPermissionRepository>(IPermissionRepository)
     roleRepository = moduleRef.get<IRoleRepository>(IRoleRepository)
     userRepository = moduleRef.get<IUserRepository>(IUserRepository)
-
-    TestEnd2EndUtils.addTracing(app)
-    await app.init()
 
     await userFixture.down(userRepository)
     await roleFixture.down(roleRepository)

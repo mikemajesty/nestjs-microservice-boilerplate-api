@@ -6,6 +6,7 @@ import { Observable } from 'rxjs'
 
 import { ILoggerAdapter } from '@/infra/logger'
 import { IDGeneratorUtils } from '@/utils/id-generator'
+import { AppFastifyRequest } from '@/utils/request'
 
 @Injectable()
 export class HttpLoggerInterceptor implements NestInterceptor {
@@ -14,9 +15,9 @@ export class HttpLoggerInterceptor implements NestInterceptor {
   intercept(executionContext: ExecutionContext, next: CallHandler): Observable<unknown> {
     const context = `${executionContext.getClass().name}/${executionContext.getHandler().name}`
 
-    const request = executionContext.switchToHttp().getRequest()
+    const request = executionContext.switchToHttp().getRequest<AppFastifyRequest>()
 
-    request['context'] = context
+    request.context = context
 
     if (!request.headers?.traceid) {
       request.headers.traceid = IDGeneratorUtils.uuid()

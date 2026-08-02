@@ -4,15 +4,18 @@
 import { Controller, Get } from '@nestjs/common'
 import os from 'os'
 
+import { Public } from '@/utils/decorators'
+
 import { version } from '../../../package.json'
 import { IHealthAdapter } from './adapter'
 import { HealthOutput, HealthStatus } from './types'
 
-@Controller(`health`)
+@Controller('health')
+@Public()
 export class HealthController {
   constructor(private readonly service: IHealthAdapter) {}
 
-  @Get(['ready'])
+  @Get('ready')
   async getReadiness(): Promise<HealthOutput> {
     const memory = this.service.getMemoryUsageInMB()
 
@@ -83,7 +86,7 @@ export class HealthController {
     return output
   }
 
-  @Get(['live', '/health', '/'])
+  @Get(['live'])
   async getLiveness() {
     return {
       status: HealthStatus.UP,
@@ -122,6 +125,19 @@ export class HealthController {
         error: 'Startup check failed - initialization incomplete',
         message: 'Application still initializing'
       }
+    }
+  }
+}
+
+@Controller()
+@Public()
+export class RootHealthController {
+  @Get()
+  async getRootHealth() {
+    return {
+      status: HealthStatus.UP,
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime()
     }
   }
 }

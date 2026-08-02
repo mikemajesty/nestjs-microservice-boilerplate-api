@@ -15,8 +15,10 @@ import { RoleListOutput } from '@/core/role/use-cases/role-list'
 import { RoleUpdateOutput } from '@/core/role/use-cases/role-update'
 import { IUserRepository } from '@/core/user/repository/user'
 import { ICacheAdapter } from '@/infra/cache'
+import { RedisCacheModule } from '@/infra/cache/redis'
 import { RoleSchema } from '@/infra/database/postgres/schemas/role'
 import { ITokenAdapter } from '@/libs/token/adapter'
+import { TokenLibModule } from '@/libs/token/module'
 import { UserModule } from '@/modules/user/module'
 import { ApiBadRequestException, ApiConflictException, ApiNotFoundException } from '@/utils/exception'
 import { UserRequest } from '@/utils/request'
@@ -53,7 +55,13 @@ describe(RoleController.name, () => {
     redisService = await redisContainer.getTestRedis()
 
     const moduleRef = await Test.createTestingModule({
-      imports: [UserModule, RoleModule, TestEnd2EndUtils.getPostgresModule(postgresContainer, postgresConfig)],
+      imports: [
+        UserModule,
+        RoleModule,
+        TokenLibModule,
+        RedisCacheModule,
+        TestEnd2EndUtils.getPostgresModule(postgresContainer, postgresConfig)
+      ],
       providers: [TestEnd2EndUtils.getGuardProvider([IUserRepository])]
     })
       .overrideProvider(IRoleRepository)
@@ -75,9 +83,7 @@ describe(RoleController.name, () => {
       .useValue(redisService)
       .compile()
 
-    app = moduleRef.createNestApplication()
-    TestEnd2EndUtils.addTracing(app)
-    await app.init()
+    app = await TestEnd2EndUtils.createApp(moduleRef)
 
     roleRepository = moduleRef.get(IRoleRepository)
     permissionRepository = moduleRef.get(IPermissionRepository)

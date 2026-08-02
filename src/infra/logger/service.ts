@@ -1,13 +1,11 @@
 /**
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/infra/logger.md
  */
-import { IncomingMessage, ServerResponse } from 'node:http'
-
 import { Injectable, InternalServerErrorException, Scope } from '@nestjs/common'
 import { blue, gray, green, isColorSupported } from 'colorette'
 import { PinoRequestConverter } from 'convert-pino-request-to-curl'
 import pino, { LevelWithSilent, LogDescriptor, Logger, multistream } from 'pino'
-import { HttpLogger, Options, pinoHttp } from 'pino-http'
+import { pinoHttp } from 'pino-http'
 import lokiTransport from 'pino-loki'
 import pinoPretty, { PrettyOptions } from 'pino-pretty'
 
@@ -20,7 +18,14 @@ import { AnyType } from '@/utils/types'
 import { name, version } from '../../../package.json'
 import { EnvEnum } from '../secrets/types'
 import { ILoggerAdapter } from './adapter'
-import { ErrorType, MessageInputType } from './types'
+import {
+  AppHttpLogger,
+  AppHttpLoggerOptions,
+  AppLoggerRequest,
+  AppLoggerResponse,
+  ErrorType,
+  MessageInputType
+} from './types'
 
 const DATE_FORMAT = 'yyyy-MM-dd HH:mm:ss'
 
@@ -35,7 +40,7 @@ export class LoggerService implements ILoggerAdapter {
 
   private app!: string
 
-  logger!: HttpLogger
+  logger!: AppHttpLogger
 
   async connect<T = LevelWithSilent>(logLevel: T): Promise<void> {
     const pinoLogger = pino(
@@ -192,14 +197,14 @@ export class LoggerService implements ILoggerAdapter {
     }
   }
 
-  private getPinoHttpConfig(pinoLogger: Logger): Options {
+  private getPinoHttpConfig(pinoLogger: Logger): AppHttpLoggerOptions {
     return {
       logger: pinoLogger,
       quietReqLogger: true,
-      customSuccessMessage: (req: IncomingMessage, res: ServerResponse) => {
+      customSuccessMessage: (_req: AppLoggerRequest, res: AppLoggerResponse) => {
         return `request ${res.statusCode >= ApiBadRequestException.STATUS ? 'error' : 'success'} with status code: ${res.statusCode}`
       },
-      customErrorMessage: (req: IncomingMessage, res: ServerResponse, error: Error) => {
+      customErrorMessage: (_req: AppLoggerRequest, res: AppLoggerResponse, error: Error) => {
         return `request ${error.name} with status code: ${res.statusCode} `
       },
       customAttributeKeys: {
@@ -219,13 +224,12 @@ export class LoggerService implements ILoggerAdapter {
         },
         res: pino.stdSerializers.res
       },
-      customProps: (req: IncomingMessage): object => {
-        const request = req as unknown as { context: string; protocol: string }
-        const context = request.context
+      customProps: (req: AppLoggerRequest): object => {
+        const context = req.context
 
         const traceid = [req?.headers?.traceid, req.id].find(Boolean)
 
-        const path = `${request.protocol}://${req.headers.host}${req.url}`
+        const path = `${req.protocol}://${req.headers.host}${req.url}`
 
         this.logger.logger.setBindings({
           traceid,
@@ -242,7 +246,7 @@ export class LoggerService implements ILoggerAdapter {
           createdAt: DateUtils.now({ type: 'iso' })
         }
       },
-      customLogLevel: (req: IncomingMessage, res: ServerResponse, error?: Error): pino.LevelWithSilent => {
+      customLogLevel: (_req: AppLoggerRequest, res: AppLoggerResponse, error?: Error): pino.LevelWithSilent => {
         if ([res.statusCode >= 400, error].some(Boolean)) {
           return 'error'
         }

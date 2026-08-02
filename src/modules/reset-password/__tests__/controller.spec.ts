@@ -50,9 +50,7 @@ describe(ResetPasswordController.name, () => {
       .useFactory({ factory: async () => redisContainer.getTestRedis() })
       .compile()
 
-    app = moduleRef.createNestApplication()
-    TestEnd2EndUtils.addTracing(app)
-    await app.init()
+    app = await TestEnd2EndUtils.createApp(moduleRef)
 
     userRepository = moduleRef.get(IUserRepository)
     resetPasswordRepository = moduleRef.get(IResetPasswordRepository)

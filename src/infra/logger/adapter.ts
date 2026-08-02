@@ -1,11 +1,9 @@
 /**
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/infra/logger.md
  */
-import { HttpLogger } from 'pino-http'
+import { AppHttpLogger, ErrorType, LogLevelEnum, MessageInputType } from './types'
 
-import { ErrorType, LogLevelEnum, MessageInputType } from './types'
-
-export abstract class ILoggerAdapter<T extends HttpLogger = HttpLogger> {
+export abstract class ILoggerAdapter<T extends AppHttpLogger = AppHttpLogger> {
   abstract logger: T
   abstract connect<TLevel = LogLevelEnum>(logLevel?: TLevel): void
   abstract setApplication(app: string): void

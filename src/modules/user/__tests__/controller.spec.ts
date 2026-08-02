@@ -16,8 +16,10 @@ import { UserGetByIdOutput } from '@/core/user/use-cases/user-get-by-id'
 import { UserListOutput } from '@/core/user/use-cases/user-list'
 import { UserUpdateInput, UserUpdateOutput } from '@/core/user/use-cases/user-update'
 import { ICacheAdapter } from '@/infra/cache'
+import { RedisCacheModule } from '@/infra/cache/redis'
 import { UserSchema } from '@/infra/database/postgres/schemas/user'
 import { ITokenAdapter } from '@/libs/token/adapter'
+import { TokenLibModule } from '@/libs/token/module'
 import { ApiBadRequestException, ApiNotFoundException, ApiUnauthorizedException } from '@/utils/exception'
 import { UserRequest } from '@/utils/request'
 import { TestPostgresContainer, TestRedisContainer } from '@/utils/test/e2e/containers'
@@ -53,7 +55,12 @@ describe(UserController.name, () => {
     redisService = await redisContainer.getTestRedis()
 
     const moduleRef = await Test.createTestingModule({
-      imports: [UserModule, TestEnd2EndUtils.getPostgresModule(postgresContainer, postgresConfig)],
+      imports: [
+        UserModule,
+        TokenLibModule,
+        RedisCacheModule,
+        TestEnd2EndUtils.getPostgresModule(postgresContainer, postgresConfig)
+      ],
       providers: [TestEnd2EndUtils.getGuardProvider([IUserRepository])]
     })
       .overrideProvider(IUserRepository)
@@ -77,11 +84,7 @@ describe(UserController.name, () => {
       .useValue(redisService)
       .compile()
 
-    app = moduleRef.createNestApplication()
-
-    TestEnd2EndUtils.addTracing(app)
-
-    await app.init()
+    app = await TestEnd2EndUtils.createApp(moduleRef)
 
     userRepository = moduleRef.get(IUserRepository)
     permissionRepository = moduleRef.get(IPermissionRepository)

@@ -7,6 +7,8 @@ import { IRoleRepository } from '@/core/role/repository/role'
 import { IUserRepository } from '@/core/user/repository/user'
 import { LogoutInput } from '@/core/user/use-cases/user-logout'
 import { ICacheAdapter } from '@/infra/cache'
+import { RedisCacheModule } from '@/infra/cache/redis'
+import { TokenLibModule } from '@/libs/token/module'
 import { LoginModule } from '@/modules/login/module'
 import { UserModule } from '@/modules/user/module'
 import { ApiUnauthorizedException } from '@/utils/exception'
@@ -40,6 +42,8 @@ describe(LogoutController.name, () => {
         LoginModule,
         UserModule,
         LogoutModule,
+        TokenLibModule,
+        RedisCacheModule,
         TestEnd2EndUtils.getPostgresModule(postgresContainer, postgresConfig)
       ],
       providers: [TestEnd2EndUtils.getGuardProvider([IUserRepository])]
@@ -48,9 +52,7 @@ describe(LogoutController.name, () => {
       .useFactory({ factory: async () => redisContainer.getTestRedis() })
       .compile()
 
-    app = moduleRef.createNestApplication()
-    TestEnd2EndUtils.addTracing(app)
-    await app.init()
+    app = await TestEnd2EndUtils.createApp(moduleRef)
 
     permissionRepository = moduleRef.get(IPermissionRepository)
     roleRepository = moduleRef.get(IRoleRepository)

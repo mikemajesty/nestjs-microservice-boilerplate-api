@@ -1,7 +1,7 @@
 /**
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/modules/module.md
  */
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common'
+import { Module } from '@nestjs/common'
 import { getRepositoryToken, TypeOrmModule } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 
@@ -20,7 +20,6 @@ import { ILoggerAdapter, LoggerModule } from '@/infra/logger'
 import { SecretsModule } from '@/infra/secrets'
 import { EventLibModule, IEventAdapter } from '@/libs/event'
 import { TokenLibModule } from '@/libs/token'
-import { AuthenticationMiddleware } from '@/middlewares/middlewares'
 
 import { RoleModule } from '../role/module'
 import {
@@ -110,8 +109,4 @@ import { UserRepository } from './repository'
     IUserGetByIdAdapter
   ]
 })
-export class UserModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(AuthenticationMiddleware).forRoutes(UserController)
-  }
-}
+export class UserModule {}

@@ -1,31 +1,31 @@
 openapi: 3.0.0
 info:
-  title: Role
+  title: Bird
   version: '1.0'
 tags:
-  - name: Role
+  - name: Bird
 paths:
-  /api/{version}/roles:
+  /api/{version}/birds:
     post:
-      operationId: RoleController_create
-      description: create role
+      operationId: BirdController_create
+      description: create bird
       parameters:
         - $ref: '#/components/parameters/api.Utils.Versioning.VersionParams'
       responses:
-        '201':
-          description: role created successfully
+        '200':
+          description: bird created successfully
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/CreateOutput'
         '400':
-          description: When input body is invalid
+          description: When input is invalid
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CreateBodyValidationError'
+                $ref: '#/components/schemas/CreateValidationError'
       tags:
-        - Role
+        - Bird
       requestBody:
         required: true
         content:
@@ -35,8 +35,8 @@ paths:
       security:
         - BearerAuth: []
     get:
-      operationId: RoleController_list
-      description: list role
+      operationId: BirdController_list
+      description: list bird
       parameters:
         - $ref: '#/components/parameters/api.Utils.Versioning.VersionParams'
         - $ref: '#/components/parameters/api.Utils.Model.ApiPaginationInput.page'
@@ -45,103 +45,43 @@ paths:
         - $ref: '#/components/parameters/api.Utils.Model.ApiPaginationInput.search'
       responses:
         '200':
-          description: list role successfully
+          description: list bird successfully
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ListOutput'
       tags:
-        - Role
+        - Bird
       security:
         - BearerAuth: []
-  /api/{version}/roles/add-permissions/{id}:
+  /api/{version}/birds/{id}:
     put:
-      operationId: RoleController_addPermission
-      description: add permission from role
+      operationId: BirdController_update
+      description: update bird
       parameters:
         - $ref: '#/components/parameters/api.Utils.Versioning.VersionParams'
-        - $ref: '#/components/parameters/AddPermissionParamsInput'
+        - $ref: '#/components/parameters/UpdateParamInput'
       responses:
         '200':
-          description: permission added successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AddPermissionOutput'
-        '404':
-          description: When role not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AddPermissionRoleNotFoundError'
-      tags:
-        - Role
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AddPermissionInput'
-      security:
-        - BearerAuth: []
-  /api/{version}/roles/remove-permissions/{id}:
-    put:
-      operationId: RoleController_removePermission
-      description: remove permission from role
-      parameters:
-        - $ref: '#/components/parameters/api.Utils.Versioning.VersionParams'
-        - $ref: '#/components/parameters/RemovePermissionParamsInput'
-      responses:
-        '200':
-          description: permission removed successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RemovePermissionOuput'
-        '404':
-          description: When role not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RemovePermissionRoleNotFoundError'
-      tags:
-        - Role
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RemovePermissionInput'
-      security:
-        - BearerAuth: []
-  /api/{version}/roles/{id}:
-    put:
-      operationId: RoleController_update
-      description: create role
-      parameters:
-        - $ref: '#/components/parameters/api.Utils.Versioning.VersionParams'
-        - $ref: '#/components/parameters/UpdateParamsInput'
-      responses:
-        '200':
-          description: role created successfully
+          description: bird updated successfully
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/UpdateOutput'
         '400':
-          description: When input params is invalid
+          description: When input is invalid
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UpdateParamsValidationError'
+                $ref: '#/components/schemas/UpdateValidationError'
         '404':
-          description: When role not found
+          description: When bird not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UpdateRoleNotFoundError'
+                $ref: '#/components/schemas/UpdateBirdNotFoundError'
       tags:
-        - Role
+        - Bird
       requestBody:
         required: true
         content:
@@ -151,98 +91,84 @@ paths:
       security:
         - BearerAuth: []
     get:
-      operationId: RoleController_getById
-      description: get role by id
+      operationId: BirdController_getById
+      description: get bird by id
       parameters:
         - $ref: '#/components/parameters/api.Utils.Versioning.VersionParams'
-        - $ref: '#/components/parameters/GetByIdParamsInput'
+        - $ref: '#/components/parameters/GetByIdParamInput'
       responses:
         '200':
-          description: role found successfully
+          description: get bird by id successfully
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/GetByIdOutput'
         '400':
-          description: When input params is invalid
+          description: When input is invalid
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GetByIdParamsValidationError'
+                $ref: '#/components/schemas/GetByIdValidationError'
         '404':
-          description: When role not found
+          description: When bird not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GetByIdRoleNotFoundError'
+                $ref: '#/components/schemas/GetByIdBirdNotFoundError'
       tags:
-        - Role
+        - Bird
       security:
         - BearerAuth: []
     delete:
-      operationId: RoleController_delete
-      description: delete role
+      operationId: BirdController_delete
+      description: delete bird
       parameters:
         - $ref: '#/components/parameters/api.Utils.Versioning.VersionParams'
-        - $ref: '#/components/parameters/DeleteParamsInput'
+        - $ref: '#/components/parameters/DeleteParamInput'
       responses:
         '200':
-          description: role deleted successfully
+          description: bird deleted successfully
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/DeleteOutput'
+        '400':
+          description: When input is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteValidationError'
         '404':
-          description: When role not found
+          description: When bird not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DeleteRoleNotFoundError'
-        '409':
-          description: When roles has association with permission
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DeleteHasAssociationError'
+                $ref: '#/components/schemas/DeleteBirdNotFoundError'
       tags:
-        - Role
+        - Bird
       security:
         - BearerAuth: []
 components:
   parameters:
-    AddPermissionParamsInput:
+    DeleteParamInput:
       name: id
       in: path
       required: true
-      description: role id
+      description: bird id
       schema:
         type: string
-    DeleteParamsInput:
+    GetByIdParamInput:
       name: id
       in: path
       required: true
-      description: role id
+      description: bird id
       schema:
         type: string
-    GetByIdParamsInput:
+    UpdateParamInput:
       name: id
       in: path
       required: true
-      description: role id
-      schema:
-        type: string
-    RemovePermissionParamsInput:
-      name: id
-      in: path
-      required: true
-      description: role id
-      schema:
-        type: string
-    UpdateParamsInput:
-      name: id
-      in: path
-      required: true
-      description: role id
+      description: bird id
       schema:
         type: string
     api.Utils.Model.ApiPaginationInput.limit:
@@ -290,66 +216,42 @@ components:
       schema:
         $ref: '#/components/schemas/api.Utils.Versioning.ApiVersion'
   schemas:
-    AddPermissionInput:
+    BirdEntity:
       type: object
       required:
-        - permissions
+        - name
+        - createdAt
+        - updatedAt
+        - deletedAt
       properties:
-        permissions:
-          type: array
-          items:
-            type: string
-      description: role add permission input
-    AddPermissionOutput:
-      type: object
-      allOf:
-        - $ref: '#/components/schemas/RoleEntity'
-      description: role add permission output
-    AddPermissionRoleNotFoundError:
+        name:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        deletedAt:
+          type: string
+          nullable: true
+          default: null
+      description: bird base entity
+    CreateInput:
       type: object
       allOf:
         - type: object
           required:
-            - error
+            - name
           properties:
-            error:
-              type: object
-              required:
-                - code
-                - traceid
-                - context
-                - message
-                - timestamp
-                - path
-              properties:
-                code:
-                  type: number
-                  enum:
-                    - 404
-                  description: status code
-                traceid:
-                  type: string
-                  description: request traceid
-                context:
-                  type: string
-                  description: class that error occur
-                message:
-                  type: array
-                  items:
-                    type: string
-                    enum:
-                      - roleNotFound
-                  description: error message
-                timestamp:
-                  type: string
-                  description: timestamp that error occur
-                path:
-                  type: string
-                  description: path error
-              description: default error model
-          description: When resource not found.
-      description: When role not found
-    CreateBodyValidationError:
+            name:
+              type: string
+          description: The template for picking properties.
+      description: bird create input
+    CreateOutput:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/BirdEntity'
+      description: bird create output
+    CreateValidationError:
       type: object
       allOf:
         - type: object
@@ -392,94 +294,8 @@ components:
                   description: path error
               description: default error model
           description: When input is invalid.
-      description: When input body is invalid
-    CreateInput:
-      type: object
-      allOf:
-        - type: object
-          required:
-            - name
-          properties:
-            name:
-              type: string
-          description: The template for picking properties.
-      description: role create input
-    CreateOutput:
-      type: object
-      allOf:
-        - $ref: '#/components/schemas/RoleEntity'
-      description: role create output
-    DeleteHasAssociationError:
-      type: object
-      allOf:
-        - type: object
-          required:
-            - error
-          properties:
-            error:
-              type: object
-              required:
-                - code
-                - traceid
-                - context
-                - message
-                - timestamp
-                - path
-              properties:
-                code:
-                  type: number
-                  enum:
-                    - 409
-                  description: status code
-                traceid:
-                  type: string
-                  description: request traceid
-                context:
-                  type: string
-                  description: class that error occur
-                message:
-                  type: array
-                  items:
-                    type: string
-                    enum:
-                      - 'roleHasAssociationWithPermission: [permission]'
-                  description: error message
-                timestamp:
-                  type: string
-                  description: timestamp that error occur
-                path:
-                  type: string
-                  description: path error
-              description: default error model
-          description: When conflict occour.
-      description: When roles has association with permission
-    DeleteOutput:
-      type: object
-      required:
-        - deletedAt
-      properties:
-        deletedAt:
-          type: string
-          format: date-time
-      allOf:
-        - type: object
-          required:
-            - id
-            - name
-            - createdAt
-            - updatedAt
-          properties:
-            id:
-              type: string
-            name:
-              type: string
-            createdAt:
-              type: string
-            updatedAt:
-              type: string
-          description: The template for omitting properties.
-      description: role delete output
-    DeleteRoleNotFoundError:
+      description: When input is invalid
+    DeleteBirdNotFoundError:
       type: object
       allOf:
         - type: object
@@ -512,7 +328,7 @@ components:
                   items:
                     type: string
                     enum:
-                      - roleNotFound
+                      - birdNotFound
                   description: error message
                 timestamp:
                   type: string
@@ -522,13 +338,31 @@ components:
                   description: path error
               description: default error model
           description: When resource not found.
-      description: When role not found
-    GetByIdOutput:
+      description: When bird not found
+    DeleteOutput:
       type: object
+      required:
+        - deletedAt
+      properties:
+        deletedAt:
+          type: string
+          format: date-time
       allOf:
-        - $ref: '#/components/schemas/RoleEntity'
-      description: role get by id
-    GetByIdParamsValidationError:
+        - type: object
+          required:
+            - name
+            - createdAt
+            - updatedAt
+          properties:
+            name:
+              type: string
+            createdAt:
+              type: string
+            updatedAt:
+              type: string
+          description: The template for omitting properties.
+      description: bird delete output
+    DeleteValidationError:
       type: object
       allOf:
         - type: object
@@ -571,8 +405,8 @@ components:
                   description: path error
               description: default error model
           description: When input is invalid.
-      description: When input params is invalid
-    GetByIdRoleNotFoundError:
+      description: When input is invalid
+    GetByIdBirdNotFoundError:
       type: object
       allOf:
         - type: object
@@ -605,7 +439,7 @@ components:
                   items:
                     type: string
                     enum:
-                      - roleNotFound
+                      - birdNotFound
                   description: error message
                 timestamp:
                   type: string
@@ -615,7 +449,56 @@ components:
                   description: path error
               description: default error model
           description: When resource not found.
-      description: When role not found
+      description: When bird not found
+    GetByIdOutput:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/BirdEntity'
+      description: bird get by id input
+    GetByIdValidationError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 400
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - 'id: Required'
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When input is invalid.
+      description: When input is invalid
     ListOutput:
       type: object
       allOf:
@@ -629,7 +512,7 @@ components:
             docs:
               type: array
               items:
-                $ref: '#/components/schemas/RoleEntity'
+                $ref: '#/components/schemas/BirdEntity'
               description: documents
             page:
               type: integer
@@ -652,28 +535,12 @@ components:
               description: total pages
               default: 1
           description: pagination default response
-      description: list output
+      description: bird list output
     ListQueryInput:
       type: object
       allOf:
         - $ref: '#/components/schemas/api.Utils.Model.ApiPaginationInput'
-      description: list query input
-    RemovePermissionInput:
-      type: object
-      required:
-        - permissions
-      properties:
-        permissions:
-          type: array
-          items:
-            type: string
-      description: role remove permission input
-    RemovePermissionOuput:
-      type: object
-      allOf:
-        - $ref: '#/components/schemas/RoleEntity'
-      description: role remove permission output
-    RemovePermissionRoleNotFoundError:
+    UpdateBirdNotFoundError:
       type: object
       allOf:
         - type: object
@@ -706,7 +573,7 @@ components:
                   items:
                     type: string
                     enum:
-                      - roleNotFound
+                      - birdNotFound
                   description: error message
                 timestamp:
                   type: string
@@ -716,29 +583,7 @@ components:
                   description: path error
               description: default error model
           description: When resource not found.
-      description: When role not found
-    RoleEntity:
-      type: object
-      required:
-        - id
-        - name
-        - createdAt
-        - updatedAt
-        - deletedAt
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-        createdAt:
-          type: string
-        updatedAt:
-          type: string
-        deletedAt:
-          type: string
-          nullable: true
-          default: null
-      description: role base entity
+      description: When bird not found
     UpdateInput:
       type: object
       allOf:
@@ -749,237 +594,13 @@ components:
             name:
               type: string
           description: The template for picking properties.
-      description: role update input
+      description: bird update input
     UpdateOutput:
       type: object
       allOf:
-        - $ref: '#/components/schemas/RoleEntity'
-      description: role update output
-    UpdateParamsValidationError:
-      type: object
-      allOf:
-        - type: object
-          required:
-            - error
-          properties:
-            error:
-              type: object
-              required:
-                - code
-                - traceid
-                - context
-                - message
-                - timestamp
-                - path
-              properties:
-                code:
-                  type: number
-                  enum:
-                    - 400
-                  description: status code
-                traceid:
-                  type: string
-                  description: request traceid
-                context:
-                  type: string
-                  description: class that error occur
-                message:
-                  type: array
-                  items:
-                    type: string
-                    enum:
-                      - 'id: Required'
-                  description: error message
-                timestamp:
-                  type: string
-                  description: timestamp that error occur
-                path:
-                  type: string
-                  description: path error
-              description: default error model
-          description: When input is invalid.
-      description: When input params is invalid
-    UpdateRoleNotFoundError:
-      type: object
-      allOf:
-        - type: object
-          required:
-            - error
-          properties:
-            error:
-              type: object
-              required:
-                - code
-                - traceid
-                - context
-                - message
-                - timestamp
-                - path
-              properties:
-                code:
-                  type: number
-                  enum:
-                    - 404
-                  description: status code
-                traceid:
-                  type: string
-                  description: request traceid
-                context:
-                  type: string
-                  description: class that error occur
-                message:
-                  type: array
-                  items:
-                    type: string
-                    enum:
-                      - roleNotFound
-                  description: error message
-                timestamp:
-                  type: string
-                  description: timestamp that error occur
-                path:
-                  type: string
-                  description: path error
-              description: default error model
-          description: When resource not found.
-      description: When role not found
-    api.Bird.CreateValidationError:
-      type: object
-      allOf:
-        - type: object
-          required:
-            - error
-          properties:
-            error:
-              type: object
-              required:
-                - code
-                - traceid
-                - context
-                - message
-                - timestamp
-                - path
-              properties:
-                code:
-                  type: number
-                  enum:
-                    - 400
-                  description: status code
-                traceid:
-                  type: string
-                  description: request traceid
-                context:
-                  type: string
-                  description: class that error occur
-                message:
-                  type: array
-                  items:
-                    type: string
-                    enum:
-                      - 'name: Required'
-                  description: error message
-                timestamp:
-                  type: string
-                  description: timestamp that error occur
-                path:
-                  type: string
-                  description: path error
-              description: default error model
-          description: When input is invalid.
-      description: When input is invalid
-    api.Bird.DeleteValidationError:
-      type: object
-      allOf:
-        - type: object
-          required:
-            - error
-          properties:
-            error:
-              type: object
-              required:
-                - code
-                - traceid
-                - context
-                - message
-                - timestamp
-                - path
-              properties:
-                code:
-                  type: number
-                  enum:
-                    - 400
-                  description: status code
-                traceid:
-                  type: string
-                  description: request traceid
-                context:
-                  type: string
-                  description: class that error occur
-                message:
-                  type: array
-                  items:
-                    type: string
-                    enum:
-                      - 'id: Required'
-                  description: error message
-                timestamp:
-                  type: string
-                  description: timestamp that error occur
-                path:
-                  type: string
-                  description: path error
-              description: default error model
-          description: When input is invalid.
-      description: When input is invalid
-    api.Bird.GetByIdValidationError:
-      type: object
-      allOf:
-        - type: object
-          required:
-            - error
-          properties:
-            error:
-              type: object
-              required:
-                - code
-                - traceid
-                - context
-                - message
-                - timestamp
-                - path
-              properties:
-                code:
-                  type: number
-                  enum:
-                    - 400
-                  description: status code
-                traceid:
-                  type: string
-                  description: request traceid
-                context:
-                  type: string
-                  description: class that error occur
-                message:
-                  type: array
-                  items:
-                    type: string
-                    enum:
-                      - 'id: Required'
-                  description: error message
-                timestamp:
-                  type: string
-                  description: timestamp that error occur
-                path:
-                  type: string
-                  description: path error
-              description: default error model
-          description: When input is invalid.
-      description: When input is invalid
-    api.Bird.ListQueryInput:
-      type: object
-      allOf:
-        - $ref: '#/components/schemas/api.Utils.Model.ApiPaginationInput'
-    api.Bird.UpdateValidationError:
+        - $ref: '#/components/schemas/BirdEntity'
+      description: bird update output
+    UpdateValidationError:
       type: object
       allOf:
         - type: object
@@ -1159,50 +780,6 @@ components:
               description: default error model
           description: When input is invalid.
       description: When input is invalid
-    api.Login.LoginRoleNotFoundError:
-      type: object
-      allOf:
-        - type: object
-          required:
-            - error
-          properties:
-            error:
-              type: object
-              required:
-                - code
-                - traceid
-                - context
-                - message
-                - timestamp
-                - path
-              properties:
-                code:
-                  type: number
-                  enum:
-                    - 404
-                  description: status code
-                traceid:
-                  type: string
-                  description: request traceid
-                context:
-                  type: string
-                  description: class that error occur
-                message:
-                  type: array
-                  items:
-                    type: string
-                    enum:
-                      - roleNotFound
-                  description: error message
-                timestamp:
-                  type: string
-                  description: timestamp that error occur
-                path:
-                  type: string
-                  description: path error
-              description: default error model
-          description: When resource not found.
-      description: When user role not found
     api.Permission.CreateValidationError:
       type: object
       allOf:
@@ -1384,6 +961,143 @@ components:
               description: default error model
           description: When input is invalid.
       description: When input is invalid
+    api.Role.CreateBodyValidationError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 400
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - 'name: Required'
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When input is invalid.
+      description: When input body is invalid
+    api.Role.GetByIdParamsValidationError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 400
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - 'id: Required'
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When input is invalid.
+      description: When input params is invalid
+    api.Role.ListQueryInput:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/api.Utils.Model.ApiPaginationInput'
+      description: list query input
+    api.Role.UpdateParamsValidationError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 400
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - 'id: Required'
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When input is invalid.
+      description: When input params is invalid
     api.User.ChangePasswordParamsValidationError:
       type: object
       allOf:
@@ -1428,94 +1142,6 @@ components:
               description: default error model
           description: When input is invalid.
       description: When input params is invalid
-    api.User.ChangePasswordRoleNotFoundError:
-      type: object
-      allOf:
-        - type: object
-          required:
-            - error
-          properties:
-            error:
-              type: object
-              required:
-                - code
-                - traceid
-                - context
-                - message
-                - timestamp
-                - path
-              properties:
-                code:
-                  type: number
-                  enum:
-                    - 404
-                  description: status code
-                traceid:
-                  type: string
-                  description: request traceid
-                context:
-                  type: string
-                  description: class that error occur
-                message:
-                  type: array
-                  items:
-                    type: string
-                    enum:
-                      - roleNotFound
-                  description: error message
-                timestamp:
-                  type: string
-                  description: timestamp that error occur
-                path:
-                  type: string
-                  description: path error
-              description: default error model
-          description: When resource not found.
-      description: When user role not found
-    api.User.CreateNotFoundError:
-      type: object
-      allOf:
-        - type: object
-          required:
-            - error
-          properties:
-            error:
-              type: object
-              required:
-                - code
-                - traceid
-                - context
-                - message
-                - timestamp
-                - path
-              properties:
-                code:
-                  type: number
-                  enum:
-                    - 404
-                  description: status code
-                traceid:
-                  type: string
-                  description: request traceid
-                context:
-                  type: string
-                  description: class that error occur
-                message:
-                  type: array
-                  items:
-                    type: string
-                    enum:
-                      - roleNotFound
-                  description: error message
-                timestamp:
-                  type: string
-                  description: timestamp that error occur
-                path:
-                  type: string
-                  description: path error
-              description: default error model
-          description: When resource not found.
-      description: When user role not found
     api.User.DeleteParamsValidationError:
       type: object
       allOf:
@@ -1653,50 +1279,6 @@ components:
               description: default error model
           description: When input is invalid.
       description: When input params is invalid
-    api.User.UpdateRoleNotFoundError:
-      type: object
-      allOf:
-        - type: object
-          required:
-            - error
-          properties:
-            error:
-              type: object
-              required:
-                - code
-                - traceid
-                - context
-                - message
-                - timestamp
-                - path
-              properties:
-                code:
-                  type: number
-                  enum:
-                    - 404
-                  description: status code
-                traceid:
-                  type: string
-                  description: request traceid
-                context:
-                  type: string
-                  description: class that error occur
-                message:
-                  type: array
-                  items:
-                    type: string
-                    enum:
-                      - roleNotFound
-                  description: error message
-                timestamp:
-                  type: string
-                  description: timestamp that error occur
-                path:
-                  type: string
-                  description: path error
-              description: default error model
-          description: When resource not found.
-      description: When user role not found
     api.Utils.Model.ApiPaginationInput:
       type: object
       required:

@@ -3,6 +3,7 @@
  */
 import { ArgumentsHost, Catch, ExceptionFilter as AppExceptionFilter, HttpException } from '@nestjs/common'
 import { AxiosError } from 'axios'
+import { FastifyReply } from 'fastify'
 import { ZodError } from 'zod'
 
 import { ILoggerAdapter } from '@/infra/logger/adapter'
@@ -10,6 +11,7 @@ import { DateUtils } from '@/utils/date'
 import { ApiBadRequestException, ApiErrorType, ApiInternalServerException, BaseException } from '@/utils/exception'
 import { DefaultErrorMessage } from '@/utils/http-status'
 import { ObjectUtil } from '@/utils/object'
+import { AppFastifyRequest } from '@/utils/request'
 import { AnyType } from '@/utils/types'
 
 @Catch()
@@ -18,16 +20,23 @@ export class ExceptionHandlerFilter implements AppExceptionFilter {
 
   catch(exception: BaseException, host: ArgumentsHost): void {
     const context = host.switchToHttp()
-    const response = context.getResponse()
-    const request = context.getRequest()
+    const response = context.getResponse<FastifyReply>()
+    const request = context.getRequest<AppFastifyRequest>()
 
     const status = this.getStatus(exception)
 
-    const requestId = (request as { id: string }).id
+    const requestId = request.id
     exception.traceid = [exception.traceid, requestId].find(Boolean) as string
 
-    response.status(status)
-    this.loggerService.logger(request, response)
+    response.code(status)
+
+    const rawRequest = Object.assign(request.raw, {
+      id: request.id,
+      context: request.context,
+      protocol: request.protocol
+    })
+
+    this.loggerService.logger(rawRequest, response.raw)
     this.logError(exception)
     const message = this.getErrorMessage(exception, status)
 
@@ -44,7 +53,7 @@ export class ExceptionHandlerFilter implements AppExceptionFilter {
       }
     }
 
-    response.json(errorResponse)
+    response.send(errorResponse)
   }
 
   private logError(exception: BaseException): void {

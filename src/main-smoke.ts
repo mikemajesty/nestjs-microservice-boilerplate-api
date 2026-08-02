@@ -15,5 +15,6 @@ const server = http.createServer((request, response) => {
 })
 
 server.listen(port, host, () => {
-  console.log(`Smoke app listening on ${host}:${port}`)
+  // eslint-disable-next-line no-console
+  console.warn(`Smoke app listening on ${host}:${port}`)
 })

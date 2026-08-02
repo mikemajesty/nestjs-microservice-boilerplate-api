@@ -3,8 +3,7 @@ import { UserEntity } from '@/core/user/entity/user'
 import { UserPasswordEntity } from '@/core/user/entity/user-password'
 import { IDGeneratorUtils } from '@/utils/id-generator'
 import { ObjectUtil } from '@/utils/object'
-import { MigrationInterface, QueryRunner } from 'typeorm'
-import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity'
+import { MigrationInterface, QueryDeepPartialEntity, QueryRunner } from 'typeorm'
 import { PermissionSchema } from '../schemas/permission'
 import { RoleSchema } from '../schemas/role'
 import { UserSchema } from '../schemas/user'
@@ -34,8 +33,6 @@ export class insertUser1727655177319 implements MigrationInterface {
       await queryRunner.query(`INSERT INTO users_roles (users_id, roles_id) VALUES('${entity.id}', '${role.id}');`)
     }
 
-    const insertPromiseList = []
-
     const permissions = await queryRunner.manager.find(PermissionSchema)
 
     const userRole = roles.find((r) => r.name === RoleEnum.USER)
@@ -43,22 +40,16 @@ export class insertUser1727655177319 implements MigrationInterface {
 
     for (const userPermission of userPermissions) {
       const permission = permissions.find((p) => p.name === userPermission)
-      insertPromiseList.push(
-        queryRunner.query(
-          `INSERT INTO permissions_roles (roles_id, permissions_id) VALUES ('${ObjectUtil.reach(userRole, (r) => r.id)}', '${ObjectUtil.reach(permission, (p) => p.id)}');`
-        )
+      await queryRunner.query(
+        `INSERT INTO permissions_roles (roles_id, permissions_id) VALUES ('${ObjectUtil.reach(userRole, (r) => r.id)}', '${ObjectUtil.reach(permission, (p) => p.id)}');`
       )
     }
 
     for (const permission of permissions) {
-      insertPromiseList.push(
-        queryRunner.query(
-          `INSERT INTO permissions_roles (roles_id, permissions_id) VALUES ('${ObjectUtil.reach(backOfficeRole, (r) => r.id)}', '${ObjectUtil.reach(permission, (p) => p.id)}');`
-        )
+      await queryRunner.query(
+        `INSERT INTO permissions_roles (roles_id, permissions_id) VALUES ('${ObjectUtil.reach(backOfficeRole, (r) => r.id)}', '${ObjectUtil.reach(permission, (p) => p.id)}');`
       )
     }
-
-    await Promise.all(insertPromiseList)
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {

@@ -4,8 +4,10 @@
 import { Body, Controller, Post } from '@nestjs/common'
 
 import { ILoggerAdapter } from '@/infra/logger'
+import { Public } from '@/utils/decorators'
 
 @Controller('alert')
+@Public()
 export class AlertController {
   constructor(private readonly logger: ILoggerAdapter) {}
 

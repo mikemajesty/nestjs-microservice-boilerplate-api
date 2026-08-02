@@ -12,6 +12,7 @@ tags:
   - name: Logout
   - name: Health
   - name: Cat
+  - name: Bird
 paths:
   /:
     get:
@@ -46,6 +47,149 @@ paths:
         content:
           application/json:
             schema: {}
+  /api/{version}/birds:
+    post:
+      operationId: BirdController_create
+      description: create bird
+      parameters:
+        - $ref: '#/components/parameters/Utils.Versioning.VersionParams'
+      responses:
+        '200':
+          description: bird created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bird.CreateOutput'
+        '400':
+          description: When input is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bird.CreateValidationError'
+      tags:
+        - Bird
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Bird.CreateInput'
+      security:
+        - BearerAuth: []
+    get:
+      operationId: BirdController_list
+      description: list bird
+      parameters:
+        - $ref: '#/components/parameters/Utils.Versioning.VersionParams'
+        - $ref: '#/components/parameters/Utils.Model.ApiPaginationInput.page'
+        - $ref: '#/components/parameters/Utils.Model.ApiPaginationInput.limit'
+        - $ref: '#/components/parameters/Utils.Model.ApiPaginationInput.sort'
+        - $ref: '#/components/parameters/Utils.Model.ApiPaginationInput.search'
+      responses:
+        '200':
+          description: list bird successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bird.ListOutput'
+      tags:
+        - Bird
+      security:
+        - BearerAuth: []
+  /api/{version}/birds/{id}:
+    put:
+      operationId: BirdController_update
+      description: update bird
+      parameters:
+        - $ref: '#/components/parameters/Utils.Versioning.VersionParams'
+        - $ref: '#/components/parameters/Bird.UpdateParamInput'
+      responses:
+        '200':
+          description: bird updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bird.UpdateOutput'
+        '400':
+          description: When input is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bird.UpdateValidationError'
+        '404':
+          description: When bird not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bird.UpdateBirdNotFoundError'
+      tags:
+        - Bird
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Bird.UpdateInput'
+      security:
+        - BearerAuth: []
+    get:
+      operationId: BirdController_getById
+      description: get bird by id
+      parameters:
+        - $ref: '#/components/parameters/Utils.Versioning.VersionParams'
+        - $ref: '#/components/parameters/Bird.GetByIdParamInput'
+      responses:
+        '200':
+          description: get bird by id successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bird.GetByIdOutput'
+        '400':
+          description: When input is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bird.GetByIdValidationError'
+        '404':
+          description: When bird not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bird.GetByIdBirdNotFoundError'
+      tags:
+        - Bird
+      security:
+        - BearerAuth: []
+    delete:
+      operationId: BirdController_delete
+      description: delete bird
+      parameters:
+        - $ref: '#/components/parameters/Utils.Versioning.VersionParams'
+        - $ref: '#/components/parameters/Bird.DeleteParamInput'
+      responses:
+        '200':
+          description: bird deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bird.DeleteOutput'
+        '400':
+          description: When input is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bird.DeleteValidationError'
+        '404':
+          description: When bird not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bird.DeleteBirdNotFoundError'
+      tags:
+        - Bird
+      security:
+        - BearerAuth: []
   /api/{version}/cats:
     post:
       operationId: CatController_create
@@ -933,20 +1077,6 @@ paths:
         - User
       security:
         - BearerAuth: []
-  /health/:
-    get:
-      operationId: HealthController_healthRoot
-      description: Liveness probe (health root) - checks if application process is alive
-      parameters: []
-      responses:
-        '200':
-          description: Simple status indicating if the application process is running
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Health.LivenessOutput'
-      tags:
-        - Health
   /health/live:
     get:
       operationId: HealthController_liveness
@@ -991,6 +1121,27 @@ paths:
         - Health
 components:
   parameters:
+    Bird.DeleteParamInput:
+      name: id
+      in: path
+      required: true
+      description: bird id
+      schema:
+        type: string
+    Bird.GetByIdParamInput:
+      name: id
+      in: path
+      required: true
+      description: bird id
+      schema:
+        type: string
+    Bird.UpdateParamInput:
+      name: id
+      in: path
+      required: true
+      description: bird id
+      schema:
+        type: string
     Cat.DeleteParamInput:
       name: id
       in: path
@@ -1157,6 +1308,434 @@ components:
           type: string
           description: Status of alert handling
       description: Alert response
+    Bird.BirdEntity:
+      type: object
+      required:
+        - name
+        - createdAt
+        - updatedAt
+        - deletedAt
+      properties:
+        name:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        deletedAt:
+          type: string
+          nullable: true
+          default: null
+      description: bird base entity
+    Bird.CreateInput:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - name
+          properties:
+            name:
+              type: string
+          description: The template for picking properties.
+      description: bird create input
+    Bird.CreateOutput:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/Bird.BirdEntity'
+      description: bird create output
+    Bird.CreateValidationError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 400
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - 'name: Required'
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When input is invalid.
+      description: When input is invalid
+    Bird.DeleteBirdNotFoundError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 404
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - birdNotFound
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When resource not found.
+      description: When bird not found
+    Bird.DeleteOutput:
+      type: object
+      required:
+        - deletedAt
+      properties:
+        deletedAt:
+          type: string
+          format: date-time
+      allOf:
+        - type: object
+          required:
+            - name
+            - createdAt
+            - updatedAt
+          properties:
+            name:
+              type: string
+            createdAt:
+              type: string
+            updatedAt:
+              type: string
+          description: The template for omitting properties.
+      description: bird delete output
+    Bird.DeleteValidationError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 400
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - 'id: Required'
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When input is invalid.
+      description: When input is invalid
+    Bird.GetByIdBirdNotFoundError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 404
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - birdNotFound
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When resource not found.
+      description: When bird not found
+    Bird.GetByIdOutput:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/Bird.BirdEntity'
+      description: bird get by id input
+    Bird.GetByIdValidationError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 400
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - 'id: Required'
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When input is invalid.
+      description: When input is invalid
+    Bird.ListOutput:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - docs
+            - page
+            - limit
+            - total
+          properties:
+            docs:
+              type: array
+              items:
+                $ref: '#/components/schemas/Bird.BirdEntity'
+              description: documents
+            page:
+              type: integer
+              format: int32
+              description: current page
+              default: 1
+            limit:
+              type: integer
+              format: int32
+              description: limit per page
+              default: 10
+            total:
+              type: integer
+              format: int64
+              description: total items
+              default: 1
+            totalPages:
+              type: integer
+              format: int32
+              description: total pages
+              default: 1
+          description: pagination default response
+      description: bird list output
+    Bird.ListQueryInput:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/Utils.Model.ApiPaginationInput'
+    Bird.UpdateBirdNotFoundError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 404
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - birdNotFound
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When resource not found.
+      description: When bird not found
+    Bird.UpdateInput:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - name
+          properties:
+            name:
+              type: string
+          description: The template for picking properties.
+      description: bird update input
+    Bird.UpdateOutput:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/Bird.BirdEntity'
+      description: bird update output
+    Bird.UpdateValidationError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 400
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - 'id: Required'
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When input is invalid.
+      description: When input is invalid
     Cat.CatEntity:
       type: object
       required:

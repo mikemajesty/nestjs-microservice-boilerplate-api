@@ -1,8 +1,11 @@
 /**
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/utils/request.md
  */
+import 'fastify'
+
 import { AttributeValue, Context, Span, SpanStatus, Tracer } from '@opentelemetry/api'
 import { AxiosInstance, AxiosRequestConfig } from 'axios'
+import { FastifyRequest } from 'fastify'
 
 import { UserEntity } from '@/core/user/entity/user'
 
@@ -41,6 +44,23 @@ export interface ApiRequest {
 }
 
 export type ApiTrancingInput = Pick<ApiRequest, 'user' | 'tracing'>
+
+export type AppRequestHeaders = FastifyRequest['headers'] & {
+  authorization?: string
+  traceid?: string
+}
+
+export type AppFastifyRequest = FastifyRequest & {
+  headers: AppRequestHeaders
+}
+
+declare module 'fastify' {
+  interface FastifyRequest {
+    tracing?: TracingType
+    user?: UserRequest
+    context?: string
+  }
+}
 
 export const generalizePath = (path: string): string => {
   if (!path) return '/'

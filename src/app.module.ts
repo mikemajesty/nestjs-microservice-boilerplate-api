@@ -1,8 +1,12 @@
 import { Module } from '@nestjs/common'
 import { APP_GUARD, APP_INTERCEPTOR, Reflector } from '@nestjs/core'
 
+import { IUserRepository } from '@/core/user/repository/user'
+import { ICacheAdapter } from '@/infra/cache'
+import { ILoggerAdapter, LoggerModule } from '@/infra/logger'
 import { InfraModule } from '@/infra/module'
 import { ISecretsAdapter } from '@/infra/secrets'
+import { ITokenAdapter } from '@/libs/token'
 import { AuthorizationRoleGuard } from '@/middlewares/guards'
 import { BirdModule } from '@/modules/bird/module'
 import { CatModule } from '@/modules/cat/module'
@@ -11,8 +15,6 @@ import { LoginModule } from '@/modules/login/module'
 import { LogoutModule } from '@/modules/logout/module'
 import { UserModule } from '@/modules/user/module'
 
-import { IUserRepository } from './core/user/repository/user'
-import { ILoggerAdapter, LoggerModule } from './infra/logger'
 import { LibModule } from './libs/module'
 import {
   ExceptionHandlerInterceptor,
@@ -78,10 +80,10 @@ import { RoleModule } from './modules/role/module'
     },
     {
       provide: APP_GUARD,
-      useFactory: (repository: IUserRepository) => {
-        return new AuthorizationRoleGuard(new Reflector(), repository)
+      useFactory: (repository: IUserRepository, tokenService: ITokenAdapter, cache: ICacheAdapter) => {
+        return new AuthorizationRoleGuard(new Reflector(), repository, tokenService, cache)
       },
-      inject: [IUserRepository]
+      inject: [IUserRepository, ITokenAdapter, ICacheAdapter]
     }
   ]
 })

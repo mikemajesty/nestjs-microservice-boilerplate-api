@@ -1,14 +1,13 @@
 /**
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/modules/module.md
  */
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common'
+import { Module } from '@nestjs/common'
 
 import { LogoutUsecase } from '@/core/user/use-cases/user-logout'
 import { ICacheAdapter } from '@/infra/cache'
 import { RedisCacheModule } from '@/infra/cache/redis'
 import { LoggerModule } from '@/infra/logger'
 import { ISecretsAdapter, SecretsModule } from '@/infra/secrets'
-import { AuthenticationMiddleware } from '@/middlewares/middlewares'
 
 import { TokenLibModule } from '../../libs/token/module'
 import { ILogoutAdapter } from './adapter'
@@ -28,8 +27,4 @@ import { LogoutController } from './controller'
   ],
   exports: [ILogoutAdapter]
 })
-export class LogoutModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(AuthenticationMiddleware).forRoutes(LogoutController)
-  }
-}
+export class LogoutModule {}

@@ -11,11 +11,13 @@ import {
   ResetPasswordSendEmailInput,
   ResetPasswordSendEmailOutput
 } from '@/core/reset-password/use-cases/reset-password-send-email'
+import { Public } from '@/utils/decorators'
 import { ApiRequest } from '@/utils/request'
 
 import { IConfirmResetPasswordAdapter, ISendEmailResetPasswordAdapter } from './adapter'
 
 @Controller('/reset-password')
+@Public()
 export class ResetPasswordController {
   constructor(
     private readonly sendEmailUsecase: ISendEmailResetPasswordAdapter,

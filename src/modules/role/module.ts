@@ -1,7 +1,7 @@
 /**
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/modules/module.md
  */
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common'
+import { Module } from '@nestjs/common'
 import { getRepositoryToken, TypeOrmModule } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 
@@ -19,7 +19,6 @@ import { RedisCacheModule } from '@/infra/cache/redis'
 import { RoleSchema } from '@/infra/database/postgres/schemas/role'
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger'
 import { TokenLibModule } from '@/libs/token'
-import { AuthenticationMiddleware } from '@/middlewares/middlewares'
 
 import { PermissionModule } from '../permission/module'
 import {
@@ -85,8 +84,4 @@ import { RoleRepository } from './repository'
   ],
   exports: [IRoleRepository]
 })
-export class RoleModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(AuthenticationMiddleware).forRoutes(RoleController)
-  }
-}
+export class RoleModule {}

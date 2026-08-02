@@ -1,13 +1,13 @@
 /**
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/infra/http.md
  */
-import { Axios, AxiosInstance, AxiosRequestConfig } from 'axios'
+import { AxiosInstance, AxiosRequestConfig } from 'axios'
 
 import { TracingType } from '@/utils/request'
 
 import { HttpData, HttpMethod, HttpResponse } from './types'
 
-export abstract class IHttpAdapter<T = Axios | AxiosInstance> {
+export abstract class IHttpAdapter<T = AxiosInstance> {
   abstract instance(): T
   abstract tracing?: TracingType
 

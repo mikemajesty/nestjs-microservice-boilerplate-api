@@ -10,7 +10,7 @@ import { ZodError } from 'zod'
 
 import { ApiBadRequestException, ApiInternalServerException, ApiTimeoutException } from '@/utils/exception'
 import { ObjectUtil } from '@/utils/object'
-import { TracingType } from '@/utils/request'
+import { AppFastifyRequest, TracingType } from '@/utils/request'
 
 @Injectable()
 export class ExceptionHandlerInterceptor implements NestInterceptor {
@@ -19,14 +19,12 @@ export class ExceptionHandlerInterceptor implements NestInterceptor {
       catchError((error) => {
         error.status = this.getStatusCode(error)
 
-        const headers = executionContext.getArgs()[0]?.headers
-
-        const request = executionContext.switchToHttp().getRequest()
+        const request = executionContext.switchToHttp().getRequest<AppFastifyRequest>()
 
         this.sanitizeExternalError(error)
 
         if (typeof error === 'object' && !error.traceid) {
-          error.traceid = headers.traceid
+          error.traceid = request.headers.traceid
         }
 
         if (!error?.context) {

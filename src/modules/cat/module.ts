@@ -1,7 +1,7 @@
 /**
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/modules/module.md
  */
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common'
+import { Module } from '@nestjs/common'
 import { getConnectionToken } from '@nestjs/mongoose'
 import mongoose, { Connection, PaginateModel, Schema } from 'mongoose'
 
@@ -16,7 +16,6 @@ import { ConnectionName } from '@/infra/database/enum'
 import { Cat, CatDocument, CatSchema } from '@/infra/database/mongo/schemas/cat'
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger'
 import { TokenLibModule } from '@/libs/token'
-import { AuthenticationMiddleware } from '@/middlewares/middlewares'
 import { MongoRepositoryModelSessionType } from '@/utils/mongoose'
 
 import { ICatCreateAdapter, ICatDeleteAdapter, ICatGetByIdAdapter, ICatListAdapter, ICatUpdateAdapter } from './adapter'
@@ -85,8 +84,4 @@ import { CatRepository } from './repository'
     ICatDeleteAdapter
   ]
 })
-export class CatModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(AuthenticationMiddleware).forRoutes(CatController)
-  }
-}
+export class CatModule {}

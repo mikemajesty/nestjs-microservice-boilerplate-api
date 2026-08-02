@@ -17,7 +17,7 @@ import { Observable, tap } from 'rxjs'
 
 import { ILoggerAdapter } from '@/infra/logger'
 import { AxiosUtils } from '@/utils/axios'
-import { generalizePath, TracingType } from '@/utils/request'
+import { AppFastifyRequest, generalizePath, TracingType } from '@/utils/request'
 
 import { name, version } from '../../../package.json'
 
@@ -30,14 +30,15 @@ export class TracingInterceptor implements NestInterceptor {
   }
 
   intercept(executionContext: ExecutionContext, next: CallHandler): Observable<unknown> {
-    const request = executionContext.switchToHttp().getRequest()
+    const request = executionContext.switchToHttp().getRequest<AppFastifyRequest>()
     const res = executionContext.switchToHttp().getResponse()
 
     const requestId = request.headers.traceid ?? request.id
 
     const controller = `${executionContext.getClass().name}.${executionContext.getHandler().name}`
+    const requestPath = request.url.split('?')[0]
 
-    const span = this.tracer.startSpan(generalizePath(request.path))
+    const span = this.tracer.startSpan(generalizePath(requestPath))
 
     const createTracingInstance = (): TracingType => {
       return {
@@ -87,7 +88,7 @@ export class TracingInterceptor implements NestInterceptor {
     request.tracing = createTracingInstance()
 
     request.tracing.addAttribute('http.method', request.method)
-    request.tracing.addAttribute('http.url', request.path)
+    request.tracing.addAttribute('http.url', requestPath)
     request.tracing.addAttribute('context', controller)
 
     if (requestId) {
@@ -96,9 +97,11 @@ export class TracingInterceptor implements NestInterceptor {
 
     return next.handle().pipe(
       tap(() => {
-        request.tracing.setStatus({ code: SpanStatusCode.OK })
-        request.tracing.addAttribute('http.status_code', res.statusCode)
-        request.tracing.finish()
+        if (request?.tracing) {
+          request.tracing.setStatus({ code: SpanStatusCode.OK })
+          request.tracing.addAttribute('http.status_code', res.statusCode)
+          request.tracing.finish()
+        }
       })
     )
   }

@@ -32,9 +32,7 @@ describe(LoginController.name, () => {
       .useValue(redisService)
       .compile()
 
-    app = moduleRef.createNestApplication()
-    TestEnd2EndUtils.addTracing(app)
-    await app.init()
+    app = await TestEnd2EndUtils.createApp(moduleRef)
 
     userRepository = moduleRef.get(IUserRepository)
     await userFixture.down(userRepository)

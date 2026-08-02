@@ -15,12 +15,12 @@ import { PostgresDatabaseModule } from '@/infra/database/postgres'
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger'
 
 import { IHealthAdapter } from './adapter'
-import { HealthController } from './controller'
+import { HealthController, RootHealthController } from './controller'
 import { HealthService } from './service'
 
 @Module({
   imports: [LoggerModule, PostgresDatabaseModule, RedisCacheModule],
-  controllers: [HealthController],
+  controllers: [HealthController, RootHealthController],
   providers: [
     {
       provide: IHealthAdapter,

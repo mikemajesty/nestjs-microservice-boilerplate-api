@@ -1,12 +1,16 @@
 import { FactoryProvider, INestApplication, InjectionToken } from '@nestjs/common'
 import { APP_GUARD, Reflector } from '@nestjs/core'
+import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify'
+import { TestingModule } from '@nestjs/testing'
 import { TypeOrmModule } from '@nestjs/typeorm'
-import { NextFunction } from 'express'
+import { FastifyRequest } from 'fastify'
 import { DataSourceOptions } from 'typeorm'
 
 import { UserEntity } from '@/core/user/entity/user'
 import { IUserRepository } from '@/core/user/repository/user'
-import { AuthorizationRoleGuard } from '@/middlewares/guards/authorization.guard'
+import { ICacheAdapter } from '@/infra/cache'
+import { ITokenAdapter } from '@/libs/token'
+import { AuthorizationRoleGuard } from '@/middlewares/guards'
 import { AlertController } from '@/modules/alert/controller'
 import { CatController } from '@/modules/cat/controller'
 import { HealthController } from '@/modules/health/controller'
@@ -67,10 +71,23 @@ export class TestEnd2EndUtils {
 
   static readonly AUTHORIZATION_HEADER: [string, string] = ['Authorization', 'Bearer fake-token']
 
+  static async createApp(moduleRef: TestingModule): Promise<NestFastifyApplication> {
+    const app = moduleRef.createNestApplication<NestFastifyApplication>(new FastifyAdapter())
+
+    TestEnd2EndUtils.addTracing(app)
+
+    await app.init()
+    await app.getHttpAdapter().getInstance().ready()
+
+    return app
+  }
+
   static addTracing(app: INestApplication) {
-    app.use((req: ApiRequest, res: Response, next: NextFunction) => {
-      req.tracing = TestUtils.getMockTracing().tracing
-      next()
+    const fastify = app.getHttpAdapter().getInstance()
+
+    fastify.addHook('preHandler', async (request: FastifyRequest) => {
+      const reqWithTracing = request as FastifyRequest & { tracing?: ApiRequest['tracing'] }
+      reqWithTracing.tracing = TestUtils.getMockTracing().tracing
     })
   }
 
@@ -88,10 +105,10 @@ export class TestEnd2EndUtils {
   static getGuardProvider(injectList: InjectionToken[]): FactoryProvider {
     return {
       provide: APP_GUARD,
-      useFactory: (repository: IUserRepository) => {
-        return new AuthorizationRoleGuard(new Reflector(), repository)
+      useFactory: (repository: IUserRepository, tokenService: ITokenAdapter, cache: ICacheAdapter) => {
+        return new AuthorizationRoleGuard(new Reflector(), repository, tokenService, cache)
       },
-      inject: injectList
+      inject: [...injectList, ITokenAdapter, ICacheAdapter]
     } as FactoryProvider
   }
 }

@@ -9,7 +9,9 @@ import { PermissionUpdateInput } from '@/core/permission/use-cases/permission-up
 import { IRoleRepository } from '@/core/role/repository/role'
 import { IUserRepository } from '@/core/user/repository/user'
 import { ICacheAdapter } from '@/infra/cache'
+import { RedisCacheModule } from '@/infra/cache/redis'
 import { ITokenAdapter } from '@/libs/token'
+import { TokenLibModule } from '@/libs/token/module'
 import { UserModule } from '@/modules/user/module'
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception'
 import { UserRequest } from '@/utils/request'
@@ -39,7 +41,14 @@ describe(PermissionController.name, () => {
     const { postgresConfig } = await postgresContainer.getPostgres()
 
     const moduleRef = await Test.createTestingModule({
-      imports: [UserModule, PermissionModule, TestEnd2EndUtils.getPostgresModule(postgresContainer, postgresConfig)]
+      imports: [
+        UserModule,
+        PermissionModule,
+        TokenLibModule,
+        RedisCacheModule,
+        TestEnd2EndUtils.getPostgresModule(postgresContainer, postgresConfig)
+      ],
+      providers: [TestEnd2EndUtils.getGuardProvider([IUserRepository])]
     })
       .overrideProvider(ITokenAdapter)
       .useValue({
@@ -53,9 +62,7 @@ describe(PermissionController.name, () => {
       .useFactory({ factory: async () => redisContainer.getTestRedis() })
       .compile()
 
-    app = moduleRef.createNestApplication()
-    TestEnd2EndUtils.addTracing(app)
-    await app.init()
+    app = await TestEnd2EndUtils.createApp(moduleRef)
 
     permissionRepository = moduleRef.get(IPermissionRepository)
     roleRepository = moduleRef.get(IRoleRepository)
