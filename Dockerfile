@@ -3,7 +3,9 @@
 # =============================================================================
 # STAGE 1: Build (using full Node image to compile the app)
 # =============================================================================
-FROM node:22.12 AS build
+ARG NODE_VERSION=24.17.0
+
+FROM node:${NODE_VERSION} AS build
 
 WORKDIR /app
 
@@ -22,7 +24,7 @@ RUN npm run build
 # =============================================================================
 # STAGE 2: Production (smaller image for runtime)
 # =============================================================================
-FROM node:22.12-alpine AS production
+FROM node:${NODE_VERSION}-alpine AS production
 
 # Add labels for better maintainability
 LABEL maintainer="mike.rodrigues.lima@gmail.com"
