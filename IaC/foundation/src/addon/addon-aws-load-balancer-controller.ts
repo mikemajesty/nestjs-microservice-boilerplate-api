@@ -20,6 +20,7 @@ export type AwsLoadBalancerControllerArgs = {
 
 const AWS_LOAD_BALANCER_CONTROLLER_COMPONENT_TYPE = 'boilerplate:addon:AwsLoadBalancerController'
 const AWS_LOAD_BALANCER_CONTROLLER_CHART = 'aws-load-balancer-controller'
+const AWS_LOAD_BALANCER_CONTROLLER_CHART_VERSION = '3.4.3'
 const AWS_LOAD_BALANCER_CONTROLLER_REPOSITORY = 'https://aws.github.io/eks-charts'
 const CONTROLLER_REPLICA_COUNT = 1
 const SERVICE_ACCOUNT_ROLE_ARN_ANNOTATION = 'eks.amazonaws.com/role-arn'
@@ -37,6 +38,7 @@ export class AwsLoadBalancerController extends pulumi.ComponentResource implemen
       releaseName,
       {
         chart: AWS_LOAD_BALANCER_CONTROLLER_CHART,
+        version: AWS_LOAD_BALANCER_CONTROLLER_CHART_VERSION,
         cleanupOnFail: true,
         name: AWS_LOAD_BALANCER_CONTROLLER_CHART,
         namespace: serviceAccountNamespace,

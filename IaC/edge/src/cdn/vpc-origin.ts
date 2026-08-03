@@ -16,7 +16,8 @@ export type CloudFrontVpcOriginArgs = {
 }
 
 const CDN_CLOUDFRONT_VPC_ORIGIN_COMPONENT_TYPE = 'boilerplate:cdn:CloudFrontVpcOrigin'
-const MANAGED_CACHING_OPTIMIZED_POLICY_ID = '658327ea-f89d-4fab-a63d-7e88639e58f6'
+// AWS managed policy: CachingDisabled — suitable for API routes where responses must not be cached by default
+const MANAGED_CACHING_DISABLED_POLICY_ID = '4135ea2d-6df8-44a3-9df3-4b5a84be39ad'
 
 export class CloudFrontVpcOrigin extends pulumi.ComponentResource implements CloudFrontVpcOriginResources {
   readonly distribution: aws.cloudfront.Distribution
@@ -34,9 +35,27 @@ export class CloudFrontVpcOrigin extends pulumi.ComponentResource implements Clo
       resourceName(config, resourceNameSuffix.originRequestPolicy),
       {
         name: resourceName(config, resourceNameSuffix.originRequestPolicy),
-        comment: 'Forwards all query strings to origin, no cookies or headers',
+        comment: 'Forwards all query strings to origin — for public routes, no auth header needed',
         cookiesConfig: { cookieBehavior: 'none' },
         headersConfig: { headerBehavior: 'none' },
+        queryStringsConfig: { queryStringBehavior: 'all' }
+      },
+      { parent: this }
+    )
+
+    // Authenticated API routes need Authorization forwarded to the origin.
+    // The userCachePolicy keys the cache on Authorization (preventing cross-user cache hits),
+    // but the OriginRequestPolicy is what actually sends the header upstream.
+    const apiOriginRequestPolicy = new aws.cloudfront.OriginRequestPolicy(
+      resourceName(config, resourceNameSuffix.apiOriginRequestPolicy),
+      {
+        name: resourceName(config, resourceNameSuffix.apiOriginRequestPolicy),
+        comment: 'Forwards Authorization header and all query strings — for authenticated API routes',
+        cookiesConfig: { cookieBehavior: 'none' },
+        headersConfig: {
+          headerBehavior: 'whitelist',
+          headers: { items: ['Authorization'] }
+        },
         queryStringsConfig: { queryStringBehavior: 'all' }
       },
       { parent: this }
@@ -91,7 +110,9 @@ export class CloudFrontVpcOrigin extends pulumi.ComponentResource implements Clo
           arn: envoyNlb.then((nlb) => nlb.arn),
           httpPort: 80,
           httpsPort: 443,
-          originProtocolPolicy: 'https-only',
+          // NLB is L4 transport only — TLS terminates at Envoy Gateway (north-south boundary).
+          // The CloudFront → NLB leg is internal to AWS (VPC Origin), so HTTP is acceptable for the PoC.
+          originProtocolPolicy: 'http-only',
           originSslProtocols: { items: ['TLSv1.2'], quantity: 1 }
         },
         tags: createTags(config)
@@ -129,7 +150,7 @@ export class CloudFrontVpcOrigin extends pulumi.ComponentResource implements Clo
           {
             pathPattern: '/api/*',
             cachePolicyId: userCachePolicy.id,
-            originRequestPolicyId: originRequestPolicy.id,
+            originRequestPolicyId: apiOriginRequestPolicy.id,
             targetOriginId: this.originId,
             viewerProtocolPolicy: 'redirect-to-https',
             allowedMethods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
@@ -141,7 +162,8 @@ export class CloudFrontVpcOrigin extends pulumi.ComponentResource implements Clo
           }
         ],
         defaultCacheBehavior: {
-          cachePolicyId: MANAGED_CACHING_OPTIMIZED_POLICY_ID,
+          // CachingDisabled: API root and unmatched paths must not be cached.
+          cachePolicyId: MANAGED_CACHING_DISABLED_POLICY_ID,
           originRequestPolicyId: originRequestPolicy.id,
           targetOriginId: this.originId,
           viewerProtocolPolicy: 'redirect-to-https',

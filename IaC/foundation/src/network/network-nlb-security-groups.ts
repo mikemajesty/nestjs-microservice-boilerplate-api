@@ -52,7 +52,7 @@ export class NetworkSecurityGroups extends pulumi.ComponentResource implements N
         egress: [],
         tags: createTags(config, {
           Name: envoyInternalNlbSecurityGroupName,
-          'kubernetes.io/cluster/${config.clusterName}': 'owned'
+          [`kubernetes.io/cluster/${resourceName(config, resourceNameSuffix.cluster.eks.cluster)}`]: 'owned'
         })
       },
       { parent: this }

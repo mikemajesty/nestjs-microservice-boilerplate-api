@@ -1,4 +1,3 @@
-import * as k8s from '@pulumi/kubernetes'
 import * as pulumi from '@pulumi/pulumi'
 
 import { ArgoCd } from './src/addon/addon-argocd'
@@ -20,6 +19,7 @@ import { EksOidcProvider } from './src/cluster/cluster-oidc-provider'
 import { config } from './src/config'
 import { InternalDns } from './src/dns/dns-private-zone'
 import { resourceName, resourceNameSuffix } from './src/names'
+import { NlbParameterStore } from './src/network/network-nlb-parameter-store'
 import { NetworkSecurityGroups } from './src/network/network-nlb-security-groups'
 import { VPCNetwork } from './src/network/network-vpc'
 import { WorkloadK8sProvider } from './src/workload/workload-k8s-provider'
@@ -163,38 +163,16 @@ const workloadK8sProvider = new WorkloadK8sProvider(
   }
 )
 
-const envoyNamespace = new k8s.core.v1.Namespace(
-  resourceName(config, 'envoy-namespace'),
-  {
-    metadata: {
-      name: 'envoy-gateway-system'
-    }
-  },
-  {
-    provider: configMapK8sProvider.provider,
-    dependsOn: [configMapK8sProvider]
-  }
-)
-
 // ============================================================
-// 11. CONFIGMAP PARA O SECURITY GROUP DO NLB
+// 11. SSM — persiste o SG ID do NLB como fonte de verdade AWS
 // ============================================================
-new K8sConfigMap(
-  resourceName(config, 'envoy-config'),
+const nlbParameterStore = new NlbParameterStore(
+  resourceName(config, resourceNameSuffix.network.nlbParameterStore),
   {
     config,
-    provider: configMapK8sProvider.provider,
-    namespace: 'envoy-gateway-system',
-    name: 'envoy-config',
-    data: {
-      'nlb-security-group-id': networkSecurityGroup.envoyInternalNlbSecurityGroupId,
-      'vpc-id': network.vpcId,
-      'cluster-name': eksCluster.clusterName
-    }
+    envoyNlbSecurityGroupId: networkSecurityGroup.envoyInternalNlbSecurityGroupId
   },
-  {
-    dependsOn: [networkSecurityGroup, eksCluster, configMapK8sProvider, envoyNamespace]
-  }
+  { dependsOn: [networkSecurityGroup] }
 )
 
 // ============================================================
@@ -220,7 +198,8 @@ const externalSecretsIam = new ExternalSecretsIam(resourceName(config, resourceN
   config,
   oidcProviderArn: eksOidcProvider.oidcProviderArn,
   oidcProviderUrl: eksOidcProvider.oidcProviderUrl,
-  runtimeSecretArn: applicationRuntimeSecret.secretArn
+  runtimeSecretArn: applicationRuntimeSecret.secretArn,
+  infraSsmParameterArn: nlbParameterStore.envoyNlbSgIdParameterArn
 })
 
 // ============================================================
@@ -268,7 +247,9 @@ const argoCdRootApplication = new ArgoCdRootApplication(
     namespaceName: argoCd.namespaceName,
     provider: workloadK8sProvider.provider
   },
-  { dependsOn: [argoCd, workloadK8sProvider] } // 👈 ADICIONADO WORKLOAD PROVIDER
+  // argoCd.release ensures the Helm chart (and its CRDs) are fully applied
+  // before Pulumi tries to create the argoproj.io/v1alpha1 Application resource.
+  { dependsOn: [argoCd.release, workloadK8sProvider] }
 )
 
 // ============================================================
@@ -284,6 +265,11 @@ export const vpc = {
 
 export const securityGroups = {
   publicLoadBalancerSecurityGroupId: networkSecurityGroup.envoyInternalNlbSecurityGroupId
+}
+
+export const infraConfig = {
+  envoyNlbSgIdParameterName: nlbParameterStore.envoyNlbSgIdParameterName,
+  envoyNlbSgIdParameterArn: nlbParameterStore.envoyNlbSgIdParameterArn
 }
 
 export const dns = {

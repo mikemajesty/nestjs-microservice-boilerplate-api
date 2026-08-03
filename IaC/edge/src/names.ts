@@ -25,7 +25,8 @@ export const resourceNameSuffix = {
     cdnLogsBucketOwnership: 'cdn-logs-bucket-ownership',
     cdnLogsBucketAcl: 'cdn-logs-bucket-acl'
   },
-  originRequestPolicy: 'origin-request-policy'
+  originRequestPolicy: 'origin-request-policy',
+  apiOriginRequestPolicy: 'api-origin-request-policy'
 } as const
 
 type NestedValue<T> = T extends string ? T : { [Key in keyof T]: NestedValue<T[Key]> }[keyof T]

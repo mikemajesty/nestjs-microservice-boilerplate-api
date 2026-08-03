@@ -19,6 +19,7 @@ export type ExternalSecretsIamArgs = {
   oidcProviderArn: pulumi.Input<string>
   oidcProviderUrl: pulumi.Input<string>
   runtimeSecretArn: pulumi.Input<string>
+  infraSsmParameterArn: pulumi.Input<string>
 }
 
 const EXTERNAL_SECRETS_IAM_COMPONENT_TYPE = 'boilerplate:addon:ExternalSecretsIam'
@@ -38,7 +39,7 @@ export class ExternalSecretsIam extends pulumi.ComponentResource implements Exte
   constructor(name: string, args: ExternalSecretsIamArgs, opts?: pulumi.ComponentResourceOptions) {
     super(EXTERNAL_SECRETS_IAM_COMPONENT_TYPE, name, {}, opts)
 
-    const { config, oidcProviderArn, oidcProviderUrl, runtimeSecretArn } = args
+    const { config, oidcProviderArn, oidcProviderUrl, runtimeSecretArn, infraSsmParameterArn } = args
     const policyName = resourceName(config, resourceNameSuffix.addon.externalSecrets.policy)
     const roleName = resourceName(config, resourceNameSuffix.addon.externalSecrets.role)
     const serviceAccountSubject = `system:serviceaccount:${SERVICE_ACCOUNT_NAMESPACE}:${SERVICE_ACCOUNT_NAME}`
@@ -69,7 +70,7 @@ export class ExternalSecretsIam extends pulumi.ComponentResource implements Exte
         })
       )
 
-    const policyDocument = pulumi.output(runtimeSecretArn).apply((secretArn) =>
+    const policyDocument = pulumi.all([runtimeSecretArn, infraSsmParameterArn]).apply(([secretArn, ssmArn]) =>
       JSON.stringify({
         Version: '2012-10-17',
         Statement: [
@@ -81,6 +82,11 @@ export class ExternalSecretsIam extends pulumi.ComponentResource implements Exte
               'secretsmanager:ListSecretVersionIds'
             ],
             Resource: secretArn
+          },
+          {
+            Effect: 'Allow',
+            Action: ['ssm:GetParameter', 'ssm:GetParameters'],
+            Resource: ssmArn
           }
         ]
       })

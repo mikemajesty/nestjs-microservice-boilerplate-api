@@ -4,13 +4,7 @@ metadata:
   name: private-origin-gateway
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: '15'
-spec:
-  project: default
-  source:
-    repoURL: https://github.com/mikemajesty/nestjs-microservice-boilerplate-api.git
-    targetRevision: master
-    path: gitops/cluster/private-origin-gateway
+    argocd.argoproj.io/sync-wave: '20'
   destination:
     server: https://kubernetes.default.svc
     namespace: envoy-gateway-system

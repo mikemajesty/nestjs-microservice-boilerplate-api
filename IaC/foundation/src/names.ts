@@ -15,6 +15,8 @@ export const resourceNameSuffix = {
     vpcNetwork: 'vpc-network',
     securityGroups: 'network-security-groups',
     nlbSecurityGroup: 'private-nlb-sg',
+    nlbParameterStore: 'nlb-parameter-store',
+    nlbSgIdPath: '/infra/envoy-nlb-sg-id',
     envoyNlbHttpIngress: 'envoy-nlb-http-ingress',
     envoyNlbHttpsIngress: 'envoy-nlb-https-ingress',
     envoyNlbEgress: 'envoy-nlb-egress',
@@ -78,8 +80,7 @@ export const resourceNameSuffix = {
     k8sProvider: 'workload-k8s-provider',
     namespace: 'workload',
     smokeApp: 'smoke-app',
-    smokeAppPublicIngress: 'smoke-app-public-ingress',
-    k8sProviderForConfigMap: 'workload-k8s-provider-for-configmap'
+    smokeAppPublicIngress: 'smoke-app-public-ingress'
   }
 } as const
 

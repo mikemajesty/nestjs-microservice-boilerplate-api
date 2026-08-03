@@ -4,10 +4,11 @@ resources:
   - private-origin-envoy-proxy.yaml
   - gateway-class.yaml
   - private-origin-gateway.yaml
+  - envoy-config-external-secret.yaml
 
 replacements:
   - source:
-      kind: ConfigMap
+      kind: Secret
       name: envoy-config
       namespace: envoy-gateway-system
       fieldPath: data.nlb-security-group-id

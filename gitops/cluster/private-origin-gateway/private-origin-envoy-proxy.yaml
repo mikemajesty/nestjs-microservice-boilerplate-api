@@ -3,6 +3,8 @@ kind: EnvoyProxy
 metadata:
   name: private-origin-envoy-proxy
   namespace: envoy-gateway-system
+  annotations:
+    argocd.argoproj.io/sync-wave: '5'
 spec:
   provider:
     type: Kubernetes
