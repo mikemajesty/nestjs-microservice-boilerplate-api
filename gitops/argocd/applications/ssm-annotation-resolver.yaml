@@ -1,0 +1,39 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: ssm-annotation-resolver
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: '18'
+spec:
+  project: default
+  source:
+    repoURL: oci://ghcr.io/mikemajesty/charts/ssm-annotation-resolver
+    path: .
+    targetRevision: 0.0.1
+    helm:
+      releaseName: ssm-annotation-resolver
+      values: |
+        serviceAccount:
+          name: ssm-annotation-resolver
+        irsa:
+          enabled: true
+          roleArn: arn:aws:iam::741437278375:role/nestjs-boilerplate-dev-ssm-annotation-resolver-role
+        aws:
+          region: us-east-1
+        sqs:
+          queueURL: https://sqs.us-east-1.amazonaws.com/741437278375/nestjs-boilerplate-dev-ssm-annotation-resolver-queue
+        certManager:
+          issuerRef:
+            kind: ClusterIssuer
+            name: internal-ca-cluster-issuer
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: envoy-gateway-system
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+    automated:
+      prune: true
+      selfHeal: true

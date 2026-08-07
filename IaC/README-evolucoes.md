@@ -55,16 +55,17 @@ conta central de networking
 Estado atual:
 
 ```text
-publicLoadBalancerSecurityGroup criado
-Ingress HTTP 80 publico
-Egress temporario all traffic
+security group dedicado do NLB interno do Envoy criado pela foundation
+ingress do NLB restrito ao prefix list gerenciado do CloudFront origin-facing nas portas 80 e 443
+health checks internos da VPC permitidos na porta 80
+egress ainda aberto para simplificar a PoC
 ```
 
 Evolucoes PoC depois:
 
 ```text
-criar SG do Envoy/Gateway quando o modelo do Gateway estiver definido
-restringir egress do Load Balancer para o SG do Envoy
+resolver o contrato entre foundation e GitOps para injetar o SG do NLB no EnvoyProxy sem hardcode
+restringir egress do Load Balancer quando o fluxo final entre NLB, Envoy e app estiver estabilizado
 criar regras separadas para borda publica e acesso privado quando os dois caminhos coexistirem
 criar SG da app quando existir workload real
 criar SG dos VPC endpoints quando endpoints forem criados
@@ -88,16 +89,16 @@ Estado atual:
 ```text
 IaC reorganizado em projetos Pulumi separados: foundation e edge
 foundation/dev aplicado e criando a base AWS/Kubernetes da PoC
-edge/dev criado, ainda sem recursos AWS de borda, lendo outputs de foundation/dev via StackReference
+edge/dev criado como stack separado lendo outputs de foundation/dev via StackReference
 NLB internal do Envoy Gateway criado como origem privada
-Envoy Gateway preparado para receber trafego via CloudFront VPC Origin
+CloudFront Distribution criada no projeto edge
+AWS WAF criado e associado ao CloudFront
+CloudFront VPC Origin modelado apontando para o NLB privado do Envoy
+cache policies e origin request policies iniciais definidas no edge
 smoke app roteando por HTTPRoute pelo private-origin-gateway
-smoke app Synced/Healthy no Argo CD depois de ajustar HPA para sync-wave posterior ao Deployment
-NLB internal do Envoy ativo, com target groups healthy nas portas 80 e 443
+NLB internal do Envoy ativo, com target groups healthy
 Service da app e Service do Envoy validados de dentro do cluster
-curl local/VPN para o DNS do NLB internal ainda sem conectividade TCP; isso nao bloqueia o desenho com CloudFront VPC Origin
-sem CloudFront
-sem WAF
+curl local/VPN para o DNS do NLB internal ainda nao e o objetivo principal; o foco e o caminho CloudFront -> VPC Origin -> Envoy
 ```
 
 Premissa:
@@ -112,25 +113,21 @@ esses caminhos devem ser pensados separadamente, mesmo quando chegam na mesma ap
 Passos atuais:
 
 ```text
-estabilizar o contrato entre foundation, GitOps e edge para a origem privada
-definir nome estavel para o NLB privado do Envoy Gateway
-definir Security Group controlado pela IaC para o NLB privado usado como origem
-fazer o edge localizar o NLB privado por nome/contrato estavel
-criar certificado ACM publico em us-east-1 para uso pelo CloudFront
-criar CloudFront Distribution como ponto publico de entrada
-associar AWS WAF ao CloudFront para protecao HTTP na borda
-criar CloudFront VPC Origin apontando para o NLB privado do Envoy Gateway
-definir policies de cache e origin request para API dinamica
+manter contrato estavel para o NLB privado do Envoy Gateway via nome/tag e outputs da foundation
+ajustar o CloudFront para usar comportamento compativel com API dinamica e autenticada
+validar fim a fim o caminho CloudFront -> VPC Origin -> NLB privado -> Envoy Gateway -> app
+resolver a estrategia definitiva para fornecer o SG do NLB ao EnvoyProxy sem fixar valor no Git
 ```
 
 Passo em que estamos agora:
 
 ```text
 foundation/dev esta aplicado e saudavel
-GitOps esta reconciliando a plataforma e a smoke app
 edge/dev esta criado como stack separado e consegue ler outputs da foundation
-proximo passo tecnico: transformar o NLB privado do Envoy em uma origem estavel para o edge consumir
-depois disso: implementar CloudFront VPC Origin, WAF e policies da borda no projeto edge
+CloudFront, WAF e VPC Origin ja foram modelados no edge
+o gargalo atual esta no GitOps do private-origin-gateway
+tentamos usar SSM Parameter Store + External Secrets para preencher o SG do NLB no EnvoyProxy, mas isso nao funciona com kustomize replacements porque o valor so existe depois do render
+proxima acao: decidir e implementar o contrato definitivo desse valor entre foundation e GitOps, provavelmente via manifest/ConfigMap gerado antes do render ou outro mecanismo de render-time
 ```
 
 Evolucoes PoC depois:
@@ -383,6 +380,9 @@ ALB internal do Argo reconciliado pelo AWS Load Balancer Controller
 ExternalDNS criado via Pulumi Helm com IRSA
 argocd.boilerplate.internal criado na Private Hosted Zone boilerplate.internal
 acesso HTTP ao Argo validado de dentro da VPC/cluster
+sync-waves revisados para external-secrets, stores, private-origin-gateway, cert-manager e smoke app
+erro de dependencia entre root app e CRD Application do Argo identificado e corrigido no Pulumi com dependencia explicita do Helm release
+problema atual aberto: private-origin-gateway ainda depende de um contrato render-time para o SG do NLB do Envoy
 ```
 
 Evolucoes PoC depois:
@@ -391,7 +391,7 @@ Evolucoes PoC depois:
 adicionar certificado para o acesso privado do Argo
 avaliar ACM privado/publico ou cert-manager para emitir o certificado
 mapeamento de rede/DNS corporativo para acessar argocd.boilerplate.internal fora da VPC, se necessario
-migrar Gateway/HTTPRoute e futuros add-ons para GitOps
+fechar o contrato entre foundation e GitOps para valores nao sensiveis usados em annotations/manifests antes do render
 manter IAM, IRSA, EKS, VPC, ECR e DNS base no Pulumi
 ```
 
@@ -525,12 +525,13 @@ Estado atual:
 ```text
 Envoy Gateway instalado via GitOps como add-on/control plane
 GatewayClass envoy-gateway criado
-Gateway private-origin-gateway criado em gitops/cluster/private-origin-gateway
-EnvoyProxy private-origin-envoy-proxy criado para customizar o data plane
+Gateway private-origin-gateway definido em gitops/cluster/private-origin-gateway
+EnvoyProxy private-origin-envoy-proxy definido para customizar o data plane
 NLB internal criado para o Envoy data plane atuar como origem privada do CloudFront VPC Origin
 cross-zone load balancing habilitado no NLB para a PoC com node group pequeno
-HTTPRoute da smoke app roteando pelo private-origin-gateway
-fluxo interno -> NLB privado -> Envoy -> HTTPRoute -> Service interno preparado para a etapa CloudFront VPC Origin
+HTTPRoute da smoke app definido para rotear pelo private-origin-gateway
+o ponto aberto atual e fornecer o SG do NLB ao EnvoyProxy de forma declarativa antes do render do Argo CD
+fluxo alvo continua sendo CloudFront -> VPC Origin -> NLB privado -> Envoy -> HTTPRoute -> Service interno
 ```
 
 Validado nesta etapa:
@@ -550,6 +551,7 @@ target health do NLB validado com todos os targets healthy depois da reconciliac
 Evolucoes PoC depois:
 
 ```text
+resolver o contrato do SG do NLB usado na annotation do EnvoyProxy sem depender de valor criado em runtime pelo External Secrets Operator
 validar resolucao DNS privada de api.boilerplate.internal a partir de rede/VPN com acesso a Private Hosted Zone
 manter Envoy -> app em HTTP enquanto o foco for TLS norte-sul
 validar fluxo CloudFront VPC Origin -> NLB privado -> Envoy -> HTTPRoute -> Service interno
@@ -785,17 +787,18 @@ estrategia de destroy por ambiente nao produtivo
 Ordem sugerida a partir do estado atual:
 
 ```text
-1. Fechar o caminho privado atual: DNS privado, certificado e validacao do acesso interno pelo Envoy Gateway
-2. Implementar caminho publico: CloudFront + AWS WAF -> VPC origin -> NLB privado -> Envoy Gateway -> app
-3. Definir dominio publico, certificado ACM em us-east-1, VPC origin, headers, cache policy e logs da borda
+1. Resolver o contrato render-time do SG do NLB do Envoy para o GitOps do private-origin-gateway sem hardcode no Git
+2. Fechar o caminho privado atual: Gateway/Envoy/HTTPRoute reconciliando corretamente e validacao do acesso interno pelo Envoy Gateway
+3. Validar fim a fim o caminho publico: CloudFront + AWS WAF -> VPC origin -> NLB privado -> Envoy Gateway -> app
 4. Validar restricoes do CloudFront VPC origin para NLB privado: security group no NLB, sem NLB TLS listener e sem gRPC publico por esse caminho
 5. Garantir que CloudFront seja o unico ponto publico e que NLB/Envoy fiquem privados
-6. Comecar endurecimento da app: ServiceAccount, RBAC minimo, ConfigMap, Secrets, resources e securityContext
-7. Validar observabilidade minima da borda, Envoy e app antes de autoscaling avancado
-8. Validar HPA com Metrics Server, requests e limits
-9. Depois estudar Karpenter para escala de nodes, se houver necessidade real de capacidade dinamica
-10. Depois estudar KEDA somente se houver fila, evento ou metrica externa que justifique autoscaling por evento
-11. Avaliar Cilium/WireGuard, Linkerd ou Istio apenas se houver requisito claro de trafego leste-oeste
+6. Definir dominio publico e certificado ACM em us-east-1 apenas quando fizer sentido sair do dominio default do CloudFront
+7. Comecar endurecimento da app: ServiceAccount, RBAC minimo, ConfigMap, Secrets, resources e securityContext
+8. Validar observabilidade minima da borda, Envoy e app antes de autoscaling avancado
+9. Validar HPA com Metrics Server, requests e limits
+10. Depois estudar Karpenter para escala de nodes, se houver necessidade real de capacidade dinamica
+11. Depois estudar KEDA somente se houver fila, evento ou metrica externa que justifique autoscaling por evento
+12. Avaliar Cilium/WireGuard, Linkerd ou Istio apenas se houver requisito claro de trafego leste-oeste
 ```
 
 Este documento deve continuar acompanhando a PoC conforme cada etapa sair do backlog e virar infraestrutura real.

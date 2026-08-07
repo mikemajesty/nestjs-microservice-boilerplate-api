@@ -8,6 +8,13 @@ Argo CD should reconcile Kubernetes applications, cluster add-ons, shared cluste
 
 Do not commit secrets here. Use an external secret manager or a sealed/encrypted secret workflow for sensitive values.
 
+## Passing AWS infrastructure values into manifests
+
+Pulumi creates AWS resources (Security Groups, Subnet IDs, ARNs) whose IDs are unknown at Git commit time.
+Hardcoding them breaks GitOps. The solution for this project is the SSM Annotation Resolver webhook.
+
+See [README-ssm-annotation-resolver.md](./README-ssm-annotation-resolver.md) for the full architecture, design decisions, and implementation plan.
+
 Layout convention:
 
 ```text

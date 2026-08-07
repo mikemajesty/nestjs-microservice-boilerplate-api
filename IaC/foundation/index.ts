@@ -8,6 +8,7 @@ import { ExternalDns } from './src/addon/addon-external-dns'
 import { ExternalDnsIam } from './src/addon/addon-external-dns-iam'
 import { ExternalSecretsIam } from './src/addon/addon-external-secrets-iam'
 import { K8sConfigMap } from './src/addon/addon-k8s-configmap'
+import { SsmAnnotationResolver } from './src/addon/addon-ssm-annotation-resolver'
 import { ApplicationContainerRegistry } from './src/app/app-container-registry'
 import { ApplicationRuntimeSecret } from './src/app/app-runtime-secret'
 import { ConfigMapK8sProvider } from './src/cluster/cluster-configmap-provider'
@@ -253,7 +254,26 @@ const argoCdRootApplication = new ArgoCdRootApplication(
 )
 
 // ============================================================
-// 14. EXPORTS
+// 14. SSM ANNOTATION RESOLVER (CRD-driven infrastructure provisioning)
+// ============================================================
+// Creates a Kubernetes CustomResource that instructs the SSM Annotation Resolver
+// controller to provision SQS/DLQ/IAM inside the cluster reconciliation flow.
+// Foundation then creates the EventBridge rule, target, and queue policy once
+// the CRD reports status.phase=Ready and exposes the queue outputs.
+const ssmAnnotationResolver = new SsmAnnotationResolver(
+  resourceName(config, 'ssm-annotation-resolver'),
+  {
+    config,
+    eksOidcProvider,
+    ssmParameterName: nlbParameterStore.envoyNlbSgIdParameterName,
+    workloadK8sProvider,
+    namespace: 'envoy-gateway-system'
+  },
+  { dependsOn: [workloadK8sProvider, eksOidcProvider] }
+)
+
+// ============================================================
+// 15. EXPORTS
 // ============================================================
 export const vpc = {
   id: network.vpcId,
@@ -338,7 +358,15 @@ export const addons = {
   externalSecretsRoleArn: externalSecretsIam.roleArn,
   externalSecretsRoleName: externalSecretsIam.roleName,
   externalSecretsServiceAccountName: externalSecretsIam.serviceAccountName,
-  externalSecretsServiceAccountNamespace: externalSecretsIam.serviceAccountNamespace
+  externalSecretsServiceAccountNamespace: externalSecretsIam.serviceAccountNamespace,
+  ssmAnnotationResolverSqsQueueUrl: ssmAnnotationResolver.sqsQueueUrl,
+  ssmAnnotationResolverSqsQueueArn: ssmAnnotationResolver.sqsQueueArn,
+  ssmAnnotationResolverDlqQueueUrl: ssmAnnotationResolver.dlqQueueUrl,
+  ssmAnnotationResolverDlqQueueArn: ssmAnnotationResolver.dlqQueueArn,
+  ssmAnnotationResolverIamRoleArn: ssmAnnotationResolver.iamRoleArn,
+  ssmAnnotationResolverServiceAccountName: ssmAnnotationResolver.serviceAccountName,
+  ssmAnnotationResolverServiceAccountNamespace: ssmAnnotationResolver.serviceAccountNamespace,
+  ssmAnnotationResolverEventBridgeRuleArn: ssmAnnotationResolver.eventBridgeRuleArn
 }
 
 export const workload = {}
