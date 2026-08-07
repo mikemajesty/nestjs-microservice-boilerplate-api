@@ -93,6 +93,20 @@ export class SsmAnnotationResolver extends pulumi.ComponentResource {
     const namespace = args.namespace || DEFAULT_NAMESPACE
     const serviceAccountName = DEFAULT_SERVICE_ACCOUNT_NAME
     const eventBridgeRuleName = `${name}-rule`
+
+    const resolverNamespace = new k8s.core.v1.Namespace(
+      `${name}-namespace`,
+      {
+        metadata: {
+          name: namespace
+        }
+      },
+      {
+        provider: args.workloadK8sProvider.provider,
+        parent: this
+      }
+    )
+
     const crdDefinition = new k8s.yaml.ConfigFile(
       `${name}-crd-definition`,
       {
@@ -127,18 +141,31 @@ export class SsmAnnotationResolver extends pulumi.ComponentResource {
           awsRegion: args.config.awsRegion,
           oidcProviderArn: args.eksOidcProvider.oidcProviderArn,
           serviceAccountName
-        }
+        },
+        // status is intentionally declared so Pulumi tracks it as an output
+        // and we can read controller-published values from status.outputs.
+        status: undefined
       },
       {
         provider: args.workloadK8sProvider.provider,
         parent: this,
-        dependsOn: [crdDefinition]
+        dependsOn: [resolverNamespace, crdDefinition],
+        customTimeouts: {
+          create: '30m',
+          update: '30m'
+        }
       }
     )
 
     const crdStatus = (
-      this.crd as k8s.apiextensions.CustomResource & { status: pulumi.Output<SsmAnnotationResolverInfraStatus> }
+      this.crd as k8s.apiextensions.CustomResource & {
+        status: pulumi.Output<SsmAnnotationResolverInfraStatus | undefined>
+      }
     ).status
+
+    if (!crdStatus) {
+      throw new Error('Unable to read SsmAnnotationResolverInfra status output from Pulumi CustomResource')
+    }
 
     const infraOutputs = crdStatus.apply((status) => {
       if (!status?.outputs) {
@@ -224,6 +251,7 @@ export class SsmAnnotationResolver extends pulumi.ComponentResource {
     this.eventBridgeRuleArn = eventBridgeRule.arn
 
     this.registerOutputs({
+      namespaceName: resolverNamespace.metadata.name,
       crdDefinition,
       crd: this.crd,
       sqsQueueUrl: this.sqsQueueUrl,

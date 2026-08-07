@@ -27,6 +27,9 @@ spec:
           issuerRef:
             kind: ClusterIssuer
             name: internal-ca-cluster-issuer
+        webhook:
+          failurePolicy: Ignore
+          timeoutSeconds: 5
   destination:
     server: https://kubernetes.default.svc
     namespace: envoy-gateway-system

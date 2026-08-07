@@ -269,7 +269,7 @@ const ssmAnnotationResolver = new SsmAnnotationResolver(
     workloadK8sProvider,
     namespace: 'envoy-gateway-system'
   },
-  { dependsOn: [workloadK8sProvider, eksOidcProvider] }
+  { dependsOn: [workloadK8sProvider, eksOidcProvider, argoCdRootApplication] }
 )
 
 // ============================================================
