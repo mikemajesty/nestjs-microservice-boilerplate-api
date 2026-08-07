@@ -30,6 +30,14 @@ spec:
         webhook:
           failurePolicy: Ignore
           timeoutSeconds: 5
+          rules:
+            apiGroups:
+              - gateway.envoyproxy.io
+            apiVersions:
+              - '*'
+            resources:
+              - envoyproxies
+            scope: Namespaced
   destination:
     server: https://kubernetes.default.svc
     namespace: envoy-gateway-system

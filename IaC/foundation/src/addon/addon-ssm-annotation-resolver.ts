@@ -93,6 +93,9 @@ export class SsmAnnotationResolver extends pulumi.ComponentResource {
     const namespace = args.namespace || DEFAULT_NAMESPACE
     const serviceAccountName = DEFAULT_SERVICE_ACCOUNT_NAME
     const eventBridgeRuleName = `${name}-rule`
+    const waitForReadyAnnotation: { [key: string]: string } | undefined = pulumi.runtime.isDryRun()
+      ? undefined
+      : { 'pulumi.com/waitFor': 'jsonpath={.status.phase}=Ready' }
 
     const resolverNamespace = new k8s.core.v1.Namespace(
       `${name}-namespace`,
@@ -129,9 +132,7 @@ export class SsmAnnotationResolver extends pulumi.ComponentResource {
         metadata: {
           name: 'default',
           namespace,
-          annotations: {
-            'pulumi.com/waitFor': 'jsonpath={.status.phase}=Ready'
-          }
+          annotations: waitForReadyAnnotation
         },
         spec: {
           sqsQueueName: `${name}-queue`,
