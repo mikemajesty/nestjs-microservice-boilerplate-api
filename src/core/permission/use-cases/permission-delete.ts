@@ -1,8 +1,11 @@
 /**
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/core/usecase.md
  */
+import { InvalidateTags } from '@nestjs-redisx/cache'
+
 import { IPermissionRepository } from '@/core/permission/repository/permission'
 import { RoleEntity } from '@/core/role/entity/role'
+import { USER_PERMISSIONS_CACHE_TAG } from '@/infra/cache'
 import { ValidateSchema } from '@/utils/decorators'
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception'
 import { IUsecase } from '@/utils/usecase'
@@ -17,6 +20,7 @@ export const PermissionDeleteSchema = PermissionEntitySchema.pick({
 export class PermissionDeleteUsecase implements IUsecase {
   constructor(private readonly permissionRepository: IPermissionRepository) {}
 
+  @InvalidateTags({ tags: [USER_PERMISSIONS_CACHE_TAG] })
   @ValidateSchema(PermissionDeleteSchema)
   async execute({ id }: PermissionDeleteInput): Promise<PermissionDeleteOutput> {
     const permission = await this.permissionRepository.findOneWithRelation({ id }, { roles: true })

@@ -1,8 +1,11 @@
 /**
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/core/usecase.md
  */
+import { InvalidateTags } from '@nestjs-redisx/cache'
+
 import { RoleEntity, RoleEnum } from '@/core/role/entity/role'
 import { IRoleRepository } from '@/core/role/repository/role'
+import { userCacheTag } from '@/infra/cache'
 import { ILoggerAdapter } from '@/infra/logger'
 import { ValidateSchema } from '@/utils/decorators'
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception'
@@ -26,6 +29,7 @@ export class UserUpdateUsecase implements IUsecase {
     private readonly roleRepository: IRoleRepository
   ) {}
 
+  @InvalidateTags({ tags: (...args: unknown[]) => [userCacheTag(String((args[0] as UserUpdateInput).id))] })
   @ValidateSchema(UserUpdateSchema)
   async execute(input: UserUpdateInput, { tracing, user: userData }: ApiTrancingInput): Promise<UserUpdateOutput> {
     const user = await this.userRepository.findOne({ id: input.id })

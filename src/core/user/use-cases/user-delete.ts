@@ -1,6 +1,9 @@
 /**
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/core/usecase.md
  */
+import { InvalidateTags } from '@nestjs-redisx/cache'
+
+import { userCacheTag } from '@/infra/cache'
 import { ValidateSchema } from '@/utils/decorators'
 import { ApiNotFoundException } from '@/utils/exception'
 import { ApiTrancingInput } from '@/utils/request'
@@ -17,6 +20,7 @@ export const UserDeleteSchema = UserEntitySchema.pick({
 export class UserDeleteUsecase implements IUsecase {
   constructor(private readonly userRepository: IUserRepository) {}
 
+  @InvalidateTags({ tags: (...args: unknown[]) => [userCacheTag((args[0] as UserDeleteInput).id)] })
   @ValidateSchema(UserDeleteSchema)
   async execute({ id }: UserDeleteInput, { tracing, user: userData }: ApiTrancingInput): Promise<UserDeleteOutput> {
     const user = await this.userRepository.findOneWithRelation({ id }, { password: true })
