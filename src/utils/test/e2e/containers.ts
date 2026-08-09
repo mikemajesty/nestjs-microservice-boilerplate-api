@@ -1,12 +1,14 @@
 /**
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/tests/containers.md
  */
+import { Test, TestingModule } from '@nestjs/testing'
+import { CachePlugin } from '@nestjs-redisx/cache'
+import { RedisModule, RedisService as RedisXService } from '@nestjs-redisx/core'
 import { MongoDBContainer, StartedMongoDBContainer } from '@testcontainers/mongodb'
 import { PostgreSqlContainer, StartedPostgreSqlContainer } from '@testcontainers/postgresql'
 import { RedisContainer, StartedRedisContainer } from '@testcontainers/redis'
 import mongoose from 'mongoose'
 import path from 'path'
-import { createClient, RedisClientType } from 'redis'
 import { DataSource, DataSourceOptions } from 'typeorm'
 
 import { ICacheAdapter } from '@/infra/cache'
@@ -101,19 +103,29 @@ export class TestPostgresContainer {
 
 export class TestRedisContainer {
   redisContainer!: StartedRedisContainer
-  client!: RedisClientType
+  private redisModule!: TestingModule
 
   getTestRedis = async (): Promise<ICacheAdapter> => {
     const logger: ILoggerAdapter = { error: console.error, log: LoggerService.log } as ILoggerAdapter
     this.redisContainer = await new RedisContainer('redis:7.2.4-alpine').start()
-    this.client = createClient({ url: this.redisContainer.getConnectionUrl() }) as RedisClientType
-    await this.client.connect()
-    const conn = new RedisService(logger, this.client)
+
+    this.redisModule = await Test.createTestingModule({
+      imports: [
+        RedisModule.forRoot({
+          clients: { url: this.redisContainer.getConnectionUrl() },
+          plugins: [new CachePlugin()],
+          global: { driver: 'node-redis' }
+        })
+      ]
+    }).compile()
+    await this.redisModule.init()
+
+    const conn = new RedisService(logger, this.redisModule.get(RedisXService))
     return conn as Partial<ICacheAdapter> as ICacheAdapter
   }
 
   async close() {
-    this.client?.destroy()
+    await this.redisModule?.close()
     await this.redisContainer?.stop()
   }
 }

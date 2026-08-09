@@ -265,7 +265,7 @@ describe(UserController.name, () => {
     await userFixture.down(userRepository)
     await permissionFixture.down(permissionRepository)
     await roleFixture.down(roleRepository)
-    await redisService.client.flushAll()
+    await redisService.client.flushall()
     await postgresContainer.close()
     await redisContainer.close()
     await app.close()
