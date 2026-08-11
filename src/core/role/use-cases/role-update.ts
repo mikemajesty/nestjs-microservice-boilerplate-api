@@ -1,7 +1,10 @@
 /**
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/core/usecase.md
  */
+import { InvalidateTags } from '@nestjs-redisx/cache'
+
 import { IRoleRepository } from '@/core/role/repository/role'
+import { USER_PERMISSIONS_CACHE_TAG } from '@/infra/cache'
 import { ILoggerAdapter } from '@/infra/logger'
 import { ValidateSchema } from '@/utils/decorators'
 import { ApiNotFoundException } from '@/utils/exception'
@@ -20,6 +23,7 @@ export class RoleUpdateUsecase implements IUsecase {
     private readonly loggerService: ILoggerAdapter
   ) {}
 
+  @InvalidateTags({ tags: [USER_PERMISSIONS_CACHE_TAG] })
   @ValidateSchema(RoleUpdateSchema)
   async execute(input: RoleUpdateInput): Promise<RoleUpdateOutput> {
     const role = await this.roleRepository.findById(input.id)

@@ -8,7 +8,7 @@ const { compilerOptions } = tsconfig;
 const config: Config.InitialOptions = {
   moduleFileExtensions: ['js', 'json', 'ts'],
   rootDir: '..',
-  roots: ['src/core', 'src/modules'],
+  roots: ['src/core', 'src/middlewares', 'src/modules'],
   testRegex: '.*\\.spec\\.ts$',
   transform: {
     '^.+\\.(t|j)s$': [

@@ -1,7 +1,7 @@
+import { RedisService as RedisXService } from '@nestjs-redisx/core'
 import { exec } from 'child_process'
 import { Connection } from 'mongoose'
 import ping from 'ping'
-import { RedisClientType } from 'redis'
 import systeminformation from 'systeminformation'
 import { DataSource } from 'typeorm'
 import v8 from 'v8'
@@ -16,7 +16,7 @@ import { DatabaseConnectionOutput, DatabaseMemoryOutput, HealthStatus, Load } fr
 export class HealthService implements IHealthAdapter {
   postgres!: DataSource
   mongo!: Connection
-  redis!: ICacheAdapter<RedisClientType>
+  redis!: ICacheAdapter<RedisXService>
 
   constructor(private readonly logger: ILoggerAdapter) {}
 

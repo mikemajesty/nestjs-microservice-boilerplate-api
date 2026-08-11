@@ -2,7 +2,8 @@
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/infra/cache.md
  */
 import { Injectable } from '@nestjs/common'
-import { RedisClientType, SetOptions } from 'redis'
+import { ISetOptions, RedisService as RedisXService } from '@nestjs-redisx/core'
+import { SetOptions } from 'redis'
 
 import { ErrorType, ILoggerAdapter } from '@/infra/logger'
 import { ApiInternalServerException } from '@/utils/exception'
@@ -11,13 +12,37 @@ import { ICacheAdapter } from '../adapter'
 import { CacheKeyArgument, CacheKeyValue } from '../types'
 import { RedisCacheKeyArgument, RedisCacheValueArgument } from './types'
 
+/**
+ * Translates the node-redis `SetOptions` already used across the codebase into
+ * the driver-agnostic options accepted by RedisX, so callers keep writing
+ * `{ PX: 1000 }` and expiration keeps working.
+ */
+const toSetOptions = (config?: object): ISetOptions | undefined => {
+  if (!config) {
+    return undefined
+  }
+
+  const { EX, PX, EXAT, PXAT, NX, XX, GET, KEEPTTL } = config as SetOptions
+
+  return {
+    ...(EX !== undefined && { ex: Number(EX) }),
+    ...(PX !== undefined && { px: Number(PX) }),
+    ...(EXAT !== undefined && { exat: Number(EXAT) }),
+    ...(PXAT !== undefined && { pxat: Number(PXAT) }),
+    ...(NX !== undefined && { nx: NX }),
+    ...(XX !== undefined && { xx: XX }),
+    ...(GET !== undefined && { get: GET }),
+    ...(KEEPTTL !== undefined && { keepttl: KEEPTTL })
+  }
+}
+
 @Injectable()
-export class RedisService implements Partial<ICacheAdapter<RedisClientType>> {
-  client!: RedisClientType
+export class RedisService implements Partial<ICacheAdapter<RedisXService>> {
+  client!: RedisXService
 
   constructor(
     private readonly logger: ILoggerAdapter,
-    client: RedisClientType
+    client: RedisXService
   ) {
     this.client = client
   }
@@ -41,9 +66,9 @@ export class RedisService implements Partial<ICacheAdapter<RedisClientType>> {
     }
   }
 
-  async connect(): Promise<RedisClientType> {
+  async connect(): Promise<RedisXService> {
     try {
-      await this.client.connect()
+      await this.client.ping()
       this.logger.log('🎯 redis connected!\n')
       return this.client
     } catch (error) {
@@ -58,38 +83,39 @@ export class RedisService implements Partial<ICacheAdapter<RedisClientType>> {
     value: TValue,
     config?: TConf
   ): Promise<void> {
-    await this.client.set(key as RedisCacheKeyArgument, value as RedisCacheValueArgument, config as SetOptions)
+    await this.client.set(String(key), String(value), toSetOptions(config as object))
   }
 
   async get<TKey = RedisCacheKeyArgument>(key: TKey): Promise<string | null> {
-    const getResult = await this.client.get(key as RedisCacheKeyArgument)
+    const getResult = await this.client.get(String(key))
 
     return getResult
   }
 
   async del(key: CacheKeyArgument): Promise<void> {
-    await this.client.del(key)
+    await this.client.del(String(key))
   }
 
   async setMulti(redisList: CacheKeyValue[]): Promise<void> {
-    const multi = this.client.multi()
+    const multi = await this.client.multi()
 
     for (const model of redisList) {
-      multi.rPush(model.key, model.value)
+      const values = Array.isArray(model.value) ? model.value : [model.value]
+      multi.rpush(String(model.key), ...values.map(String))
     }
 
     await multi.exec()
   }
 
   async pExpire(key: CacheKeyArgument, milliseconds: number): Promise<void> {
-    await this.client.pExpire(key, milliseconds)
+    await this.client.pexpire(String(key), milliseconds)
   }
 
   async hGet<TKey = RedisCacheKeyArgument, TArs = RedisCacheKeyArgument>(
     key: TKey,
     field: TArs
   ): Promise<unknown | unknown[]> {
-    return await this.client.hGet(key as RedisCacheKeyArgument, field as RedisCacheKeyArgument)
+    return await this.client.hget(String(key), String(field))
   }
 
   async hSet<TKey = RedisCacheKeyArgument, TField = RedisCacheKeyArgument, TValue = RedisCacheValueArgument>(
@@ -97,14 +123,10 @@ export class RedisService implements Partial<ICacheAdapter<RedisClientType>> {
     field: TField,
     value: TValue
   ): Promise<number> {
-    return await this.client.hSet(
-      key as RedisCacheKeyArgument,
-      field as RedisCacheKeyArgument,
-      value as RedisCacheValueArgument
-    )
+    return await this.client.hset(String(key), String(field), String(value))
   }
 
   async hGetAll(key: CacheKeyArgument): Promise<unknown | unknown[]> {
-    return await this.client.hGetAll(key)
+    return await this.client.hgetall(String(key))
   }
 }

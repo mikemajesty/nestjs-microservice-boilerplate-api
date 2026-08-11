@@ -1,8 +1,8 @@
 /**
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/modules/adapter.md
  */
+import { RedisService as RedisXService } from '@nestjs-redisx/core'
 import { Connection } from 'mongoose'
-import { RedisClientType } from 'redis'
 import { DataSource } from 'typeorm'
 
 import { ICacheAdapter } from '@/infra/cache'
@@ -12,7 +12,7 @@ import { DatabaseConnectionOutput, DatabaseMemoryOutput, HealthStatus, Load, Mem
 export abstract class IHealthAdapter {
   abstract mongo: Connection
   abstract postgres: DataSource
-  abstract redis: ICacheAdapter<RedisClientType>
+  abstract redis: ICacheAdapter<RedisXService>
   abstract getMongoStatus(): HealthStatus
   abstract getRedisStatus(): Promise<HealthStatus>
   abstract getPostgresStatus(): Promise<HealthStatus>

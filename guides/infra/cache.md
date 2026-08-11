@@ -33,11 +33,17 @@ Same code works with both. Just swap the module.
 ```
 src/infra/cache/
 ├── adapter.ts      # ICacheAdapter interface
+├── tags.ts         # tags used to invalidate cached authorization data
 ├── memory/
 │   └── service.ts  # node-cache implementation
 └── redis/
-    └── service.ts  # redis implementation
+    ├── module.ts   # RedisConnectionModule (connection) + RedisCacheModule (adapter)
+    └── service.ts  # implementation on top of @nestjs-redisx/core
 ```
+
+The Redis connection is opened by `RedisConnectionModule`, imported once by
+`InfraModule`. Feature modules import only `RedisCacheModule`, so a test that
+stubs `ICacheAdapter` never opens a socket.
 
 ---
 
@@ -237,6 +243,38 @@ const redis = new RedisService(logger, client)
 await redis.connect()
 // 🎯 redis connected!
 ```
+
+The client comes from `@nestjs-redisx/core`, configured from `REDIS_URL` and
+kept on the `node-redis` driver so the existing OpenTelemetry Redis
+instrumentation keeps producing spans.
+
+---
+
+## Cached Permissions
+
+`AuthorizationRoleGuard` used to load the user with roles and permissions from
+the database on every permission-protected request. That lookup is now cached
+by permission name only, so no credential reaches Redis:
+
+```typescript
+@Cached({
+  key: 'user:permissions:{0}',
+  ttl: USER_PERMISSIONS_CACHE_TTL_IN_SECONDS,
+  tags: [userCacheTag('{0}'), USER_PERMISSIONS_CACHE_TAG]
+})
+private async findUserPermissions(userId: string): Promise<string[] | null>
+```
+
+Writes drop the entries instead of waiting for expiration:
+
+| Use case | Invalidates |
+|---|---|
+| `user-update`, `user-delete` | `user:<id>` |
+| `role-update`, `role-delete`, `role-add-permission`, `role-delete-permission` | `user-permissions` |
+| `permission-update`, `permission-delete` | `user-permissions` |
+
+The TTL in `src/infra/cache/tags.ts` is only a safety net for a path that
+forgets to invalidate.
 
 ### Memory
 

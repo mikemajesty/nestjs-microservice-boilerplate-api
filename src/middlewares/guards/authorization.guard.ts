@@ -3,10 +3,16 @@
  */
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
+import { Cached } from '@nestjs-redisx/cache'
 import { SpanStatusCode } from '@opentelemetry/api'
 
 import { IUserRepository } from '@/core/user/repository/user'
-import { ICacheAdapter } from '@/infra/cache'
+import {
+  ICacheAdapter,
+  USER_PERMISSIONS_CACHE_TAG,
+  USER_PERMISSIONS_CACHE_TTL_IN_SECONDS,
+  userCacheTag
+} from '@/infra/cache'
 import { ITokenAdapter } from '@/libs/token'
 import { PERMISSION_GUARD, PUBLIC_GUARD } from '@/utils/decorators'
 import { ApiForbiddenException, ApiUnauthorizedException } from '@/utils/exception'
@@ -74,17 +80,11 @@ export class AuthorizationRoleGuard implements CanActivate {
       throw new ApiUnauthorizedException('invalidToken')
     }
 
-    const user = await this.userRepository.findOneWithRelation({ id: userId }, { roles: true })
+    const permissions = await this.findUserPermissions(userId)
 
-    if (!user) {
+    if (!permissions) {
       this.finishTracing(request, ApiUnauthorizedException.STATUS, 'userNotFound')
       throw new ApiUnauthorizedException('userNotFound')
-    }
-
-    const permissions = []
-
-    for (const role of user.roles) {
-      permissions.push(...role.permissions.map((p) => p.name))
     }
 
     const hasPermission = new Set(permissions).has(requiredPermission)
@@ -100,6 +100,27 @@ export class AuthorizationRoleGuard implements CanActivate {
     }
 
     return true
+  }
+
+  /**
+   * Permission names of a user, or null when the user no longer exists.
+   *
+   * Only the names are cached, never the user entity, so no credential ever
+   * reaches Redis. `{0}` is the userId argument.
+   */
+  @Cached({
+    key: 'user:permissions:{0}',
+    ttl: USER_PERMISSIONS_CACHE_TTL_IN_SECONDS,
+    tags: [userCacheTag('{0}'), USER_PERMISSIONS_CACHE_TAG]
+  })
+  private async findUserPermissions(userId: string): Promise<string[] | null> {
+    const user = await this.userRepository.findOneWithRelation({ id: userId }, { roles: true })
+
+    if (!user) {
+      return null
+    }
+
+    return user.roles.flatMap((role) => role.permissions.map((permission) => permission.name))
   }
 
   private finishTracing(request: { tracing?: TracingType }, status: number, message: string) {
