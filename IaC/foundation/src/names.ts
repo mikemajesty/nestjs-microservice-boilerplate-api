@@ -71,6 +71,12 @@ export const resourceNameSuffix = {
       role: 'external-secrets-role',
       policyAttachment: 'external-secrets-policy-attachment'
     },
+    ssmAnnotationResolver: {
+      iam: 'ssm-annotation-resolver-iam',
+      policy: 'ssm-annotation-resolver-policy',
+      role: 'ssm-annotation-resolver-role',
+      policyAttachment: 'ssm-annotation-resolver-policy-attachment'
+    },
     argoCd: {
       release: 'argocd',
       rootApplication: 'argocd-root-application'

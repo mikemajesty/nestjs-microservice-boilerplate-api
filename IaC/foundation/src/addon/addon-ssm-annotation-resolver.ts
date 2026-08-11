@@ -11,7 +11,6 @@ import { createTags } from '../tags'
 
 export interface SsmAnnotationResolverArgs {
   config: InfrastructureConfig
-  eksOidcProvider: { oidcProviderArn: pulumi.Output<string> }
   ssmParameterName: pulumi.Input<string>
   workloadK8sProvider: { provider: k8s.Provider }
   namespace?: string
@@ -22,7 +21,6 @@ interface SsmAnnotationResolverInfraOutputs {
   sqsQueueArn?: string
   dlqQueueUrl?: string
   dlqQueueArn?: string
-  iamRoleArn?: string
 }
 
 interface SsmAnnotationResolverInfraStatus {
@@ -49,32 +47,28 @@ function requireStatusField(value: string | undefined, fieldName: string): strin
  * SsmAnnotationResolver creates a Kubernetes CustomResource that instructs
  * the SSM Annotation Resolver controller to provision Kubernetes-adjacent AWS infrastructure:
  * - SQS Queue + DLQ for SSM Parameter Store change events
- * - IAM Role for IRSA (IAM Roles for Service Accounts)
  *
  * Foundation then uses the Ready status outputs to finish the integration by
  * creating the EventBridge rule, target, and SQS queue policy.
  *
  * The controller observes this CRD and:
  * 1. Creates the SQS queues with proper redrive policy
- * 2. Creates the IAM role with OIDC trust relationship
- * 3. Updates the CRD status with outputs (sqsQueueUrl, iamRoleArn, etc.)
+ * 2. Updates the CRD status with queue outputs
  *
  * Foundation then:
- * 4. Waits until status.phase == Ready
- * 5. Creates the EventBridge rule/target that sends Parameter Store change events to SQS
- * 6. Attaches the SQS queue policy that allows EventBridge to publish
+ * 3. Waits until status.phase == Ready
+ * 4. Creates the EventBridge rule/target that sends Parameter Store change events to SQS
+ * 5. Attaches the SQS queue policy that allows EventBridge to publish
  *
  * Usage:
  *   const ssmResolver = new SsmAnnotationResolver('ssm-resolver', {
  *     config,
- *     eksOidcProvider,
  *     ssmParameterName,
  *     workloadK8sProvider
  *   })
  *
- *   // Use outputs to configure Helm chart
+ *   // Use outputs to configure EventBridge or application manifests
  *   helmChart.values.sqs.queueURL = ssmResolver.sqsQueueUrl
- *   helmChart.values.irsa.roleArn = ssmResolver.iamRoleArn
  */
 export class SsmAnnotationResolver extends pulumi.ComponentResource {
   public readonly crd: k8s.apiextensions.CustomResource
@@ -82,7 +76,6 @@ export class SsmAnnotationResolver extends pulumi.ComponentResource {
   public readonly sqsQueueArn: pulumi.Output<string>
   public readonly dlqQueueUrl: pulumi.Output<string>
   public readonly dlqQueueArn: pulumi.Output<string>
-  public readonly iamRoleArn: pulumi.Output<string>
   public readonly serviceAccountName: string
   public readonly serviceAccountNamespace: string
   public readonly eventBridgeRuleArn: pulumi.Output<string>
@@ -123,7 +116,7 @@ export class SsmAnnotationResolver extends pulumi.ComponentResource {
 
     // Create the SsmAnnotationResolverInfra CRD instance
     // The SSM Annotation Resolver controller will watch this resource
-    // and provision the SQS/DLQ/IAM resources automatically.
+    // and provision the SQS/DLQ resources automatically.
     this.crd = new k8s.apiextensions.CustomResource(
       `${name}-crd`,
       {
@@ -138,9 +131,7 @@ export class SsmAnnotationResolver extends pulumi.ComponentResource {
           sqsQueueName: `${name}-queue`,
           dlqQueueName: `${name}-dlq`,
           eventBridgeRuleName,
-          iamRoleName: `${name}-role`,
           awsRegion: args.config.awsRegion,
-          oidcProviderArn: args.eksOidcProvider.oidcProviderArn,
           serviceAccountName
         },
         // status is intentionally declared so Pulumi tracks it as an output
@@ -180,7 +171,6 @@ export class SsmAnnotationResolver extends pulumi.ComponentResource {
     this.sqsQueueArn = infraOutputs.apply((outputs) => requireStatusField(outputs.sqsQueueArn, 'sqsQueueArn'))
     this.dlqQueueUrl = infraOutputs.apply((outputs) => requireStatusField(outputs.dlqQueueUrl, 'dlqQueueUrl'))
     this.dlqQueueArn = infraOutputs.apply((outputs) => requireStatusField(outputs.dlqQueueArn, 'dlqQueueArn'))
-    this.iamRoleArn = infraOutputs.apply((outputs) => requireStatusField(outputs.iamRoleArn, 'iamRoleArn'))
     this.serviceAccountName = serviceAccountName
     this.serviceAccountNamespace = namespace
 
@@ -259,7 +249,6 @@ export class SsmAnnotationResolver extends pulumi.ComponentResource {
       sqsQueueArn: this.sqsQueueArn,
       dlqQueueUrl: this.dlqQueueUrl,
       dlqQueueArn: this.dlqQueueArn,
-      iamRoleArn: this.iamRoleArn,
       serviceAccountName: this.serviceAccountName,
       serviceAccountNamespace: this.serviceAccountNamespace,
       eventBridgeRuleArn: this.eventBridgeRuleArn

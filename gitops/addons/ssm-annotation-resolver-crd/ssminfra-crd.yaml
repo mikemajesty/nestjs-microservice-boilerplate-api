@@ -35,9 +35,7 @@ spec:
                 - sqsQueueName
                 - dlqQueueName
                 - eventBridgeRuleName
-                - iamRoleName
                 - awsRegion
-                - oidcProviderArn
               properties:
                 sqsQueueName:
                   type: string
@@ -51,18 +49,10 @@ spec:
                   type: string
                   minLength: 1
                   description: EventBridge rule name for SSM Parameter Store events
-                iamRoleName:
-                  type: string
-                  minLength: 1
-                  description: IAM role name for IRSA (IAM Roles for Service Accounts)
                 awsRegion:
                   type: string
                   minLength: 1
-                  description: AWS region for SQS/EventBridge/IAM resources
-                oidcProviderArn:
-                  type: string
-                  minLength: 1
-                  description: EKS OIDC Provider ARN for IAM trust relationship
+                  description: AWS region for SQS resources
                 serviceAccountName:
                   type: string
                   default: ssm-annotation-resolver
@@ -88,8 +78,6 @@ spec:
                     dlqQueueUrl:
                       type: string
                     dlqQueueArn:
-                      type: string
-                    iamRoleArn:
                       type: string
                     eventBridgeRuleArn:
                       type: string

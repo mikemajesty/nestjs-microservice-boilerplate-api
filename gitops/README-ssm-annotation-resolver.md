@@ -114,13 +114,14 @@ controller loop (a cada N minutos)
 
 ```text
 addon-ssm-annotation-resolver-iam.ts
-  - IAM role com IRSA para o ServiceAccount do resolver
+  - IAM role bootstrap com IRSA para o ServiceAccount do resolver
   - policy:
       ssm:GetParameter, ssm:GetParameters   <- resolver busca valores
+      sqs:CreateQueue                       <- CRD provisiona fila/DLQ
       sqs:ReceiveMessage, sqs:DeleteMessage  <- controller consome eventos do EventBridge
       sqs:GetQueueAttributes                 <- healthcheck da fila
   - escopo ssm: apenas parametros com prefixo /<projectName>/<environment>/
-  - escopo sqs: ARN da fila criada abaixo
+  - escopo sqs: apenas filas do proprio resolver
 
 network-ssm-change-events.ts (ou dentro do network-nlb-parameter-store.ts)
   - SQS queue: recebe eventos do EventBridge quando parametros SSM mudam
