@@ -218,7 +218,7 @@ const awsLoadBalancerController = new AwsLoadBalancerController(
     serviceAccountNamespace: awsLoadBalancerControllerIam.serviceAccountNamespace,
     vpcId: network.vpcId
   },
-  { dependsOn: [eksNodeGroup, workloadK8sProvider] } // 👈 ADICIONADO WORKLOAD PROVIDER
+  { dependsOn: [eksNodeGroup, workloadK8sProvider] }
 )
 
 const argoCd = new ArgoCd(
@@ -227,7 +227,7 @@ const argoCd = new ArgoCd(
     config,
     provider: workloadK8sProvider.provider
   },
-  { dependsOn: [eksNodeGroup, workloadK8sProvider] } // 👈 ADICIONADO WORKLOAD PROVIDER
+  { dependsOn: [eksNodeGroup, workloadK8sProvider, awsLoadBalancerController] }
 )
 
 const externalDns = new ExternalDns(
