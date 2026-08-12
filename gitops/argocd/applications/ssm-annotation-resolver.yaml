@@ -37,6 +37,9 @@ spec:
               - '*'
             resources:
               - envoyproxies
+            operations:
+              - CREATE
+              - UPDATE
             scope: Namespaced
   destination:
     server: https://kubernetes.default.svc
