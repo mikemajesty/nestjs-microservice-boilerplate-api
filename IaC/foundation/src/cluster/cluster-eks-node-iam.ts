@@ -18,6 +18,7 @@ const EKS_NODE_IAM_COMPONENT_TYPE = 'boilerplate:cluster:EksNodeIam'
 const EC2_SERVICE_PRINCIPAL = 'ec2.amazonaws.com'
 const AMAZON_SSM_MANAGED_INSTANCE_CORE_POLICY_ARN = 'arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore'
 const AMAZON_SSM_PATCH_ASSOCIATION_POLICY_ARN = 'arn:aws:iam::aws:policy/AmazonSSMPatchAssociation'
+const AMAZON_ECR_PUBLIC_READONLY_POLICY_ARN = 'arn:aws:iam::aws:policy/AmazonElasticContainerRegistryPublicReadOnly'
 
 export class EksNodeIam extends pulumi.ComponentResource implements EksNodeIamResources {
   readonly nodeRoleArn: pulumi.Output<string>
@@ -88,6 +89,15 @@ export class EksNodeIam extends pulumi.ComponentResource implements EksNodeIamRe
       { parent: nodeRole }
     )
 
+    const ecrPublicPolicyAttachment = new aws.iam.RolePolicyAttachment(
+      resourceName(config, resourceNameSuffix.cluster.eks.nodeEcrPublicPolicyAttachment),
+      {
+        role: nodeRole.name,
+        policyArn: AMAZON_ECR_PUBLIC_READONLY_POLICY_ARN
+      },
+      { parent: nodeRole }
+    )
+
     this.nodeRoleArn = pulumi
       .all([
         nodeRole.arn,
@@ -95,7 +105,8 @@ export class EksNodeIam extends pulumi.ComponentResource implements EksNodeIamRe
         cniPolicyAttachment.id,
         ecrPolicyAttachment.id,
         ssmManagedInstancePolicyAttachment.id,
-        ssmPatchPolicyAttachment.id
+        ssmPatchPolicyAttachment.id,
+        ecrPublicPolicyAttachment.id
       ])
       .apply(([nodeRoleArn]) => nodeRoleArn)
     this.nodeRoleName = nodeRole.name

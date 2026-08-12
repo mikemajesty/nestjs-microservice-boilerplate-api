@@ -45,6 +45,7 @@ export const resourceNameSuffix = {
       nodeWorkerPolicyAttachment: 'eks-node-worker-policy-attachment',
       nodeCniPolicyAttachment: 'eks-node-cni-policy-attachment',
       nodeEcrPolicyAttachment: 'eks-node-ecr-policy-attachment',
+      nodeEcrPublicPolicyAttachment: 'eks-node-ecr-public-policy-attachment',
       nodeSsmManagedInstancePolicyAttachment: 'eks-node-ssm-managed-instance-policy-attachment',
       nodeSsmPatchPolicyAttachment: 'eks-node-ssm-patch-policy-attachment',
       nodeGroup: 'eks-node-group'
