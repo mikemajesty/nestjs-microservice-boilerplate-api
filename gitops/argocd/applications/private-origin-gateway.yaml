@@ -14,10 +14,16 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: envoy-gateway-system
+  ignoreDifferences:
+    - group: gateway.envoyproxy.io
+      kind: EnvoyProxy
+      jsonPointers:
+        - /spec/provider/kubernetes/envoyService/annotations/service.beta.kubernetes.io~1aws-load-balancer-security-groups
   syncPolicy:
     syncOptions:
       - CreateNamespace=true
       - SkipDryRunOnMissingResource=true
+      - RespectIgnoreDifferences=true
     automated:
       prune: true
       selfHeal: true
