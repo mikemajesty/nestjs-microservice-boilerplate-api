@@ -5,7 +5,7 @@ metadata:
   namespace: envoy-gateway-system
   annotations:
     argocd.argoproj.io/sync-wave: '-1'
-    boilerplate.dev/envoy-nlb-sg-id: '#:ssm:/boilerplate/dev/infra/envoy-nlb-sg-id'
+    boilerplate.dev/envoy-nlb-sg-id: '#:ssm:/nestjs-boilerplate/dev/infra/envoy-nlb-sg-id'
 spec:
   provider:
     type: Kubernetes
