@@ -10,7 +10,7 @@ spec:
   source:
     repoURL: oci://ghcr.io/mikemajesty/charts/ssm-annotation-resolver
     path: .
-    targetRevision: 0.0.5
+    targetRevision: 0.0.6
     helm:
       releaseName: ssm-annotation-resolver
       values: |

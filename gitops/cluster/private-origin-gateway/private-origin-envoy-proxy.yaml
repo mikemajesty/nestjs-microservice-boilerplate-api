@@ -5,7 +5,6 @@ metadata:
   namespace: envoy-gateway-system
   annotations:
     argocd.argoproj.io/sync-wave: '-1'
-    boilerplate.dev/envoy-nlb-sg-id: '#:ssm:/nestjs-boilerplate/dev/infra/envoy-nlb-sg-id'
 spec:
   provider:
     type: Kubernetes
@@ -31,9 +30,4 @@ spec:
           service.beta.kubernetes.io/aws-load-balancer-scheme: internal
           service.beta.kubernetes.io/aws-load-balancer-type: external
           service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: instance
-          # Security group ID resolved by ssm-annotation-resolver webhook
-          # Referenced from parent EnvoyProxy annotation
-          service.beta.kubernetes.io/aws-load-balancer-security-groups: |
-            [
-              "placeholder-resolved-at-admission-time"
-            ]
+          service.beta.kubernetes.io/aws-load-balancer-security-groups: '#:ssm:/nestjs-boilerplate/dev/infra/envoy-nlb-sg-id'
