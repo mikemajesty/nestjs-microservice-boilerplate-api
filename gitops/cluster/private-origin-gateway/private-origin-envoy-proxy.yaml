@@ -30,4 +30,5 @@ spec:
           service.beta.kubernetes.io/aws-load-balancer-scheme: internal
           service.beta.kubernetes.io/aws-load-balancer-type: external
           service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: instance
+          service.beta.kubernetes.io/aws-load-balancer-manage-backend-security-group-rules: 'true'
           service.beta.kubernetes.io/aws-load-balancer-security-groups: '#:ssm:/nestjs-boilerplate/dev/infra/envoy-nlb-sg-id'

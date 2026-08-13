@@ -1,6 +1,6 @@
 include ../common.mk
 
-.PHONY: status stack config preview up destroy refresh select-account-stack
+.PHONY: status stack config preview up destroy refresh recreate select-account-stack
 
 status: check-docker identity stack config preview
 
@@ -18,6 +18,11 @@ up: check-docker preflight select-account-stack
 
 refresh: check-docker check-auth select-account-stack
 	AWS_PROFILE=$(AWS_PROFILE) pulumi refresh --yes
+
+recreate: check-docker preflight select-account-stack
+	AWS_PROFILE=$(AWS_PROFILE) PULUMI_K8S_DELETE_UNREACHABLE=true pulumi refresh --yes
+	AWS_PROFILE=$(AWS_PROFILE) PULUMI_K8S_DELETE_UNREACHABLE=true pulumi preview
+	AWS_PROFILE=$(AWS_PROFILE) PULUMI_K8S_DELETE_UNREACHABLE=true pulumi up --yes
 
 init:
 	pulumi stack init dev
