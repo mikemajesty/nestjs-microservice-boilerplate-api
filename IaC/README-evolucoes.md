@@ -66,7 +66,6 @@ Evolucoes PoC depois:
 
 ```text
 restringir egress do Load Balancer quando o fluxo final entre NLB, Envoy e app estiver estabilizado
-criar regras separadas para borda publica e acesso privado quando os dois caminhos coexistirem
 criar SG da app quando existir workload real
 criar SG dos VPC endpoints quando endpoints forem criados
 criar SG do RDS e Redis quando esses recursos existirem
@@ -75,9 +74,7 @@ criar SG do RDS e Redis quando esses recursos existirem
 Evolucoes projeto maior:
 
 ```text
-HTTPS 443 na borda publica
-regras de SG com menor privilegio
-processo de revisao para regras publicas
+regras de SG com menor privilegio quando houver mais superficies expostas
 NetworkPolicy dentro do Kubernetes
 Security Groups for Pods se fizer sentido
 ```
@@ -127,30 +124,23 @@ edge/dev esta criado como stack separado e consegue ler outputs da foundation
 CloudFront, WAF e VPC Origin ja foram modelados no edge
 private-origin-gateway reconciliando com o contrato do SG do NLB resolvido
 CRD de SSM validado para injetar o SG no EnvoyProxy sem hardcode no Git
+fluxo publico validado com CloudFront, VPC Origin, NLB privado, Envoy Gateway e app
 fluxo de render/sync do Argo CD sem bloqueio desse valor
 ```
 
 Evolucoes PoC depois:
 
 ```text
-definir dominio publico para apontar para o CloudFront
-manter NLB e Envoy Gateway sem acesso publico direto quando CloudFront for a borda oficial
-validar restricoes do VPC origin: NLB com security group, sem NLB TLS listener e sem gRPC publico por esse caminho
-manter NLB como transporte L4 e Envoy Gateway como camada L7 da plataforma
-desabilitar ou controlar cache para rotas de API dinamica
-encaminhar headers necessarios para autenticacao, host e tracing
-validar logs do CloudFront e do WAF para troubleshooting
+definir dominio publico para apontar para o CloudFront quando sair do dominio default
 ```
 
 Evolucoes projeto maior:
 
 ```text
 politicas padronizadas de cache, origin request e response headers
-WAF com managed rules, rate limit e excecoes testadas em modo count antes de block
-protecao da origem com VPC origin ou outro desenho que mantenha a origem privada sempre que possivel
+WAF com managed rules, rate limit e excecoes
 separacao formal entre dominio publico e dominios internos
 logs centralizados de CloudFront, WAF e Gateway
-processo de revisao para mudancas em regras de WAF e exposicao publica
 ```
 
 ## DNS interno
@@ -547,20 +537,18 @@ PDB do Envoy criado com maxUnavailable 1 para upgrades controlados
 CRD real do EnvoyProxy aceitou envoyDaemonSet e envoyPDB
 target health do NLB validado com todos os targets healthy depois da reconciliacao do Argo CD
 CRD de SSM validado para propagar o SG do NLB ao EnvoyProxy sem hardcode no Git
+fluxo CloudFront VPC Origin -> NLB privado -> Envoy -> HTTPRoute -> Service interno validado
 ```
 
 Evolucoes PoC depois:
 
 ```text
 validar resolucao DNS privada de api.boilerplate.internal a partir de rede/VPN com acesso a Private Hosted Zone
-manter Envoy -> app em HTTP enquanto o foco for TLS norte-sul
-validar fluxo CloudFront VPC Origin -> NLB privado -> Envoy -> HTTPRoute -> Service interno
 ```
 
 Evolucoes projeto maior:
 
 ```text
-remover Ingress classico quando Envoy Gateway estiver pronto
 avaliar Cilium/WireGuard, Linkerd ou Istio apenas em uma etapa posterior de trafego leste-oeste
 definir estrategia de identidade de workloads para trafego leste-oeste
 avaliar BackendTLSPolicy apenas para casos Envoy -> backend com TLS direto
@@ -596,38 +584,27 @@ BackendTLSPolicy e util apenas para controlar TLS no trecho Envoy -> backend esp
 Estado atual:
 
 ```text
-app ainda nao implantada no EKS
-namespace da smoke app criado em GitOps
-Deployment e ClusterIP Service basicos da smoke app criados em GitOps
-readiness/liveness probes basicas configuradas
-imagem da smoke app pinada por digest do ECR Public
+smoke app implantada em GitOps no EKS
+namespace, ServiceAccount, RBAC, ConfigMap, ExternalSecret, Deployment, Service, PDB, HPA e HTTPRoute aplicados
+requests/limits, probes e securityContext configurados
+imagem da smoke app publicada no ECR Public com referencia mutavel para a PoC
 ```
 
 Evolucoes PoC depois:
 
 ```text
-service account da app
-RBAC minimo da app para aprendizado de ServiceAccount, Role e RoleBinding
-ConfigMap basico
-Secret da app via AWS Secrets Manager e External Secrets Operator
-Deployment consumindo ConfigMap e Secret via envFrom
-requests/limits iniciais
-HPA basico depois de Metrics Server e requests/limits
-securityContext de pod/container
-ajustar readiness/liveness probes com tempos explicitos
-validar imagem do ECR Public ou evoluir para ECR privado quando fizer sentido
+evoluir a smoke app para um workload real quando houver necessidade de negocio
+migrar a imagem para ECR privado quando fizer sentido
+ajustar o desenho de observabilidade da app com metricas e logs reais
 ```
 
 Evolucoes projeto maior:
 
 ```text
-KEDA se necessario para eventos ou metricas externas
-Pod Disruption Budget
-Pod Security Standards
-NetworkPolicy
-separacao entre API, worker e jobs
-RBAC por workload com menor privilegio e justificativa explicita para cada permissao
-ServiceAccount com IRSA para workloads que acessam AWS APIs
+Karpenter para escala de nodes quando houver necessidade real
+KEDA para eventos ou metricas externas quando houver justificativa
+service mesh apenas se houver requisito claro de trafego leste-oeste
+Pod Security Standards e NetworkPolicy quando houver mais workloads
 ```
 
 ## Runtime secrets
@@ -789,16 +766,10 @@ Ordem sugerida a partir do estado atual:
 ```text
 1. Consolidar e documentar o contrato do SG do NLB do Envoy via CRD de SSM no GitOps do private-origin-gateway
 2. Fechar o caminho privado atual: Gateway/Envoy/HTTPRoute reconciliando corretamente e validacao do acesso interno pelo Envoy Gateway
-3. Validar fim a fim o caminho publico: CloudFront + AWS WAF -> VPC origin -> NLB privado -> Envoy Gateway -> app
-4. Validar restricoes do CloudFront VPC origin para NLB privado: security group no NLB, sem NLB TLS listener e sem gRPC publico por esse caminho
-5. Garantir que CloudFront seja o unico ponto publico e que NLB/Envoy fiquem privados
-6. Definir dominio publico e certificado ACM em us-east-1 apenas quando fizer sentido sair do dominio default do CloudFront
-7. Comecar endurecimento da app: ServiceAccount, RBAC minimo, ConfigMap, Secrets, resources e securityContext
-8. Validar observabilidade minima da borda, Envoy e app antes de autoscaling avancado
-9. Validar HPA com Metrics Server, requests e limits
-10. Depois estudar Karpenter para escala de nodes, se houver necessidade real de capacidade dinamica
-11. Depois estudar KEDA somente se houver fila, evento ou metrica externa que justifique autoscaling por evento
-12. Avaliar Cilium/WireGuard, Linkerd ou Istio apenas se houver requisito claro de trafego leste-oeste
+3. Validar observabilidade minima da borda, Envoy e app
+4. Estudar Karpenter para escala de nodes, se houver necessidade real de capacidade dinamica
+5. Estudar KEDA somente se houver fila, evento ou metrica externa que justifique autoscaling por evento
+6. Avaliar service mesh (Cilium/WireGuard, Linkerd ou Istio) apenas se houver requisito claro de trafego leste-oeste
 ```
 
 Este documento deve continuar acompanhando a PoC conforme cada etapa sair do backlog e virar infraestrutura real.
