@@ -35,11 +35,29 @@ export class NetworkSecurityGroups extends pulumi.ComponentResource implements N
     // ============================================================
     const envoyInternalNlbSecurityGroupName = resourceName(config, resourceNameSuffix.network.nlbSecurityGroup)
 
-    // Buscar o Prefix List do CloudFront usando a função moderna
+    // CloudFront origin-facing prefix list is still useful for the legacy/public edge path.
     const cloudfrontPrefixList = aws.ec2.getManagedPrefixListOutput(
       {
         name: 'com.amazonaws.global.cloudfront.origin-facing',
         region: 'us-east-1' // Ajuste para sua região
+      },
+      { parent: this }
+    )
+
+    // CloudFront VPC Origin uses its own service-managed security group as the source.
+    // Allow it explicitly so the NLB health checks and origin traffic can reach Envoy.
+    const cloudfrontVpcOriginSecurityGroup = aws.ec2.getSecurityGroupOutput(
+      {
+        filters: [
+          {
+            name: 'group-name',
+            values: ['CloudFront-VPCOrigins-Service-SG']
+          },
+          {
+            name: 'vpc-id',
+            values: [vpcId]
+          }
+        ]
       },
       { parent: this }
     )
@@ -71,6 +89,32 @@ export class NetworkSecurityGroups extends pulumi.ComponentResource implements N
         description: 'Allows HTTP and HTTPS traffic only from CloudFront'
       },
       { parent: envoyInternalNlbSecurityGroup }
+    )
+
+    new aws.vpc.SecurityGroupIngressRule(
+      resourceName(config, 'cloudfront-vpc-origin-ingress'),
+      {
+        securityGroupId: envoyInternalNlbSecurityGroup.id,
+        referencedSecurityGroupId: cloudfrontVpcOriginSecurityGroup.id,
+        fromPort: HTTP_PORT,
+        toPort: HTTPS_PORT,
+        ipProtocol: TCP_PROTOCOL,
+        description: 'Allows HTTP and HTTPS traffic only from CloudFront VPC Origin'
+      },
+      { parent: envoyInternalNlbSecurityGroup }
+    )
+
+    new aws.vpc.SecurityGroupEgressRule(
+      resourceName(config, 'cloudfront-vpc-origin-egress'),
+      {
+        securityGroupId: cloudfrontVpcOriginSecurityGroup.id,
+        referencedSecurityGroupId: envoyInternalNlbSecurityGroup.id,
+        fromPort: HTTP_PORT,
+        toPort: HTTPS_PORT,
+        ipProtocol: TCP_PROTOCOL,
+        description: 'Allows CloudFront VPC Origin to reach the Envoy NLB'
+      },
+      { parent: this }
     )
 
     // Health checks dos nodes do EKS (tráfego interno da VPC)
