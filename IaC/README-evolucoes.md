@@ -58,13 +58,13 @@ Estado atual:
 security group dedicado do NLB interno do Envoy criado pela foundation
 ingress do NLB restrito ao prefix list gerenciado do CloudFront origin-facing nas portas 80 e 443
 health checks internos da VPC permitidos na porta 80
+contrato foundation -> GitOps para SG do NLB no EnvoyProxy validado via CRD de SSM, sem hardcode no Git
 egress ainda aberto para simplificar a PoC
 ```
 
 Evolucoes PoC depois:
 
 ```text
-resolver o contrato entre foundation e GitOps para injetar o SG do NLB no EnvoyProxy sem hardcode
 restringir egress do Load Balancer quando o fluxo final entre NLB, Envoy e app estiver estabilizado
 criar regras separadas para borda publica e acesso privado quando os dois caminhos coexistirem
 criar SG da app quando existir workload real
@@ -116,7 +116,7 @@ Passos atuais:
 manter contrato estavel para o NLB privado do Envoy Gateway via nome/tag e outputs da foundation
 ajustar o CloudFront para usar comportamento compativel com API dinamica e autenticada
 validar fim a fim o caminho CloudFront -> VPC Origin -> NLB privado -> Envoy Gateway -> app
-resolver a estrategia definitiva para fornecer o SG do NLB ao EnvoyProxy sem fixar valor no Git
+manter e versionar o contrato do SG do NLB no EnvoyProxy via CRD de SSM
 ```
 
 Passo em que estamos agora:
@@ -125,9 +125,9 @@ Passo em que estamos agora:
 foundation/dev esta aplicado e saudavel
 edge/dev esta criado como stack separado e consegue ler outputs da foundation
 CloudFront, WAF e VPC Origin ja foram modelados no edge
-o gargalo atual esta no GitOps do private-origin-gateway
-tentamos usar SSM Parameter Store + External Secrets para preencher o SG do NLB no EnvoyProxy, mas isso nao funciona com kustomize replacements porque o valor so existe depois do render
-proxima acao: decidir e implementar o contrato definitivo desse valor entre foundation e GitOps, provavelmente via manifest/ConfigMap gerado antes do render ou outro mecanismo de render-time
+private-origin-gateway reconciliando com o contrato do SG do NLB resolvido
+CRD de SSM validado para injetar o SG no EnvoyProxy sem hardcode no Git
+fluxo de render/sync do Argo CD sem bloqueio desse valor
 ```
 
 Evolucoes PoC depois:
@@ -382,7 +382,7 @@ argocd.boilerplate.internal criado na Private Hosted Zone boilerplate.internal
 acesso HTTP ao Argo validado de dentro da VPC/cluster
 sync-waves revisados para external-secrets, stores, private-origin-gateway, cert-manager e smoke app
 erro de dependencia entre root app e CRD Application do Argo identificado e corrigido no Pulumi com dependencia explicita do Helm release
-problema atual aberto: private-origin-gateway ainda depende de um contrato render-time para o SG do NLB do Envoy
+contrato do SG do NLB do Envoy para o private-origin-gateway resolvido via CRD de SSM
 ```
 
 Evolucoes PoC depois:
@@ -391,7 +391,7 @@ Evolucoes PoC depois:
 adicionar certificado para o acesso privado do Argo
 avaliar ACM privado/publico ou cert-manager para emitir o certificado
 mapeamento de rede/DNS corporativo para acessar argocd.boilerplate.internal fora da VPC, se necessario
-fechar o contrato entre foundation e GitOps para valores nao sensiveis usados em annotations/manifests antes do render
+padronizar contratos foundation -> GitOps para outros valores nao sensiveis usados em annotations/manifests antes do render
 manter IAM, IRSA, EKS, VPC, ECR e DNS base no Pulumi
 ```
 
@@ -530,7 +530,7 @@ EnvoyProxy private-origin-envoy-proxy definido para customizar o data plane
 NLB internal criado para o Envoy data plane atuar como origem privada do CloudFront VPC Origin
 cross-zone load balancing habilitado no NLB para a PoC com node group pequeno
 HTTPRoute da smoke app definido para rotear pelo private-origin-gateway
-o ponto aberto atual e fornecer o SG do NLB ao EnvoyProxy de forma declarativa antes do render do Argo CD
+SG do NLB fornecido ao EnvoyProxy de forma declarativa via CRD de SSM antes do render do Argo CD
 fluxo alvo continua sendo CloudFront -> VPC Origin -> NLB privado -> Envoy -> HTTPRoute -> Service interno
 ```
 
@@ -546,12 +546,12 @@ requests e limits do Envoy definidos para deixar consumo previsivel
 PDB do Envoy criado com maxUnavailable 1 para upgrades controlados
 CRD real do EnvoyProxy aceitou envoyDaemonSet e envoyPDB
 target health do NLB validado com todos os targets healthy depois da reconciliacao do Argo CD
+CRD de SSM validado para propagar o SG do NLB ao EnvoyProxy sem hardcode no Git
 ```
 
 Evolucoes PoC depois:
 
 ```text
-resolver o contrato do SG do NLB usado na annotation do EnvoyProxy sem depender de valor criado em runtime pelo External Secrets Operator
 validar resolucao DNS privada de api.boilerplate.internal a partir de rede/VPN com acesso a Private Hosted Zone
 manter Envoy -> app em HTTP enquanto o foco for TLS norte-sul
 validar fluxo CloudFront VPC Origin -> NLB privado -> Envoy -> HTTPRoute -> Service interno
@@ -787,7 +787,7 @@ estrategia de destroy por ambiente nao produtivo
 Ordem sugerida a partir do estado atual:
 
 ```text
-1. Resolver o contrato render-time do SG do NLB do Envoy para o GitOps do private-origin-gateway sem hardcode no Git
+1. Consolidar e documentar o contrato do SG do NLB do Envoy via CRD de SSM no GitOps do private-origin-gateway
 2. Fechar o caminho privado atual: Gateway/Envoy/HTTPRoute reconciliando corretamente e validacao do acesso interno pelo Envoy Gateway
 3. Validar fim a fim o caminho publico: CloudFront + AWS WAF -> VPC origin -> NLB privado -> Envoy Gateway -> app
 4. Validar restricoes do CloudFront VPC origin para NLB privado: security group no NLB, sem NLB TLS listener e sem gRPC publico por esse caminho
