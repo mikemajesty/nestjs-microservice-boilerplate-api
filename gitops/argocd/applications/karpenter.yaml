@@ -12,6 +12,7 @@ spec:
     repoURL: oci://public.ecr.aws/karpenter/karpenter
     targetRevision: 1.14.0
     helm:
+      skipCrds: true
       values: |
         serviceAccount:
           name: karpenter
