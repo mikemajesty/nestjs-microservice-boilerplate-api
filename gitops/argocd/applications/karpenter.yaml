@@ -1,0 +1,40 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: karpenter
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: '15'
+spec:
+  project: default
+  source:
+    chart: karpenter
+    repoURL: oci://public.ecr.aws/karpenter
+    targetRevision: 1.14.0
+    helm:
+      values: |
+        serviceAccount:
+          name: karpenter
+          annotations:
+            eks.amazonaws.com/role-arn: arn:aws:iam::741437278375:role/nestjs-boilerplate-dev-karpenter-role
+        settings:
+          clusterName: nestjs-boilerplate-dev-eks-cluster
+          eksControlPlane: true
+        controller:
+          resources:
+            requests:
+              cpu: 1
+              memory: 1Gi
+            limits:
+              cpu: 1
+              memory: 1Gi
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: karpenter
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+    automated:
+      prune: true
+      selfHeal: true

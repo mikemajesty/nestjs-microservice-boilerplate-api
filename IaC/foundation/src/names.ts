@@ -15,6 +15,7 @@ export const resourceNameSuffix = {
     vpcNetwork: 'vpc-network',
     securityGroups: 'network-security-groups',
     nlbSecurityGroup: 'private-nlb-sg',
+    karpenterNodeSecurityGroup: 'karpenter-node-sg',
     nlbParameterStore: 'nlb-parameter-store',
     nlbSgIdPath: '/infra/envoy-nlb-sg-id',
     envoyNlbHttpIngress: 'envoy-nlb-http-ingress',
@@ -58,6 +59,14 @@ export const resourceNameSuffix = {
       policy: 'aws-load-balancer-controller-policy',
       role: 'aws-load-balancer-controller-role',
       policyAttachment: 'aws-load-balancer-controller-policy-attachment'
+    },
+    karpenter: {
+      release: 'karpenter',
+      role: 'karpenter-role',
+      nodeLifecyclePolicy: 'karpenter-controller-node-lifecycle-policy',
+      iamIntegrationPolicy: 'karpenter-controller-iam-integration-policy',
+      eksIntegrationPolicy: 'karpenter-controller-eks-integration-policy',
+      resourceDiscoveryPolicy: 'karpenter-controller-resource-discovery-policy'
     },
     externalDns: {
       iam: 'external-dns-iam',

@@ -22,6 +22,7 @@ const VPC_NETWORK_COMPONENT_TYPE = 'boilerplate:network:VPC'
 const KUBERNETES_PUBLIC_LOAD_BALANCER_SUBNET_ROLE_TAG = 'kubernetes.io/role/elb'
 const KUBERNETES_INTERNAL_LOAD_BALANCER_SUBNET_ROLE_TAG = 'kubernetes.io/role/internal-elb'
 const KUBERNETES_SUBNET_ROLE_TAG_ENABLED_VALUE = '1'
+const KARPENTER_DISCOVERY_TAG = 'karpenter.sh/discovery'
 
 export class VPCNetwork extends pulumi.ComponentResource implements NetworkResources {
   readonly vpcId: pulumi.Output<string>
@@ -60,7 +61,8 @@ export class VPCNetwork extends pulumi.ComponentResource implements NetworkResou
             name: 'private',
             type: awsx.ec2.SubnetType.Private,
             tags: createTags(config, {
-              [KUBERNETES_INTERNAL_LOAD_BALANCER_SUBNET_ROLE_TAG]: KUBERNETES_SUBNET_ROLE_TAG_ENABLED_VALUE
+              [KUBERNETES_INTERNAL_LOAD_BALANCER_SUBNET_ROLE_TAG]: KUBERNETES_SUBNET_ROLE_TAG_ENABLED_VALUE,
+              [KARPENTER_DISCOVERY_TAG]: resourceName(config, resourceNameSuffix.cluster.eks.cluster)
             })
           }
         ],

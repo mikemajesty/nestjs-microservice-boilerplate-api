@@ -11,6 +11,7 @@ export type EksClusterResources = {
   clusterEndpoint: pulumi.Output<string>
   clusterName: pulumi.Output<string>
   clusterOidcIssuerUrl: pulumi.Output<string>
+  clusterSecurityGroupId: pulumi.Output<string>
 }
 
 export type EksClusterArgs = {
@@ -28,6 +29,7 @@ export class EksCluster extends pulumi.ComponentResource implements EksClusterRe
   readonly clusterEndpoint: pulumi.Output<string>
   readonly clusterName: pulumi.Output<string>
   readonly clusterOidcIssuerUrl: pulumi.Output<string>
+  readonly clusterSecurityGroupId: pulumi.Output<string>
 
   constructor(name: string, args: EksClusterArgs, opts?: pulumi.ComponentResourceOptions) {
     super(EKS_CLUSTER_COMPONENT_TYPE, name, {}, opts)
@@ -64,13 +66,15 @@ export class EksCluster extends pulumi.ComponentResource implements EksClusterRe
     this.clusterEndpoint = cluster.endpoint
     this.clusterName = cluster.name
     this.clusterOidcIssuerUrl = cluster.identities.apply((identities) => identities[0].oidcs[0].issuer)
+    this.clusterSecurityGroupId = cluster.vpcConfig.clusterSecurityGroupId
 
     this.registerOutputs({
       clusterArn: this.clusterArn,
       clusterCertificateAuthorityData: this.clusterCertificateAuthorityData,
       clusterEndpoint: this.clusterEndpoint,
       clusterName: this.clusterName,
-      clusterOidcIssuerUrl: this.clusterOidcIssuerUrl
+      clusterOidcIssuerUrl: this.clusterOidcIssuerUrl,
+      clusterSecurityGroupId: this.clusterSecurityGroupId
     })
   }
 }

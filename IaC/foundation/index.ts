@@ -8,6 +8,7 @@ import { ExternalDns } from './src/addon/addon-external-dns'
 import { ExternalDnsIam } from './src/addon/addon-external-dns-iam'
 import { ExternalSecretsIam } from './src/addon/addon-external-secrets-iam'
 import { K8sConfigMap } from './src/addon/addon-k8s-configmap'
+import { KarpenterIam } from './src/addon/addon-karpenter-iam'
 import { SsmAnnotationResolver } from './src/addon/addon-ssm-annotation-resolver'
 import { SsmAnnotationResolverIam } from './src/addon/addon-ssm-annotation-resolver-iam'
 import { ApplicationContainerRegistry } from './src/app/app-container-registry'
@@ -21,6 +22,7 @@ import { EksOidcProvider } from './src/cluster/cluster-oidc-provider'
 import { config } from './src/config'
 import { InternalDns } from './src/dns/dns-private-zone'
 import { resourceName, resourceNameSuffix } from './src/names'
+import { KarpenterNodeSecurityGroups } from './src/network/network-karpenter-node-security-groups'
 import { NlbParameterStore } from './src/network/network-nlb-parameter-store'
 import { NetworkSecurityGroups } from './src/network/network-nlb-security-groups'
 import { VPCNetwork } from './src/network/network-vpc'
@@ -40,6 +42,15 @@ const networkSecurityGroup = new NetworkSecurityGroups(
     config,
     vpcId: network.vpcId,
     vpcCidr: network.vpcCidr
+  },
+  { parent: network }
+)
+
+const karpenterNodeSecurityGroup = new KarpenterNodeSecurityGroups(
+  resourceName(config, resourceNameSuffix.network.karpenterNodeSecurityGroup),
+  {
+    config,
+    vpcId: network.vpcId
   },
   { parent: network }
 )
@@ -204,6 +215,14 @@ const externalSecretsIam = new ExternalSecretsIam(resourceName(config, resourceN
   infraSsmParameterArn: nlbParameterStore.envoyNlbSgIdParameterArn
 })
 
+const karpenterIam = new KarpenterIam(resourceName(config, 'karpenter-iam'), {
+  config,
+  clusterName: eksCluster.clusterName,
+  oidcProviderArn: eksOidcProvider.oidcProviderArn,
+  oidcProviderUrl: eksOidcProvider.oidcProviderUrl,
+  nodeRoleArn: eksNodeIam.nodeRoleArn
+})
+
 // ============================================================
 // 13. ADDONS (USAM O WORKLOAD PROVIDER)
 // ============================================================
@@ -295,7 +314,8 @@ export const vpc = {
 }
 
 export const securityGroups = {
-  publicLoadBalancerSecurityGroupId: networkSecurityGroup.envoyInternalNlbSecurityGroupId
+  publicLoadBalancerSecurityGroupId: networkSecurityGroup.envoyInternalNlbSecurityGroupId,
+  karpenterNodeSecurityGroupId: karpenterNodeSecurityGroup.karpenterNodeSecurityGroupId
 }
 
 export const infraConfig = {
@@ -335,6 +355,7 @@ export const eks = {
   clusterEndpoint: eksCluster.clusterEndpoint,
   clusterName: eksCluster.clusterName,
   clusterOidcIssuerUrl: eksCluster.clusterOidcIssuerUrl,
+  clusterSecurityGroupId: eksCluster.clusterSecurityGroupId,
   clusterRoleArn: eksClusterIam.clusterRoleArn,
   clusterRoleName: eksClusterIam.clusterRoleName,
   nodeGroupArn: eksNodeGroup.nodeGroupArn,
@@ -370,6 +391,10 @@ export const addons = {
   externalSecretsRoleName: externalSecretsIam.roleName,
   externalSecretsServiceAccountName: externalSecretsIam.serviceAccountName,
   externalSecretsServiceAccountNamespace: externalSecretsIam.serviceAccountNamespace,
+  karpenterRoleArn: karpenterIam.roleArn,
+  karpenterRoleName: karpenterIam.roleName,
+  karpenterServiceAccountName: karpenterIam.serviceAccountName,
+  karpenterServiceAccountNamespace: karpenterIam.serviceAccountNamespace,
   ssmAnnotationResolverPolicyArn: ssmAnnotationResolverIam.policyArn,
   ssmAnnotationResolverPolicyName: ssmAnnotationResolverIam.policyName,
   ssmAnnotationResolverRoleArn: ssmAnnotationResolverIam.roleArn,

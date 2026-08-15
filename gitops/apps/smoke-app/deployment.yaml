@@ -63,6 +63,14 @@ spec:
                     app.kubernetes.io/environment: dev
       serviceAccountName: nestjs-boilerplate-dev-smoke-app
       automountServiceAccountToken: true
+      nodeSelector:
+        kubernetes.io/os: linux
+        workload: app
+      tolerations:
+        - key: workload
+          operator: Equal
+          value: app
+          effect: NoSchedule
       securityContext:
         runAsNonRoot: true
         runAsUser: 1001

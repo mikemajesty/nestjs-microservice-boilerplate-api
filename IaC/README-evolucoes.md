@@ -765,11 +765,18 @@ Ordem sugerida a partir do estado atual:
 
 ```text
 1. Consolidar e documentar o contrato do SG do NLB do Envoy via CRD de SSM no GitOps do private-origin-gateway
-2. Fechar o caminho privado atual: Gateway/Envoy/HTTPRoute reconciliando corretamente e validacao do acesso interno pelo Envoy Gateway
+2. Validar o Karpenter controller e o NodePool app no cluster
 3. Validar observabilidade minima da borda, Envoy e app
-4. Estudar Karpenter para escala de nodes, se houver necessidade real de capacidade dinamica
-5. Estudar KEDA somente se houver fila, evento ou metrica externa que justifique autoscaling por evento
-6. Avaliar service mesh (Cilium/WireGuard, Linkerd ou Istio) apenas se houver requisito claro de trafego leste-oeste
+4. Estudar KEDA somente se houver fila, evento ou metrica externa que justifique autoscaling por evento
+5. Avaliar service mesh (Cilium/WireGuard, Linkerd ou Istio) apenas se houver requisito claro de trafego leste-oeste
+```
+
+Observabilidade minima no `edge`:
+
+```text
+CloudFront com logs de acesso enviados para o bucket de logs
+WAF com metricas e requests amostrados habilitados
+alarms basicos para 4xx/5xx do CloudFront, latencia/origem e requests bloqueadas pelo WAF
 ```
 
 Este documento deve continuar acompanhando a PoC conforme cada etapa sair do backlog e virar infraestrutura real.

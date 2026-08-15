@@ -1,0 +1,15 @@
+apiVersion: karpenter.k8s.aws/v1beta1
+kind: EC2NodeClass
+metadata:
+  name: app
+spec:
+  amiFamily: AL2023
+  role: nestjs-boilerplate-dev-eks-node-role
+  subnetSelectorTerms:
+    - tags:
+        karpenter.sh/discovery: nestjs-boilerplate-dev-eks-cluster
+  securityGroupSelectorTerms:
+    - tags:
+        karpenter.sh/discovery: nestjs-boilerplate-dev-eks-cluster
+  tags:
+    workload: app
