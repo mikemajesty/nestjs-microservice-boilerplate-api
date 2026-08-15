@@ -6,6 +6,8 @@ metadata:
     argocd.argoproj.io/sync-wave: '10'
 spec:
   amiFamily: AL2023
+  amiSelectorTerms:
+    - alias: al2023@latest
   role: nestjs-boilerplate-dev-eks-node-role
   subnetSelectorTerms:
     - tags:
