@@ -199,57 +199,59 @@ export class KarpenterIam extends pulumi.ComponentResource implements KarpenterI
       resourceName(config, resourceNameSuffix.addon.karpenter.iamIntegrationPolicy),
       {
         name: resourceName(config, resourceNameSuffix.addon.karpenter.iamIntegrationPolicy),
-        policy: pulumi.all([nodeRoleArn, callerIdentity.accountId]).apply(([roleArn, accountId]) =>
-          JSON.stringify({
-            Version: '2012-10-17',
-            Statement: [
-              {
-                Sid: 'AllowPassingInstanceRole',
-                Effect: 'Allow',
-                Resource: roleArn,
-                Action: 'iam:PassRole',
-                Condition: {
-                  StringEquals: {
-                    'iam:PassedToService': ['ec2.amazonaws.com', 'ec2.amazonaws.com.cn']
-                  }
+        policy: pulumi.all([nodeRoleArn, callerIdentity.accountId]).apply(
+          ([roleArn, accountId]) =>
+            aws.iam.getPolicyDocumentOutput({
+              statements: [
+                {
+                  sid: 'AllowPassingInstanceRole',
+                  effect: 'Allow',
+                  actions: ['iam:PassRole'],
+                  resources: [roleArn],
+                  conditions: [
+                    {
+                      test: 'StringEquals',
+                      variable: 'iam:PassedToService',
+                      values: ['ec2.amazonaws.com', 'ec2.amazonaws.com.cn']
+                    }
+                  ]
+                },
+                {
+                  sid: 'AllowScopedInstanceProfileCreationActions',
+                  effect: 'Allow',
+                  actions: ['iam:CreateInstanceProfile'],
+                  resources: [`arn:aws:iam::${accountId}:instance-profile/*`]
+                },
+                {
+                  sid: 'AllowScopedInstanceProfileTagActions',
+                  effect: 'Allow',
+                  actions: ['iam:TagInstanceProfile'],
+                  resources: [`arn:aws:iam::${accountId}:instance-profile/*`]
+                },
+                {
+                  sid: 'AllowScopedInstanceProfileActions',
+                  effect: 'Allow',
+                  actions: [
+                    'iam:AddRoleToInstanceProfile',
+                    'iam:RemoveRoleFromInstanceProfile',
+                    'iam:DeleteInstanceProfile'
+                  ],
+                  resources: [`arn:aws:iam::${accountId}:instance-profile/*`]
+                },
+                {
+                  sid: 'AllowScopedInstanceProfileReadActions',
+                  effect: 'Allow',
+                  actions: ['iam:GetInstanceProfile'],
+                  resources: [`arn:aws:iam::${accountId}:instance-profile/*`]
+                },
+                {
+                  sid: 'AllowAPIServerEndpointDiscovery',
+                  effect: 'Allow',
+                  actions: ['eks:DescribeCluster'],
+                  resources: [clusterArn]
                 }
-              },
-              {
-                Sid: 'AllowScopedInstanceProfileCreationActions',
-                Effect: 'Allow',
-                Resource: `arn:aws:iam::${accountId}:instance-profile/*`,
-                Action: ['iam:CreateInstanceProfile']
-              },
-              {
-                Sid: 'AllowScopedInstanceProfileTagActions',
-                Effect: 'Allow',
-                Resource: `arn:aws:iam::${accountId}:instance-profile/*`,
-                Action: ['iam:TagInstanceProfile']
-              },
-              {
-                Sid: 'AllowScopedInstanceProfileActions',
-                Effect: 'Allow',
-                Resource: `arn:aws:iam::${accountId}:instance-profile/*`,
-                Action: [
-                  'iam:AddRoleToInstanceProfile',
-                  'iam:RemoveRoleFromInstanceProfile',
-                  'iam:DeleteInstanceProfile'
-                ]
-              },
-              {
-                Sid: 'AllowScopedInstanceProfileReadActions',
-                Effect: 'Allow',
-                Resource: `arn:aws:iam::${accountId}:instance-profile/*`,
-                Action: 'iam:GetInstanceProfile'
-              },
-              {
-                Sid: 'AllowAPIServerEndpointDiscovery',
-                Effect: 'Allow',
-                Resource: clusterArn,
-                Action: 'eks:DescribeCluster'
-              }
-            ]
-          })
+              ]
+            }).json
         ),
         tags: createTags(config, {
           Name: resourceName(config, resourceNameSuffix.addon.karpenter.iamIntegrationPolicy)
