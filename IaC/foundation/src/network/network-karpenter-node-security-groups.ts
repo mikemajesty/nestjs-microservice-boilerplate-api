@@ -12,6 +12,7 @@ export type KarpenterNodeSecurityGroupResources = {
 export type KarpenterNodeSecurityGroupArgs = {
   config: InfrastructureConfig
   vpcId: pulumi.Input<string>
+  clusterSecurityGroupId: pulumi.Input<string>
 }
 
 const KARPENTER_NODE_SECURITY_GROUPS_COMPONENT_TYPE = 'boilerplate:network:KarpenterNodeSecurityGroups'
@@ -28,7 +29,7 @@ export class KarpenterNodeSecurityGroups
   constructor(name: string, args: KarpenterNodeSecurityGroupArgs, opts?: pulumi.ComponentResourceOptions) {
     super(KARPENTER_NODE_SECURITY_GROUPS_COMPONENT_TYPE, name, {}, opts)
 
-    const { config, vpcId } = args
+    const { config, vpcId, clusterSecurityGroupId } = args
     const karpenterNodeSecurityGroupName = resourceName(config, resourceNameSuffix.network.karpenterNodeSecurityGroup)
     const clusterName = resourceName(config, resourceNameSuffix.cluster.eks.cluster)
 
@@ -53,6 +54,28 @@ export class KarpenterNodeSecurityGroups
         referencedSecurityGroupId: karpenterNodeSecurityGroup.id,
         ipProtocol: ALL_PROTOCOLS,
         description: 'Allow node-to-node traffic for Karpenter-managed app nodes'
+      },
+      { parent: karpenterNodeSecurityGroup }
+    )
+
+    new aws.vpc.SecurityGroupIngressRule(
+      resourceName(config, 'karpenter-node-from-cluster-ingress'),
+      {
+        securityGroupId: karpenterNodeSecurityGroup.id,
+        referencedSecurityGroupId: clusterSecurityGroupId,
+        ipProtocol: ALL_PROTOCOLS,
+        description: 'Allow EKS control plane traffic to Karpenter-managed app nodes'
+      },
+      { parent: karpenterNodeSecurityGroup }
+    )
+
+    new aws.vpc.SecurityGroupIngressRule(
+      resourceName(config, 'karpenter-cluster-from-node-ingress'),
+      {
+        securityGroupId: clusterSecurityGroupId,
+        referencedSecurityGroupId: karpenterNodeSecurityGroup.id,
+        ipProtocol: ALL_PROTOCOLS,
+        description: 'Allow Karpenter-managed app nodes to reach the EKS control plane'
       },
       { parent: karpenterNodeSecurityGroup }
     )

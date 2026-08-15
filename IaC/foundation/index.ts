@@ -46,15 +46,6 @@ const networkSecurityGroup = new NetworkSecurityGroups(
   { parent: network }
 )
 
-const karpenterNodeSecurityGroup = new KarpenterNodeSecurityGroups(
-  resourceName(config, resourceNameSuffix.network.karpenterNodeSecurityGroup),
-  {
-    config,
-    vpcId: network.vpcId
-  },
-  { parent: network }
-)
-
 // ============================================================
 // 3. DNS
 // ============================================================
@@ -91,6 +82,16 @@ const eksCluster = new EksCluster(
     customTimeouts: { delete: '30m' },
     dependsOn: [network, eksClusterIam]
   }
+)
+
+const karpenterNodeSecurityGroup = new KarpenterNodeSecurityGroups(
+  resourceName(config, resourceNameSuffix.network.karpenterNodeSecurityGroup),
+  {
+    config,
+    vpcId: network.vpcId,
+    clusterSecurityGroupId: eksCluster.clusterSecurityGroupId
+  },
+  { parent: network }
 )
 
 // ============================================================
