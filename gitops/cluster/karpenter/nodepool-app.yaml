@@ -2,6 +2,8 @@ apiVersion: karpenter.sh/v1beta1
 kind: NodePool
 metadata:
   name: app
+  annotations:
+    argocd.argoproj.io/sync-wave: '20'
 spec:
   template:
     metadata:
