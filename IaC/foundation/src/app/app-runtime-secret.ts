@@ -4,6 +4,7 @@ import * as pulumi from '@pulumi/pulumi'
 import type { InfrastructureConfig } from '../config'
 import { resourceName, resourceNameSuffix } from '../names'
 import { createTags } from '../tags'
+import type { ApplicationPostgresResources } from './app-postgres'
 
 export type ApplicationRuntimeSecretResources = {
   secretArn: pulumi.Output<string>
@@ -12,12 +13,10 @@ export type ApplicationRuntimeSecretResources = {
 
 export type ApplicationRuntimeSecretArgs = {
   config: InfrastructureConfig
+  postgres: ApplicationPostgresResources
 }
 
 const APPLICATION_RUNTIME_SECRET_COMPONENT_TYPE = 'boilerplate:app:RuntimeSecret'
-const EXAMPLE_SECRET_VALUE = {
-  SMOKE_SECRET_MESSAGE: 'hello-from-secrets-manager'
-}
 
 export class ApplicationRuntimeSecret extends pulumi.ComponentResource implements ApplicationRuntimeSecretResources {
   readonly secretArn: pulumi.Output<string>
@@ -26,9 +25,30 @@ export class ApplicationRuntimeSecret extends pulumi.ComponentResource implement
   constructor(name: string, args: ApplicationRuntimeSecretArgs, opts?: pulumi.ComponentResourceOptions) {
     super(APPLICATION_RUNTIME_SECRET_COMPONENT_TYPE, name, {}, opts)
 
-    const { config } = args
+    const { config, postgres } = args
     const secretResourceName = resourceName(config, resourceNameSuffix.app.runtimeSecret)
     const secretName = `${config.projectName}/${config.environment}/smoke-app`
+    const postgresUrl = pulumi.interpolate`postgresql://${postgres.postgresUsername}:${postgres.postgresPassword}@${postgres.postgresAddress}:${postgres.postgresPort}/${postgres.postgresDatabaseName}`
+    const secretValue = pulumi
+      .all([
+        postgres.postgresAddress,
+        postgres.postgresDatabaseName,
+        postgres.postgresPassword,
+        postgres.postgresPort,
+        postgres.postgresUsername,
+        postgresUrl
+      ])
+      .apply(([host, database, password, port, username, url]) =>
+        JSON.stringify({
+          SMOKE_SECRET_MESSAGE: 'hello-from-secrets-manager',
+          POSTGRES_HOST: host,
+          POSTGRES_PORT: String(port),
+          POSTGRES_USER: username,
+          POSTGRES_PASSWORD: password,
+          POSTGRES_DATABASE: database,
+          POSTGRES_URL: url
+        })
+      )
 
     const secret = new aws.secretsmanager.Secret(
       secretResourceName,
@@ -46,7 +66,7 @@ export class ApplicationRuntimeSecret extends pulumi.ComponentResource implement
       resourceName(config, resourceNameSuffix.app.runtimeSecretVersion),
       {
         secretId: secret.id,
-        secretString: pulumi.secret(JSON.stringify(EXAMPLE_SECRET_VALUE))
+        secretString: pulumi.secret(secretValue)
       },
       { parent: secret }
     )

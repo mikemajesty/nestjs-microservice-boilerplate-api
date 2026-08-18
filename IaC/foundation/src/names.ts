@@ -32,7 +32,11 @@ export const resourceNameSuffix = {
     containerRepository: 'app',
     containerRepositoryLifecyclePolicy: 'app-ecr-lifecycle-policy',
     runtimeSecret: 'app-runtime-secret',
-    runtimeSecretVersion: 'app-runtime-secret-version'
+    runtimeSecretVersion: 'app-runtime-secret-version',
+    postgres: 'app-postgres',
+    postgresPassword: 'app-postgres-password',
+    postgresSecurityGroup: 'app-postgres-sg',
+    postgresSubnetGroup: 'app-postgres-subnet-group'
   },
   cluster: {
     eks: {

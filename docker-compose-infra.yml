@@ -1,4 +1,11 @@
+# Infra local de referência para a PoC.
+# Mapeamento alvo:
+# - Mongo replica set -> DocumentDB
+# - Redis -> ElastiCache
+# - Postgres -> RDS PostgreSQL
+# O restante é addon de observabilidade/apoio e ferramentas locais de admin.
 services:
+  # Mongo replica set local (equivalente ao DocumentDB da PoC)
   nestjs-microservice-primary:
     container_name: nestjs-microservice-primary
     image: mongo:7.0
@@ -112,6 +119,7 @@ services:
       - .docker/mongo/init-replica.sh:/init-replica.sh
     entrypoint: ['/bin/sh', '/init-replica.sh']
 
+  # RDS PostgreSQL local
   postgres:
     container_name: nestjs-microservice-postgres
     image: postgres:16-alpine
@@ -131,6 +139,7 @@ services:
       retries: 5
     restart: unless-stopped
 
+  # ElastiCache Redis local
   redis:
     container_name: nestjs-microservice-redis
     image: redis:7.2-alpine
@@ -149,6 +158,7 @@ services:
       retries: 3
     restart: unless-stopped
 
+  # Addons de observabilidade / tracing / alertas
   zipkin-all-in-one:
     container_name: nestjs-microservice-zipkin-all-in-one
     image: openzipkin/zipkin:2.24
@@ -207,6 +217,7 @@ services:
       - alertmanager-data:/alertmanager
     restart: unless-stopped
 
+  # UIs locais de administração (não mapear para a infra alvo)
   mongo-express:
     container_name: nestjs-microservice-mongo-express
     image: mongo-express:1.0.0-20-alpine3.18
@@ -241,6 +252,7 @@ services:
       - postgres-network
     restart: unless-stopped
 
+  # UI e stack de dashboards/logs locais
   grafana:
     container_name: nestjs-microservice-grafana
     image: grafana/grafana:10.4.0

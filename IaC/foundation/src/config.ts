@@ -14,6 +14,10 @@ export type InfrastructureConfig = {
   kubernetesVersion: string
   appImageTag: string
   enableAppContainerRegistry: boolean
+  appPostgresDatabase: string
+  appPostgresUsername: string
+  appPostgresInstanceClass: string
+  appPostgresAllocatedStorage: number
 }
 
 const projectConfig = new pulumi.Config()
@@ -31,5 +35,9 @@ export const config: InfrastructureConfig = {
   internalDomainName: projectConfig.get('internalDomainName') ?? 'boilerplate.internal',
   kubernetesVersion: projectConfig.get('kubernetesVersion') ?? '1.35',
   appImageTag: projectConfig.get('appImageTag') ?? 'latest',
-  enableAppContainerRegistry: projectConfig.getBoolean('enableAppContainerRegistry') ?? true
+  enableAppContainerRegistry: projectConfig.getBoolean('enableAppContainerRegistry') ?? true,
+  appPostgresDatabase: projectConfig.get('appPostgresDatabase') ?? 'nestjs_microservice',
+  appPostgresUsername: projectConfig.get('appPostgresUsername') ?? 'admin',
+  appPostgresInstanceClass: projectConfig.get('appPostgresInstanceClass') ?? 'db.t4g.micro',
+  appPostgresAllocatedStorage: projectConfig.getNumber('appPostgresAllocatedStorage') ?? 20
 }

@@ -447,6 +447,7 @@ Estado atual:
 CoreDNS criado pelo EKS e reduzido para 1 replica via patch Pulumi para caber na PoC single-node
 AWS Load Balancer Controller reduzido para 1 replica na PoC single-node
 Metrics Server declarado como add-on via Argo CD para habilitar a API metrics.k8s.io usada pelo HPA
+Prometheus, Collector, Zipkin, Alertmanager, Grafana, Loki e Promtail sao addons de plataforma dentro do cluster
 ```
 
 Evolucoes PoC depois:
@@ -456,6 +457,7 @@ VPC CNI
 CoreDNS com 2 replicas quando o node group voltar a ter capacidade adequada
 kube-proxy
 EBS CSI Driver se houver volumes
+padronizar os addons de observabilidade via GitOps no cluster
 ```
 
 Ordem sugerida para autoscaling:
@@ -465,7 +467,6 @@ sincronizar o Metrics Server pelo Argo CD
 validar kubectl top pods e kubectl top nodes
 validar HPA do smoke app depois que metrics.k8s.io estiver disponivel
 estudar Karpenter somente depois de borda publica, observabilidade minima, requests/limits e HPA
-estudar KEDA somente se houver workload orientado a eventos, fila ou metrica externa
 ```
 
 Evolucoes projeto maior:
@@ -593,7 +594,8 @@ imagem da smoke app publicada no ECR Public com referencia mutavel para a PoC
 Evolucoes PoC depois:
 
 ```text
-evoluir a smoke app para um workload real quando houver necessidade de negocio
+migrar do smoke app para o workload real da aplicacao
+migrar o NodePool do Karpenter para as necessidades reais da app
 migrar a imagem para ECR privado quando fizer sentido
 ajustar o desenho de observabilidade da app com metricas e logs reais
 ```
@@ -602,7 +604,6 @@ Evolucoes projeto maior:
 
 ```text
 Karpenter para escala de nodes quando houver necessidade real
-KEDA para eventos ou metricas externas quando houver justificativa
 service mesh apenas se houver requisito claro de trafego leste-oeste
 Pod Security Standards e NetworkPolicy quando houver mais workloads
 ```
@@ -612,7 +613,8 @@ Pod Security Standards e NetworkPolicy quando houver mais workloads
 Estado atual:
 
 ```text
-nao criado
+secret runtime da app agora inclui os dados de conexao do Postgres da foundation
+smoke app consome esse secret completo via ExternalSecret em GitOps
 ```
 
 Evolucoes PoC depois:
@@ -643,19 +645,22 @@ avaliar Secrets Store CSI Driver quando secrets como arquivos forem preferiveis 
 Estado atual:
 
 ```text
-RDS ainda nao criado
-Redis ainda nao criado
-Mongo/DocumentDB/Atlas ainda nao definido
+infra de banco e cache ainda nao criada para todos os alvos, mas o Postgres da app ja foi modelado no foundation
+RDS PostgreSQL privado da app criado em Pulumi com subnet group, SG dedicado e credenciais geradas
+docker-compose-infra.yml continua servindo como espelho local da infraestrutura alvo
+Mongo replica set local representa DocumentDB
+Redis local representa ElastiCache
+Postgres local representa o mesmo contrato de configuracao do RDS
 ```
 
 Evolucoes PoC depois:
 
 ```text
-RDS subnet group
-SG do RDS permitindo app
-RDS PostgreSQL privado
+DocumentDB subnet group
+SG do DocumentDB permitindo a app
+DocumentDB privado
 ElastiCache subnet group
-SG do Redis permitindo app
+SG do Redis permitindo a app
 Redis privado
 ```
 
@@ -765,9 +770,9 @@ Ordem sugerida a partir do estado atual:
 
 ```text
 1. Consolidar e documentar o contrato do SG do NLB do Envoy via CRD de SSM no GitOps do private-origin-gateway
-2. Validar o Karpenter controller e o NodePool app no cluster
-3. Validar observabilidade minima da borda, Envoy e app
-4. Estudar KEDA somente se houver fila, evento ou metrica externa que justifique autoscaling por evento
+2. Validar o Karpenter controller e o NodePool app com o workload real da aplicacao
+3. Ajustar o provisioning para o que a app realmente precisa
+4. Validar observabilidade minima da borda, Envoy e app
 5. Avaliar service mesh (Cilium/WireGuard, Linkerd ou Istio) apenas se houver requisito claro de trafego leste-oeste
 ```
 

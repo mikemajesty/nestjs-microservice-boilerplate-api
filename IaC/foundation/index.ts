@@ -12,6 +12,9 @@ import { KarpenterIam } from './src/addon/addon-karpenter-iam'
 import { SsmAnnotationResolver } from './src/addon/addon-ssm-annotation-resolver'
 import { SsmAnnotationResolverIam } from './src/addon/addon-ssm-annotation-resolver-iam'
 import { ApplicationContainerRegistry } from './src/app/app-container-registry'
+import { ApplicationPostgres } from './src/app/app-postgres'
+import { ApplicationPostgresSecurityGroup } from './src/app/app-postgres-security-group'
+import { ApplicationPostgresSubnetGroup } from './src/app/app-postgres-subnet-group'
 import { ApplicationRuntimeSecret } from './src/app/app-runtime-secret'
 import { ConfigMapK8sProvider } from './src/cluster/cluster-configmap-provider'
 import { EksCluster } from './src/cluster/cluster-eks'
@@ -55,16 +58,11 @@ const internalDns = new InternalDns(resourceName(config, resourceNameSuffix.dns.
 })
 
 // ============================================================
-// 4. APPLICATION
+// 4. APPLICATION CONTAINER REGISTRY
 // ============================================================
 const applicationContainerRegistry = config.enableAppContainerRegistry
   ? new ApplicationContainerRegistry(resourceName(config, resourceNameSuffix.app.containerRegistry), { config })
   : undefined
-
-const applicationRuntimeSecret = new ApplicationRuntimeSecret(
-  resourceName(config, resourceNameSuffix.app.runtimeSecret),
-  { config }
-)
 
 // ============================================================
 // 5. EKS CLUSTER
@@ -95,7 +93,47 @@ const karpenterNodeSecurityGroup = new KarpenterNodeSecurityGroups(
 )
 
 // ============================================================
-// 6. EKS OIDC PROVIDER
+// 6. APPLICATION DATABASE
+// ============================================================
+const applicationPostgresSecurityGroup = new ApplicationPostgresSecurityGroup(
+  resourceName(config, resourceNameSuffix.app.postgresSecurityGroup),
+  {
+    config,
+    vpcId: network.vpcId,
+    clusterSecurityGroupId: eksCluster.clusterSecurityGroupId,
+    karpenterNodeSecurityGroupId: karpenterNodeSecurityGroup.karpenterNodeSecurityGroupId
+  },
+  { parent: networkSecurityGroup }
+)
+
+const applicationPostgresSubnetGroup = new ApplicationPostgresSubnetGroup(
+  resourceName(config, resourceNameSuffix.app.postgresSubnetGroup),
+  {
+    config,
+    subnetIds: network.privateSubnetIds
+  },
+  { parent: network }
+)
+
+const applicationPostgres = new ApplicationPostgres(
+  resourceName(config, resourceNameSuffix.app.postgres),
+  {
+    config,
+    securityGroupId: applicationPostgresSecurityGroup.postgresSecurityGroupId,
+    subnetGroupName: applicationPostgresSubnetGroup.postgresSubnetGroupName
+  },
+  {
+    dependsOn: [applicationPostgresSecurityGroup, applicationPostgresSubnetGroup]
+  }
+)
+
+const applicationRuntimeSecret = new ApplicationRuntimeSecret(
+  resourceName(config, resourceNameSuffix.app.runtimeSecret),
+  { config, postgres: applicationPostgres }
+)
+
+// ============================================================
+// 7. EKS OIDC PROVIDER
 // ============================================================
 const eksOidcProvider = new EksOidcProvider(resourceName(config, resourceNameSuffix.cluster.eks.oidcProvider), {
   config,
@@ -103,7 +141,7 @@ const eksOidcProvider = new EksOidcProvider(resourceName(config, resourceNameSuf
 })
 
 // ============================================================
-// 7. EKS NODE GROUP
+// 8. EKS NODE GROUP
 // ============================================================
 const eksNodeIam = new EksNodeIam(resourceName(config, resourceNameSuffix.cluster.eks.nodeIam), { config })
 
@@ -122,7 +160,7 @@ const eksNodeGroup = new EksNodeGroup(
 )
 
 // ============================================================
-// 8. CONFIGMAP K8S PROVIDER (ESPECÍFICO PARA CONFIGMAPS)
+// 9. CONFIGMAP K8S PROVIDER (ESPECÍFICO PARA CONFIGMAPS)
 // ============================================================
 const configMapK8sProvider = new ConfigMapK8sProvider(
   resourceName(config, 'configmap-provider'),
@@ -139,7 +177,7 @@ const configMapK8sProvider = new ConfigMapK8sProvider(
 )
 
 // ============================================================
-// 9. K8S CONFIGMAP - AWS AUTH
+// 10. K8S CONFIGMAP - AWS AUTH
 // ============================================================
 new K8sConfigMap(
   resourceName(config, 'aws-auth'),
@@ -162,7 +200,7 @@ new K8sConfigMap(
 )
 
 // ============================================================
-// 10. WORKLOAD K8S PROVIDER
+// 11. WORKLOAD K8S PROVIDER
 // ============================================================
 const workloadK8sProvider = new WorkloadK8sProvider(
   resourceName(config, resourceNameSuffix.workload.k8sProvider),
@@ -178,7 +216,7 @@ const workloadK8sProvider = new WorkloadK8sProvider(
 )
 
 // ============================================================
-// 11. SSM — persiste o SG ID do NLB como fonte de verdade AWS
+// 12. SSM — persiste o SG ID do NLB como fonte de verdade AWS
 // ============================================================
 const nlbParameterStore = new NlbParameterStore(
   resourceName(config, resourceNameSuffix.network.nlbParameterStore),
@@ -190,7 +228,7 @@ const nlbParameterStore = new NlbParameterStore(
 )
 
 // ============================================================
-// 12. IAM ROLES FOR ADDONS
+// 13. IAM ROLES FOR ADDONS
 // ============================================================
 const awsLoadBalancerControllerIam = new AwsLoadBalancerControllerIam(
   resourceName(config, resourceNameSuffix.addon.awsLoadBalancerController.iam),
@@ -346,6 +384,15 @@ export const containerRegistry = applicationContainerRegistry
     }
 
 export const application = {
+  postgres: {
+    address: applicationPostgres.postgresAddress,
+    arn: applicationPostgres.postgresArn,
+    databaseName: applicationPostgres.postgresDatabaseName,
+    port: applicationPostgres.postgresPort,
+    securityGroupId: applicationPostgresSecurityGroup.postgresSecurityGroupId,
+    subnetGroupName: applicationPostgresSubnetGroup.postgresSubnetGroupName,
+    username: applicationPostgres.postgresUsername
+  },
   runtimeSecretArn: applicationRuntimeSecret.secretArn,
   runtimeSecretName: applicationRuntimeSecret.secretName
 }
