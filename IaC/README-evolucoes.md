@@ -613,7 +613,8 @@ Pod Security Standards e NetworkPolicy quando houver mais workloads
 Estado atual:
 
 ```text
-secret runtime da app agora inclui os dados de conexao do Postgres da foundation
+secret runtime da app agora inclui os dados de conexao do Postgres e do Redis da foundation
+secret runtime da app agora inclui tambem o contrato Mongo/DocumentDB da foundation
 smoke app consome esse secret completo via ExternalSecret em GitOps
 ```
 
@@ -645,8 +646,10 @@ avaliar Secrets Store CSI Driver quando secrets como arquivos forem preferiveis 
 Estado atual:
 
 ```text
-infra de banco e cache ainda nao criada para todos os alvos, mas o Postgres da app ja foi modelado no foundation
+infra de banco e cache ainda nao criada para todos os alvos, mas o Mongo, o Postgres e o Redis da app ja foram modelados no foundation
+DocumentDB privado da app criado em Pulumi com subnet group, SG dedicado, parameter group e auth gerado
 RDS PostgreSQL privado da app criado em Pulumi com subnet group, SG dedicado e credenciais geradas
+ElastiCache Redis privado da app criado em Pulumi com subnet group, SG dedicado e auth token gerado
 docker-compose-infra.yml continua servindo como espelho local da infraestrutura alvo
 Mongo replica set local representa DocumentDB
 Redis local representa ElastiCache

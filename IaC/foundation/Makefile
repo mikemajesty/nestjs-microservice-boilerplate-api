@@ -3,7 +3,7 @@ include ../common.mk
 K8S_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
 K8S_COMMAND ?= $(K8S_ARGS)
 
-.PHONY: status stack config check-leftovers cleanup-k8s cleanup-pulumi-k8s-state cleanup-route53-records wait-load-balancers-gone preview up destroy refresh select-account-stack kubeconfig k8s teardown reset reset-app-image-state recreate argo argo-pass
+.PHONY: status stack config check-leftovers cleanup-k8s cleanup-pulumi-k8s-state cleanup-route53-records wait-load-balancers-gone preview up deploy destroy refresh select-account-stack kubeconfig k8s teardown reset reset-app-image-state recreate argo argo-pass
 
 ifeq ($(firstword $(MAKECMDGOALS)),k8s)
 $(eval $(K8S_ARGS):;@:)
@@ -85,6 +85,9 @@ refresh: check-docker check-auth select-account-stack
 	AWS_PROFILE=$(AWS_PROFILE) pulumi refresh --yes
 	
 up: check-docker preflight check-leftovers
+	AWS_PROFILE=$(AWS_PROFILE) pulumi up --yes
+
+deploy: check-docker preflight select-account-stack reset-app-image-state
 	AWS_PROFILE=$(AWS_PROFILE) pulumi up --yes
 
 preview: check-docker preflight select-account-stack

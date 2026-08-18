@@ -12,9 +12,16 @@ import { KarpenterIam } from './src/addon/addon-karpenter-iam'
 import { SsmAnnotationResolver } from './src/addon/addon-ssm-annotation-resolver'
 import { SsmAnnotationResolverIam } from './src/addon/addon-ssm-annotation-resolver-iam'
 import { ApplicationContainerRegistry } from './src/app/app-container-registry'
+import { ApplicationMongo } from './src/app/app-mongo'
+import { ApplicationMongoParameterGroup } from './src/app/app-mongo-parameter-group'
+import { ApplicationMongoSecurityGroup } from './src/app/app-mongo-security-group'
+import { ApplicationMongoSubnetGroup } from './src/app/app-mongo-subnet-group'
 import { ApplicationPostgres } from './src/app/app-postgres'
 import { ApplicationPostgresSecurityGroup } from './src/app/app-postgres-security-group'
 import { ApplicationPostgresSubnetGroup } from './src/app/app-postgres-subnet-group'
+import { ApplicationRedis } from './src/app/app-redis'
+import { ApplicationRedisSecurityGroup } from './src/app/app-redis-security-group'
+import { ApplicationRedisSubnetGroup } from './src/app/app-redis-subnet-group'
 import { ApplicationRuntimeSecret } from './src/app/app-runtime-secret'
 import { ConfigMapK8sProvider } from './src/cluster/cluster-configmap-provider'
 import { EksCluster } from './src/cluster/cluster-eks'
@@ -95,6 +102,45 @@ const karpenterNodeSecurityGroup = new KarpenterNodeSecurityGroups(
 // ============================================================
 // 6. APPLICATION DATABASE
 // ============================================================
+const applicationMongoSecurityGroup = new ApplicationMongoSecurityGroup(
+  resourceName(config, resourceNameSuffix.app.mongoSecurityGroup),
+  {
+    config,
+    vpcId: network.vpcId,
+    clusterSecurityGroupId: eksCluster.clusterSecurityGroupId,
+    karpenterNodeSecurityGroupId: karpenterNodeSecurityGroup.karpenterNodeSecurityGroupId
+  },
+  { parent: networkSecurityGroup }
+)
+
+const applicationMongoSubnetGroup = new ApplicationMongoSubnetGroup(
+  resourceName(config, resourceNameSuffix.app.mongoSubnetGroup),
+  {
+    config,
+    subnetIds: network.privateSubnetIds
+  },
+  { parent: network }
+)
+
+const applicationMongoParameterGroup = new ApplicationMongoParameterGroup(
+  resourceName(config, resourceNameSuffix.app.mongoParameterGroup),
+  { config },
+  { parent: network }
+)
+
+const applicationMongo = new ApplicationMongo(
+  resourceName(config, resourceNameSuffix.app.mongo),
+  {
+    config,
+    parameterGroupName: applicationMongoParameterGroup.mongoParameterGroupName,
+    securityGroupId: applicationMongoSecurityGroup.mongoSecurityGroupId,
+    subnetGroupName: applicationMongoSubnetGroup.mongoSubnetGroupName
+  },
+  {
+    dependsOn: [applicationMongoSecurityGroup, applicationMongoSubnetGroup, applicationMongoParameterGroup]
+  }
+)
+
 const applicationPostgresSecurityGroup = new ApplicationPostgresSecurityGroup(
   resourceName(config, resourceNameSuffix.app.postgresSecurityGroup),
   {
@@ -127,9 +173,41 @@ const applicationPostgres = new ApplicationPostgres(
   }
 )
 
+const applicationRedisSecurityGroup = new ApplicationRedisSecurityGroup(
+  resourceName(config, resourceNameSuffix.app.redisSecurityGroup),
+  {
+    config,
+    vpcId: network.vpcId,
+    clusterSecurityGroupId: eksCluster.clusterSecurityGroupId,
+    karpenterNodeSecurityGroupId: karpenterNodeSecurityGroup.karpenterNodeSecurityGroupId
+  },
+  { parent: networkSecurityGroup }
+)
+
+const applicationRedisSubnetGroup = new ApplicationRedisSubnetGroup(
+  resourceName(config, resourceNameSuffix.app.redisSubnetGroup),
+  {
+    config,
+    subnetIds: network.privateSubnetIds
+  },
+  { parent: network }
+)
+
+const applicationRedis = new ApplicationRedis(
+  resourceName(config, resourceNameSuffix.app.redis),
+  {
+    config,
+    securityGroupId: applicationRedisSecurityGroup.redisSecurityGroupId,
+    subnetGroupName: applicationRedisSubnetGroup.redisSubnetGroupName
+  },
+  {
+    dependsOn: [applicationRedisSecurityGroup, applicationRedisSubnetGroup]
+  }
+)
+
 const applicationRuntimeSecret = new ApplicationRuntimeSecret(
   resourceName(config, resourceNameSuffix.app.runtimeSecret),
-  { config, postgres: applicationPostgres }
+  { config, mongo: applicationMongo, postgres: applicationPostgres, redis: applicationRedis }
 )
 
 // ============================================================
@@ -384,6 +462,16 @@ export const containerRegistry = applicationContainerRegistry
     }
 
 export const application = {
+  mongo: {
+    address: applicationMongo.mongoAddress,
+    arn: applicationMongo.mongoArn,
+    databaseName: applicationMongo.mongoDatabaseName,
+    password: applicationMongo.mongoPassword,
+    port: applicationMongo.mongoPort,
+    securityGroupId: applicationMongoSecurityGroup.mongoSecurityGroupId,
+    subnetGroupName: applicationMongoSubnetGroup.mongoSubnetGroupName,
+    username: applicationMongo.mongoUsername
+  },
   postgres: {
     address: applicationPostgres.postgresAddress,
     arn: applicationPostgres.postgresArn,
@@ -392,6 +480,13 @@ export const application = {
     securityGroupId: applicationPostgresSecurityGroup.postgresSecurityGroupId,
     subnetGroupName: applicationPostgresSubnetGroup.postgresSubnetGroupName,
     username: applicationPostgres.postgresUsername
+  },
+  redis: {
+    address: applicationRedis.redisAddress,
+    arn: applicationRedis.redisArn,
+    port: applicationRedis.redisPort,
+    securityGroupId: applicationRedisSecurityGroup.redisSecurityGroupId,
+    subnetGroupName: applicationRedisSubnetGroup.redisSubnetGroupName
   },
   runtimeSecretArn: applicationRuntimeSecret.secretArn,
   runtimeSecretName: applicationRuntimeSecret.secretName

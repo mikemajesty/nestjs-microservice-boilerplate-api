@@ -18,6 +18,14 @@ export type InfrastructureConfig = {
   appPostgresUsername: string
   appPostgresInstanceClass: string
   appPostgresAllocatedStorage: number
+  appRedisNodeType: string
+  appRedisEngineVersion: string
+  appRedisPort: number
+  appMongoDatabase: string
+  appMongoUsername: string
+  appMongoInstanceClass: string
+  appMongoEngineVersion: string
+  appMongoPort: number
 }
 
 const projectConfig = new pulumi.Config()
@@ -37,7 +45,15 @@ export const config: InfrastructureConfig = {
   appImageTag: projectConfig.get('appImageTag') ?? 'latest',
   enableAppContainerRegistry: projectConfig.getBoolean('enableAppContainerRegistry') ?? true,
   appPostgresDatabase: projectConfig.get('appPostgresDatabase') ?? 'nestjs_microservice',
-  appPostgresUsername: projectConfig.get('appPostgresUsername') ?? 'admin',
+  appPostgresUsername: projectConfig.get('appPostgresUsername') ?? 'boilerplate',
   appPostgresInstanceClass: projectConfig.get('appPostgresInstanceClass') ?? 'db.t4g.micro',
-  appPostgresAllocatedStorage: projectConfig.getNumber('appPostgresAllocatedStorage') ?? 20
+  appPostgresAllocatedStorage: projectConfig.getNumber('appPostgresAllocatedStorage') ?? 20,
+  appRedisNodeType: projectConfig.get('appRedisNodeType') ?? 'cache.t4g.micro',
+  appRedisEngineVersion: projectConfig.get('appRedisEngineVersion') ?? '7.1',
+  appRedisPort: projectConfig.getNumber('appRedisPort') ?? 6379,
+  appMongoDatabase: projectConfig.get('appMongoDatabase') ?? 'nestjs_microservice',
+  appMongoUsername: projectConfig.get('appMongoUsername') ?? 'boilerplate',
+  appMongoInstanceClass: projectConfig.get('appMongoInstanceClass') ?? 'db.t3.medium',
+  appMongoEngineVersion: projectConfig.get('appMongoEngineVersion') ?? '5.0.0',
+  appMongoPort: projectConfig.getNumber('appMongoPort') ?? 27017
 }

@@ -36,7 +36,17 @@ export const resourceNameSuffix = {
     postgres: 'app-postgres',
     postgresPassword: 'app-postgres-password',
     postgresSecurityGroup: 'app-postgres-sg',
-    postgresSubnetGroup: 'app-postgres-subnet-group'
+    postgresSubnetGroup: 'app-postgres-subnet-group',
+    redis: 'app-redis',
+    redisAuthToken: 'app-redis-auth-token',
+    redisSecurityGroup: 'app-redis-sg',
+    redisSubnetGroup: 'app-redis-subnet-group',
+    mongo: 'app-mongo',
+    mongoPassword: 'app-mongo-password',
+    mongoSecurityGroup: 'app-mongo-sg',
+    mongoSubnetGroup: 'app-mongo-subnet-group',
+    mongoParameterGroup: 'app-mongo-parameter-group',
+    mongoInstance: 'app-mongo-instance'
   },
   cluster: {
     eks: {

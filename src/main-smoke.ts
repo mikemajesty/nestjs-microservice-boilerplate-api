@@ -8,12 +8,22 @@ const envSnapshot = {
   HOST: process.env.HOST,
   NODE_ENV: process.env.NODE_ENV,
   PORT: process.env.PORT,
+  MONGO_DATABASE: process.env.MONGO_DATABASE,
+  MONGO_HOST: process.env.MONGO_HOST,
+  MONGO_PASSWORD: redact(process.env.MONGO_PASSWORD),
+  MONGO_PORT: process.env.MONGO_PORT,
+  MONGO_URL: redact(process.env.MONGO_URL),
+  MONGO_USER: process.env.MONGO_USER,
   POSTGRES_DATABASE: process.env.POSTGRES_DATABASE,
   POSTGRES_HOST: process.env.POSTGRES_HOST,
   POSTGRES_PASSWORD: redact(process.env.POSTGRES_PASSWORD),
   POSTGRES_PORT: process.env.POSTGRES_PORT,
   POSTGRES_URL: redact(process.env.POSTGRES_URL),
   POSTGRES_USER: process.env.POSTGRES_USER,
+  REDIS_HOST: process.env.REDIS_HOST,
+  REDIS_PASSWORD: redact(process.env.REDIS_PASSWORD),
+  REDIS_PORT: process.env.REDIS_PORT,
+  REDIS_URL: redact(process.env.REDIS_URL),
   SMOKE_SECRET_MESSAGE: process.env.SMOKE_SECRET_MESSAGE
 }
 const startupLog = JSON.stringify(envSnapshot, null, 2)

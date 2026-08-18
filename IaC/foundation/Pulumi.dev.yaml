@@ -8,6 +8,15 @@ config:
   foundation:internalDomainName: boilerplate.internal
   foundation:enableAppContainerRegistry: true
   foundation:appImageTag: latest
+  foundation:appPostgresUsername: boilerplate
+  foundation:appRedisNodeType: cache.t4g.micro
+  foundation:appRedisEngineVersion: '7.1'
+  foundation:appRedisPort: 6379
+  foundation:appMongoDatabase: nestjs_microservice
+  foundation:appMongoUsername: boilerplate
+  foundation:appMongoInstanceClass: db.t3.medium
+  foundation:appMongoEngineVersion: 5.0.0
+  foundation:appMongoPort: 27017
   pulumi:tags:
     pulumi:template: aws-typescript
 encryptionsalt: v1:lZEv450HkY0=:v1:G9ny5VLRduQsTERx:6d1dhs3epLdzAlQJoDAITFiWu4euFw==
