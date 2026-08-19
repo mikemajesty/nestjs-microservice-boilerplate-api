@@ -106,20 +106,6 @@ spec:
             limits:
               cpu: 500m
               memory: 512Mi
-          livenessProbe:
-            httpGet:
-              path: /
-              port: 13133
-            initialDelaySeconds: 30
-            periodSeconds: 10
-            failureThreshold: 5
-          readinessProbe:
-            httpGet:
-              path: /
-              port: 13133
-            initialDelaySeconds: 30
-            periodSeconds: 10
-            failureThreshold: 5
           volumeMounts:
             - name: config
               mountPath: /etc/otel/config.yaml
