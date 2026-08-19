@@ -82,23 +82,6 @@ spec:
             logs:
               level: debug
         
-        ports:
-          otlp-grpc:
-            enabled: true
-            containerPort: 4317
-            servicePort: 4317
-            protocol: TCP
-          otlp-http:
-            enabled: true
-            containerPort: 4318
-            servicePort: 4318
-            protocol: TCP
-          metrics:
-            enabled: true
-            containerPort: 8889
-            servicePort: 8889
-            protocol: TCP
-        
         resources:
           limits:
             cpu: 500m
