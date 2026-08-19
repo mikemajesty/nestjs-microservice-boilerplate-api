@@ -13,7 +13,8 @@ spec:
     targetRevision: 0.92.0
     helm:
       values: |
-        mode: daemonset
+        mode: deployment
+        replicaCount: 2
         
         image:
           repository: otel/opentelemetry-collector-contrib
