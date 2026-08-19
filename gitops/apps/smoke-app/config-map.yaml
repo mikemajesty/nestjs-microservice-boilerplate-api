@@ -10,3 +10,14 @@ metadata:
     app.kubernetes.io/environment: dev
 data:
   APP_MAIN: main-smoke
+  
+  # OpenTelemetry / Observability (from .env)
+  # Mapped to K8s service DNS: namespace.svc.cluster.local
+  ZIPKIN_URL: 'http://zipkin.monitoring.svc.cluster.local:9411'
+  PROMETHEUS_URL: 'http://prometheus.monitoring.svc.cluster.local:9090'
+  PROMETHUES_URL: 'http://prometheus.monitoring.svc.cluster.local:9090'
+  COLLECTOR_OTLP_ENABLED: 'true'
+  OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector.monitoring.svc.cluster.local:4317'
+  OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
+  GRAFANA_URL: 'http://grafana.monitoring.svc.cluster.local:3000'
+  LOKI_URL: 'http://loki.monitoring.svc.cluster.local:3100'

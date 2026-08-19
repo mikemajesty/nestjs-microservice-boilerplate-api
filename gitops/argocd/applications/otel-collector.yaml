@@ -1,0 +1,137 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: otel-collector
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: '20'
+spec:
+  project: default
+  source:
+    chart: opentelemetry-collector
+    repoURL: https://open-telemetry.github.io/opentelemetry-helm-charts
+    targetRevision: 0.92.0
+    helm:
+      values: |
+        mode: daemonset
+        
+        presets:
+          kubePrometheusStack:
+            enabled: true
+          kubeletMetrics:
+            enabled: true
+        
+        config:
+          receivers:
+            otlp:
+              protocols:
+                grpc:
+                  endpoint: '0.0.0.0:4317'
+                http:
+                  endpoint: '0.0.0.0:4318'
+                  cors:
+                    allowed_origins:
+                      - 'http://*'
+                      - 'https://*'
+            
+            prometheus:
+              config:
+                scrape_configs:
+                  - job_name: 'otel-collector'
+                    scrape_interval: 10s
+                    static_configs:
+                      - targets: ['localhost:8888']
+          
+          processors:
+            batch:
+              timeout: 5s
+              send_batch_size: 1024
+            
+            attributes:
+              actions:
+                - key: service.name
+                  value: 'nestjs-boilerplate-microservice-api'
+                  action: insert
+            
+            memory_limiter:
+              check_interval: 1s
+              limit_mib: 512
+          
+          exporters:
+            zipkin:
+              endpoint: 'http://zipkin:9411/api/v2/spans'
+            
+            prometheus:
+              endpoint: '0.0.0.0:8889'
+            
+            logging:
+              loglevel: debug
+          
+          service:
+            pipelines:
+              traces:
+                receivers: [otlp]
+                processors: [memory_limiter, batch, attributes]
+                exporters: [zipkin, logging]
+              
+              metrics:
+                receivers: [otlp, prometheus]
+                processors: [memory_limiter, batch]
+                exporters: [prometheus, logging]
+          
+          telemetry:
+            logs:
+              level: debug
+        
+        ports:
+          otlp-grpc:
+            enabled: true
+            containerPort: 4317
+            servicePort: 4317
+            protocol: TCP
+          otlp-http:
+            enabled: true
+            containerPort: 4318
+            servicePort: 4318
+            protocol: TCP
+          metrics:
+            enabled: true
+            containerPort: 8889
+            servicePort: 8889
+            protocol: TCP
+        
+        resources:
+          limits:
+            cpu: 500m
+            memory: 512Mi
+          requests:
+            cpu: 200m
+            memory: 256Mi
+        
+        tolerations:
+          - operator: Exists
+        
+        affinity:
+          podAntiAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 100
+                podAffinityTerm:
+                  labelSelector:
+                    matchExpressions:
+                      - key: app
+                        operator: In
+                        values:
+                          - opentelemetry-collector
+                  topologyKey: kubernetes.io/hostname
+  
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  
+  syncPolicy:
+    syncOptions:
+      - ServerSideApply=true
+      - CreateNamespace=true
+    automated:
+      prune: true
+      selfHeal: true

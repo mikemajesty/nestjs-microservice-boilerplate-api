@@ -1,0 +1,9 @@
+# Uncomment and add this to your argocd/core/argocd-server.yaml if needed
+# projects:
+#   - name: monitoring
+#     namespace: argocd
+#     sourceRepos:
+#       - 'https://open-telemetry.github.io/opentelemetry-helm-charts'
+#       - 'https://openzipkin.github.io/zipkin-helm'
+#       - 'https://grafana.github.io/helm-charts'
+#       - 'https://prometheus-community.github.io/helm-charts'

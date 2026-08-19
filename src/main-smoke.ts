@@ -24,7 +24,16 @@ const envSnapshot = {
   REDIS_PASSWORD: redact(process.env.REDIS_PASSWORD),
   REDIS_PORT: process.env.REDIS_PORT,
   REDIS_URL: redact(process.env.REDIS_URL),
-  SMOKE_SECRET_MESSAGE: process.env.SMOKE_SECRET_MESSAGE
+  SMOKE_SECRET_MESSAGE: process.env.SMOKE_SECRET_MESSAGE,
+  // OpenTelemetry / Observability
+  ZIPKIN_URL: process.env.ZIPKIN_URL,
+  PROMETHEUS_URL: process.env.PROMETHEUS_URL,
+  PROMETHUES_URL: process.env.PROMETHUES_URL,
+  COLLECTOR_OTLP_ENABLED: process.env.COLLECTOR_OTLP_ENABLED,
+  OTEL_EXPORTER_OTLP_ENDPOINT: process.env.OTEL_EXPORTER_OTLP_ENDPOINT,
+  OTEL_EXPORTER_OTLP_PROTOCOL: process.env.OTEL_EXPORTER_OTLP_PROTOCOL,
+  GRAFANA_URL: process.env.GRAFANA_URL,
+  LOKI_URL: process.env.LOKI_URL
 }
 const startupLog = JSON.stringify(envSnapshot, null, 2)
 

@@ -1,0 +1,88 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: zipkin
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: '15'
+spec:
+  project: default
+  source:
+    chart: zipkin
+    repoURL: https://openzipkin.github.io/zipkin-helm
+    targetRevision: 0.3.0
+    helm:
+      values: |
+        replicaCount: 2
+        
+        image:
+          repository: openzipkin/zipkin
+          tag: '2.24'
+          pullPolicy: IfNotPresent
+        
+        service:
+          type: ClusterIP
+          port: 9411
+        
+        persistence:
+          enabled: true
+          storageClassName: gp2
+          accessMode: ReadWriteOnce
+          size: 10Gi
+        
+        resources:
+          limits:
+            cpu: 500m
+            memory: 1Gi
+          requests:
+            cpu: 250m
+            memory: 512Mi
+        
+        env:
+          - name: STORAGE_TYPE
+            value: 'elasticsearch'
+          - name: ES_HOSTS
+            value: 'elasticsearch.monitoring.svc.cluster.local:9200'
+          - name: ES_INDEX
+            value: zipkin
+          - name: JAVA_OPTS
+            value: '-Xms256m -Xmx1024m'
+        
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 9411
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 9411
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        
+        affinity:
+          podAntiAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 100
+                podAffinityTerm:
+                  labelSelector:
+                    matchExpressions:
+                      - key: app.kubernetes.io/name
+                        operator: In
+                        values:
+                          - zipkin
+                  topologyKey: kubernetes.io/hostname
+  
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  
+  syncPolicy:
+    syncOptions:
+      - ServerSideApply=true
+      - CreateNamespace=true
+    automated:
+      prune: true
+      selfHeal: true

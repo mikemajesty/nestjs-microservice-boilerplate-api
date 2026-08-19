@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: observability-config
+  namespace: monitoring
+data:
+  # OpenTelemetry / Zipkin
+  ZIPKIN_URL: "http://zipkin.monitoring.svc.cluster.local:9411"
+  PROMETHEUS_URL: "http://prometheus.monitoring.svc.cluster.local:9090"
+  PROMETHUES_URL: "http://prometheus.monitoring.svc.cluster.local:9090"  # Keep for compatibility
+  COLLECTOR_OTLP_ENABLED: "true"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector.monitoring.svc.cluster.local:4317"
+  OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+  
+  # Grafana
+  GRAFANA_URL: "http://grafana.monitoring.svc.cluster.local:3000"
+  
+  # Loki (será adicionado na etapa 5)
+  LOKI_URL: "http://loki.monitoring.svc.cluster.local:3100"
+  
+  # Prometheus (será adicionado na etapa 5)
+  # PROMETHEUS_URL já mapeado acima
