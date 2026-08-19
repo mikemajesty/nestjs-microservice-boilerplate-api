@@ -15,12 +15,6 @@ spec:
       values: |
         mode: daemonset
         
-        presets:
-          kubePrometheusStack:
-            enabled: true
-          kubeletMetrics:
-            enabled: true
-        
         config:
           receivers:
             otlp:
@@ -59,7 +53,7 @@ spec:
           
           exporters:
             zipkin:
-              endpoint: 'http://zipkin:9411/api/v2/spans'
+              endpoint: 'http://zipkin.monitoring.svc.cluster.local:9411/api/v2/spans'
             
             prometheus:
               endpoint: '0.0.0.0:8889'
@@ -118,7 +112,7 @@ spec:
                 podAffinityTerm:
                   labelSelector:
                     matchExpressions:
-                      - key: app
+                      - key: app.kubernetes.io/name
                         operator: In
                         values:
                           - opentelemetry-collector
