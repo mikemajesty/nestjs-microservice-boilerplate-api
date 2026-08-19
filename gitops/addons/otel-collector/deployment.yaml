@@ -71,6 +71,14 @@ spec:
         app.kubernetes.io/name: otel-collector
     spec:
       serviceAccountName: otel-collector
+      nodeSelector:
+        kubernetes.io/os: linux
+        workload: app
+      tolerations:
+        - key: workload
+          operator: Equal
+          value: app
+          effect: NoSchedule
       containers:
         - name: otel-collector
           image: otel/opentelemetry-collector-contrib:0.96.0
