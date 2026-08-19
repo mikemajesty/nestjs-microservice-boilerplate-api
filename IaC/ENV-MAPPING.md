@@ -10,24 +10,24 @@ Este documento mapeia as environment variables definidas no `.env` local com sua
 
 ### OpenTelemetry / Observability
 
-| Local (.env) | Kubernetes (ConfigMap) | Endereço Real | Descrição |
-|---|---|---|---|
-| `ZIPKIN_URL=http://localhost:9411` | `ZIPKIN_URL=http://zipkin.monitoring.svc.cluster.local:9411` | Zipkin service no ns `monitoring` | Trace visualization |
-| `PROMETHUES_URL=http://localhost:9090` | `PROMETHUES_URL=http://prometheus.monitoring.svc.cluster.local:9090` | Prometheus no ns `monitoring` | Metrics (typo mantido pra compat) |
-| `PROMETHEUS_URL` (não existe local) | `PROMETHEUS_URL=http://prometheus.monitoring.svc.cluster.local:9090` | Prometheus no ns `monitoring` | Metrics (variável adicional) |
-| `COLLECTOR_OTLP_ENABLED=true` | `COLLECTOR_OTLP_ENABLED=true` | - | Habilita OTLP |
-| (não existe local) | `OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector.monitoring.svc.cluster.local:4317` | Collector no ns `monitoring` | Endpoint OTLP gRPC |
-| (não existe local) | `OTEL_EXPORTER_OTLP_PROTOCOL=grpc` | - | Protocol OTLP |
-| `GRAFANA_URL=http://localhost:3000` | `GRAFANA_URL=http://grafana.monitoring.svc.cluster.local:3000` | Grafana no ns `monitoring` | Dashboards |
-| `LOKI_URL=http://localhost:3100` | `LOKI_URL=http://loki.monitoring.svc.cluster.local:3100` | Loki no ns `monitoring` | Log aggregation |
+| Local (.env)                           | Kubernetes (ConfigMap)                                                                | Endereço Real                     | Descrição                         |
+| -------------------------------------- | ------------------------------------------------------------------------------------- | --------------------------------- | --------------------------------- |
+| `ZIPKIN_URL=http://localhost:9411`     | `ZIPKIN_URL=http://zipkin.monitoring.svc.cluster.local:9411`                          | Zipkin service no ns `monitoring` | Trace visualization               |
+| `PROMETHUES_URL=http://localhost:9090` | `PROMETHUES_URL=http://prometheus.monitoring.svc.cluster.local:9090`                  | Prometheus no ns `monitoring`     | Metrics (typo mantido pra compat) |
+| `PROMETHEUS_URL` (não existe local)    | `PROMETHEUS_URL=http://prometheus.monitoring.svc.cluster.local:9090`                  | Prometheus no ns `monitoring`     | Metrics (variável adicional)      |
+| `COLLECTOR_OTLP_ENABLED=true`          | `COLLECTOR_OTLP_ENABLED=true`                                                         | -                                 | Habilita OTLP                     |
+| (não existe local)                     | `OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector.monitoring.svc.cluster.local:4317` | Collector no ns `monitoring`      | Endpoint OTLP gRPC                |
+| (não existe local)                     | `OTEL_EXPORTER_OTLP_PROTOCOL=grpc`                                                    | -                                 | Protocol OTLP                     |
+| `GRAFANA_URL=http://localhost:3000`    | `GRAFANA_URL=http://grafana.monitoring.svc.cluster.local:3000`                        | Grafana no ns `monitoring`        | Dashboards                        |
+| `LOKI_URL=http://localhost:3100`       | `LOKI_URL=http://loki.monitoring.svc.cluster.local:3100`                              | Loki no ns `monitoring`           | Log aggregation                   |
 
 ### Database / Infrastructure (já mapeado)
 
-| Componente | Local | Kubernetes | Namespace |
-|---|---|---|---|
-| Mongo | `mongodb://localhost:27017` | `mongodb.app.svc.cluster.local:27017` | `default` |
-| PostgreSQL | `localhost:5432` | `postgres.app.svc.cluster.local:5432` | `default` |
-| Redis | `redis://localhost:6379` | `redis.app.svc.cluster.local:6379` | `default` |
+| Componente | Local                       | Kubernetes                            | Namespace |
+| ---------- | --------------------------- | ------------------------------------- | --------- |
+| Mongo      | `mongodb://localhost:27017` | `mongodb.app.svc.cluster.local:27017` | `default` |
+| PostgreSQL | `localhost:5432`            | `postgres.app.svc.cluster.local:5432` | `default` |
+| Redis      | `redis://localhost:6379`    | `redis.app.svc.cluster.local:6379`    | `default` |
 
 ---
 
@@ -50,14 +50,15 @@ data:
 ```
 
 **Como injetar no container**:
+
 ```yaml
 containers:
   - name: smoke-app
     envFrom:
       - configMapRef:
-          name: nestjs-boilerplate-dev-smoke-app  # Injeta todas as keys como envs
+          name: nestjs-boilerplate-dev-smoke-app # Injeta todas as keys como envs
       - secretRef:
-          name: nestjs-boilerplate-dev-smoke-app-runtime  # Injeta segredos
+          name: nestjs-boilerplate-dev-smoke-app-runtime # Injeta segredos
 ```
 
 ### Observability ConfigMap (Compartilhado)
@@ -84,31 +85,34 @@ data:
 Quando você remover o smoke app e plugar a app real, faça:
 
 ### Opção A: Referenciar o ConfigMap da Observabilidade
+
 ```yaml
 containers:
   - name: my-app
     envFrom:
       - configMapRef:
-          name: app-config  # Config específica da app
+          name: app-config # Config específica da app
       - configMapRef:
-          name: observability-config  # ConfigMap compartilhado
+          name: observability-config # ConfigMap compartilhado
           namespace: monitoring
       - secretRef:
           name: app-runtime-secret
 ```
 
 ### Opção B: Copiar as Envs pro ConfigMap da App
+
 Copiando os dados do `observability-configmap.yaml` pra seu próprio ConfigMap da app.
 
 ---
 
 ## ✅ Validação: Smoke App
 
-O smoke app foi atualizado (`src/main-smoke.ts`) para validar as envs de observabilidade.
+O smoke app foi atualizado (`src/main.ts`) para validar as envs de observabilidade.
 
 Endpoint: `GET /health`
 
 Resposta esperada:
+
 ```json
 {
   "status": "ok",
@@ -159,11 +163,13 @@ No Kubernetes, os serviços são acessíveis via DNS:
 ```
 
 Exemplos:
+
 - `zipkin.monitoring.svc.cluster.local` - Zipkin no namespace `monitoring`
 - `otel-collector.monitoring.svc.cluster.local` - Collector no namespace `monitoring`
 - `prometheus.monitoring.svc.cluster.local` - Prometheus no namespace `monitoring`
 
 Isso só funciona se:
+
 1. Os pods estão no mesmo cluster
 2. A rede do cluster permite DNS (sempre habilitado no EKS)
 3. O serviço existe e está healthy
@@ -173,6 +179,7 @@ Isso só funciona se:
 ## 🐛 Troubleshooting
 
 ### "Cannot resolve DNS"
+
 ```bash
 # Testar resolução dentro do pod
 kubectl exec -it <pod-name> -- nslookup otel-collector.monitoring.svc.cluster.local
@@ -182,6 +189,7 @@ kubectl run -it --rm debug --image=busybox --restart=Never -- nslookup otel-coll
 ```
 
 ### "Connection refused"
+
 ```bash
 # Verificar se o serviço existe
 kubectl get svc -n monitoring
@@ -195,6 +203,7 @@ curl http://localhost:9411
 ```
 
 ### Env não aparece no pod
+
 ```bash
 # Verificar ConfigMap
 kubectl get configmap nestjs-boilerplate-dev-smoke-app -o yaml
@@ -211,7 +220,7 @@ kubectl delete pod <pod-name> -n nestjs-boilerplate-dev-workload
 ## 📝 Checklist: Próximas Etapas
 
 - [x] Definir envs locais no `.env`
-- [x] Atualizar `main-smoke.ts` pra validar observabilidade
+- [x] Atualizar `main` pra validar observabilidade
 - [x] Criar ConfigMap com envs no K8s
 - [x] Configurar deployment pra injetar envs
 - [x] Documentar mapeamento

@@ -1,16 +1,16 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: nestjs-boilerplate-dev-smoke-app
+  name: nestjs-boilerplate-dev-app
   labels:
-    app.kubernetes.io/name: nestjs-boilerplate-dev-smoke-app
+    app.kubernetes.io/name: nestjs-boilerplate-dev-app
     app.kubernetes.io/part-of: nestjs-boilerplate
     app.kubernetes.io/managed-by: argocd
     app.kubernetes.io/environment: dev
 spec:
   type: ClusterIP
   selector:
-    app.kubernetes.io/name: nestjs-boilerplate-dev-smoke-app
+    app.kubernetes.io/name: nestjs-boilerplate-dev-app
     app.kubernetes.io/part-of: nestjs-boilerplate
     app.kubernetes.io/managed-by: argocd
     app.kubernetes.io/environment: dev

@@ -1,7 +1,7 @@
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
-  name: nestjs-boilerplate-dev-smoke-app
+  name: nestjs-boilerplate-dev-app
   namespace: nestjs-boilerplate-dev-workload
 spec:
   parentRefs:
@@ -13,5 +13,5 @@ spec:
             type: PathPrefix
             value: /
       backendRefs:
-        - name: nestjs-boilerplate-dev-smoke-app
+        - name: nestjs-boilerplate-dev-app
           port: 5000
