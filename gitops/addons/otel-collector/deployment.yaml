@@ -14,23 +14,8 @@ data:
             endpoint: '0.0.0.0:4318'
             cors:
               allowed_origins:
-                - 'http://*'
-                - 'https://*'
-
-    processors:
-      batch:
-        timeout: 5s
-        send_batch_size: 1024
-      
-      attributes:
-        actions:
-          - key: service.name
-            value: 'nestjs-boilerplate-microservice-api'
-            action: insert
-      
-      memory_limiter:
-        check_interval: 1s
-        limit_mib: 409
+                - http://*
+                - https://*
 
     exporters:
       zipkin:
@@ -42,17 +27,30 @@ data:
       logging:
         loglevel: debug
 
+    processors:
+      batch:
+        timeout: 5s
+        send_batch_size: 1024
+      
+      attributes:
+        actions:
+          - key: service.name
+            value: 'nestjs-boilerplate-microservice-api'
+            action: insert
+
     service:
+      telemetry:
+        logs:
+          level: 'debug'
       pipelines:
         traces:
           receivers: [otlp]
-          processors: [memory_limiter, batch, attributes]
-          exporters: [zipkin, logging]
-        
+          exporters: [zipkin]
+          processors: [batch]
         metrics:
           receivers: [otlp]
-          processors: [memory_limiter, batch]
-          exporters: [prometheus, logging]
+          exporters: [prometheus]
+          processors: [batch]
 ---
 apiVersion: apps/v1
 kind: Deployment
