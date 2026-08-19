@@ -15,6 +15,11 @@ spec:
       values: |
         mode: daemonset
         
+        image:
+          repository: otel/opentelemetry-collector-contrib
+          tag: '0.96.0'
+          pullPolicy: IfNotPresent
+        
         config:
           receivers:
             otlp:
