@@ -11,9 +11,39 @@ metadata:
 data:
   # Main app entry point (use main)
   APP_MAIN: main
-
-  # OpenTelemetry / Observability (from .env)
-  # Mapped to K8s service DNS: namespace.svc.cluster.local
+  
+  # Application config (from .env)
+  NODE_ENV: dev
+  PORT: '5000'
+  HOST: 'http://0.0.0.0:5000'
+  TIMEOUT: '5000'
+  
+  # Logging
+  LOG_LEVEL: trace
+  DATE_FORMAT: 'dd/MM/yyyy HH:mm:ss'
+  TZ: America/Sao_Paulo
+  
+  # Tokens (expiration format, keys in Secret)
+  TOKEN_EXPIRATION: 1h
+  REFRESH_TOKEN_EXPIRATION: 1d
+  
+  # PostgreSQL (connection string in Secret as POSTGRES_URL)
+  POSTGRES_DATABASE: nestjs_microservice
+  PGADMIN_URL: 'http://pgadmin.default.svc.cluster.local:80'
+  
+  # MongoDB (connection string in Secret as MONGO_URL)
+  MONGO_EXPRESS_URL: 'http://mongo-express.default.svc.cluster.local:8081'
+  MONGO_DATABASE: nestjs_microservice
+  
+  # Email config (host/port/from, user/pass in Secret)
+  EMAIL_HOST: smtp-mail.outlook.com
+  EMAIL_PORT: '587'
+  EMAIL_FROM: admin@admin.com
+  
+  # Google Auth (all in Secret)
+  GOOGLE_REDIRECT_URI: 'http://localhost:5000/api/v1/login/google/callback'
+  
+  # OpenTelemetry / Observability
   ZIPKIN_URL: 'http://zipkin.monitoring.svc.cluster.local:9411'
   PROMETHEUS_URL: 'http://prometheus.monitoring.svc.cluster.local:9090'
   PROMETHUES_URL: 'http://prometheus.monitoring.svc.cluster.local:9090'
