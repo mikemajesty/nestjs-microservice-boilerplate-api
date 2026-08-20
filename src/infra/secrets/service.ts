@@ -11,6 +11,12 @@ import { EnvEnum } from './types'
 export class SecretsService implements ISecretsAdapter {
   constructor(private readonly config: ConfigService) {}
 
+  private readonly postgresUrl =
+    this.config.get('POSTGRES_URL') ||
+    `postgresql://${this.config.get('POSTGRES_USER')}:${this.config.get('POSTGRES_PASSWORD')}@${this.config.get(
+      'POSTGRES_HOST'
+    )}:${this.config.get('POSTGRES_PORT')}/${this.config.get('POSTGRES_DATABASE')}`
+
   TIMEOUT = this.config.get<number>('TIMEOUT') as number
 
   IS_LOCAL = this.config.get<EnvEnum>('NODE_ENV') === EnvEnum.LOCAL
@@ -48,7 +54,7 @@ export class SecretsService implements ISecretsAdapter {
   }
 
   POSTGRES = {
-    POSTGRES_URL: this.config.get('POSTGRES_URL') as string,
+    POSTGRES_URL: this.postgresUrl,
     POSTGRES_PGADMIN_URL: this.config.get('PGADMIN_URL')
   }
 
