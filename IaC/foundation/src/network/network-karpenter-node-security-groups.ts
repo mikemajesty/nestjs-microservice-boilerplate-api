@@ -17,6 +17,8 @@ export type KarpenterNodeSecurityGroupArgs = {
 
 const KARPENTER_NODE_SECURITY_GROUPS_COMPONENT_TYPE = 'boilerplate:network:KarpenterNodeSecurityGroups'
 const ALL_PROTOCOLS = '-1'
+const TCP_PROTOCOL = 'tcp'
+const KUBELET_PORT = 10250
 const PUBLIC_INTERNET_IPV4_CIDR = '0.0.0.0/0'
 const KARPENTER_DISCOVERY_TAG = 'karpenter.sh/discovery'
 
@@ -65,6 +67,19 @@ export class KarpenterNodeSecurityGroups
         referencedSecurityGroupId: clusterSecurityGroupId,
         ipProtocol: ALL_PROTOCOLS,
         description: 'Allow EKS control plane traffic to Karpenter-managed app nodes'
+      },
+      { parent: karpenterNodeSecurityGroup }
+    )
+
+    new aws.vpc.SecurityGroupIngressRule(
+      resourceName(config, 'karpenter-kubelet-from-vpc-ingress'),
+      {
+        securityGroupId: karpenterNodeSecurityGroup.id,
+        cidrIpv4: config.vpcCidr,
+        fromPort: KUBELET_PORT,
+        toPort: KUBELET_PORT,
+        ipProtocol: TCP_PROTOCOL,
+        description: 'Allow in-cluster access to the kubelet on Karpenter-managed app nodes for metrics collection'
       },
       { parent: karpenterNodeSecurityGroup }
     )
