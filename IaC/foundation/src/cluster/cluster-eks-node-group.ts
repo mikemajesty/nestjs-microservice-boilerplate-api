@@ -21,8 +21,8 @@ export type EksNodeGroupArgs = {
 
 const EKS_NODE_GROUP_COMPONENT_TYPE = 'boilerplate:cluster:EksNodeGroup'
 const NODE_GROUP_MIN_SIZE = 2
-const NODE_GROUP_DESIRED_SIZE = 2
-const NODE_GROUP_MAX_SIZE = 3
+const NODE_GROUP_DESIRED_SIZE = 3
+const NODE_GROUP_MAX_SIZE = 5
 const NODE_GROUP_INSTANCE_TYPES = ['t3.medium']
 const NODE_GROUP_MAX_UNAVAILABLE = 1
 
