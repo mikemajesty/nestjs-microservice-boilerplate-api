@@ -27,6 +27,7 @@ import { EnvEnum } from './types'
             .transform((p) => Number(p)),
           HOST: InputValidator.string(),
           IS_LOCAL: InputValidator.boolean(),
+          IS_DOCUMENTDB: InputValidator.boolean(),
           IS_PRODUCTION: InputValidator.boolean(),
           JWT_SECRET_KEY: InputValidator.string(),
           LOG_LEVEL: InputValidator.enum(LogLevelEnum),

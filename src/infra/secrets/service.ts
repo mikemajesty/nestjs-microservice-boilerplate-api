@@ -15,6 +15,8 @@ export class SecretsService implements ISecretsAdapter {
 
   IS_LOCAL = this.config.get<EnvEnum>('NODE_ENV') === EnvEnum.LOCAL
 
+  IS_DOCUMENTDB = this.config.get('IS_DOCUMENTDB') === 'true'
+
   IS_PRODUCTION = this.config.get<EnvEnum>('NODE_ENV') === EnvEnum.PRD
 
   ENV = this.config.get<EnvEnum>('NODE_ENV') as string
@@ -46,9 +48,7 @@ export class SecretsService implements ISecretsAdapter {
   }
 
   POSTGRES = {
-    POSTGRES_URL: `postgresql://${this.config.get('POSTGRES_USER')}:${this.config.get(
-      'POSTGRES_PASSWORD'
-    )}@${this.config.get('POSTGRES_HOST')}:${this.config.get('POSTGRES_PORT')}/${this.config.get('POSTGRES_DATABASE')}`,
+    POSTGRES_URL: this.config.get('POSTGRES_URL') as string,
     POSTGRES_PGADMIN_URL: this.config.get('PGADMIN_URL')
   }
 

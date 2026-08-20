@@ -109,8 +109,8 @@ export const resourceNameSuffix = {
   workload: {
     k8sProvider: 'workload-k8s-provider',
     namespace: 'workload',
-    smokeApp: 'smoke-app',
-    smokeAppPublicIngress: 'smoke-app-public-ingress'
+    app: 'boilerplate-app',
+    smokeAppPublicIngress: 'boilerplate-app-public-ingress'
   }
 } as const
 

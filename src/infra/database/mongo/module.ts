@@ -15,17 +15,20 @@ import { MongoService } from './service'
   imports: [
     MongooseModule.forRootAsync({
       connectionName: ConnectionName.CATS,
-      useFactory: ({ MONGO: { MONGO_URL }, IS_PRODUCTION }: ISecretsAdapter, logger: ILoggerAdapter) => {
+      useFactory: ({ MONGO: { MONGO_URL }, IS_DOCUMENTDB, IS_PRODUCTION }: ISecretsAdapter, logger: ILoggerAdapter) => {
         const connection = new MongoService().getConnection({ URI: MONGO_URL })
         return {
           connectionFactory: async (connection: Connection) => {
             if (connection.readyState === 1) {
-              if (connection.db && !IS_PRODUCTION) {
+              if (connection.db && !IS_PRODUCTION && !IS_DOCUMENTDB) {
                 await connection.db.setProfilingLevel('slow_only')
                 await connection.db.command({
                   profile: 1,
                   slowms: 200
                 })
+              }
+              if (IS_DOCUMENTDB) {
+                logger.log('🎯 mongo profiler skipped for Amazon DocumentDB')
               }
               logger.log('🎯 mongo connected successfully!')
             }

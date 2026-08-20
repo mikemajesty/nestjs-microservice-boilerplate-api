@@ -3,17 +3,23 @@ import { TypeOrmModule } from '@nestjs/typeorm'
 import path from 'path'
 import { DataSource, DataSourceOptions } from 'typeorm'
 
+import { LoggerService } from '@/infra/logger'
 import { SnakeNamingStrategy } from '@/infra/repository/util'
 import { ISecretsAdapter, SecretsModule } from '@/infra/secrets'
 
 import { name } from '../../../../package.json'
 import { PostgresService } from './service'
 
+const logger = new LoggerService()
+
 @Module({
   imports: [
     TypeOrmModule.forRootAsync({
       useFactory: ({ POSTGRES: { POSTGRES_URL }, IS_LOCAL }: ISecretsAdapter) => {
         const conn = new PostgresService().getConnection({ URI: POSTGRES_URL })
+        logger.log(
+          `🐘 postgres SSL: ${POSTGRES_URL.includes('sslmode=require') ? 'enabled (sslmode=require detected)' : 'disabled'}`
+        )
         return {
           ...conn,
           timeout: 5000,

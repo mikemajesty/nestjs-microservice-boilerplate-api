@@ -35,13 +35,13 @@ Este documento mapeia as environment variables definidas no `.env` local com sua
 
 ### Smoke App (Validação)
 
-**Arquivo**: `gitops/apps/smoke-app/config-map.yaml`
+**Arquivo**: `gitops/apps/app/config-map.yaml`
 
 ```yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: nestjs-boilerplate-dev-smoke-app
+  name: nestjs-boilerplate-dev-app
   namespace: nestjs-boilerplate-dev-workload
 data:
   # Todas as envs de observabilidade
@@ -53,12 +53,12 @@ data:
 
 ```yaml
 containers:
-  - name: smoke-app
+  - name: app
     envFrom:
       - configMapRef:
-          name: nestjs-boilerplate-dev-smoke-app # Injeta todas as keys como envs
+          name: nestjs-boilerplate-dev-app # Injeta todas as keys como envs
       - secretRef:
-          name: nestjs-boilerplate-dev-smoke-app-runtime # Injeta segredos
+          name: nestjs-boilerplate-dev-app-runtime # Injeta segredos
 ```
 
 ### Observability ConfigMap (Compartilhado)
@@ -142,7 +142,7 @@ curl http://localhost:5000/health | jq .env
 
 ```bash
 # Port-forward pro smoke app
-kubectl port-forward -n nestjs-boilerplate-dev-workload svc/nestjs-boilerplate-dev-smoke-app 5000:5000
+kubectl port-forward -n nestjs-boilerplate-dev-workload svc/nestjs-boilerplate-dev-app 5000:5000
 
 # Chamar
 curl http://localhost:5000/health | jq .env
@@ -206,10 +206,10 @@ curl http://localhost:9411
 
 ```bash
 # Verificar ConfigMap
-kubectl get configmap nestjs-boilerplate-dev-smoke-app -o yaml
+kubectl get configmap nestjs-boilerplate-dev-app -o yaml
 
 # Verificar Secret
-kubectl get secret nestjs-boilerplate-dev-smoke-app-runtime -o yaml
+kubectl get secret nestjs-boilerplate-dev-app-runtime -o yaml
 
 # Rebuild do pod
 kubectl delete pod <pod-name> -n nestjs-boilerplate-dev-workload

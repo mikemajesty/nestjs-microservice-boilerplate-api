@@ -4,8 +4,8 @@
 import { ClientRequest, IncomingMessage, RequestOptions, ServerResponse } from 'node:http'
 
 import { diag, DiagConsoleLogger, DiagLogLevel, Span } from '@opentelemetry/api'
-import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http'
-import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-proto'
+import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-grpc'
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-grpc'
 import { HttpInstrumentation } from '@opentelemetry/instrumentation-http'
 import { MongoDBInstrumentation } from '@opentelemetry/instrumentation-mongodb'
 import { PgInstrumentation } from '@opentelemetry/instrumentation-pg'
@@ -184,7 +184,7 @@ const start = (): void => {
   try {
     sdk.start()
     isInitialized = true
-    logger.log('✅ Tracing started successfully')
+    logger.log('✅ Tracing started successfully (exporter: otlp-grpc)')
   } catch (error) {
     logger.error(new ApiBadRequestException('Tracing start error', { originalError: error }))
   }

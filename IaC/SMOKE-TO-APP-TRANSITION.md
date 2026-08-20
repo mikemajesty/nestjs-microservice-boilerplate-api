@@ -4,12 +4,12 @@
 
 ### ✅ Removido
 
-- `gitops/argocd/applications/smoke-app.yaml` (ArgoCD Application)
-- `gitops/apps/smoke-app/` ainda existe pra referência, mas não é mais deployado
+- `gitops/argocd/applications/app.yaml` (ArgoCD Application)
+- `gitops/apps/app/` ainda existe pra referência, mas não é mais deployado
 
 ### ✅ Criado
 
-- `gitops/apps/boilerplate-app/` (cópia adaptada do smoke-app)
+- `gitops/apps/boilerplate-app/` (cópia adaptada do app)
 - `gitops/argocd/applications/boilerplate-app.yaml` (nova ArgoCD Application)
 
 ## 🔄 Mudanças Principais
@@ -24,8 +24,8 @@
 
 ## 🚀 O que Acontece Agora
 
-1. **ArgoCD detecta** que `smoke-app.yaml` foi deletado
-2. **ArgoCD deleta** o deployment do smoke-app no cluster
+1. **ArgoCD detecta** que `app.yaml` foi deletado
+2. **ArgoCD deleta** o deployment do app no cluster
 3. **ArgoCD detecta** que `boilerplate-app.yaml` foi criado
 4. **ArgoCD cria** o deployment da boilerplate-app com:
    - Mesma namespace: `nestjs-boilerplate-dev-workload`
@@ -36,7 +36,7 @@
 
 ## ✨ Vantagens
 
-- ✅ Mesma estrutura que smoke-app (validada)
+- ✅ Mesma estrutura que app (validada)
 - ✅ Herda todas as envs de observabilidade
 - ✅ Pronto pra conectar em Mongo, Postgres, Redis
 - ✅ Pronto pra enviar traces ao Collector/Zipkin
@@ -72,9 +72,9 @@
 gitops/
 ├── argocd/applications/
 │   ├── boilerplate-app.yaml          ← Nova (cria app real)
-│   └── smoke-app.yaml                ← Deletado
+│   └── app.yaml                ← Deletado
 ├── apps/
-│   ├── smoke-app/                    ← Mantém-se (pra referência)
+│   ├── app/                    ← Mantém-se (pra referência)
 │   └── boilerplate-app/              ← Nova (cópia adaptada)
 │       ├── namespace.yaml
 │       ├── config-map.yaml           (APP_MAIN: main)
@@ -112,7 +112,7 @@ kubectl get secret -n nestjs-boilerplate-dev-workload
 Se faltar, copie do smoke:
 
 ```bash
-kubectl get secret nestjs-boilerplate-dev-smoke-app-runtime -o yaml | \
-  sed 's/smoke-app/app/g' | \
+kubectl get secret nestjs-boilerplate-dev-app-runtime -o yaml | \
+  sed 's/app/app/g' | \
   kubectl apply -f -
 ```

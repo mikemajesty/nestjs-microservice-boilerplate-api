@@ -32,6 +32,7 @@ data:
   PGADMIN_URL: 'http://pgadmin.default.svc.cluster.local:80'
   
   # MongoDB (connection string in Secret as MONGO_URL)
+  IS_DOCUMENTDB: 'true'
   MONGO_EXPRESS_URL: 'http://mongo-express.default.svc.cluster.local:8081'
   MONGO_DATABASE: nestjs_microservice
   
