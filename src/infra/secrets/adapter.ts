@@ -49,7 +49,7 @@ export abstract class ISecretsAdapter {
 
   IS_LOCAL!: boolean
 
-  IS_DOCUMENTDB!: boolean
+  IS_DOCUMENTDB?: boolean
 
   IS_PRODUCTION!: boolean
 
