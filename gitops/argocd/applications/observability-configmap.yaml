@@ -6,8 +6,8 @@ metadata:
 data:
   # OpenTelemetry / Zipkin
   ZIPKIN_URL: "http://zipkin.monitoring.svc.cluster.local:9411"
-  PROMETHEUS_URL: "http://prometheus.monitoring.svc.cluster.local:9090"
-  PROMETHUES_URL: "http://prometheus.monitoring.svc.cluster.local:9090"  # Keep for compatibility
+  PROMETHEUS_URL: "http://prometheus-server.monitoring.svc.cluster.local:9090"
+  PROMETHUES_URL: "http://prometheus-server.monitoring.svc.cluster.local:9090"  # Keep for compatibility
   COLLECTOR_OTLP_ENABLED: "true"
   OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector.monitoring.svc.cluster.local:4317"
   OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
@@ -15,8 +15,5 @@ data:
   # Grafana
   GRAFANA_URL: "http://grafana.monitoring.svc.cluster.local:3000"
   
-  # Loki (será adicionado na etapa 5)
+  # Loki
   LOKI_URL: "http://loki.monitoring.svc.cluster.local:3100"
-  
-  # Prometheus (será adicionado na etapa 5)
-  # PROMETHEUS_URL já mapeado acima

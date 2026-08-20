@@ -1,0 +1,57 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: prometheus
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: '25'
+spec:
+  project: default
+  source:
+    chart: prometheus
+    repoURL: https://prometheus-community.github.io/helm-charts
+    targetRevision: 29.27.0
+    helm:
+      releaseName: prometheus
+      values: |
+        server:
+          fullnameOverride: prometheus-server
+          service:
+            servicePort: 9090
+          persistentVolume:
+            enabled: true
+            storageClass: gp2
+            size: 20Gi
+          resources:
+            limits:
+              cpu: 1
+              memory: 2Gi
+            requests:
+              cpu: 250m
+              memory: 512Mi
+
+        alertmanager:
+          enabled: true
+          persistentVolume:
+            enabled: true
+            storageClass: gp2
+            size: 5Gi
+
+        kube-state-metrics:
+          enabled: true
+
+        prometheus-node-exporter:
+          enabled: true
+
+        prometheus-pushgateway:
+          enabled: false
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    syncOptions:
+      - ServerSideApply=true
+      - CreateNamespace=true
+    automated:
+      prune: true
+      selfHeal: true

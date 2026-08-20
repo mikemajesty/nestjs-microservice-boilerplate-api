@@ -13,7 +13,7 @@ spec:
     targetRevision: 0.3.0
     helm:
       values: |
-        replicaCount: 2
+        replicaCount: 1
         
         image:
           repository: openzipkin/zipkin
@@ -25,10 +25,7 @@ spec:
           port: 9411
         
         persistence:
-          enabled: true
-          storageClassName: gp2
-          accessMode: ReadWriteOnce
-          size: 10Gi
+          enabled: false
         
         resources:
           limits:
@@ -40,11 +37,7 @@ spec:
         
         env:
           - name: STORAGE_TYPE
-            value: 'elasticsearch'
-          - name: ES_HOSTS
-            value: 'elasticsearch.monitoring.svc.cluster.local:9200'
-          - name: ES_INDEX
-            value: zipkin
+            value: 'mem'
           - name: JAVA_OPTS
             value: '-Xms256m -Xmx1024m'
         

@@ -144,6 +144,10 @@ metadata:
   namespace: monitoring
   labels:
     app.kubernetes.io/name: otel-collector
+  annotations:
+    prometheus.io/scrape: 'true'
+    prometheus.io/port: '8889'
+    prometheus.io/path: /metrics
 spec:
   type: ClusterIP
   selector:

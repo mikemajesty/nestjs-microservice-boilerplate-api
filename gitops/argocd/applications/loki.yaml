@@ -1,0 +1,65 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: loki
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: '25'
+spec:
+  project: default
+  source:
+    chart: loki-stack
+    repoURL: https://grafana.github.io/helm-charts
+    targetRevision: 2.10.3
+    helm:
+      releaseName: loki
+      values: |
+        test_pod:
+          enabled: false
+
+        loki:
+          enabled: true
+          service:
+            port: 3100
+          persistence:
+            enabled: true
+            storageClassName: gp2
+            accessModes:
+              - ReadWriteOnce
+            size: 20Gi
+          resources:
+            limits:
+              cpu: 1
+              memory: 1Gi
+            requests:
+              cpu: 200m
+              memory: 256Mi
+
+        promtail:
+          enabled: true
+          config:
+            logLevel: info
+            clients:
+              - url: http://loki:3100/loki/api/v1/push
+
+        grafana:
+          enabled: false
+
+        prometheus:
+          enabled: false
+
+        filebeat:
+          enabled: false
+
+        logstash:
+          enabled: false
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    syncOptions:
+      - ServerSideApply=true
+      - CreateNamespace=true
+    automated:
+      prune: true
+      selfHeal: true
