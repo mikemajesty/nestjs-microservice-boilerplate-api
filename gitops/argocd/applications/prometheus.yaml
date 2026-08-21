@@ -32,7 +32,7 @@ spec:
 
         alertmanager:
           enabled: true
-          persistentVolume:
+          persistence:
             enabled: true
             storageClass: gp2
             size: 5Gi

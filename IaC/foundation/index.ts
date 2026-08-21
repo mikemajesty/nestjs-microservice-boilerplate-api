@@ -4,6 +4,7 @@ import { ArgoCd } from './src/addon/addon-argocd'
 import { ArgoCdRootApplication } from './src/addon/addon-argocd-root-application'
 import { AwsLoadBalancerController } from './src/addon/addon-aws-load-balancer-controller'
 import { AwsLoadBalancerControllerIam } from './src/addon/addon-aws-load-balancer-controller-iam'
+import { EbsCsiIam } from './src/addon/addon-ebs-csi-iam'
 import { ExternalDns } from './src/addon/addon-external-dns'
 import { ExternalDnsIam } from './src/addon/addon-external-dns-iam'
 import { ExternalSecretsIam } from './src/addon/addon-external-secrets-iam'
@@ -340,6 +341,12 @@ const karpenterIam = new KarpenterIam(resourceName(config, 'karpenter-iam'), {
   nodeRoleArn: eksNodeIam.nodeRoleArn
 })
 
+const ebsCsiIam = new EbsCsiIam(resourceName(config, resourceNameSuffix.addon.ebsCsi.iam), {
+  config,
+  oidcProviderArn: eksOidcProvider.oidcProviderArn,
+  oidcProviderUrl: eksOidcProvider.oidcProviderUrl
+})
+
 // ============================================================
 // 13. ADDONS (USAM O WORKLOAD PROVIDER)
 // ============================================================
@@ -538,6 +545,11 @@ export const addons = {
   karpenterRoleName: karpenterIam.roleName,
   karpenterServiceAccountName: karpenterIam.serviceAccountName,
   karpenterServiceAccountNamespace: karpenterIam.serviceAccountNamespace,
+  ebsCsiPolicyArn: ebsCsiIam.policyArn,
+  ebsCsiRoleArn: ebsCsiIam.roleArn,
+  ebsCsiRoleName: ebsCsiIam.roleName,
+  ebsCsiServiceAccountName: ebsCsiIam.serviceAccountName,
+  ebsCsiServiceAccountNamespace: ebsCsiIam.serviceAccountNamespace,
   ssmAnnotationResolverPolicyArn: ssmAnnotationResolverIam.policyArn,
   ssmAnnotationResolverPolicyName: ssmAnnotationResolverIam.policyName,
   ssmAnnotationResolverRoleArn: ssmAnnotationResolverIam.roleArn,

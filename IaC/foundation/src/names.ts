@@ -95,6 +95,12 @@ export const resourceNameSuffix = {
       role: 'external-secrets-role',
       policyAttachment: 'external-secrets-policy-attachment'
     },
+    ebsCsi: {
+      iam: 'ebs-csi-iam',
+      release: 'aws-ebs-csi-driver',
+      role: 'ebs-csi-role',
+      policyAttachment: 'ebs-csi-policy-attachment'
+    },
     ssmAnnotationResolver: {
       iam: 'ssm-annotation-resolver-iam',
       policy: 'ssm-annotation-resolver-policy',
