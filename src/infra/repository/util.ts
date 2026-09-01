@@ -4,6 +4,7 @@ import { DefaultNamingStrategy, FindOptionsRelations, NamingStrategyInterface, T
 import { CollectionUtil } from '@/utils/collection'
 import { ApiBadRequestException, BaseException, MessageType, ParametersType } from '@/utils/exception'
 
+import { ErrorType } from '../logger'
 import { DatabaseOperationCommand, DatabaseOperationEnum, JoinType } from './types'
 
 export const validateFindByCommandsFilter = <T>(filterList: DatabaseOperationCommand<T>[]) => {
@@ -54,11 +55,17 @@ export const createRelations = <T>(joins?: JoinType<T>): FindOptionsRelations<T>
   return relations
 }
 
-export const handleDatabaseError = ({ error, context }: { error: unknown; context: string }): ApiDatabaseException => {
+export const handleDatabaseError = ({
+  error,
+  context
+}: {
+  error: ErrorType | unknown
+  context: string
+}): ApiDatabaseException => {
   return new ApiDatabaseException((error as Error).message ?? String(error), {
     originalError: error,
     context,
-    stack: (error as Error).stack
+    stack: (error as Error)?.stack
   })
 }
 

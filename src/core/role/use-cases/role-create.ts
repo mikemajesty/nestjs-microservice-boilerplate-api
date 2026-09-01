@@ -27,7 +27,7 @@ export class RoleCreateUsecase implements IUsecase {
 
     const role = await this.roleRepository.create(entity.toObject())
 
-    this.loggerService.info({ message: 'role created.', obj: { role } })
+    this.loggerService.info({ message: 'role created.', metadata: { role } })
 
     return role
   }

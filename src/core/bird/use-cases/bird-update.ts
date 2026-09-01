@@ -29,7 +29,7 @@ export class BirdUpdateUsecase implements IUsecase {
 
     await this.birdRepository.updateOne({ id: entity.id }, entity.toObject())
 
-    this.loggerService.info({ message: 'bird updated.', obj: { bird: input } })
+    this.loggerService.info({ message: 'bird updated.', metadata: { bird: input } })
 
     const updated = await this.birdRepository.findById(entity.id)
 

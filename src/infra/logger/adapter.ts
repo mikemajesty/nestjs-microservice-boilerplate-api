@@ -8,9 +8,9 @@ export abstract class ILoggerAdapter<T extends AppHttpLogger = AppHttpLogger> {
   abstract connect<TLevel = LogLevelEnum>(logLevel?: TLevel): void
   abstract setApplication(app: string): void
   abstract log(message: string): void
-  abstract debug({ message, context, obj }: MessageInputType): void
-  abstract info({ message, context, obj }: MessageInputType): void
-  abstract warn({ message, context, obj }: MessageInputType): void
+  abstract debug({ message, metadata }: MessageInputType): void
+  abstract info({ message, metadata }: MessageInputType): void
+  abstract warn({ message, metadata }: MessageInputType): void
   abstract error(error: ErrorType, message?: string | string[]): void
   abstract fatal(error: ErrorType, message?: string | string[]): void
   abstract setGlobalParameters(input: object): void

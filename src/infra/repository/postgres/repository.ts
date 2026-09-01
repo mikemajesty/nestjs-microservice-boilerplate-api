@@ -38,7 +38,7 @@ export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEn
   constructor(readonly repository: Repository<T>) {}
 
   async runInTransaction<R>(fn: (manager: EntityManager) => Promise<R>): Promise<R> {
-    const queryRunner = this.repository.manager.connection.createQueryRunner()
+    const queryRunner = this.repository.manager.dataSource.createQueryRunner()
     await queryRunner.connect()
     await queryRunner.startTransaction()
     try {

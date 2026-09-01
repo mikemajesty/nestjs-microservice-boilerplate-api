@@ -46,7 +46,7 @@ export class PermissionUpdateUsecase implements IUsecase {
 
     await this.permissionRepository.updateOne({ id: entity.id }, entity.toObject())
 
-    this.loggerService.info({ message: 'permission updated.', obj: { permission: input } })
+    this.loggerService.info({ message: 'permission updated.', metadata: { permission: input } })
 
     return entity.toObject()
   }

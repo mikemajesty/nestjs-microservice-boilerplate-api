@@ -73,7 +73,7 @@ export class AxiosUtils {
 
         logger.warn({
           message: `Retry attempt: ${retryCount}`,
-          obj: {
+          metadata: {
             statusText: statusText ?? error.message,
             status,
             url: error.config?.url,
@@ -99,7 +99,7 @@ export class AxiosUtils {
       onRetry: (retryCount, error, requestConfig) => {
         logger.warn({
           message: `All retry attempts failed after ${retryCount} retries`,
-          obj: {
+          metadata: {
             url: requestConfig.url,
             method: requestConfig.method,
             status: this.extractErrorStatus(error as CustomAxiosError)

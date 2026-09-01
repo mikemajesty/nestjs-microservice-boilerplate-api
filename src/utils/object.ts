@@ -31,6 +31,10 @@ export class ObjectUtil {
   static firstDefined<T>(...values: (T | null | undefined)[]): T | undefined {
     return values.find((v) => v !== null && v !== undefined) as T | undefined
   }
+
+  static clone<T>(obj: T): T {
+    return globalThis.structuredClone(obj)
+  }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type

@@ -153,7 +153,7 @@ export class HealthService implements IHealthAdapter {
     if (status !== 'healthy 🟢') {
       this.logger.warn({
         message: `CPU ${status} - Load: ${time.toFixed(2)}, CPUs: ${numCpus}, Usage: ${percentage.toFixed(1)}%`,
-        context: HealthService.name
+        metadata: { context: HealthService.name }
       })
     }
 

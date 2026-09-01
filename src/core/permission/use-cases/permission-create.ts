@@ -33,7 +33,7 @@ export class PermissionCreateUsecase implements IUsecase {
 
     await this.permissionRepository.create(entity.toObject())
 
-    this.loggerService.info({ message: 'permission created.', obj: { permission } })
+    this.loggerService.info({ message: 'permission created.', metadata: { permission } })
 
     return entity.toObject()
   }

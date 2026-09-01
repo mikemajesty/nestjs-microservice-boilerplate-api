@@ -78,7 +78,7 @@ async function bootstrap() {
       try {
         await changeLanguage(locale as 'en-US' | 'pt-BR' | 'es-ES')
       } catch (error) {
-        loggerService.warn({ message: `Failed to change language to ${locale}`, obj: { originalError: error } })
+        loggerService.warn({ message: `Failed to change language to ${locale}`, metadata: { originalError: error } })
       }
 
       if (request.raw.url && request.raw.url.split('/').pop() === 'favicon.ico') {
@@ -157,7 +157,7 @@ async function bootstrap() {
         transformStaticCSP: (header: string) => header
       })
     } catch (error) {
-      loggerService.warn({ message: 'Failed to load Swagger documentation', obj: { originalError: error } })
+      loggerService.warn({ message: 'Failed to load Swagger documentation', metadata: { originalError: error } })
     }
   }
 

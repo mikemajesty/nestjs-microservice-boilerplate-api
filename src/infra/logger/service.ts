@@ -77,24 +77,24 @@ export class LoggerService implements ILoggerAdapter {
     LoggerService.log(message)
   }
 
-  debug({ message, context, obj = {} }: MessageInputType): void {
-    Object.assign(obj, { context, createdAt: DateUtils.now({ type: 'iso' }) })
-    this.logger.logger.debug([obj, gray(message)].find(Boolean), gray(message))
+  debug({ message, metadata = {} }: MessageInputType): void {
+    Object.assign(metadata, { createdAt: DateUtils.now({ type: 'iso' }) })
+    this.logger.logger.debug([metadata, gray(message)].find(Boolean), gray(message))
   }
 
-  info({ message, context, obj = {} }: MessageInputType): void {
-    Object.assign(obj, { context, createdAt: DateUtils.now({ type: 'iso' }) })
-    this.logger.logger.info([obj, message].find(Boolean), message)
+  info({ message, metadata = {} }: MessageInputType): void {
+    Object.assign(metadata, { createdAt: DateUtils.now({ type: 'iso' }) })
+    this.logger.logger.info([metadata, message].find(Boolean), message)
   }
 
   warn(input: MessageInputType): void {
-    const { message, context, obj = {} } = input
-    Object.assign(obj, {
-      context: context ?? obj?.context,
+    const { message, metadata = {} } = input
+    Object.assign(metadata, {
+      context: metadata?.context,
       createdAt: DateUtils.now({ type: 'iso' })
     })
     const finalMessage = typeof input === 'string' ? input : message
-    this.logger.logger.warn([obj, finalMessage].find(Boolean), finalMessage)
+    this.logger.logger.warn([metadata, finalMessage].find(Boolean), finalMessage)
   }
 
   error(error: ErrorType, message?: string): void {

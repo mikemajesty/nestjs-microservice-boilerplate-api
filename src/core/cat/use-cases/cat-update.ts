@@ -34,7 +34,7 @@ export class CatUpdateUsecase implements IUsecase {
 
     await this.catRepository.updateOne({ id: entity.id }, entity.toObject())
 
-    this.loggerService.info({ message: 'cat updated.', obj: { cat: input } })
+    this.loggerService.info({ message: 'cat updated.', metadata: { cat: input } })
 
     const updated = await this.catRepository.findById(entity.id)
 

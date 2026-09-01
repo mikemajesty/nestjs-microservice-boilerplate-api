@@ -48,7 +48,7 @@ export class UserUpdateUsecase implements IUsecase {
 
     await this.userRepository.create(entity.toObject())
 
-    this.loggerService.info({ message: 'user updated.', obj: { user: input } })
+    this.loggerService.info({ message: 'user updated.', metadata: { user: input } })
 
     const updated = await this.userRepository.findOne({ id: entity.id })
 

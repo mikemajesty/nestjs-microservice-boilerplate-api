@@ -60,7 +60,7 @@ export class UserCreateUsecase implements IUsecase {
 
     const user = await this.userRepository.create(entity.toObject())
 
-    this.loggerService.info({ message: 'user created successfully', obj: { user } })
+    this.loggerService.info({ message: 'user created successfully', metadata: { user } })
 
     this.event.emit<SendEmailInput>(EventNameEnum.SEND_EMAIL, {
       email: input.email,

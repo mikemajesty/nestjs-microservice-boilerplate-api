@@ -7,8 +7,7 @@ import { AnyType } from '@/utils/types'
 
 export type MessageInputType = {
   message: string
-  context?: string
-  obj?: AnyType & { context?: string }
+  metadata?: AnyType & { context?: string; originalError?: Error }
 }
 
 export type ErrorType = Error & BaseException
