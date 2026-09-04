@@ -8,6 +8,7 @@ import v8 from 'v8'
 
 import { ICacheAdapter } from '@/infra/cache'
 import { ErrorType, ILoggerAdapter } from '@/infra/logger'
+import { ISecretsAdapter } from '@/infra/secrets'
 
 import { ApiInternalServerException } from './../../utils/exception'
 import { IHealthAdapter } from './adapter'
@@ -18,7 +19,10 @@ export class HealthService implements IHealthAdapter {
   mongo!: Connection
   redis!: ICacheAdapter<RedisClientType>
 
-  constructor(private readonly logger: ILoggerAdapter) {}
+  constructor(
+    private readonly logger: ILoggerAdapter,
+    private readonly secrets: ISecretsAdapter
+  ) {}
 
   async getPostgresMemory(): Promise<DatabaseMemoryOutput> {
     try {
@@ -49,7 +53,7 @@ export class HealthService implements IHealthAdapter {
       const status = await this.mongo.db.command({ serverStatus: 1 })
 
       const cache = status.wiredTiger?.cache
-      if (!cache) {
+      if (!cache && !this.secrets.IS_DOCUMENTDB) {
         throw new Error('WiredTiger cache not available - check MongoDB version/config')
       }
 
