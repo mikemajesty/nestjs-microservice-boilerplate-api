@@ -35,10 +35,10 @@ export class RedisService implements Partial<ICacheAdapter<RedisClientType>> {
     } catch (error) {
       if (typeof error === 'string') {
         const wrappedError = new ApiInternalServerException(error)
-        this.logger.error({ ...(wrappedError as object), context: `${RedisService.name}/ping` } as ErrorType)
+        this.logger.error({ ...(wrappedError as object), context: `${RedisService.name}.ping` } as ErrorType)
         return 'DOWN'
       }
-      this.logger.error({ ...(error as object), context: `${RedisService.name}/ping` } as ErrorType)
+      this.logger.error({ ...(error as object), context: `${RedisService.name}.ping` } as ErrorType)
       return 'DOWN'
     }
   }
