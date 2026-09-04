@@ -42,7 +42,7 @@ export const createRelations = <T>(joins?: JoinType<T>): FindOptionsRelations<T>
   const relations: FindOptionsRelations<T> = {}
 
   for (const key in joins) {
-    if (!joins.hasOwnProperty(key)) continue
+    if (!Object.prototype.hasOwnProperty.call(joins, key)) continue
 
     const value = joins[key as keyof JoinType<T>]
     const propertyKey = key as keyof T
@@ -62,10 +62,9 @@ export const handleDatabaseError = ({
   error: ErrorType | unknown
   context: string
 }): ApiDatabaseException => {
-  return new ApiDatabaseException((error as Error).message ?? String(error), {
-    originalError: error,
-    context,
-    stack: (error as Error)?.stack
+  return new ApiDatabaseException((error as Error)?.message ?? String(error), {
+    cause: error,
+    context
   })
 }
 

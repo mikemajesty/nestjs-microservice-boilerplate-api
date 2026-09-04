@@ -10,7 +10,7 @@ import { ZodError } from 'zod'
 
 import { ApiBadRequestException, ApiInternalServerException, ApiTimeoutException } from '@/utils/exception'
 import { ObjectUtil } from '@/utils/object'
-import { AppFastifyRequest, TracingType } from '@/utils/request'
+import { AppFastifyRequest } from '@/utils/request'
 
 @Injectable()
 export class ExceptionHandlerInterceptor implements NestInterceptor {
@@ -32,10 +32,10 @@ export class ExceptionHandlerInterceptor implements NestInterceptor {
           error.context = context
         }
 
-        if (request?.tracing as TracingType) {
-          ;(request.tracing as TracingType).addAttribute('http.status_code', error.status)
-          ;(request.tracing as TracingType).setStatus({ message: error.message, code: SpanStatusCode.ERROR })
-          ;(request.tracing as TracingType).finish()
+        if (request?.tracing) {
+          request.tracing.addAttribute('http.status_code', error.status)
+          request.tracing.setStatus({ message: error.message, code: SpanStatusCode.ERROR })
+          request.tracing.finish()
         }
 
         throw error
@@ -48,7 +48,9 @@ export class ExceptionHandlerInterceptor implements NestInterceptor {
       return ApiBadRequestException.STATUS
     }
 
-    if (error?.code === 'ECONNABORTED' || error?.code === 'ECONNRESET') {
+    const code = error?.code
+
+    if (code === 'ECONNABORTED' || code === 'ECONNRESET') {
       return ApiTimeoutException.STATUS
     }
 

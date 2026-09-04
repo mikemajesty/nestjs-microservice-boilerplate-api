@@ -12,11 +12,11 @@ The `BaseException` class is the foundation that all application errors inherit 
 
 ```typescript
 export class BaseException extends HttpException {
-  traceid!: string           // Tracing correlation ID
-  readonly context!: string  // Error context information
+  traceid!: string // Tracing correlation ID
+  readonly context!: string // Error context information
   readonly statusCode: number // HTTP status code
-  readonly code?: string     // Optional error code
-  readonly parameters!: ParametersType  // Additional error details
+  readonly code?: string // Optional error code
+  readonly parameters!: ParametersType // Additional error details
 
   constructor(message: MessageType, status: HttpStatus, parameters?: ParametersType) {
     // Extends NestJS HttpException with enhanced capabilities
@@ -25,6 +25,7 @@ export class BaseException extends HttpException {
 ```
 
 **Key Features:**
+
 - ✅ **Tracing Integration**: Every error includes tracing correlation
 - ✅ **Consistent Structure**: All errors have the same format
 - ✅ **Rich Context**: Detailed error information for debugging
@@ -39,14 +40,14 @@ The system provides pre-defined exceptions for common HTTP scenarios:
 
 ```typescript
 // Standard HTTP error types available
-ApiInternalServerException   // 500 - Server errors
-ApiNotFoundException        // 404 - Resource not found  
-ApiConflictException        // 409 - Business logic conflicts
+ApiInternalServerException // 500 - Server errors
+ApiNotFoundException // 404 - Resource not found
+ApiConflictException // 409 - Business logic conflicts
 ApiUnprocessableEntityException // 422 - Validation errors
-ApiUnauthorizedException    // 401 - Authentication required
-ApiBadRequestException      // 400 - Invalid request format
-ApiForbiddenException       // 403 - Permission denied
-ApiTimeoutException         // 408 - Request timeout
+ApiUnauthorizedException // 401 - Authentication required
+ApiBadRequestException // 400 - Invalid request format
+ApiForbiddenException // 403 - Permission denied
+ApiTimeoutException // 408 - Request timeout
 ```
 
 ## Critical Fields for Frontend Integration
@@ -56,6 +57,7 @@ ApiTimeoutException         // 408 - Request timeout
 The `details` parameter is **directly shown to users in the frontend**. This field is perfect for validation errors, missing fields, or any user-actionable information.
 
 **Practical Example - Zod Validation Errors:**
+
 ```typescript
 export class UserCreateUsecase implements IUsecase {
   async execute(input: UserCreateInput): Promise<UserCreateOutput> {
@@ -64,15 +66,15 @@ export class UserCreateUsecase implements IUsecase {
       const validatedInput = userCreateSchema.parse(input)
     } catch (zodError) {
       // Transform Zod errors to user-friendly details
-      const validationDetails = zodError.errors.map(err => ({
+      const validationDetails = zodError.errors.map((err) => ({
         field: err.path.join('.'),
         message: err.message,
         value: err.code
       }))
-      
+
       throw new ApiBadRequestException('validationFailed', {
         context: 'UserCreateUsecase.execute',
-        details: validationDetails  // ← This shows in frontend!
+        details: validationDetails // ← This shows in frontend!
       })
     }
   }
@@ -80,6 +82,7 @@ export class UserCreateUsecase implements IUsecase {
 ```
 
 **What the Frontend Receives:**
+
 ```json
 {
   "error": {
@@ -120,7 +123,7 @@ throw new ApiBadRequestException('fileUploadFailed', {
 
 // Business rule violations
 throw new ApiUnprocessableEntityException('businessRuleViolation', {
-  context: 'OrderProcessUsecase.validateOrder', 
+  context: 'OrderProcessUsecase.validateOrder',
   details: [
     { rule: 'Minimum order amount', required: '$25.00', current: '$15.50' },
     { rule: 'Product availability', product: 'iPhone 15', stock: 0 }
@@ -142,10 +145,11 @@ throw new ApiForbiddenException('insufficientPermissions', {
 The `context` field identifies **exactly where in your code** the error occurred. This is crucial for debugging and helps developers quickly locate issues.
 
 **Common Patterns:**
+
 ```typescript
 // Pattern: ClassName.methodName
 throw new ApiNotFoundException('userNotFound', {
-  context: 'UserRepository.findByEmail',  // ← Clear location
+  context: 'UserRepository.findByEmail', // ← Clear location
   details: [{ searchEmail: 'john@example.com' }]
 })
 
@@ -169,25 +173,27 @@ throw new ExternalServiceException('PaymentAPI', 'gatewayUnavailable', {
 ```
 
 **Benefits of Good Context:**
+
 - **Fast Debugging**: Developers know exactly where to look
 - **Log Filtering**: Easy to filter logs by component or layer
 - **Monitoring**: Track error patterns by context
 - **Team Communication**: Clear error location in bug reports
 
 ## Usage in Business Logic
+
 ```typescript
 // Use case throwing business logic errors
 export class UserCreateUsecase implements IUsecase {
   async execute(input: UserCreateInput): Promise<UserCreateOutput> {
     const existingUser = await this.userRepository.findByEmail(input.email)
-    
+
     if (existingUser) {
       throw new ApiConflictException('userAlreadyExists', {
         context: 'UserCreateUsecase',
         details: { email: input.email }
       })
     }
-    
+
     // Business logic continues...
   }
 }
@@ -196,14 +202,14 @@ export class UserCreateUsecase implements IUsecase {
 export class UserRepository implements IUserRepository {
   async findById(id: string): Promise<UserEntity> {
     const user = await this.model.findById(id)
-    
+
     if (!user) {
       throw new ApiNotFoundException('userNotFound', {
         context: 'UserRepository.findById',
         details: { userId: id }
       })
     }
-    
+
     return new UserEntity(user)
   }
 }
@@ -217,39 +223,30 @@ For domain-specific errors, you can easily create custom exceptions:
 // Custom business domain exception
 export class OrderProcessingException extends BaseException {
   static STATUS = HttpStatus.UNPROCESSABLE_ENTITY
-  
+
   constructor(message?: MessageType, parameters?: ParametersType) {
-    super(
-      message ?? 'orderProcessingFailed', 
-      OrderProcessingException.STATUS, 
-      parameters
-    )
+    super(message ?? 'orderProcessingFailed', OrderProcessingException.STATUS, parameters)
   }
 }
 
 // Payment-specific exception
 export class PaymentFailedException extends BaseException {
   static STATUS = HttpStatus.PAYMENT_REQUIRED // 402
-  
+
   constructor(message?: MessageType, parameters?: ParametersType) {
-    super(
-      message ?? 'paymentProcessingFailed',
-      PaymentFailedException.STATUS,
-      parameters
-    )
+    super(message ?? 'paymentProcessingFailed', PaymentFailedException.STATUS, parameters)
   }
 }
 
-// External service exception  
+// External service exception
 export class ExternalServiceException extends BaseException {
   static STATUS = HttpStatus.BAD_GATEWAY // 502
-  
+
   constructor(serviceName: string, message?: MessageType, parameters?: ParametersType) {
-    super(
-      message ?? `${serviceName}ServiceUnavailable`,
-      ExternalServiceException.STATUS,
-      { ...parameters, service: serviceName }
-    )
+    super(message ?? `${serviceName}ServiceUnavailable`, ExternalServiceException.STATUS, {
+      ...parameters,
+      service: serviceName
+    })
   }
 }
 ```
@@ -261,14 +258,14 @@ export class OrderPaymentUsecase implements IUsecase {
   async execute(input: OrderPaymentInput): Promise<OrderPaymentOutput> {
     // Domain-specific error handling
     const order = await this.orderRepository.findById(input.orderId)
-    
+
     if (order.status !== 'pending') {
       throw new OrderProcessingException('orderNotPayable', {
         context: 'OrderPaymentUsecase',
         details: { orderId: order.id, currentStatus: order.status }
       })
     }
-    
+
     try {
       // Process payment with external service
       const payment = await this.paymentService.charge(input.amount)
@@ -276,10 +273,10 @@ export class OrderPaymentUsecase implements IUsecase {
       // Transform external errors to our format
       throw new PaymentFailedException('creditCardDeclined', {
         context: 'OrderPaymentUsecase',
-        details: { 
-          orderId: order.id, 
+        details: {
+          orderId: order.id,
           amount: input.amount,
-          originalError: error.message 
+          cause: error
         }
       })
     }
@@ -309,14 +306,14 @@ All exceptions follow a consistent API response format:
 ```typescript
 export type ApiErrorType = {
   error: {
-    code: string | number      // Error identifier
-    traceid: string           // Correlation ID for tracing
-    context: string           // Where the error occurred
-    message: string[]         // User-friendly message(s)
-    details?: unknown[]       // Additional debugging information
-    name: string             // Exception class name
-    timestamp: string        // When the error occurred
-    path: string             // API endpoint where error happened
+    code: string | number // Error identifier
+    traceid: string // Correlation ID for tracing
+    context: string // Where the error occurred
+    message: string[] // User-friendly message(s)
+    details?: unknown[] // Additional debugging information
+    name: string // Exception class name
+    timestamp: string // When the error occurred
+    path: string // API endpoint where error happened
   }
 }
 ```
@@ -331,7 +328,7 @@ export type ApiErrorType = {
     "context": "UserCreateUsecase",
     "message": ["User with this email already exists"],
     "details": [{ "email": "john@example.com" }],
-    "name": "ApiConflictException", 
+    "name": "ApiConflictException",
     "timestamp": "2024-01-15T10:30:00Z",
     "path": "/api/v1/users"
   }
@@ -341,26 +338,31 @@ export type ApiErrorType = {
 ## Benefits of Centralization
 
 ### Consistency
+
 - All errors follow the same structure and format
 - Standardized tracing integration across all exceptions
 - Uniform API responses for frontend consumption
 
 ### Debugging & Monitoring
+
 - Every error includes correlation IDs for distributed tracing
 - Rich context information for troubleshooting
 - Structured error data for monitoring and alerting
 
 ### Type Safety
+
 - Full TypeScript support with proper error types
 - Compile-time validation of error parameters
 - IDE autocompletion for error details
 
 ### Maintainability
+
 - Single place to modify error handling behavior
 - Easy to add new custom exceptions following the same pattern
 - Consistent error handling across different domains
 
 ### Frontend Integration
+
 - Predictable error structure for API consumers
 - Standard error codes for specific handling
 - Rich error details when needed for user feedback
@@ -372,8 +374,9 @@ For scenarios where you need to **transform external HTTP responses or third-par
 ### When to Use Exception Factory
 
 **Perfect for these scenarios:**
+
 - 🔗 **External API Integration**: Transform third-party API errors
-- 📡 **HTTP Client Responses**: Convert generic HTTP status codes  
+- 📡 **HTTP Client Responses**: Convert generic HTTP status codes
 - 🔄 **Error Forwarding**: Maintain error context across service boundaries
 - 🎯 **Microservice Communication**: Standardize inter-service error handling
 
@@ -390,17 +393,19 @@ export class PaymentService {
     } catch (externalError) {
       // Transform external error to our standard format
       throw createExceptionFromStatus({
-        status: externalError.status,        // HTTP status from external API
-        message: 'paymentProcessingFailed',  // Our standardized message
+        status: externalError.status, // HTTP status from external API
+        message: 'paymentProcessingFailed', // Our standardized message
         parameters: {
           context: 'PaymentService.processPayment',
-          details: [{ 
-            gateway: 'Stripe',
-            transactionId: data.transactionId,
-            amount: data.amount 
-          }]
+          details: [
+            {
+              gateway: 'Stripe',
+              transactionId: data.transactionId,
+              amount: data.amount
+            }
+          ]
         },
-        originalStack: externalError.stack   // Preserve original error trace
+        originalStack: externalError.stack // Preserve original error trace
       })
     }
   }
@@ -410,34 +415,38 @@ export class PaymentService {
 ### Advanced Examples
 
 **External API Integration:**
+
 ```typescript
 export class UserSyncService {
   async syncUserFromCRM(userId: string): Promise<UserEntity> {
     const response = await fetch(`${this.crmBaseUrl}/users/${userId}`)
-    
+
     if (!response.ok) {
       // Convert HTTP response to our exception format
       throw createExceptionFromStatus({
-        status: response.status,             // 404, 401, 500, etc.
+        status: response.status, // 404, 401, 500, etc.
         message: 'externalUserNotFound',
         parameters: {
           context: 'UserSyncService.syncUserFromCRM',
-          details: [{ 
-            userId, 
-            crmEndpoint: `${this.crmBaseUrl}/users/${userId}`,
-            responseStatus: response.status,
-            responseText: await response.text()
-          }]
+          details: [
+            {
+              userId,
+              crmEndpoint: `${this.crmBaseUrl}/users/${userId}`,
+              responseStatus: response.status,
+              responseText: await response.text()
+            }
+          ]
         }
       })
     }
-    
+
     return new UserEntity(await response.json())
   }
 }
 ```
 
 **Microservice Error Forwarding:**
+
 ```typescript
 export class OrderService {
   async validateInventory(items: OrderItem[]): Promise<void> {
@@ -450,10 +459,12 @@ export class OrderService {
         message: 'inventoryValidationFailed',
         parameters: {
           context: 'OrderService.validateInventory',
-          details: [{ 
-            items: items.map(item => ({ sku: item.sku, quantity: item.quantity })),
-            inventoryService: 'ProductCatalogMS'
-          }]
+          details: [
+            {
+              items: items.map((item) => ({ sku: item.sku, quantity: item.quantity })),
+              inventoryService: 'ProductCatalogMS'
+            }
+          ]
         },
         originalStack: inventoryError.stack
       })
@@ -463,6 +474,7 @@ export class OrderService {
 ```
 
 **Database Connection Errors:**
+
 ```typescript
 export class DatabaseHealthService {
   async checkConnection(): Promise<HealthStatus> {
@@ -472,30 +484,32 @@ export class DatabaseHealthService {
     } catch (dbError) {
       // Convert database errors to HTTP format
       const httpStatus = this.mapDatabaseErrorToHttp(dbError.code)
-      
+
       throw createExceptionFromStatus({
         status: httpStatus,
         message: 'databaseConnectionFailed',
         parameters: {
           context: 'DatabaseHealthService.checkConnection',
-          details: [{ 
-            database: 'users_db',
-            host: process.env.DB_HOST,
-            errorCode: dbError.code,
-            timeout: '30s'
-          }]
+          details: [
+            {
+              database: 'users_db',
+              host: process.env.DB_HOST,
+              errorCode: dbError.code,
+              timeout: '30s'
+            }
+          ]
         },
         originalStack: dbError.stack
       })
     }
   }
-  
+
   private mapDatabaseErrorToHttp(errorCode: string): number {
     const errorMap = {
-      'ECONNREFUSED': 503,    // Service Unavailable
-      'ETIMEDOUT': 408,       // Request Timeout  
-      'ENOTFOUND': 502,       // Bad Gateway
-      'ECONNRESET': 503,      // Service Unavailable
+      ECONNREFUSED: 503, // Service Unavailable
+      ETIMEDOUT: 408, // Request Timeout
+      ENOTFOUND: 502, // Bad Gateway
+      ECONNRESET: 503 // Service Unavailable
     }
     return errorMap[errorCode] ?? 500
   }
@@ -509,7 +523,7 @@ The factory automatically maps HTTP status codes to appropriate exception classe
 ```typescript
 // Automatic mapping examples:
 createExceptionFromStatus({ status: 400 }) // → ApiBadRequestException
-createExceptionFromStatus({ status: 401 }) // → ApiUnauthorizedException  
+createExceptionFromStatus({ status: 401 }) // → ApiUnauthorizedException
 createExceptionFromStatus({ status: 403 }) // → ApiForbiddenException
 createExceptionFromStatus({ status: 404 }) // → ApiNotFoundException
 createExceptionFromStatus({ status: 408 }) // → ApiTimeoutException
@@ -526,7 +540,7 @@ When using `originalStack`, the factory preserves both error contexts:
 const externalError = new Error('Payment gateway timeout')
 const ourException = createExceptionFromStatus({
   status: 408,
-  message: 'paymentTimeout', 
+  message: 'paymentTimeout',
   originalStack: externalError.stack
 })
 
@@ -546,16 +560,19 @@ Error: Payment gateway timeout
 ### Benefits of Exception Factory
 
 **Consistency Across Integrations:**
+
 - All external errors follow the same format as internal errors
 - Unified error handling in controllers and filters
 - Standard `details` and `context` fields for all errors
 
-**Debugging & Monitoring:**  
+**Debugging & Monitoring:**
+
 - Preserves original error information for troubleshooting
 - Clear separation between our error context and external error source
 - Tracing correlation IDs maintained across service boundaries
 
 **Type Safety:**
+
 - Full TypeScript support for external error transformation
-- Compile-time validation of status codes and parameters  
+- Compile-time validation of status codes and parameters
 - IDE autocompletion for error factory options

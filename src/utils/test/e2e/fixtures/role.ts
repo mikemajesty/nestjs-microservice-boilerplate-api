@@ -23,7 +23,7 @@ export class RoleFixture implements Omit<TestFixture<RoleEntity>, 'override'> {
     const entities = dataSource.entityMetadatas.filter((e) => e.name === RoleEntity.name)
     for (const entity of entities) {
       const repository = dataSource.getRepository(entity.name)
-      await repository.query(`TRUNCATE TABLE \"${entity.tableName}\" RESTART IDENTITY CASCADE;`)
+      await repository.query(`TRUNCATE TABLE ${entity.tableName} RESTART IDENTITY CASCADE;`)
     }
   }
 

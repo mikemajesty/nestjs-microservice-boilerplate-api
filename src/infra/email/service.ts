@@ -24,7 +24,7 @@ export class EmailService implements IEmailAdapter {
   ) {}
 
   async send(input: SendEmailInput): Promise<SendEmailOutput> {
-    /* eslint-disable-next-line security/detect-non-literal-fs-filename */
+     
     const source = fs.readFileSync(path.join(__dirname, `/templates/${input.template}.handlebars`), 'utf8')
     const compiledTemplate = handlebars.compile(source)
     const options = () => {

@@ -4,14 +4,12 @@
 import { HttpException, HttpStatus } from '@nestjs/common'
 import { z } from 'zod'
 
-import { ErrorType } from '@/infra/logger'
-
 import { ObjectUtil } from './object'
 import { AnyType } from './types'
 
 export class BaseException extends HttpException {
   traceid!: string
-  readonly context!: string
+  context!: string
   readonly statusCode: number
   readonly code?: string
   readonly parameters!: ParametersType
@@ -23,27 +21,30 @@ export class BaseException extends HttpException {
     this.statusCode = status
 
     if (metadata) {
-      this.parameters = ObjectUtil.clone<ParametersType>({ ...metadata, originalError: undefined })
+      this.parameters = ObjectUtil.clone<ParametersType>({ ...metadata, cause: undefined })
     }
 
-    if (metadata?.originalError) {
-      const originalStack =
-        metadata.originalError instanceof Error ? metadata.originalError.stack : String(metadata.originalError)
-
-      this.stack = originalStack ?? this.stack
-      this.cause = metadata.originalError
+    if (metadata?.context) {
+      this.context = metadata.context
     }
 
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, this.constructor)
     }
 
+    if (metadata?.cause) {
+      const originalStack = metadata.cause instanceof Error ? metadata.cause.stack : String(metadata.cause)
+
+      this.stack = originalStack ?? this.stack
+      this.cause = metadata.cause
+    }
+
     Object.setPrototypeOf(this, actualProto)
     this.name = this.constructor.name
   }
 
-  getOriginalError(): ErrorType | unknown {
-    return this.cause
+  getCause<T>(): T {
+    return this.cause as T
   }
 }
 
@@ -109,7 +110,7 @@ export type ApiErrorType = {
     traceid: string
     context: string
     message: string[]
-    details?: unknown[]
+    details?: ParametersType[`details`]
     name: string
     timestamp: string
     path: string
@@ -118,9 +119,17 @@ export type ApiErrorType = {
 
 export type ParametersType = {
   [key: string]: AnyType
+  /** Identifies where the error occurred, usually in the `ClassName.methodName` format. */
   context?: string
+  /**
+   * Extra detail about the error, returned to the client in the error response (unlike `cause`, which stays
+   * server-side only). Useful when `message` is a short, user-friendly summary (e.g. a translated Zod message)
+   * and you still want to expose the full underlying detail for debugging — for example, the complete list of
+   * Zod validation issues, or additional explanatory text about what went wrong.
+   */
   details?: string[] | z.core.$ZodIssue[]
-  originalError?: ErrorType | unknown
+  /** The original error that caused this one, preserved for root-cause debugging (see `Error.cause`). */
+  cause?: Error | (unknown & { stack?: string }) | unknown
 }
 
 export type MessageType = string
@@ -130,11 +139,15 @@ export const exceptionFromStatus = (input: HttpStatusExceptionInput): BaseExcept
 
   const exception = new ExceptionClass(input.message, input.metadata)
 
-  const originalError = ObjectUtil.reach(input, (i) => i.metadata.originalError)
+  const cause = ObjectUtil.reach(input, (i) => i.metadata.cause)
 
-  if (originalError) {
-    exception.cause = originalError
-    exception.stack = originalError instanceof Error ? originalError.stack : (String(originalError) ?? exception.stack)
+  if (cause) {
+    exception.cause = cause
+    if (cause instanceof Error) {
+      exception.stack = cause.stack
+    } else {
+      exception.stack = String(cause) || exception.stack
+    }
   }
 
   return exception

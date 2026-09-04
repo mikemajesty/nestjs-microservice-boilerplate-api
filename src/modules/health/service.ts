@@ -34,7 +34,7 @@ export class HealthService implements IHealthAdapter {
         reservedMemory: `${(result[0].reservedMemory / 1024 / 1024).toFixed(2)} MB`
       }
     } catch (error) {
-      error = this.buildError(error, `${HealthService.name}/getPostgresMemory`)
+      this.buildError(error, `${HealthService.name}/getPostgresMemory`)
       this.logger.error(error as ErrorType)
       return { ramUsed: 0, reservedMemory: 0 }
     }
@@ -63,7 +63,7 @@ export class HealthService implements IHealthAdapter {
         reservedMemory: `${(memory.max / 1024 / 1024).toFixed(2)} MB`
       }
     } catch (error) {
-      error = this.buildError(error, `${HealthService.name}/getMongoMemory`)
+      this.buildError(error, `${HealthService.name}/getMongoMemory`)
       this.logger.error(error as ErrorType)
       return { ramUsed: 0, reservedMemory: 0 }
     }
@@ -81,7 +81,7 @@ export class HealthService implements IHealthAdapter {
       }
       return { active: 0, available: 0, current: 0, totalCreated: 0 }
     } catch (error) {
-      error = this.buildError(error, `${HealthService.name}/getMongoConnections`)
+      this.buildError(error, `${HealthService.name}/getMongoConnections`)
       this.logger.error(error as ErrorType)
       return { active: 0, available: 0, current: 0, totalCreated: 0 }
     }
@@ -107,7 +107,7 @@ export class HealthService implements IHealthAdapter {
         active: Number(current[0].count)
       }
     } catch (error) {
-      error = this.buildError(error, `${HealthService.name}/getPostgresConnections`)
+      this.buildError(error, `${HealthService.name}/getPostgresConnections`)
       this.logger.error(error as ErrorType)
       return {
         current: 0,
@@ -162,7 +162,6 @@ export class HealthService implements IHealthAdapter {
 
   getActiveConnections() {
     return new Promise((resolve, reject) => {
-      /* eslint-disable security/detect-child-process */
       exec(`lsof -i -n -p ${process.pid} | grep ESTABLISHED | wc -l`, (error, stdout, stderr) => {
         if (error) {
           reject(`Error getting connection: ${stderr}`)
@@ -185,7 +184,7 @@ export class HealthService implements IHealthAdapter {
       ].find((l) => Number(res.time) < l.latency)
       return `${res.time}ms ${latency?.status ?? 'Critical'}`
     } catch (error) {
-      error = this.buildError(error, `${HealthService.name}/getLatency`)
+      this.buildError(error, `${HealthService.name}/getLatency`)
       this.logger.error(error as ErrorType)
       return 'Critical'
     }
@@ -195,7 +194,7 @@ export class HealthService implements IHealthAdapter {
     try {
       return await systeminformation.currentLoad()
     } catch (error) {
-      error = this.buildError(error, `${HealthService.name}/getCPUCore`)
+      this.buildError(error, `${HealthService.name}/getCPUCore`)
       this.logger.error(error as ErrorType)
       return { cpus: [] }
     }
@@ -207,7 +206,7 @@ export class HealthService implements IHealthAdapter {
 
       return result ? HealthStatus.UP : HealthStatus.DOWN
     } catch (error) {
-      error = this.buildError(error, `${HealthService.name}/postgres`)
+      this.buildError(error, `${HealthService.name}/postgres`)
       this.logger.error(error as ErrorType)
       return HealthStatus.DOWN
     }
@@ -217,7 +216,7 @@ export class HealthService implements IHealthAdapter {
     try {
       return this.mongo.readyState === 1 ? HealthStatus.UP : HealthStatus.DOWN
     } catch (error) {
-      error = this.buildError(error, `${HealthService.name}/mongo`)
+      this.buildError(error, `${HealthService.name}/mongo`)
       this.logger.error(error as ErrorType)
       return HealthStatus.DOWN
     }
@@ -228,7 +227,7 @@ export class HealthService implements IHealthAdapter {
       const status = await this.redis.ping()
       return status === 'PONG' ? HealthStatus.UP : HealthStatus.DOWN
     } catch (error) {
-      error = this.buildError(error, `${HealthService.name}/redis`)
+      this.buildError(error, `${HealthService.name}/redis`)
       this.logger.error(error as ErrorType)
       return HealthStatus.DOWN
     }
@@ -236,10 +235,9 @@ export class HealthService implements IHealthAdapter {
 
   private buildError(error: unknown, context: string) {
     if (typeof error === 'string') {
-      error = new ApiInternalServerException(error)
+      Object.assign(error, new ApiInternalServerException(error))
     }
     Object.assign(error as object, { context })
-    return error
   }
 
   private bytesToMB = (bytes: number) => {

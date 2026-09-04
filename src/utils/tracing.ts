@@ -89,7 +89,7 @@ const httpInstrumentation = new HttpInstrumentation({
         span.setAttribute('http.status_code', statusCode)
       }
     } catch (error) {
-      logger.warn({ message: 'Error in HTTP response hook:', metadata: { originalError: error } })
+      logger.warn({ message: 'Error in HTTP response hook:', metadata: { cause: error } })
     }
   },
   requestHook: (span: Span, request: ClientRequest | IncomingMessage) => {
@@ -116,7 +116,7 @@ const httpInstrumentation = new HttpInstrumentation({
         span.setAttribute('http.url', url)
       }
     } catch (error) {
-      logger.warn({ message: 'Error in HTTP request hook:', metadata: { originalError: error } })
+      logger.warn({ message: 'Error in HTTP request hook:', metadata: { cause: error } })
     }
   }
 })
@@ -130,7 +130,7 @@ const redisInstrumentation = new RedisInstrumentation({
       const spanContext = span.spanContext()
       span.updateName(`redis => command-${spanContext.spanId}`)
     } catch (error) {
-      logger.warn({ message: 'Error in Redis response hook:', metadata: { originalError: error } })
+      logger.warn({ message: 'Error in Redis response hook:', metadata: { cause: error } })
     }
   }
 })
@@ -145,7 +145,7 @@ const mongodbInstrumentation = new MongoDBInstrumentation({
       const spanContext = span.spanContext()
       span.updateName(`mongodb => operation-${spanContext.spanId}`)
     } catch (error) {
-      logger.warn({ message: 'Error in MongoDB response hook:', metadata: { originalError: error } })
+      logger.warn({ message: 'Error in MongoDB response hook:', metadata: { cause: error } })
     }
   }
 })
@@ -159,7 +159,7 @@ const pgInstrumentation = new PgInstrumentation({
       const spanContext = span.spanContext()
       span.updateName(`postgres => query-${spanContext.spanId}`)
     } catch (error) {
-      logger.warn({ message: 'Error in PostgreSQL response hook:', metadata: { originalError: error } })
+      logger.warn({ message: 'Error in PostgreSQL response hook:', metadata: { cause: error } })
     }
   }
 })
@@ -186,7 +186,7 @@ const start = (): void => {
     isInitialized = true
     logger.log('✅ Tracing started successfully (exporter: otlp-grpc)')
   } catch (error) {
-    logger.error(new ApiBadRequestException('Tracing start error', { originalError: error }))
+    logger.error(new ApiBadRequestException('Tracing start error', { cause: error }))
   }
 }
 
@@ -201,7 +201,7 @@ const shutdown = async (): Promise<void> => {
     isInitialized = false
     logger.log('✅ Tracing terminated gracefully')
   } catch (error) {
-    logger.error(new ApiBadRequestException('Tracing shutdown error', { originalError: error }))
+    logger.error(new ApiBadRequestException('Tracing shutdown error', { cause: error }))
     throw error
   }
 }

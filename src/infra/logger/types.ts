@@ -7,7 +7,12 @@ import { AnyType } from '@/utils/types'
 
 export type MessageInputType = {
   message: string
-  metadata?: AnyType & { context?: string; originalError?: Error }
+  metadata?: {
+    /** Identifies where the error occurred, usually in the `ClassName.methodName` format. */
+    context?: string
+    /** The original error that caused this one, preserved for root-cause debugging (see `Error.cause`). */
+    cause?: Error | unknown
+  } & { [key: string]: AnyType }
 }
 
 export type ErrorType = Error & BaseException

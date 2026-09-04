@@ -142,7 +142,7 @@ export class HttpBuilder implements IHttpBuilder {
       duration,
       url: this.requestConfig.url,
       method: this.requestConfig.method,
-      originalError: error
+      cause: error
     }
 
     switch (status) {

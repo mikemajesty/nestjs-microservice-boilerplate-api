@@ -33,7 +33,7 @@ export class UserFixture implements TestFixture<UserEntity> {
     const entities = dataSource.entityMetadatas.filter((e) => UserEntity.name === e.name)
     for (const entity of entities) {
       const repository = dataSource.getRepository(entity.name)
-      await repository.query(`TRUNCATE TABLE \"${entity.tableName}\" RESTART IDENTITY CASCADE;`)
+      await repository.query(`TRUNCATE TABLE ${entity.tableName} RESTART IDENTITY CASCADE;`)
     }
   }
 
@@ -50,7 +50,7 @@ export class UserFixture implements TestFixture<UserEntity> {
       })
       if (user) {
         user.roles = user.roles.filter((r) => r.id !== role.id)
-        await context.save(UserSchema, user)
+        await context.save(UserSchema, user as UserModel)
       }
     })
   }

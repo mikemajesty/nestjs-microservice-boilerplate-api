@@ -5,6 +5,7 @@ import { Injectable } from '@nestjs/common'
 import { RedisClientType, SetOptions } from 'redis'
 
 import { ErrorType, ILoggerAdapter } from '@/infra/logger'
+import { WithErrorContext } from '@/utils/decorators'
 import { ApiInternalServerException } from '@/utils/exception'
 
 import { ICacheAdapter } from '../adapter'
@@ -33,24 +34,20 @@ export class RedisService implements Partial<ICacheAdapter<RedisClientType>> {
       return result as string
     } catch (error) {
       if (typeof error === 'string') {
-        error = new ApiInternalServerException(error)
+        const wrappedError = new ApiInternalServerException(error)
+        this.logger.error({ ...(wrappedError as object), context: `${RedisService.name}/ping` } as ErrorType)
+        return 'DOWN'
       }
-      ;(error as { context: string }).context = `${RedisService.name}/ping`
-      this.logger.error(error as ErrorType)
+      this.logger.error({ ...(error as object), context: `${RedisService.name}/ping` } as ErrorType)
       return 'DOWN'
     }
   }
 
+  @WithErrorContext()
   async connect(): Promise<RedisClientType> {
-    try {
-      await this.client.connect()
-      this.logger.log('🎯 redis connected!\n')
-      return this.client
-    } catch (error) {
-      throw new ApiInternalServerException((error as { message: string }).message, {
-        context: `${RedisService.name}/connect`
-      })
-    }
+    await this.client.connect()
+    this.logger.log('🎯 redis connected!\n')
+    return this.client
   }
 
   async set<TKey = RedisCacheKeyArgument, TValue = RedisCacheValueArgument, TConf = object>(

@@ -9,6 +9,7 @@
     "resolveJsonModule": true,
     "sourceMap": true,
     "experimentalDecorators": true,
+    "skipLibCheck": true,
     "pretty": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,

@@ -47,7 +47,7 @@ export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEn
       return result
     } catch (err) {
       await queryRunner.rollbackTransaction()
-      throw handleDatabaseError({ error: err, context: `${this.context}/runInTransaction` })
+      throw handleDatabaseError({ error: err, context: `${this.context}.runInTransaction` })
     } finally {
       await queryRunner.release()
     }
@@ -81,7 +81,7 @@ export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEn
       const model = await entity.save(saveOptions as SaveOptions)
       return { created: model.hasId(), id: model.id }
     } catch (error) {
-      throw handleDatabaseError({ error, context: `${this.context}/create` })
+      throw handleDatabaseError({ error, context: `${this.context}.create` })
     }
   }
 
@@ -115,7 +115,7 @@ export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEn
 
       return { id: exists['id'], created: false, updated: (row.affected || 0) > 0 }
     } catch (error) {
-      throw handleDatabaseError({ error, context: `${this.context}/createOrUpdate` })
+      throw handleDatabaseError({ error, context: `${this.context}.createOrUpdate` })
     }
   }
 
@@ -224,7 +224,7 @@ export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEn
       const data = await this.repository.delete(filter as FindOptionsWhere<T>)
       return { deletedCount: data.affected || 0, deleted: !!data.affected }
     } catch (error) {
-      throw handleDatabaseError({ error, context: `${this.context}/remove` })
+      throw handleDatabaseError({ error, context: `${this.context}.remove` })
     }
   }
 
@@ -245,7 +245,7 @@ export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEn
         acknowledged: !!data.affected
       }
     } catch (error) {
-      throw handleDatabaseError({ error, context: `${this.context}/updateOne` })
+      throw handleDatabaseError({ error, context: `${this.context}.updateOne` })
     }
   }
 
@@ -269,7 +269,7 @@ export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEn
         acknowledged: !!data.affected
       }
     } catch (error) {
-      throw handleDatabaseError({ error, context: `${this.context}/updateMany` })
+      throw handleDatabaseError({ error, context: `${this.context}.updateMany` })
     }
   }
 

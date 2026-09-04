@@ -1,23 +1,13 @@
-import path from 'node:path'
-import { fileURLToPath } from 'node:url'
+import js from '@eslint/js';
+import pluginJest from 'eslint-plugin-jest';
+import pluginPrettier from 'eslint-plugin-prettier';
+import pluginSecurity from 'eslint-plugin-security';
+import simpleImportSort from 'eslint-plugin-simple-import-sort';
+import pluginYouDontNeedLodash from 'eslint-plugin-you-dont-need-lodash-underscore';
+import globals from 'globals';
+import tseslint from 'typescript-eslint';
 
-import { FlatCompat } from '@eslint/eslintrc'
-import js from '@eslint/js'
-import typescriptEslintEslintPlugin from '@typescript-eslint/eslint-plugin'
-import tsParser from '@typescript-eslint/parser'
-import pluginJest from 'eslint-plugin-jest'
-import simpleImportSort from 'eslint-plugin-simple-import-sort'
-import globals from 'globals'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-  recommendedConfig: js.configs.recommended,
-  allConfig: js.configs.all
-})
-
-export default [
+export default tseslint.config(
   {
     ignores: [
       '**/.eslintrc.js',
@@ -30,42 +20,39 @@ export default [
       '**/*.md'
     ]
   },
-  ...compat.extends(
-    'plugin:@typescript-eslint/recommended',
-    'plugin:prettier/recommended',
-    'plugin:you-dont-need-lodash-underscore/compatible',
-    'plugin:security/recommended-legacy'
-  ),
+
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
+
   {
+    files: ['**/*.ts', '**/*.js'],
+
     plugins: {
-      '@typescript-eslint': typescriptEslintEslintPlugin,
+      '@typescript-eslint': tseslint.plugin,
       'simple-import-sort': simpleImportSort,
-      jest: pluginJest
+      jest: pluginJest,
+      security: pluginSecurity,
+      prettier: pluginPrettier,
+      'you-dont-need-lodash-underscore': pluginYouDontNeedLodash
     },
 
     languageOptions: {
       globals: {
         ...globals.node,
         ...globals.jest,
-        ...pluginJest.environments.globals.globals
+        ...(pluginJest.environments?.globals?.globals || {})
       },
-
-      parser: tsParser,
-      ecmaVersion: 5,
-      sourceType: 'module',
-
+      parser: tseslint.parser,
       parserOptions: {
-        project: 'tsconfig.json'
+        project: 'tsconfig.json',
+        tsconfigRootDir: import.meta.dirname,
+        sourceType: 'module',
+        ecmaVersion: 2022
       }
     },
 
     rules: {
-      'no-console': [
-        'error',
-        {
-          allow: ['error']
-        }
-      ],
+      'no-console': ['error', { allow: ['error'] }],
       'security/detect-unsafe-regex': 'error',
       'simple-import-sort/imports': 'error',
       'simple-import-sort/exports': 'error',
@@ -75,7 +62,6 @@ export default [
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/explicit-function-return-type': 'off',
       'object-shorthand': 'error',
-      '@/no-throw-literal': 'error',
       'security/detect-non-literal-regexp': 'off',
       'security/detect-possible-timing-attacks': 'off',
       '@typescript-eslint/no-unused-vars': 'error',
@@ -86,4 +72,4 @@ export default [
       'jest/valid-expect': 'error'
     }
   }
-]
+)
