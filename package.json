@@ -10,7 +10,8 @@
     "mongodb": "7.4.0",
     "multer": "2.2.0",
     "undici": "6.27.0",
-    "fast-uri": "^4.1.2",
+    "fast-uri": "^4.1.4",
+    "fastify": "^5.12.1",
     "find-my-way": "^9.6.0",
     "@opentelemetry/propagator-jaeger": "^2.9.0"
   },
