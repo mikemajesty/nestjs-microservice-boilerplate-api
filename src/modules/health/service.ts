@@ -53,7 +53,11 @@ export class HealthService implements IHealthAdapter {
       const status = await this.mongo.db.command({ serverStatus: 1 })
 
       const cache = status.wiredTiger?.cache
-      if (!cache && !this.secrets.IS_DOCUMENTDB) {
+      if (!cache) {
+        if (this.secrets.IS_DOCUMENTDB) {
+          return { ramUsed: 'N/A', reservedMemory: 'N/A' }
+        }
+
         throw new Error('WiredTiger cache not available - check MongoDB version/config')
       }
 
