@@ -48,14 +48,14 @@ Structured logging service built on **Pino** with automatic shipping to **Grafan
 
 ## Log Levels
 
-| Level | Method | When to Use | Sent to Loki |
-|-------|--------|-------------|--------------|
-| `trace` | - | Internal pino level | ❌ |
-| `debug` | `logger.debug()` | Development debugging | ❌ |
-| `info` | `logger.info()` | Normal operations | ✅ |
-| `warn` | `logger.warn()` | Potential issues | ✅ |
-| `error` | `logger.error()` | Errors (caught) | ✅ |
-| `fatal` | `logger.fatal()` | Critical errors (app exits) | ✅ |
+| Level   | Method           | When to Use                 | Sent to Loki |
+| ------- | ---------------- | --------------------------- | ------------ |
+| `trace` | -                | Internal pino level         | ❌           |
+| `debug` | `logger.debug()` | Development debugging       | ❌           |
+| `info`  | `logger.info()`  | Normal operations           | ✅           |
+| `warn`  | `logger.warn()`  | Potential issues            | ✅           |
+| `error` | `logger.error()` | Errors (caught)             | ✅           |
+| `fatal` | `logger.fatal()` | Critical errors (app exits) | ✅           |
 
 ## ILoggerAdapter Interface
 
@@ -82,35 +82,37 @@ abstract class ILoggerAdapter {
 @Injectable()
 export class OrderService {
   constructor(private readonly logger: ILoggerAdapter) {}
-  
+
   async createOrder(data: CreateOrderDTO) {
     this.logger.info({
       message: 'Creating new order',
       context: 'OrderService.createOrder',
-      obj: { 
-        userId: data.userId, 
+      metadata: {
+        userId: data.userId,
         itemsCount: data.items.length,
         totalValue: data.totalValue
       }
     })
-    
+
     // ... create order
-    
+
     this.logger.info({
       message: 'Order created successfully',
       context: 'OrderService.createOrder',
-      obj: { orderId: order.id }
+      metadata: { orderId: order.id }
     })
   }
 }
 ```
 
 **Output (Console):**
+
 ```
 INFO [2025-12-17 10:30:45]: [nestjs-microservice-boilerplate-api] Creating new order
 ```
 
 **Output (Loki JSON):**
+
 ```json
 {
   "level": "info",
@@ -132,9 +134,9 @@ async processPayment(orderId: string) {
   this.logger.debug({
     message: 'Payment processing started',
     context: 'PaymentService.processPayment',
-    obj: { orderId, gateway: 'stripe' }
+    metadata: { orderId, gateway: 'stripe' }
   })
-  
+
   // Debug logs are NOT sent to Loki (level: trace in console only)
 }
 ```
@@ -144,20 +146,21 @@ async processPayment(orderId: string) {
 ```typescript
 async findUser(id: string) {
   const user = await this.userRepository.findById(id)
-  
+
   if (!user.emailVerified) {
     this.logger.warn({
       message: 'User accessing system without verified email',
       context: 'UserService.findUser',
-      obj: { userId: id, email: user.email }
+      metadata: { userId: id, email: user.email }
     })
   }
-  
+
   return user
 }
 ```
 
 **Output (Loki JSON):**
+
 ```json
 {
   "level": "warn",
@@ -185,6 +188,7 @@ async chargeCustomer(customerId: string, amount: number) {
 ```
 
 **Output (Loki JSON):**
+
 ```json
 {
   "level": "error",
@@ -214,7 +218,7 @@ async connectDatabase() {
 
 ## TraceId Propagation
 
-The logger automatically includes `traceid` in **every single log**, enabling **distributed tracing** across microservices. 
+The logger automatically includes `traceid` in **every single log**, enabling **distributed tracing** across microservices.
 
 The [HttpLoggerInterceptor](../middlewares/http-logger.interceptor.md) sets the traceid globally via `setGlobalParameters()`, so you **never need to manually add it** — all your logs will automatically carry the same traceid.
 
@@ -226,7 +230,7 @@ this.logger.setGlobalParameters({ traceid: request.id })
 this.logger.info({ message: 'Processing order' })
 // Output: { traceid: "abc-123", message: "Processing order", ... }
 
-this.logger.warn({ message: 'Low inventory' })  
+this.logger.warn({ message: 'Low inventory' })
 // Output: { traceid: "abc-123", message: "Low inventory", ... }
 
 this.logger.error(error)
@@ -260,6 +264,7 @@ This means you can search for a single traceid in Grafana Loki and see **ALL log
 ```
 
 **Grafana Loki Query:**
+
 ```
 {job="nestjs"} | json | traceid="abc-123-def-456"
 ```
@@ -269,15 +274,17 @@ This means you can search for a single traceid in Grafana Loki and see **ALL log
 Every time an error occurs, the logger automatically generates a **cURL command** to reproduce the exact request. This is powered by [convert-pino-request-to-curl](https://github.com/mikemajesty/convert-pino-request-to-curl).
 
 **Without this feature:**
+
 ```
 ❌ Error logged: "Validation failed"
-   
+
    Developer: "What was the request body? Headers? URL?"
    *Manually reconstructs curl from scattered log data*
    *Wastes 10 minutes*
 ```
 
 **With automatic cURL:**
+
 ```
 ✅ Error logged with ready-to-use curl:
 
@@ -305,15 +312,16 @@ For more details, see the [library documentation](https://github.com/mikemajesty
 
 The logger automatically logs HTTP requests with:
 
-| Field | Description |
-|-------|-------------|
-| `method` | HTTP method (GET, POST, etc) |
-| `curl` | cURL command to reproduce the request |
-| `path` | Full URL path |
-| `timeTaken` | Response time in ms |
-| `traceid` | Request trace ID |
+| Field       | Description                           |
+| ----------- | ------------------------------------- |
+| `method`    | HTTP method (GET, POST, etc)          |
+| `curl`      | cURL command to reproduce the request |
+| `path`      | Full URL path                         |
+| `timeTaken` | Response time in ms                   |
+| `traceid`   | Request trace ID                      |
 
 **Automatic cURL Generation:**
+
 ```json
 {
   "request": {
@@ -333,7 +341,7 @@ Logs are shipped to Grafana Loki with:
 lokiTransport({
   host: process.env.LOKI_URL,
   labels: { job: 'nestjs' },
-  interval: 5  // Batch logs every 5 seconds
+  interval: 5 // Batch logs every 5 seconds
 })
 ```
 

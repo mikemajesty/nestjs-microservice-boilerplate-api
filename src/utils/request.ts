@@ -17,7 +17,7 @@ export type TracingType = {
   tracerId: string
   axios: (config?: AxiosRequestConfig) => AxiosInstance
   setStatus: (status: SpanStatus) => void
-  logEvent: (name: string, obj: { action: string } & Record<string, unknown>) => void
+  logEvent: (name: string, metadata: { action: string } & Record<string, unknown>) => void
   addAttribute: (key: string, value: AttributeValue) => void
   createSpan: (name: string, parent?: Context) => Span
   finish: () => void

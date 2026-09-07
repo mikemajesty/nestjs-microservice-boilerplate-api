@@ -26,6 +26,7 @@ async execute(input: CatCreateInput): Promise<CatCreateOutput>
 **2. Input Validation IS Business Logic**
 
 What constitutes "valid input" is a **business decision**:
+
 - "Name must be between 2 and 100 characters" — business rule
 - "Age must be positive" — business rule
 - "Email must be unique" — business rule
@@ -78,6 +79,7 @@ Before diving into patterns, there's a **snippet** that generates the entire use
 ```
 
 The snippet is located at `.vscode/usecase.code-snippets` and generates:
+
 - Import statements
 - Schema derived from entity
 - Class implementing `IUsecase`
@@ -96,18 +98,33 @@ In traditional architectures, you often see a `Service` pattern:
 // ❌ Traditional Service - Multiple responsibilities
 @Injectable()
 export class CatService {
-  async create(input) { /* ... */ }
-  async update(input) { /* ... */ }
-  async delete(input) { /* ... */ }
-  async getById(input) { /* ... */ }
-  async list(input) { /* ... */ }
-  async importFromCsv(input) { /* ... */ }
-  async exportToPdf(input) { /* ... */ }
+  async create(input) {
+    /* ... */
+  }
+  async update(input) {
+    /* ... */
+  }
+  async delete(input) {
+    /* ... */
+  }
+  async getById(input) {
+    /* ... */
+  }
+  async list(input) {
+    /* ... */
+  }
+  async importFromCsv(input) {
+    /* ... */
+  }
+  async exportToPdf(input) {
+    /* ... */
+  }
   // 500+ lines, growing forever...
 }
 ```
 
 **Problems:**
+
 - Single file becomes massive (god class)
 - Hard to test individual operations
 - Changes in one method can break others
@@ -117,13 +134,14 @@ export class CatService {
 ```typescript
 // ✅ Use Case Pattern - Single Responsibility
 cat-create.ts     → CatCreateUsecase
-cat-update.ts     → CatUpdateUsecase  
+cat-update.ts     → CatUpdateUsecase
 cat-delete.ts     → CatDeleteUsecase
 cat-get-by-id.ts  → CatGetByIdUsecase
 cat-list.ts       → CatListUsecase
 ```
 
 **Benefits:**
+
 - **One file = One operation** — Easy to find, test, modify
 - **Single Responsibility** — Each use case does exactly one thing
 - **Parallel development** — Multiple devs, no conflicts
@@ -172,14 +190,14 @@ The Use Case is the **orchestrator** — it knows **what** needs to happen, but 
 
 ## Location & Naming Conventions
 
-| Convention | Pattern | Example |
-|------------|---------|---------|
-| **Folder** | `src/core/{domain}/use-cases/` | `src/core/cat/use-cases/` |
-| **File** | `{domain}-{action}.ts` | `cat-create.ts` |
-| **Class** | `{Domain}{Action}Usecase` | `CatCreateUsecase` |
-| **Schema** | `{Domain}{Action}Schema` | `CatCreateSchema` |
-| **Input Type** | `{Domain}{Action}Input` | `CatCreateInput` |
-| **Output Type** | `{Domain}{Action}Output` | `CatCreateOutput` |
+| Convention      | Pattern                        | Example                   |
+| --------------- | ------------------------------ | ------------------------- |
+| **Folder**      | `src/core/{domain}/use-cases/` | `src/core/cat/use-cases/` |
+| **File**        | `{domain}-{action}.ts`         | `cat-create.ts`           |
+| **Class**       | `{Domain}{Action}Usecase`      | `CatCreateUsecase`        |
+| **Schema**      | `{Domain}{Action}Schema`       | `CatCreateSchema`         |
+| **Input Type**  | `{Domain}{Action}Input`        | `CatCreateInput`          |
+| **Output Type** | `{Domain}{Action}Output`       | `CatCreateOutput`         |
 
 ---
 
@@ -338,6 +356,7 @@ export const CatCreateSchema = z.object({
 4. **Consistency** — Same validation rules everywhere
 
 Use Zod's composition methods:
+
 - `.pick({ field: true })` — Select specific fields
 - `.omit({ field: true })` — Exclude specific fields
 - `.partial()` — Make all fields optional
@@ -374,9 +393,7 @@ export const CatUpdateSchema = CatEntitySchema.pick({
 ### Pagination + Search + Sort (List)
 
 ```typescript
-export const CatListSchema = InputValidator
-  .intersection(PaginationSchema, SortSchema)
-  .and(SearchSchema)
+export const CatListSchema = InputValidator.intersection(PaginationSchema, SortSchema).and(SearchSchema)
 ```
 
 ---
@@ -405,7 +422,7 @@ When fetching data from the database, **always** wrap it in `new Entity()`:
 const cat = await this.catRepository.findById(id)
 if (!cat) throw new ApiNotFoundException()
 
-const entity = new CatEntity(cat)  // ✅ Always instantiate
+const entity = new CatEntity(cat) // ✅ Always instantiate
 ```
 
 **Why this matters:**
@@ -477,7 +494,7 @@ export class CatUpdateUsecase implements IUsecase {
     entity.merge(input)
 
     await this.catRepository.updateOne({ id: entity.id }, entity.toObject())
-    this.loggerService.info({ message: 'cat updated.', obj: { cat: input } })
+    this.loggerService.info({ message: 'cat updated.', metadata: { cat: input } })
 
     const updated = await this.catRepository.findById(entity.id)
     tracing.logEvent('cat-updated', `cat updated by: ${user.email}`)
@@ -499,7 +516,7 @@ export class CatDeleteUsecase implements IUsecase {
     if (!cat) throw new ApiNotFoundException()
 
     const entity = new CatEntity(cat)
-    entity.deactivate()  // Sets deletedAt
+    entity.deactivate() // Sets deletedAt
 
     await this.catRepository.updateOne({ id: entity.id }, entity.toObject())
     tracing.logEvent('cat-deleted', `cat deleted by: ${user.email}`)

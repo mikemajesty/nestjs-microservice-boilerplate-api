@@ -19,7 +19,7 @@ AxiosError: Request failed with status code 404
     at AxiosError.from (/node_modules/axios/lib/core/AxiosError.js:79:14)
 ```
 
-**None of this helps you debug your actual API call!** 
+**None of this helps you debug your actual API call!**
 
 ### Clean Stack Traces with axiosBetterStacktrace
 
@@ -37,11 +37,11 @@ AxiosError: Request failed with status code 404
 ```typescript
 // Tries multiple locations to find the actual status code
 const statusCandidates = [
-  error.response?.data?.code,      // API-specific error code
-  error.response?.data?.error?.code, // Nested error structures  
-  error.response?.status,          // HTTP status code
-  error.status,                    // Direct status property
-  500                             // Fallback for unknown errors
+  error.response?.data?.code, // API-specific error code
+  error.response?.data?.error?.code, // Nested error structures
+  error.response?.status, // HTTP status code
+  error.status, // Direct status property
+  500 // Fallback for unknown errors
 ]
 ```
 
@@ -50,12 +50,12 @@ const statusCandidates = [
 ```typescript
 // Prioritized message extraction for user-friendly errors
 const messageCandidates = [
-  error.response?.data?.description,    // Detailed API description
+  error.response?.data?.description, // Detailed API description
   error.response?.data?.error?.message, // Nested error message
-  error.response?.data?.message,        // Standard message field
-  error.response?.statusText,           // HTTP status text
-  error.message,                        // Axios error message
-  'Internal Server Error'               // Ultimate fallback
+  error.response?.data?.message, // Standard message field
+  error.response?.statusText, // HTTP status text
+  error.message, // Axios error message
+  'Internal Server Error' // Ultimate fallback
 ]
 ```
 
@@ -72,14 +72,14 @@ import { ILoggerAdapter } from '@/infra/logger'
 
 export class PaymentGatewayClient {
   private client: AxiosInstance
-  
+
   constructor(private logger: ILoggerAdapter) {
     this.client = axios.create({
       baseURL: 'https://api.paymentgateway.com',
       timeout: 30000,
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.PAYMENT_API_TOKEN}`
+        Authorization: `Bearer ${process.env.PAYMENT_API_TOKEN}`
       }
     })
 
@@ -120,11 +120,11 @@ export class ExternalAPIService {
       (response) => response,
       (error) => {
         AxiosUtils.interceptAxiosResponseError(error)
-        
+
         // Log the cURL command for easy debugging
         this.logger.error({
           message: 'External API request failed',
-          obj: {
+          metadata: {
             url: error.config?.url,
             method: error.config?.method,
             status: error.status,
@@ -132,7 +132,7 @@ export class ExternalAPIService {
             message: error.message
           }
         })
-        
+
         return Promise.reject(error)
       }
     )
@@ -156,11 +156,13 @@ export class ExternalAPIService {
         message: 'externalUserSyncFailed',
         parameters: {
           context: 'ExternalAPIService.syncUserData',
-          details: [{ 
-            userId,
-            curl: error.curl, // Include cURL in error details for support team
-            externalMessage: error.message
-          }]
+          details: [
+            {
+              userId,
+              curl: error.curl, // Include cURL in error details for support team
+              externalMessage: error.message
+            }
+          ]
         },
         originalStack: error.stack
       })
@@ -193,12 +195,12 @@ Prevents thundering herd problems with smart retry timing:
 ```typescript
 // Exponential backoff: 2^retryCount * 1000ms
 // Plus random jitter: 0-1000ms
-const baseDelay = Math.pow(2, retryCount) * 1000  // 1s, 2s, 4s, 8s
-const jitter = Math.random() * 1000              // Random 0-1s
-const totalDelay = baseDelay + jitter             // Final delay
+const baseDelay = Math.pow(2, retryCount) * 1000 // 1s, 2s, 4s, 8s
+const jitter = Math.random() * 1000 // Random 0-1s
+const totalDelay = baseDelay + jitter // Final delay
 
 // Retry 1: ~1-2 seconds
-// Retry 2: ~2-3 seconds  
+// Retry 2: ~2-3 seconds
 // Retry 3: ~4-5 seconds
 ```
 
@@ -238,7 +240,7 @@ export class UserServiceClient {
       // Enhanced error with clean stack trace and cURL
       this.logger.error({
         message: 'User creation failed in User Service',
-        obj: {
+        metadata: {
           userData: { ...userData, password: '[REDACTED]' },
           curl: error.curl,
           status: error.status,
@@ -251,11 +253,13 @@ export class UserServiceClient {
         message: 'userServiceCreateFailed',
         parameters: {
           context: 'UserServiceClient.createUser',
-          details: [{ 
-            microservice: 'UserService',
-            operation: 'create',
-            curl: error.curl
-          }]
+          details: [
+            {
+              microservice: 'UserService',
+              operation: 'create',
+              curl: error.curl
+            }
+          ]
         }
       })
     }
@@ -295,7 +299,7 @@ curl -X POST 'https://api.payment.com/charges' \
 ### Development Workflow
 
 1. **API call fails** in development
-2. **Copy cURL from logs** 
+2. **Copy cURL from logs**
 3. **Paste in terminal** to reproduce exact request
 4. **Modify and test** until working
 5. **Update code** with correct implementation
@@ -304,12 +308,7 @@ curl -X POST 'https://api.payment.com/charges' \
 
 ```typescript
 export class APIClientFactory {
-  static createResilientClient(
-    baseURL: string, 
-    logger: ILoggerAdapter,
-    options: ClientOptions = {}
-  ): AxiosInstance {
-    
+  static createResilientClient(baseURL: string, logger: ILoggerAdapter, options: ClientOptions = {}): AxiosInstance {
     const client = axios.create({
       baseURL,
       timeout: options.timeout || 15000,
@@ -321,23 +320,23 @@ export class APIClientFactory {
       (response) => response,
       (error) => {
         AxiosUtils.interceptAxiosResponseError(error)
-        
+
         logger.error({
           message: 'HTTP request failed',
-          obj: {
+          metadata: {
             service: baseURL,
             curl: error.curl,
             status: error.status,
             duration: Date.now() - error.config.metadata?.startTime
           }
         })
-        
+
         return Promise.reject(error)
       }
     )
 
     // Add timing metadata
-    client.interceptors.request.use(config => {
+    client.interceptors.request.use((config) => {
       config.metadata = { startTime: Date.now() }
       return config
     })
@@ -354,38 +353,39 @@ export class APIClientFactory {
 }
 
 // Usage across different services
-const paymentClient = APIClientFactory.createResilientClient(
-  'https://api.stripe.com',
-  logger,
-  { retryStatuses: [503, 408, 429, 502] }
-)
+const paymentClient = APIClientFactory.createResilientClient('https://api.stripe.com', logger, {
+  retryStatuses: [503, 408, 429, 502]
+})
 
-const internalServiceClient = APIClientFactory.createResilientClient(
-  'http://user-service:3001', 
-  logger,
-  { retryStatuses: [503, 408], timeout: 5000 }
-)
+const internalServiceClient = APIClientFactory.createResilientClient('http://user-service:3001', logger, {
+  retryStatuses: [503, 408],
+  timeout: 5000
+})
 ```
 
 ## Benefits Summary
 
 ### 🔍 **Enhanced Debugging**
+
 - **Clean stack traces** without library noise
 - **Executable cURL commands** for immediate reproduction
 - **Intelligent error extraction** from various response formats
 
-### 🛡️ **Production Resilience** 
+### 🛡️ **Production Resilience**
+
 - **Automatic retry logic** with exponential backoff
 - **Smart retry conditions** based on error types
 - **Configurable retry strategies** per service
 
 ### 👥 **Team Productivity**
+
 - **Consistent error handling** across all HTTP clients
 - **Actionable debugging information** in logs
 - **Easy troubleshooting** with cURL commands
 - **Reduced debugging time** from hours to minutes
 
 ### 📈 **Operational Benefits**
+
 - **Reduced false alarms** from transient network issues
 - **Better error reporting** with context and reproduction steps
 - **Improved system resilience** through intelligent retries
