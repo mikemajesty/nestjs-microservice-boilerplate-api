@@ -11,10 +11,13 @@ config()
 
 const entities = [path.join(__dirname, 'schemas/*.{ts,js}')]
 const migrations = [path.join(__dirname, 'migrations/*.{ts,js}')]
+const postgresUrl =
+  process.env.POSTGRES_URL ||
+  `postgresql://${process.env.POSTGRES_USER}:${process.env.POSTGRES_PASSWORD}@${process.env.POSTGRES_HOST}:${process.env.POSTGRES_PORT}/${process.env.POSTGRES_DATABASE}`
 
 const dataSource = new DataSource({
   type: 'postgres',
-  url: process.env.POSTGRES_URL,
+  url: postgresUrl,
   schema: process.env.POSTGRES_SCHEMA,
   namingStrategy: new SnakeNamingStrategy(),
   logger: 'advanced-console',
