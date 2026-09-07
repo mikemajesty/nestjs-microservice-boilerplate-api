@@ -14,15 +14,21 @@ const migrations = [path.join(__dirname, 'migrations/*.{ts,js}')]
 const postgresUrl =
   process.env.POSTGRES_URL ||
   `postgresql://${process.env.POSTGRES_USER}:${process.env.POSTGRES_PASSWORD}@${process.env.POSTGRES_HOST}:${process.env.POSTGRES_PORT}/${process.env.POSTGRES_DATABASE}`
+const parsedPostgresUrl = new URL(postgresUrl)
+const requireSsl = parsedPostgresUrl.searchParams.get('sslmode') === 'require'
+
+if (requireSsl) {
+  parsedPostgresUrl.searchParams.delete('sslmode')
+}
 
 const dataSource = new DataSource({
   type: 'postgres',
-  url: postgresUrl,
+  url: parsedPostgresUrl.toString(),
   schema: process.env.POSTGRES_SCHEMA,
   namingStrategy: new SnakeNamingStrategy(),
   logger: 'advanced-console',
   ssl:
-    process.env.POSTGRES_SSL === 'true'
+    requireSsl || process.env.POSTGRES_SSL === 'true'
       ? {
           rejectUnauthorized: false
         }
