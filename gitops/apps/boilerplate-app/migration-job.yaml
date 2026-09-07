@@ -4,7 +4,7 @@ metadata:
   name: nestjs-boilerplate-dev-app-migrations
   namespace: nestjs-boilerplate-dev-workload
   annotations:
-    argocd.argoproj.io/hook: PreSync
+    argocd.argoproj.io/hook: Sync
     argocd.argoproj.io/hook-delete-policy: BeforeHookCreation,HookSucceeded
     argocd.argoproj.io/sync-wave: '10'
   labels:
