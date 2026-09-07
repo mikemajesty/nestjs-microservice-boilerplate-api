@@ -2,22 +2,19 @@
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/infra/database.md
  */
 import { config } from 'dotenv'
+import path from 'path'
 import { DataSource, DataSourceOptions } from 'typeorm'
 
-import { SnakeNamingStrategy } from '@/infra/repository/util'
+import { SnakeNamingStrategy } from '../../repository/util'
 
 config()
 
-const entities = ['src/infra/database/postgres/schemas/*.{ts,js}']
-const migrations = ['src/infra/database/postgres/migrations/*.{ts,js}']
+const entities = [path.join(__dirname, 'schemas/*.{ts,js}')]
+const migrations = [path.join(__dirname, 'migrations/*.{ts,js}')]
 
 const dataSource = new DataSource({
   type: 'postgres',
-  host: process.env.POSTGRES_HOST,
-  port: Number(process.env.POSTGRES_PORT),
-  username: process.env.POSTGRES_USER,
-  password: process.env.POSTGRES_PASSWORD,
-  database: process.env.POSTGRES_DATABASE,
+  url: process.env.POSTGRES_URL,
   schema: process.env.POSTGRES_SCHEMA,
   namingStrategy: new SnakeNamingStrategy(),
   logger: 'advanced-console',

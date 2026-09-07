@@ -18,7 +18,7 @@
   "scripts": {
     "prepare": "husky",
     "build": "nest build",
-    "start": "npm run migration:run && node dist/main.js",
+    "start": "node dist/main.js",
     "start:dev": "npm run migration:run && tsc --noEmit && nest start --watch -b swc",
     "start:debug": "npm run migration:run && tsc --noEmit && nest start --debug --watch",
     "prettier": "prettier --write \"src/**/*.json\"",

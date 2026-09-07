@@ -1,0 +1,69 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: nestjs-boilerplate-dev-app-migrations
+  namespace: nestjs-boilerplate-dev-workload
+  annotations:
+    argocd.argoproj.io/hook: PreSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation,HookSucceeded
+    argocd.argoproj.io/sync-wave: '10'
+  labels:
+    app.kubernetes.io/name: nestjs-boilerplate-dev-app
+    app.kubernetes.io/part-of: nestjs-boilerplate
+    app.kubernetes.io/managed-by: argocd
+    app.kubernetes.io/environment: dev
+spec:
+  backoffLimit: 2
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: nestjs-boilerplate-dev-app
+        app.kubernetes.io/part-of: nestjs-boilerplate
+        app.kubernetes.io/managed-by: argocd
+        app.kubernetes.io/environment: dev
+    spec:
+      restartPolicy: Never
+      serviceAccountName: nestjs-boilerplate-dev-app
+      automountServiceAccountToken: false
+      nodeSelector:
+        kubernetes.io/os: linux
+        workload: app
+      tolerations:
+        - key: workload
+          operator: Equal
+          value: app
+          effect: NoSchedule
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: migrations
+          image: public.ecr.aws/o5e1h1p5/nestjs-boilerplate-dev-app:latest
+          imagePullPolicy: Always
+          command:
+            - sh
+            - -ec
+            - |
+              node dist/infra/database/mongo/migrations/cli.js
+              node node_modules/typeorm/cli.js migration:run --dataSource dist/infra/database/postgres/config.js
+          envFrom:
+            - configMapRef:
+                name: nestjs-boilerplate-dev-app
+            - secretRef:
+                name: nestjs-boilerplate-dev-app-runtime
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL

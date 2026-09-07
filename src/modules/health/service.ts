@@ -38,7 +38,7 @@ export class HealthService implements IHealthAdapter {
         reservedMemory: `${(result[0].reservedMemory / 1024 / 1024).toFixed(2)} MB`
       }
     } catch (error) {
-      this.buildError(error, `${HealthService.name}/getPostgresMemory`)
+      this.buildError(error, `${HealthService.name}.getPostgresMemory`)
       this.logger.error(error as ErrorType)
       return { ramUsed: 0, reservedMemory: 0 }
     }
@@ -58,7 +58,7 @@ export class HealthService implements IHealthAdapter {
           return { ramUsed: 'N/A', reservedMemory: 'N/A' }
         }
 
-        throw new Error('WiredTiger cache not available - check MongoDB version/config')
+        throw new ApiInternalServerException('WiredTiger cache not available - check MongoDB version/config')
       }
 
       const memory = {
@@ -71,7 +71,7 @@ export class HealthService implements IHealthAdapter {
         reservedMemory: `${(memory.max / 1024 / 1024).toFixed(2)} MB`
       }
     } catch (error) {
-      this.buildError(error, `${HealthService.name}/getMongoMemory`)
+      this.buildError(error, `${HealthService.name}.getMongoMemory`)
       this.logger.error(error as ErrorType)
       return { ramUsed: 0, reservedMemory: 0 }
     }
@@ -89,7 +89,7 @@ export class HealthService implements IHealthAdapter {
       }
       return { active: 0, available: 0, current: 0, totalCreated: 0 }
     } catch (error) {
-      this.buildError(error, `${HealthService.name}/getMongoConnections`)
+      this.buildError(error, `${HealthService.name}.getMongoConnections`)
       this.logger.error(error as ErrorType)
       return { active: 0, available: 0, current: 0, totalCreated: 0 }
     }
@@ -192,7 +192,7 @@ export class HealthService implements IHealthAdapter {
       ].find((l) => Number(res.time) < l.latency)
       return `${res.time}ms ${latency?.status ?? 'Critical'}`
     } catch (error) {
-      this.buildError(error, `${HealthService.name}/getLatency`)
+      this.buildError(error, `${HealthService.name}.getLatency`)
       this.logger.error(error as ErrorType)
       return 'Critical'
     }
@@ -202,7 +202,7 @@ export class HealthService implements IHealthAdapter {
     try {
       return await systeminformation.currentLoad()
     } catch (error) {
-      this.buildError(error, `${HealthService.name}/getCPUCore`)
+      this.buildError(error, `${HealthService.name}.getCPUCore`)
       this.logger.error(error as ErrorType)
       return { cpus: [] }
     }
@@ -214,7 +214,7 @@ export class HealthService implements IHealthAdapter {
 
       return result ? HealthStatus.UP : HealthStatus.DOWN
     } catch (error) {
-      this.buildError(error, `${HealthService.name}/postgres`)
+      this.buildError(error, `${HealthService.name}.getPostgresStatus`)
       this.logger.error(error as ErrorType)
       return HealthStatus.DOWN
     }
@@ -224,7 +224,7 @@ export class HealthService implements IHealthAdapter {
     try {
       return this.mongo.readyState === 1 ? HealthStatus.UP : HealthStatus.DOWN
     } catch (error) {
-      this.buildError(error, `${HealthService.name}/mongo`)
+      this.buildError(error, `${HealthService.name}.getMongoStatus`)
       this.logger.error(error as ErrorType)
       return HealthStatus.DOWN
     }
@@ -235,7 +235,7 @@ export class HealthService implements IHealthAdapter {
       const status = await this.redis.ping()
       return status === 'PONG' ? HealthStatus.UP : HealthStatus.DOWN
     } catch (error) {
-      this.buildError(error, `${HealthService.name}/redis`)
+      this.buildError(error, `${HealthService.name}.getRedisStatus`)
       this.logger.error(error as ErrorType)
       return HealthStatus.DOWN
     }
