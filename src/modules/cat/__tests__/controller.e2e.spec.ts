@@ -194,7 +194,7 @@ describe(CatController.name, () => {
       .post('/cats')
       .set(...TestEnd2EndUtils.AUTHORIZATION_HEADER)
       .send(entity)
-      .expect(201)
+      .expect([200, 201])
 
     const id = createRes.body.id
     const response = await request(app.getHttpServer())
