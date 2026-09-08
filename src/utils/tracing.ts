@@ -9,7 +9,7 @@ import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-grpc'
 import { HttpInstrumentation } from '@opentelemetry/instrumentation-http'
 import { MongoDBInstrumentation } from '@opentelemetry/instrumentation-mongodb'
 import { PgInstrumentation } from '@opentelemetry/instrumentation-pg'
-import { RedisInstrumentation } from '@opentelemetry/instrumentation-redis-4'
+import { RedisInstrumentation } from '@opentelemetry/instrumentation-redis'
 import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics'
 import { NodeSDK, NodeSDKConfiguration } from '@opentelemetry/sdk-node'
 
