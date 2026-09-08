@@ -20,6 +20,27 @@
 
 ---
 
+## A Complete, Production-Ready Foundation
+
+This repository is more than an application template: it is a complete,
+production-oriented microservice foundation. It includes the application,
+databases, caching, observability, AWS infrastructure, Kubernetes platform,
+GitOps delivery, and operational workflows needed to run a service in a real
+environment.
+
+The infrastructure is defined as code with Pulumi and is designed to deploy to
+AWS using Amazon EKS, Karpenter, Argo CD, and Kubernetes. It also includes
+secure secret integration, health checks, automated database migrations before
+application rollouts, autoscaling, persistence, and monitoring components.
+
+This provides a strong production baseline rather than a minimal demo. Before
+using it in a specific production environment, review the AWS account
+permissions, network topology, security policies, domains, observability
+retention, backup strategy, sizing, and environment-specific configuration.
+
+For infrastructure setup and deployment instructions, see the
+[Infrastructure as Code README](IaC/README.md).
+
 ## Table of Contents
 
 - [Architecture Overview](#architecture-overview)
