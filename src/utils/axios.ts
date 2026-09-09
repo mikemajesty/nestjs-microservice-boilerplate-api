@@ -11,6 +11,9 @@ import { ApiInternalServerException } from './exception'
 import { DefaultErrorMessage } from './http-status'
 import { ObjectUtil } from './object'
 
+const DEFAULT_RETRY_STATUS = [408, 429, 500, 502, 503, 504]
+const NETWORK_RETRY_CODES = ['ECONNABORTED', 'ECONNRESET', 'ETIMEDOUT']
+
 export class AxiosUtils {
   static interceptAxiosResponseError = (error: CustomAxiosError): void => {
     if (error.stack) {
@@ -40,11 +43,11 @@ export class AxiosUtils {
       500
     ]
 
-    const status = statusCandidates.find(
-      (candidate): candidate is number => candidate !== undefined && candidate !== null && candidate !== ''
-    )
+    const status = statusCandidates
+      .map((candidate) => Number(candidate))
+      .find((candidate) => Number.isInteger(candidate) && candidate >= 100 && candidate <= 599)
 
-    return Number(status)
+    return status ?? ApiInternalServerException.STATUS
   }
 
   private static extractErrorMessage(error: CustomAxiosError): string {
@@ -60,7 +63,7 @@ export class AxiosUtils {
     return messageCandidates.find(Boolean) as string
   }
 
-  static requestRetry = ({ axios, logger, status: statusRetry = [503, 422, 408, 429] }: RequestRetry): void => {
+  static requestRetry = ({ axios, logger, status: statusRetry = DEFAULT_RETRY_STATUS }: RequestRetry): void => {
     axiosRetry(axios, {
       shouldResetTimeout: true,
       retries: 3,
@@ -72,7 +75,7 @@ export class AxiosUtils {
         const status = this.extractErrorStatus(axiosError)
 
         logger.warn({
-          message: `Retry attempt: ${retryCount}`,
+          message: `Retrying request: attempt ${retryCount}`,
           metadata: {
             statusText: statusText ?? error.message,
             status,
@@ -88,20 +91,31 @@ export class AxiosUtils {
 
       retryCondition: (error: AxiosError | CustomAxiosError) => {
         const status = this.extractErrorStatus(error as CustomAxiosError)
+        const requestRetryStatus = error.config?.['axios-retry']?.status
 
-        const isNetworkError = ['ECONNABORTED', 'ECONNRESET', 'ETIMEDOUT'].includes(error.code as string)
-        const isRetryableStatus = statusRetry.includes(status)
-        const isServerError = status >= 500 && status < 600
+        const isNetworkError = NETWORK_RETRY_CODES.includes(error.code as string)
+        const isRetryableStatus = (requestRetryStatus ?? statusRetry).includes(status)
 
-        return isNetworkError || isRetryableStatus || isServerError
+        return isNetworkError || isRetryableStatus
       },
 
       onRetry: (retryCount, error, requestConfig) => {
         logger.warn({
-          message: `All retry attempts failed after ${retryCount} retries`,
+          message: `Retry scheduled: attempt ${retryCount}`,
           metadata: {
             url: requestConfig.url,
             method: requestConfig.method,
+            status: this.extractErrorStatus(error as CustomAxiosError)
+          }
+        })
+      },
+
+      onMaxRetryTimesExceeded: (error, retryCount) => {
+        logger.warn({
+          message: `All retry attempts failed after ${retryCount} retries`,
+          metadata: {
+            url: error.config?.url,
+            method: error.config?.method,
             status: this.extractErrorStatus(error as CustomAxiosError)
           }
         })

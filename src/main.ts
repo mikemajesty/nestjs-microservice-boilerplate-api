@@ -11,7 +11,7 @@ import { RequestMethod, VersioningType } from '@nestjs/common'
 import { NestFactory } from '@nestjs/core'
 import { FastifyAdapter } from '@nestjs/platform-fastify'
 import { bold } from 'colorette'
-import type { FastifyReply, FastifyRequest } from 'fastify'
+import type { FastifyReply, FastifyRequest, HookHandlerDoneFunction } from 'fastify'
 import fs from 'fs'
 import yaml from 'js-yaml'
 import path from 'path'
@@ -23,10 +23,19 @@ import { ExceptionHandlerFilter } from '@/middlewares/filters'
 import { name } from '../package.json'
 import { AppModule } from './app.module'
 import { ErrorType } from './infra/logger'
-import { changeLanguage, initI18n, normalizeLocale } from './utils/validator'
+import { initI18n, normalizeLocale, runWithRequestLocale } from './utils/validator'
 
 type LanguageQuery = {
   lang?: string
+}
+
+const getPreferredLocale = (request: FastifyRequest<{ Querystring: LanguageQuery }>) => {
+  const languageQuery = request.query?.lang
+  const acceptLanguage = request.headers['accept-language']
+  const firstAcceptLanguage = Array.isArray(acceptLanguage) ? acceptLanguage[0] : acceptLanguage
+  const acceptLanguageLocale = firstAcceptLanguage?.split(',')[0].split(';')[0]
+
+  return normalizeLocale([languageQuery, acceptLanguageLocale, 'en-US'].find(Boolean) as string)
 }
 
 async function bootstrap() {
@@ -64,26 +73,18 @@ async function bootstrap() {
   const fastify = app.getHttpAdapter().getInstance()
 
   fastify.addHook(
-    'preHandler',
-    async (request: FastifyRequest<{ Querystring: LanguageQuery }>, reply: FastifyReply) => {
-      const languegeQuery = request.query?.lang as string
-      const acceptLanguage = request.headers['accept-language']
-
-      const rawLocale = [languegeQuery, (acceptLanguage || '').split(',')[0].split(';')[0], 'en-US'].find(
-        Boolean
-      ) as string
-
-      const locale = normalizeLocale(rawLocale)
-
-      try {
-        await changeLanguage(locale as 'en-US' | 'pt-BR' | 'es-ES')
-      } catch (error) {
-        loggerService.warn({ message: `Failed to change language to ${locale}`, metadata: { cause: error } })
-      }
-
-      if (request.raw.url && request.raw.url.split('/').pop() === 'favicon.ico') {
+    'onRequest',
+    (
+      request: FastifyRequest<{ Querystring: LanguageQuery }>,
+      reply: FastifyReply,
+      done: HookHandlerDoneFunction
+    ) => {
+      if (request.raw.url?.split('?')[0].split('/').pop() === 'favicon.ico') {
         reply.code(204).send()
+        return
       }
+
+      runWithRequestLocale(getPreferredLocale(request), done)
     }
   )
 

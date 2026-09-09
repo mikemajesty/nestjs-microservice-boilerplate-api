@@ -1,14 +1,14 @@
 /**
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/utils/validator.md
  */
-import i18next, { ResourceLanguage } from 'i18next'
+import { AsyncLocalStorage } from 'node:async_hooks'
+
 import * as validatorBrasil from 'validator-brasil'
 import { z } from 'zod'
-import { zodI18nMap } from 'zod-i18n-map'
 
 import { LoggerService } from '@/infra/logger'
 
-const SUPPORTED_LOCALES = {
+export const SUPPORTED_LOCALES = {
   'en-US': 'en',
   'pt-BR': 'pt',
   'es-ES': 'es'
@@ -16,64 +16,27 @@ const SUPPORTED_LOCALES = {
 
 type SupportedLocale = keyof typeof SUPPORTED_LOCALES
 
-const translationCache = new Map<string, ResourceLanguage>()
+let defaultRequestLocale: SupportedLocale = 'en-US'
+const localeStorage = new AsyncLocalStorage<SupportedLocale>()
+const zodLocaleErrors = {
+  'en-US': z.locales.en().localeError,
+  'pt-BR': z.locales.pt().localeError,
+  'es-ES': z.locales.es().localeError
+} satisfies Record<SupportedLocale, z.core.$ZodErrorMap>
 
-async function loadTranslation(language: string): Promise<ResourceLanguage> {
-  if (translationCache.has(language)) {
-    return translationCache.get(language)!
-  }
-
-  try {
-    const module = await import(`zod-i18n-map/locales/${language}/zod.json`)
-    translationCache.set(language, module.default)
-    return module.default
-  } catch {
-    LoggerService.log(`Translation for ${language} not found, using English fallback`)
-
-    const en = await import('zod-i18n-map/locales/en/zod.json')
-    translationCache.set(language, en.default)
-    return en.default
-  }
-}
-
-async function preloadCommonTranslations() {
-  const commonLanguages = ['en', 'pt', 'es']
-  await Promise.allSettled(commonLanguages.map((lang) => loadTranslation(lang)))
+const requestLocaleError: z.core.$ZodErrorMap = (issue) => {
+  const locale = localeStorage.getStore() || defaultRequestLocale
+  return zodLocaleErrors[locale](issue)
 }
 
 export const initI18n = async (defaultLocale: SupportedLocale = 'en-US') => {
-  const defaultLanguage = SUPPORTED_LOCALES[`${defaultLocale}`]
-
-  const defaultTranslation = await loadTranslation(defaultLanguage)
-
-  await i18next.init({
-    lng: defaultLanguage,
-    fallbackLng: 'en',
-    resources: {
-      [`${defaultLanguage}`]: { zod: defaultTranslation }
-    }
-  })
-
-  z.config(zodI18nMap as z.core.$ZodConfig)
-
-  preloadCommonTranslations().then(() => {
-    LoggerService.log('Common translations preloaded')
-  })
-
+  defaultRequestLocale = defaultLocale
+  z.config({ localeError: requestLocaleError })
   LoggerService.log(`i18n initialized with ${defaultLocale}`)
 }
 
-export const changeLanguage = async (locale: SupportedLocale) => {
-  const language = SUPPORTED_LOCALES[`${locale}`]
-
-  if (!language) {
-    LoggerService.log(`Locale ${locale} not supported, keeping current language`)
-    return
-  }
-
-  await loadTranslation(language)
-  await i18next.changeLanguage(language)
-  z.config(zodI18nMap as z.core.$ZodConfig)
+export const runWithRequestLocale = <T>(locale: SupportedLocale, callback: () => T): T => {
+  return localeStorage.run(locale, callback)
 }
 
 const validateRG = (rg: string): boolean => {
@@ -124,7 +87,7 @@ export const InputValidator = {
       .meta({ format: 'phone' })
 }
 
-export const normalizeLocale = (locale: string): string => {
+export const normalizeLocale = (locale: string): SupportedLocale => {
   const localeMap: Record<string, string> = {
     en: 'en-US',
     pt: 'pt-BR',
@@ -134,7 +97,7 @@ export const normalizeLocale = (locale: string): string => {
     'es-ES': 'es-ES'
   }
 
-  return localeMap[`${locale}`] || 'en-US'
+  return (localeMap[`${locale}`] || 'en-US') as SupportedLocale
 }
 
 export type Infer<T extends z.ZodType> = z.infer<T>

@@ -56,23 +56,26 @@ export class LoginController {
       return
     }
 
-    const http = this.http.instance()
-    const { data } = await http.post('https://oauth2.googleapis.com/token', {
-      client_id: this.secret.AUTH.GOOGLE.CLIENT_ID,
-      client_secret: this.secret.AUTH.GOOGLE.CLIENT_SECRET,
-      code,
-      redirect_uri: this.secret.AUTH.GOOGLE.REDIRECT_URL,
-      grant_type: 'authorization_code'
-    })
+    const tokenResponse = await this.http
+      .request()
+      .post<GoogleTokenResponse>('https://oauth2.googleapis.com/token', {
+        client_id: this.secret.AUTH.GOOGLE.CLIENT_ID,
+        client_secret: this.secret.AUTH.GOOGLE.CLIENT_SECRET,
+        code,
+        redirect_uri: this.secret.AUTH.GOOGLE.REDIRECT_URL,
+        grant_type: 'authorization_code'
+      })
+      .retry(3)
+      .execute()
 
-    const { access_token } = data
+    const { access_token } = tokenResponse
 
-    const { data: profile } = await http.get<{ name: string; email: string }>(
-      'https://www.googleapis.com/oauth2/v1/userinfo',
-      {
+    const profile = await this.http
+      .request()
+      .get<GoogleProfile>('https://www.googleapis.com/oauth2/v1/userinfo', {
         headers: { Authorization: `Bearer ${access_token}` }
-      }
-    )
+      })
+      .execute()
 
     const user = await this.userRepository.findOneWithRelation({ email: profile.email }, { password: true })
 
@@ -98,4 +101,13 @@ export class LoginController {
 
     reply.redirect(`/home?token=${tokenAuthorization.token}`)
   }
+}
+
+type GoogleTokenResponse = {
+  access_token: string
+}
+
+type GoogleProfile = {
+  name: string
+  email: string
 }

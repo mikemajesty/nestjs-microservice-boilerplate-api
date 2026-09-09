@@ -16,12 +16,12 @@ export const normalizeID = (entity: { _id?: string; id?: string }) => {
 
 export const BaseEntity = <T>() => {
   const eventsMap = new WeakMap<object, DomainEvent<unknown>[]>()
-  abstract class Entity implements IEntity, IEvents {
-    protected constructor(readonly _schema: z.ZodSchema) {
+  abstract class Entity implements IEntity, IDomainEventPublisher {
+    protected constructor(readonly _schema: z.ZodType) {
       if (!_schema) {
         throw new ApiUnprocessableEntityException(`${this.constructor.name} required a schema`)
       }
-      this.initializeTimestamps()
+      this.ensureTimestamps()
       this.clearEvents()
     }
 
@@ -44,26 +44,31 @@ export const BaseEntity = <T>() => {
 
     deactivate(): this {
       this.deletedAt = DateUtils.now()
+      this.touch()
       return this
     }
 
     activate(): this {
       this.deletedAt = null
+      this.touch()
       return this
     }
 
-    validate<T>(entity: T): T {
+    validate<EntityInput>(entity: EntityInput): EntityInput {
       normalizeID(entity as IEntity)
-      const parsed = this._schema.parse(entity) as T
+      const parsed = this._schema.parse(entity) as EntityInput
       Object.assign(this, parsed)
+      this.ensureTimestamps()
       return parsed
     }
 
-    ensureID(type?: IDGeneratorType, options?: IDGeneratorTypes) {
+    ensureID(type?: IDGeneratorType, options?: IDGeneratorTypes): this {
       if (!this.id) {
         const id = IDGeneratorUtils.generators[type || 'uuid'](options)
         Object.assign(this, { id })
       }
+
+      return this
     }
 
     toObject(): T {
@@ -76,11 +81,22 @@ export const BaseEntity = <T>() => {
       return new Constructor(obj as T)
     }
 
-    merge(partial: Partial<T>) {
+    merge(partial: Partial<T>): this {
       const current = this.toObject()
       const merged = { ...current, ...partial }
       this.validate(merged)
-      Object.assign(this, merged)
+      this.touch()
+      return this
+    }
+
+    ensureTimestamps(): void {
+      const now = DateUtils.now({ type: 'js' }) as Date
+      if (!this.createdAt) this.createdAt = now
+      if (!this.updatedAt) this.updatedAt = now
+    }
+
+    touch(): void {
+      this.updatedAt = DateUtils.now({ type: 'js' }) as Date
     }
 
     addEvent<R>(event: AddEventInput<R>): void {
@@ -92,7 +108,7 @@ export const BaseEntity = <T>() => {
     }
 
     getEvents<R>(): DomainEvent<R>[] {
-      return eventsMap.get(this) as DomainEvent<R>[]
+      return [...(eventsMap.get(this) as DomainEvent<R>[])]
     }
 
     releaseEvents<R>(): DomainEvent<R>[] {
@@ -103,12 +119,6 @@ export const BaseEntity = <T>() => {
 
     clearEvents(): void {
       eventsMap.set(this, [])
-    }
-
-    initializeTimestamps(): void {
-      const now = DateUtils.now({ type: 'js' }) as Date
-      if (!this.createdAt) this.createdAt = now
-      this.updatedAt = now
     }
   }
   return Entity
@@ -121,7 +131,7 @@ export interface IEntity {
   deletedAt?: Date | null
 }
 
-export interface IEvents {
+export interface IDomainEventPublisher {
   addEvent<T>(event: AddEventInput<T>): void
   getEvents<T>(): DomainEvent<T>[]
   releaseEvents<T>(): DomainEvent<T>[]

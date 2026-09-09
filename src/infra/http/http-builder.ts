@@ -1,6 +1,5 @@
 import { AxiosInstance, AxiosRequestConfig } from 'axios'
 
-import { CustomAxiosError } from '@/utils/axios'
 import {
   ApiBadRequestException,
   ApiConflictException,
@@ -15,41 +14,95 @@ import {
 import { ObjectUtil } from '@/utils/object'
 
 import { IHttpBuilder } from './adapter'
-import { HttpData, HttpMethod, HttpResponse } from './types'
+import { HttpData, HttpMethod } from './types'
 
-export class HttpBuilder implements IHttpBuilder {
-  private requestConfig: {
-    method: HttpMethod
-    url: string
-    data?: HttpData
-    headers: Record<string, string>
-    axiosConfig: AxiosRequestConfig
-    retries: number
+declare module 'axios-retry' {
+  interface IAxiosRetryConfig {
+    status?: number[]
+  }
+}
+
+export class HttpBuilder<Response = unknown> implements IHttpBuilder<Response> {
+  private requestConfig: HttpBuilderRequestConfig
+
+  constructor(
+    private readonly axiosInstance: AxiosInstance,
+    requestConfig?: HttpBuilderRequestConfig
+  ) {
+    this.requestConfig = requestConfig
+      ? {
+          ...requestConfig,
+          headers: { ...requestConfig.headers },
+          axiosConfig: { ...requestConfig.axiosConfig }
+        }
+      : {
+          method: 'GET',
+          url: '',
+          headers: {},
+          axiosConfig: {}
+        }
   }
 
-  constructor(private readonly axiosInstance: AxiosInstance) {
-    this.requestConfig = {
-      method: 'GET',
-      url: '',
-      headers: {},
-      axiosConfig: {},
-      retries: 0
-    }
+  get<NextResponse = Response>(url: string, config?: AxiosRequestConfig): HttpBuilder<NextResponse> {
+    const builder = new HttpBuilder<NextResponse>(this.axiosInstance, this.requestConfig)
+    builder.requestConfig.method = 'GET'
+    builder.requestConfig.url = url
+    builder.requestConfig.data = undefined
+    builder.requestConfig.axiosConfig = { ...builder.requestConfig.axiosConfig, ...config }
+
+    return builder
   }
 
-  method(method: HttpMethod): this {
-    this.requestConfig.method = method
-    return this
+  post<NextResponse = Response, Request extends HttpData = HttpData>(
+    url: string,
+    data?: Request,
+    config?: AxiosRequestConfig
+  ): HttpBuilder<NextResponse> {
+    const builder = new HttpBuilder<NextResponse>(this.axiosInstance, this.requestConfig)
+    builder.requestConfig.method = 'POST'
+    builder.requestConfig.url = url
+    builder.requestConfig.data = data
+    builder.requestConfig.axiosConfig = { ...builder.requestConfig.axiosConfig, ...config }
+
+    return builder
   }
 
-  url(url: string): this {
-    this.requestConfig.url = url
-    return this
+  put<NextResponse = Response, Request extends HttpData = HttpData>(
+    url: string,
+    data?: Request,
+    config?: AxiosRequestConfig
+  ): HttpBuilder<NextResponse> {
+    const builder = new HttpBuilder<NextResponse>(this.axiosInstance, this.requestConfig)
+    builder.requestConfig.method = 'PUT'
+    builder.requestConfig.url = url
+    builder.requestConfig.data = data
+    builder.requestConfig.axiosConfig = { ...builder.requestConfig.axiosConfig, ...config }
+
+    return builder
   }
 
-  body<Request extends HttpData = HttpData>(data: Request): this {
-    this.requestConfig.data = data
-    return this
+  patch<NextResponse = Response, Request extends HttpData = HttpData>(
+    url: string,
+    data?: Request,
+    config?: AxiosRequestConfig
+  ): HttpBuilder<NextResponse> {
+    const builder = new HttpBuilder<NextResponse>(this.axiosInstance, this.requestConfig)
+    builder.requestConfig.method = 'PATCH'
+    builder.requestConfig.url = url
+    builder.requestConfig.data = data
+    builder.requestConfig.axiosConfig = { ...builder.requestConfig.axiosConfig, ...config }
+
+    return builder
+  }
+
+  delete<NextResponse = Response>(url: string, config?: AxiosRequestConfig): HttpBuilder<NextResponse> {
+    const builder = new HttpBuilder<NextResponse>(this.axiosInstance, this.requestConfig)
+    builder.requestConfig.method = 'DELETE'
+    builder.requestConfig.url = url
+    builder.requestConfig.data = undefined
+    builder.requestConfig.axiosConfig = { ...builder.requestConfig.axiosConfig, ...config }
+
+    return builder
   }
 
   headers(headers: Record<string, string>): this {
@@ -62,80 +115,42 @@ export class HttpBuilder implements IHttpBuilder {
     return this
   }
 
-  config(config: AxiosRequestConfig): this {
-    this.requestConfig.axiosConfig = { ...this.requestConfig.axiosConfig, ...config }
-    return this
-  }
-
   timeout(ms: number): this {
     this.requestConfig.axiosConfig.timeout = ms
     return this
   }
 
-  retry(retries: number): this {
-    this.requestConfig.retries = retries
+  retry(retries: number, status?: number[]): this {
+    this.requestConfig.axiosConfig['axios-retry'] = {
+      ...this.requestConfig.axiosConfig['axios-retry'],
+      retries,
+      ...(status ? { status } : {})
+    }
     return this
   }
 
-  async execute<Response = unknown>(): Promise<Response> {
+  async execute(): Promise<Response> {
     const startTime = Date.now()
 
     try {
       const response = await this.axiosInstance({
+        ...this.requestConfig.axiosConfig,
         method: this.requestConfig.method,
         url: this.requestConfig.url,
         data: this.requestConfig.data,
-        headers: this.requestConfig.headers,
-        ...this.requestConfig.axiosConfig
+        headers: this.requestConfig.headers
       })
 
-      return response.data
+      return response.data as Response
     } catch (error) {
       const duration = Date.now() - startTime
       throw this.convertToApiException(error as CustomAxiosError, duration)
     }
   }
 
-  async safeExecute<Response = unknown>(): Promise<HttpResponse<Response>> {
-    const startTime = Date.now()
-
-    try {
-      const response = await this.axiosInstance({
-        method: this.requestConfig.method,
-        url: this.requestConfig.url,
-        data: this.requestConfig.data,
-        headers: this.requestConfig.headers,
-        ...this.requestConfig.axiosConfig
-      })
-
-      return {
-        data: response.data,
-        error: null,
-        headers: response.headers as Record<string, string>,
-        status: response.status,
-        success: true,
-        duration: Date.now() - startTime
-      }
-    } catch (error) {
-      const duration = Date.now() - startTime
-      const apiError = this.convertToApiException(error as CustomAxiosError, duration)
-
-      const customAxiosError = error as CustomAxiosError
-      return {
-        data: null,
-        error: apiError,
-        headers: ObjectUtil.reach(customAxiosError, (e) => e.response.headers, {}),
-        status: ObjectUtil.reach(customAxiosError, (e) => e.response.status, 500),
-        success: false,
-        duration
-      }
-    }
-  }
-
   private convertToApiException(error: CustomAxiosError, duration: number): BaseException {
-    const customAxiosError = error as CustomAxiosError
-    const status = ObjectUtil.reach(customAxiosError, (e) => e.response.status, 500)
-    const message = ObjectUtil.reach(customAxiosError, (e) => e.response.data.message, error.message)
+    const status = ObjectUtil.reach(error, (e) => e.response.status, 500)
+    const message = ObjectUtil.reach(error, (e) => e.response.data.message, error.message)
 
     const parameters = {
       context: 'HttpBuilder',
@@ -164,4 +179,22 @@ export class HttpBuilder implements IHttpBuilder {
         return new ApiInternalServerException(message, parameters)
     }
   }
+}
+
+type CustomAxiosError = {
+  message: string
+  response?: {
+    status?: number
+    data?: {
+      message?: string
+    }
+  }
+}
+
+type HttpBuilderRequestConfig = {
+  method: HttpMethod
+  url: string
+  data?: HttpData
+  headers: Record<string, string>
+  axiosConfig: AxiosRequestConfig
 }
