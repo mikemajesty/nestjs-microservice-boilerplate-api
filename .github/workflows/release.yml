@@ -41,13 +41,13 @@ jobs:
           echo "✅ Tag format valid: $TAG"
 
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ github.event.inputs.tag }}
           fetch-depth: 0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version-file: '.nvmrc'
           cache: 'npm'
@@ -123,51 +123,51 @@ jobs:
           TAG="${{ github.event.inputs.tag }}"
           VERSION="${{ steps.version.outputs.version }}"
           BRANCH="changelog/${TAG}"
-          
+
           # Configure git
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          
+
           # Create a new branch from master for the changelog
           git fetch origin master
           git checkout -b "$BRANCH" origin/master
-          
+
           # Copy the generated changelog from temp
           cp /tmp/CHANGELOG.md CHANGELOG.md
-          
+
           # Commit and push
           git add CHANGELOG.md
           git commit -m "docs(changelog): update changelog for ${TAG}"
           git push origin "$BRANCH"
-          
+
           # Create PR
           BODY="## Changelog Update
 
           This PR adds the changelog for release \`${TAG}\`.
 
           **Generated automatically by the Release workflow.**"
-          
+
           gh pr create \
             --base master \
             --head "$BRANCH" \
             --title "📝 Changelog for ${TAG}" \
             --body "$BODY"
-          
+
           echo "✅ PR created successfully"
 
       - name: Summary
         run: |
           cat >> $GITHUB_STEP_SUMMARY << EOF
           ## 🚀 Deploy Complete!
-          
+
           | Info | Value |
           |------|-------|
           | Environment | \`${{ github.event.inputs.environment }}\` |
           | Tag | \`${{ github.event.inputs.tag }}\` |
           | Docker Tag | \`${{ steps.version.outputs.version }}\` |
           | Triggered by | @${{ github.actor }} |
-          
+
           ### 📝 Changelog
-          
+
           A PR was created to merge the changelog to master.
           EOF
