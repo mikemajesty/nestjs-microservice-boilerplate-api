@@ -1112,7 +1112,7 @@ src/
 ### Prerequisites
 
 - **Node.js** >= 22.0.0
-- **Docker** >= 20.x
+- **Docker** >= 22.x
 - **Docker Compose** >= 2.x
 
 ### 1. Clone and Install
