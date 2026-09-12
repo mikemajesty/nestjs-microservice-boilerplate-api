@@ -1,9 +1,9 @@
-import type { Config } from '@jest/types';
-import { readFileSync } from 'fs';
-import { pathsToModuleNameMapper } from 'ts-jest';
+import type { Config } from '@jest/types'
+import { readFileSync } from 'fs'
+import { pathsToModuleNameMapper } from 'ts-jest'
 
-const tsconfig = JSON.parse(readFileSync('./tsconfig.json', 'utf-8'));
-const { compilerOptions } = tsconfig;
+const tsconfig = JSON.parse(readFileSync('./tsconfig.json', 'utf-8'))
+const { compilerOptions } = tsconfig
 
 const config: Config.InitialOptions = {
   moduleFileExtensions: ['js', 'json', 'ts'],
@@ -27,7 +27,7 @@ const config: Config.InitialOptions = {
     ]
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(@nestjs|@faker-js/faker|@mikemajesty/zod-mock-schema|uuid)/)'
+    'node_modules/(?!(@nestjs|@faker-js/faker|@mikemajesty/zod-mock-schema|uuid|@nestjs/testing)/)'
   ],
   setupFilesAfterEnv: ['<rootDir>/test/initialization.ts'],
   testEnvironment: 'node',
@@ -35,6 +35,6 @@ const config: Config.InitialOptions = {
   coverageDirectory: './coverage',
   coverageReporters: ['json-summary', 'lcov'],
   moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, { prefix: '<rootDir>/' })
-};
+}
 
-export default config;
+export default config
