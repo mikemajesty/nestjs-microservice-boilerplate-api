@@ -13,9 +13,6 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 jobs:
   lint:
     name: Lint
@@ -23,6 +20,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Check Node version
+        run: |
+          node -v
+          which node
+          cat .nvmrc || true
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
