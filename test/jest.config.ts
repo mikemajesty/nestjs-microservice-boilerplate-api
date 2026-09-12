@@ -26,9 +26,7 @@ const config: Config.InitialOptions = {
       }
     ]
   },
-  transformIgnorePatterns: [
-    'node_modules/(?!(@nestjs|@faker-js/faker|@mikemajesty/zod-mock-schema|uuid|@nestjs/testing)/)'
-  ],
+  transformIgnorePatterns: ['node_modules/(?!(@nestjs|@faker-js/faker|@nestjs/testing)/)'],
   setupFilesAfterEnv: ['<rootDir>/test/initialization.ts'],
   testEnvironment: 'node',
   collectCoverageFrom: ['**/*.ts'],
