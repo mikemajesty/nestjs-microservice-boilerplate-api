@@ -152,7 +152,7 @@ BREAKING CHANGE: remove legacy API   # major bump
   run: npm run test:cov
 
 - name: Upload coverage to Codecov
-  uses: codecov/codecov-action@v4
+  uses: codecov/codecov-action@v5
 ```
 
 **Purpose:**
