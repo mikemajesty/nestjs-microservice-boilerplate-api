@@ -26,7 +26,6 @@ const config: Config.InitialOptions = {
       }
     ]
   },
-  transformIgnorePatterns: ['node_modules/(?!(@nestjs|@faker-js/faker|@nestjs/testing)/)'],
   setupFilesAfterEnv: ['<rootDir>/test/initialization.ts'],
   testEnvironment: 'node',
   collectCoverageFrom: ['**/*.ts'],
