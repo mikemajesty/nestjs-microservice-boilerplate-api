@@ -1,7 +1,6 @@
 /**
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/core/usecase.md
  */
-import { CryptoUtils } from '@/utils/crypto'
 import { ValidateSchema } from '@/utils/decorators'
 import { ApiBadRequestException, ApiNotFoundException } from '@/utils/exception'
 import { IUsecase } from '@/utils/usecase'
@@ -34,9 +33,7 @@ export class UserChangePasswordUsecase implements IUsecase {
 
     const entityPassword = new UserPasswordEntity(user.password)
 
-    const password = CryptoUtils.createHash(input.password)
-
-    entityPassword.verifyPassword(password)
+    entityPassword.matchesPassword(input.password)
 
     if (input.newPassword !== input.confirmPassword) {
       throw new ApiBadRequestException('passwordIsDifferent')

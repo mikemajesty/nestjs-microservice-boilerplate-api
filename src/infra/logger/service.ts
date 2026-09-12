@@ -12,7 +12,7 @@ import pinoPretty, { PrettyOptions } from 'pino-pretty'
 import { DateUtils } from '@/utils/date'
 import { ApiBadRequestException, ApiInternalServerException, BaseException } from '@/utils/exception'
 import { IDGeneratorUtils } from '@/utils/id-generator'
-import { ObjectUtil } from '@/utils/object'
+import { ObjectUtils } from '@/utils/object'
 import { AnyType } from '@/utils/types'
 
 import { name, version } from '../../../package.json'
@@ -104,7 +104,7 @@ export class LoggerService implements ILoggerAdapter {
       if (error instanceof BaseException) {
         return {
           statusCode: error.statusCode,
-          message: ObjectUtil.reach(error, (o) => o.message),
+          message: ObjectUtils.reach(error, (o) => o.message),
           ...error?.parameters
         }
       }
@@ -116,7 +116,7 @@ export class LoggerService implements ILoggerAdapter {
 
     const type = error?.name ?? ApiInternalServerException.name
 
-    const messages = [message, ObjectUtil.reach(response, (o) => o.message, error.message)].find(Boolean)
+    const messages = [message, ObjectUtils.reach(response, (o) => o.message, error.message)].find(Boolean)
 
     if (error?.name === 'QueryFailedError') {
       Object.assign(error, { parameters: undefined })
@@ -126,7 +126,7 @@ export class LoggerService implements ILoggerAdapter {
     this.logger.logger.error(
       {
         ...response,
-        context: ObjectUtil.reach(error, (o) => o.context),
+        context: ObjectUtils.reach(error, (o) => o.context),
         type: typeError,
         traceid: this.getTraceId(error),
         createdAt: DateUtils.now({ type: 'iso' }),

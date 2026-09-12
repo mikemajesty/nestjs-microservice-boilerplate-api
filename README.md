@@ -533,11 +533,13 @@ import { IUsecase } from '@/utils/usecase';
 export class CatCreateUsecase implements IUsecase {
   constructor(private readonly catRepository: ICatRepository) {}
 
+  async execute(input: CatCreateInput): Promise<CatCreateOutput> {
+    // ...
   }
 }
-**What we simplified:**
-    - No explicit inbound/outbound port distinction
-    - Unified adapter naming for interfaces and implementations
+````
+
+**Why this is mandatory:**
 
 1. **Contract enforcement** — Ensures all Use Cases have the same structure
 2. **Dependency injection** — NestJS can properly inject and resolve Use Cases
@@ -545,6 +547,7 @@ export class CatCreateUsecase implements IUsecase {
 4. **Consistency** — Every Use Case follows the same pattern across the project
 
 📖 **See detailed patterns:** [Use Case Guide](guides/core/usecase.md) — includes architecture diagrams and testing patterns
+
 
 ---
 

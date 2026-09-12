@@ -9,6 +9,7 @@ import { FastifyRequest } from 'fastify'
 
 import { UserEntity } from '@/core/user/entity/user'
 
+import { IDGeneratorUtils } from './id-generator'
 import { AnyType } from './types'
 
 export type TracingType = {
@@ -66,4 +67,18 @@ export const generalizePath = (path: string): string => {
   if (!path) return '/'
 
   return path.replace(/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/gi, ':uuid')
+}
+
+/**
+ * Ensures the request has a traceid, keeping `headers.traceid` and `request.id` in sync.
+ * Must be called both in guards and interceptors, since a request can fail (and still need
+ * a traceid for logging/tracing) before ever reaching an interceptor.
+ */
+export const ensureTraceId = (request: AppFastifyRequest): string => {
+  const traceid = (request.headers?.traceid || request.id || IDGeneratorUtils.uuid()) as string
+
+  request.headers.traceid = traceid
+  request.id = traceid
+
+  return traceid
 }

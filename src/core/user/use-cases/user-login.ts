@@ -4,7 +4,6 @@
 import { ITokenAdapter } from '@/libs/token'
 import { ValidateSchema } from '@/utils/decorators'
 import { ApiNotFoundException } from '@/utils/exception'
-import { IDGeneratorUtils } from '@/utils/id-generator'
 import { ApiTrancingInput, UserRequest } from '@/utils/request'
 import { IUsecase } from '@/utils/usecase'
 import { Infer } from '@/utils/validator'
@@ -36,11 +35,9 @@ export class LoginUsecase implements IUsecase {
       throw new ApiNotFoundException('userNotFound')
     }
 
-    const passwordEntity = new UserPasswordEntity({ id: IDGeneratorUtils.uuid(), password: input.password })
+    const passwordEntity = new UserPasswordEntity(user.password)
 
-    passwordEntity.createPassword()
-
-    passwordEntity.verifyPassword(user.password.password)
+    passwordEntity.matchesPassword(input.password)
 
     tracing.logEvent('user-login', { action: 'login', by: user.id, entity: user.id })
 

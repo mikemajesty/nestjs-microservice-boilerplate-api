@@ -9,7 +9,7 @@ import { DateUtils } from './date'
 import { ApiUnprocessableEntityException } from './exception'
 import { IDGeneratorType, IDGeneratorTypes, IDGeneratorUtils } from './id-generator'
 
-export const normalizeID = (entity: { _id?: string; id?: string }) => {
+const normalizeID = (entity: { _id?: string; id?: string }) => {
   Object.assign(entity, { id: [entity?.id, entity?._id, null].find(Boolean) })
   return entity
 }
@@ -58,7 +58,6 @@ export const BaseEntity = <T>() => {
       normalizeID(entity as IEntity)
       const parsed = this._schema.parse(entity) as EntityInput
       Object.assign(this, parsed)
-      this.ensureTimestamps()
       return parsed
     }
 
@@ -91,8 +90,8 @@ export const BaseEntity = <T>() => {
 
     ensureTimestamps(): void {
       const now = DateUtils.now({ type: 'js' }) as Date
-      if (!this.createdAt) this.createdAt = now
-      if (!this.updatedAt) this.updatedAt = now
+      if (this.createdAt === undefined) this.createdAt = now
+      if (this.updatedAt === undefined) this.updatedAt = now
     }
 
     touch(): void {

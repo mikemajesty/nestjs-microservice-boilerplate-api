@@ -10,6 +10,7 @@ import { fastifySwaggerUi } from '@fastify/swagger-ui'
 import { RequestMethod, VersioningType } from '@nestjs/common'
 import { NestFactory } from '@nestjs/core'
 import { FastifyAdapter } from '@nestjs/platform-fastify'
+import { metrics } from '@opentelemetry/api'
 import { bold } from 'colorette'
 import type { FastifyReply, FastifyRequest, HookHandlerDoneFunction } from 'fastify'
 import fs from 'fs'
@@ -20,7 +21,7 @@ import { ILoggerAdapter } from '@/infra/logger/adapter'
 import { ISecretsAdapter } from '@/infra/secrets'
 import { ExceptionHandlerFilter } from '@/middlewares/filters'
 
-import { name } from '../package.json'
+import { name, version } from '../package.json'
 import { AppModule } from './app.module'
 import { ErrorType } from './infra/logger'
 import { initI18n, normalizeLocale, runWithRequestLocale } from './utils/validator'
@@ -71,14 +72,25 @@ async function bootstrap() {
   await initI18n('en-US')
 
   const fastify = app.getHttpAdapter().getInstance()
+  const meter = metrics.getMeter(name, version)
+  const requestCounter = meter.createCounter('http_server_requests_count', {
+    description: 'Total HTTP requests',
+    unit: 'requests'
+  })
+  const requestDuration = meter.createHistogram('http_server_requests_duration', {
+    description: 'Duration of HTTP requests',
+    unit: 'ms'
+  })
+  const activeRequests = meter.createUpDownCounter('http_server_requests_active', {
+    description: 'Number of active HTTP requests',
+    unit: 'requests'
+  })
+
+  const requestStartTimes = new WeakMap<object, bigint>()
 
   fastify.addHook(
     'onRequest',
-    (
-      request: FastifyRequest<{ Querystring: LanguageQuery }>,
-      reply: FastifyReply,
-      done: HookHandlerDoneFunction
-    ) => {
+    (request: FastifyRequest<{ Querystring: LanguageQuery }>, reply: FastifyReply, done: HookHandlerDoneFunction) => {
       if (request.raw.url?.split('?')[0].split('/').pop() === 'favicon.ico') {
         reply.code(204).send()
         return
@@ -87,6 +99,36 @@ async function bootstrap() {
       runWithRequestLocale(getPreferredLocale(request), done)
     }
   )
+
+  fastify.addHook('onRequest', (request: FastifyRequest, _reply: FastifyReply, done: HookHandlerDoneFunction) => {
+    requestStartTimes.set(request, process.hrtime.bigint())
+    const route = request.routeOptions?.url || 'unknown'
+    activeRequests.add(1, { 'http.method': request.method, 'http.route': route })
+    done()
+  })
+
+  fastify.addHook('onResponse', (request: FastifyRequest, reply: FastifyReply, done: HookHandlerDoneFunction) => {
+    const startTime = requestStartTimes.get(request)
+    if (!startTime) {
+      done()
+      return
+    }
+
+    const route = request.routeOptions?.url || 'unknown'
+    const statusCode = Number(reply.statusCode) || 500
+    const labels = {
+      'http.method': request.method,
+      'http.route': route,
+      'http.status_code': statusCode,
+      'http.status_class': `${Math.floor(statusCode / 100)}xx`
+    }
+
+    requestCounter.add(1, labels)
+    requestDuration.record(Number(process.hrtime.bigint() - startTime) / 1_000_000, labels)
+    requestStartTimes.delete(request)
+    activeRequests.add(-1, { 'http.method': request.method, 'http.route': route })
+    done()
+  })
 
   await fastify.register(fastifyHelmet, {
     contentSecurityPolicy: {

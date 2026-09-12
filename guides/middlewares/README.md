@@ -26,7 +26,7 @@ Request → Guards → Interceptors (before) → Handler → Interceptors (after
 |-------|----------------|-------------|
 | [Tracing Interceptor](./tracing.interceptor.md) | [tracing.interceptor.ts](../../src/middlewares/interceptors/tracing.interceptor.ts) | Distributed tracing with OpenTelemetry, auto traceid propagation |
 | [HTTP Logger Interceptor](./http-logger.interceptor.md) | [http-logger.interceptor.ts](../../src/middlewares/interceptors/http-logger.interceptor.ts) | TraceId generation and context assignment for logs |
-| [Metrics Interceptor](./metrics.interceptor.md) | [metrics.interceptor.ts](../../src/middlewares/interceptors/metrics.interceptor.ts) | HTTP metrics collection for Prometheus/Grafana |
+| [HTTP Metrics](./metrics.interceptor.md) | [main.ts](../../src/main.ts) | Global HTTP metrics collection for Prometheus/Grafana |
 | [Request Timeout Interceptor](./request-timeout.interceptor.md) | [request-timeout.interceptor.ts](../../src/middlewares/interceptors/request-timeout.interceptor.ts) | Per-route timeout control |
 | [Exception Handler Interceptor](./exception-handler.interceptor.md) | [exception-handler.interceptor.ts](../../src/middlewares/interceptors/exception-handler.interceptor.ts) | Error catching and tracing finalization |
 

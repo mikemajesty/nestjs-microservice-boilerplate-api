@@ -4,7 +4,7 @@
 import { HttpException, HttpStatus } from '@nestjs/common'
 import { z } from 'zod'
 
-import { ObjectUtil } from './object'
+import { ObjectUtils } from './object'
 import { AnyType } from './types'
 
 export class BaseException extends HttpException {
@@ -21,7 +21,7 @@ export class BaseException extends HttpException {
     this.statusCode = status
 
     if (metadata) {
-      this.parameters = ObjectUtil.clone<ParametersType>({ ...metadata, cause: undefined })
+      this.parameters = ObjectUtils.clone<ParametersType>({ ...metadata, cause: undefined })
     }
 
     if (metadata?.context) {
@@ -104,6 +104,24 @@ export class ApiTimeoutException extends BaseException {
   }
 }
 
+/**
+ * Wraps an error coming from an external HTTP call (e.g. axios) so it can be handled
+ * polymorphically alongside native `HttpException`s (`getResponse()`/`getStatus()`),
+ * without mutating the original third-party error object.
+ */
+export class ApiExternalRequestException extends BaseException {
+  constructor(status: number, message: MessageType, response: AnyType, metadata?: ParametersType) {
+    super(message, status, metadata)
+    this.externalResponse = response
+  }
+
+  private readonly externalResponse: AnyType
+
+  getResponse(): AnyType {
+    return this.externalResponse ?? super.getResponse()
+  }
+}
+
 export type ApiErrorType = {
   error: {
     code: string | number
@@ -139,7 +157,7 @@ export const exceptionFromStatus = (input: HttpStatusExceptionInput): BaseExcept
 
   const exception = new ExceptionClass(input.message, input.metadata)
 
-  const cause = ObjectUtil.reach(input, (i) => i.metadata.cause)
+  const cause = ObjectUtils.reach(input, (i) => i.metadata.cause)
 
   if (cause) {
     exception.cause = cause

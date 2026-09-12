@@ -8,7 +8,6 @@ import { InfraModule } from '@/infra/module'
 import { ISecretsAdapter } from '@/infra/secrets'
 import { ITokenAdapter } from '@/libs/token'
 import { AuthorizationRoleGuard } from '@/middlewares/guards'
-import { BirdModule } from '@/modules/bird/module'
 import { CatModule } from '@/modules/cat/module'
 import { HealthModule } from '@/modules/health/module'
 import { LoginModule } from '@/modules/login/module'
@@ -19,7 +18,6 @@ import { LibModule } from './libs/module'
 import {
   ExceptionHandlerInterceptor,
   HttpLoggerInterceptor,
-  MetricsInterceptor,
   RequestTimeoutInterceptor,
   TracingInterceptor
 } from './middlewares/interceptors'
@@ -41,8 +39,7 @@ import { RoleModule } from './modules/role/module'
     ResetPasswordModule,
     RoleModule,
     PermissionModule,
-    LoggerModule,
-    BirdModule
+    LoggerModule
   ],
   providers: [
     {
@@ -71,12 +68,6 @@ import { RoleModule } from './modules/role/module'
         return new TracingInterceptor(logger)
       },
       inject: [ILoggerAdapter]
-    },
-    {
-      provide: APP_INTERCEPTOR,
-      useFactory() {
-        return new MetricsInterceptor()
-      }
     },
     {
       provide: APP_GUARD,

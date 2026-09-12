@@ -11,7 +11,7 @@ import {
   ApiUnprocessableEntityException,
   BaseException
 } from '@/utils/exception'
-import { ObjectUtil } from '@/utils/object'
+import { ObjectUtils } from '@/utils/object'
 
 import { IHttpBuilder } from './adapter'
 import { HttpData, HttpMethod } from './types'
@@ -149,8 +149,8 @@ export class HttpBuilder<Response = unknown> implements IHttpBuilder<Response> {
   }
 
   private convertToApiException(error: CustomAxiosError, duration: number): BaseException {
-    const status = ObjectUtil.reach(error, (e) => e.response.status, 500)
-    const message = ObjectUtil.reach(error, (e) => e.response.data.message, error.message)
+    const status = ObjectUtils.reach(error, (e) => e.response.status, 500)
+    const message = ObjectUtils.reach(error, (e) => e.response.data.message, error.message)
 
     const parameters = {
       context: 'HttpBuilder',

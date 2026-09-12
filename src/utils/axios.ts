@@ -9,10 +9,10 @@ import { ILoggerAdapter } from '@/infra/logger'
 
 import { ApiInternalServerException } from './exception'
 import { DefaultErrorMessage } from './http-status'
-import { ObjectUtil } from './object'
+import { ObjectUtils } from './object'
 
 const DEFAULT_RETRY_STATUS = [408, 429, 500, 502, 503, 504]
-const NETWORK_RETRY_CODES = ['ECONNABORTED', 'ECONNRESET', 'ETIMEDOUT']
+export const NETWORK_RETRY_CODES = ['ECONNABORTED', 'ECONNRESET', 'ETIMEDOUT']
 
 export class AxiosUtils {
   static interceptAxiosResponseError = (error: CustomAxiosError): void => {
@@ -36,10 +36,10 @@ export class AxiosUtils {
 
   private static extractErrorStatus(error: CustomAxiosError): number {
     const statusCandidates = [
-      ObjectUtil.reach(error, (e) => e.response.data.code),
-      ObjectUtil.reach(error, (e) => e.response.data.error.code),
-      ObjectUtil.reach(error, (e) => e.response.status),
-      ObjectUtil.reach(error, (e) => e.status),
+      ObjectUtils.reach(error, (e) => e.response.data.code),
+      ObjectUtils.reach(error, (e) => e.response.data.error.code),
+      ObjectUtils.reach(error, (e) => e.response.status),
+      ObjectUtils.reach(error, (e) => e.status),
       500
     ]
 
@@ -52,11 +52,11 @@ export class AxiosUtils {
 
   private static extractErrorMessage(error: CustomAxiosError): string {
     const messageCandidates = [
-      ObjectUtil.reach(error, (e) => e.response.data.description),
-      ObjectUtil.reach(error, (e) => e.response.data.error.message),
-      ObjectUtil.reach(error, (e) => e.response.data.message),
-      ObjectUtil.reach(error, (e) => e.response.statusText),
-      ObjectUtil.reach(error, (e) => e.message),
+      ObjectUtils.reach(error, (e) => e.response.data.description),
+      ObjectUtils.reach(error, (e) => e.response.data.error.message),
+      ObjectUtils.reach(error, (e) => e.response.data.message),
+      ObjectUtils.reach(error, (e) => e.response.statusText),
+      ObjectUtils.reach(error, (e) => e.message),
       DefaultErrorMessage[ApiInternalServerException.STATUS]
     ]
 
@@ -70,7 +70,7 @@ export class AxiosUtils {
 
       retryDelay: (retryCount: number, error: AxiosError | CustomAxiosError) => {
         const axiosError = error as CustomAxiosError
-        const statusText = ObjectUtil.reach(axiosError, (e) => e.response.data.message)
+        const statusText = ObjectUtils.reach(axiosError, (e) => e.response.data.message)
 
         const status = this.extractErrorStatus(axiosError)
 

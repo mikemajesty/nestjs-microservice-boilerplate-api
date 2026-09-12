@@ -1,6 +1,6 @@
 import { AnyType } from './types'
 
-export class ObjectUtil {
+export class ObjectUtils {
   static reach<T extends object, R>(
     obj: T | null | undefined,
     selector: (obj: DeepRequired<T>) => NotFunction<R>,

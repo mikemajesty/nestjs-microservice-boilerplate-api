@@ -71,7 +71,8 @@ describe(CatDeleteUsecase.name, () => {
 
     await expect(usecase.execute({ id: TestUtils.mockUUID() }, TestUtils.getMockTracing())).resolves.toEqual({
       ...input,
-      deletedAt: expect.any(Date)
+      deletedAt: expect.any(Date),
+      updatedAt: expect.any(Date)
     })
   })
 })

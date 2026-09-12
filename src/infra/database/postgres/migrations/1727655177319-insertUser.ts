@@ -2,7 +2,7 @@ import { RoleEntity, RoleEnum } from '@/core/role/entity/role'
 import { UserEntity } from '@/core/user/entity/user'
 import { UserPasswordEntity } from '@/core/user/entity/user-password'
 import { IDGeneratorUtils } from '@/utils/id-generator'
-import { ObjectUtil } from '@/utils/object'
+import { ObjectUtils } from '@/utils/object'
 import { MigrationInterface, QueryDeepPartialEntity, QueryRunner } from 'typeorm'
 import { PermissionSchema } from '../schemas/permission'
 import { RoleSchema } from '../schemas/role'
@@ -41,13 +41,13 @@ export class insertUser1727655177319 implements MigrationInterface {
     for (const userPermission of userPermissions) {
       const permission = permissions.find((p) => p.name === userPermission)
       await queryRunner.query(
-        `INSERT INTO permissions_roles (roles_id, permissions_id) VALUES ('${ObjectUtil.reach(userRole, (r) => r.id)}', '${ObjectUtil.reach(permission, (p) => p.id)}');`
+        `INSERT INTO permissions_roles (roles_id, permissions_id) VALUES ('${ObjectUtils.reach(userRole, (r) => r.id)}', '${ObjectUtils.reach(permission, (p) => p.id)}');`
       )
     }
 
     for (const permission of permissions) {
       await queryRunner.query(
-        `INSERT INTO permissions_roles (roles_id, permissions_id) VALUES ('${ObjectUtil.reach(backOfficeRole, (r) => r.id)}', '${ObjectUtil.reach(permission, (p) => p.id)}');`
+        `INSERT INTO permissions_roles (roles_id, permissions_id) VALUES ('${ObjectUtils.reach(backOfficeRole, (r) => r.id)}', '${ObjectUtils.reach(permission, (p) => p.id)}');`
       )
     }
   }

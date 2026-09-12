@@ -36,7 +36,8 @@ scopes.push(
   `build`,
   `changelog`,
   `IaC`,
-  `gitops`
+  `gitops`,
+  'observability'
 )
 
 module.exports = {

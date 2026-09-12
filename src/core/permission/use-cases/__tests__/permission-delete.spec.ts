@@ -88,7 +88,8 @@ describe(PermissionDeleteUsecase.name, () => {
 
     await expect(usecase.execute(input)).resolves.toEqual({
       ...permissionWithoutRoles,
-      deletedAt: expect.any(Date)
+      deletedAt: expect.any(Date),
+      updatedAt: expect.any(Date)
     })
   })
 
@@ -106,7 +107,8 @@ describe(PermissionDeleteUsecase.name, () => {
 
     await expect(usecase.execute(input)).resolves.toEqual({
       ...permission,
-      deletedAt: expect.any(Date)
+      deletedAt: expect.any(Date),
+      updatedAt: expect.any(Date)
     })
   })
 })

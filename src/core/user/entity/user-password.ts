@@ -42,6 +42,10 @@ export class UserPasswordEntity extends BaseEntity<UserPasswordEntity>() {
     }
   }
 
+  matchesPassword(plainPassword: string) {
+    this.verifyPassword(CryptoUtils.createHash(plainPassword))
+  }
+
   changePassword(newPassword: string) {
     this.password = newPassword
     this.createPassword()

@@ -8,7 +8,7 @@ import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-grpc'
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-grpc'
 import { HttpInstrumentation } from '@opentelemetry/instrumentation-http'
 import { MongoDBInstrumentation } from '@opentelemetry/instrumentation-mongodb'
-import { PgInstrumentation } from '@opentelemetry/instrumentation-pg'
+import { PgInstrumentation, PgResponseHookInformation } from '@opentelemetry/instrumentation-pg'
 import { RedisInstrumentation } from '@opentelemetry/instrumentation-redis'
 import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics'
 import { NodeSDK, NodeSDKConfiguration } from '@opentelemetry/sdk-node'
@@ -55,11 +55,8 @@ const updateSpanName = (span: Span, request: IncomingMessage | ClientRequest): s
   }
 
   if (request instanceof IncomingMessage) {
-    const host = [headers?.origin, headers?.host].find(Boolean) || 'unknown-host'
-
     const urlPath = request.url?.split('?')[0] || '/'
-    const path = generalizePath(urlPath) || '/'
-    return buildSpanName(host as string, path)
+    return generalizePath(urlPath) || '/'
   }
   throw new Error('Unsupported request type for span name update')
 }
@@ -123,12 +120,11 @@ const httpInstrumentation = new HttpInstrumentation({
 
 const redisInstrumentation = new RedisInstrumentation({
   requireParentSpan: false,
-  responseHook: (span: Span) => {
+  responseHook: (span: Span, cmdName: string) => {
     if (!isSpan(span)) return
 
     try {
-      const spanContext = span.spanContext()
-      span.updateName(`redis => command-${spanContext.spanId}`)
+      span.updateName(`db.redis.${cmdName}`)
     } catch (error) {
       logger.warn({ message: 'Error in Redis response hook:', metadata: { cause: error } })
     }
@@ -142,8 +138,9 @@ const mongodbInstrumentation = new MongoDBInstrumentation({
     if (!isSpan(span)) return
 
     try {
-      const spanContext = span.spanContext()
-      span.updateName(`mongodb => operation-${spanContext.spanId}`)
+      const operationName =
+        (span as { attributes?: Record<string, string> })?.['attributes']?.['db.operation.name'] ?? `cmd`
+      span.updateName(`db.mongodb.${operationName}`)
     } catch (error) {
       logger.warn({ message: 'Error in MongoDB response hook:', metadata: { cause: error } })
     }
@@ -152,12 +149,11 @@ const mongodbInstrumentation = new MongoDBInstrumentation({
 
 const pgInstrumentation = new PgInstrumentation({
   requireParentSpan: false,
-  responseHook: (span: Span) => {
+  responseHook: (span: Span, responseInfo: PgResponseHookInformation) => {
     if (!isSpan(span)) return
 
     try {
-      const spanContext = span.spanContext()
-      span.updateName(`postgres => query-${spanContext.spanId}`)
+      span.updateName(`db.postgres.${responseInfo.data.command}`)
     } catch (error) {
       logger.warn({ message: 'Error in PostgreSQL response hook:', metadata: { cause: error } })
     }
@@ -220,33 +216,27 @@ process.on('SIGINT', async () => {
 
 const getHeaders = (request: IncomingMessage | ClientRequest): Record<string, string | string[] | undefined> => {
   if ('getHeader' in request) {
-    return (request as ClientRequest).getHeaders() as Record<string, string | string[] | undefined>
+    return request.getHeaders() as Record<string, string | string[] | undefined>
   }
-  return (request as IncomingMessage).headers
+  return request.headers
 }
 
 const getTraceId = (request: IncomingMessage | ClientRequest) => {
   if ('getHeader' in request) {
     return request.getHeader('traceid') as string
   }
-  return (request as IncomingMessage).headers?.['traceid'] as string
+  return request.headers?.['traceid'] as string
 }
 
 const setTraceId = (request: IncomingMessage | ClientRequest) => {
   const newTraceId = IDGeneratorUtils.uuid()
   if ('setHeader' in request) {
-    ;(request as ClientRequest).setHeader('traceid', newTraceId)
+    request.setHeader('traceid', newTraceId)
+    return
   }
-  ;(request as IncomingMessage).headers = {
-    ...(request as IncomingMessage).headers,
+
+  request.headers = {
+    ...request.headers,
     traceid: newTraceId
   }
-}
-
-const buildSpanName = (host: string, path: string): string => {
-  if (['http:', 'https:'].includes(host as string)) {
-    return `${'API'} => ${host}${path}`
-  }
-
-  return `${'API'} => ${process.env.NODE_ENV === 'local' ? 'http' : 'https'}://${host}${path}`
 }

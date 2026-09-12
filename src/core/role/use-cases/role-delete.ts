@@ -4,6 +4,7 @@
 import { IRoleRepository } from '@/core/role/repository/role'
 import { ValidateSchema } from '@/utils/decorators'
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception'
+import { ObjectUtils } from '@/utils/object'
 import { IUsecase } from '@/utils/usecase'
 import { Infer } from '@/utils/validator'
 
@@ -24,7 +25,7 @@ export class RoleDeleteUsecase implements IUsecase {
       throw new ApiNotFoundException('roleNotFound')
     }
 
-    if (role.permissions?.length) {
+    if (ObjectUtils.reach(role, (r) => r.permissions.length)) {
       throw new ApiConflictException(`roleHasAssociationWithPermission: ${role.permissions.map((p) => p.name)}`)
     }
 

@@ -10,7 +10,7 @@ import { ILoggerAdapter } from '@/infra/logger/adapter'
 import { DateUtils } from '@/utils/date'
 import { ApiBadRequestException, ApiErrorType, ApiInternalServerException, BaseException } from '@/utils/exception'
 import { DefaultErrorMessage } from '@/utils/http-status'
-import { ObjectUtil } from '@/utils/object'
+import { ObjectUtils } from '@/utils/object'
 import { AppFastifyRequest } from '@/utils/request'
 import { AnyType } from '@/utils/types'
 
@@ -27,6 +27,7 @@ export class ExceptionHandlerFilter implements AppExceptionFilter {
 
     const requestId = request.id
     exception.traceid = [exception.traceid, requestId].find(Boolean) as string
+    const telemetryId = request.tracing?.span?.spanContext?.().traceId
 
     response.code(status)
 
@@ -37,6 +38,16 @@ export class ExceptionHandlerFilter implements AppExceptionFilter {
     })
 
     this.loggerService.logger(rawRequest, response.raw)
+
+    if (telemetryId) {
+      Object.assign(exception, {
+        parameters: {
+          ...exception?.parameters,
+          telemetryId
+        }
+      })
+    }
+
     this.logError(exception)
     const message = this.getErrorMessage(exception, status)
 
@@ -44,9 +55,9 @@ export class ExceptionHandlerFilter implements AppExceptionFilter {
       error: {
         code: status,
         traceid: exception.traceid,
-        context: exception.context ?? ObjectUtil.reach(exception, (o) => o.parameters.context),
-        details: ObjectUtil.reach(exception, (o) => o.parameters.details),
-        name: exception.name || ObjectUtil.reach(exception, (o) => o.constructor.name, Error.name),
+        context: exception.context ?? ObjectUtils.reach(exception, (o) => o.parameters.context),
+        details: ObjectUtils.reach(exception, (o) => o.parameters.details),
+        name: exception.name || ObjectUtils.reach(exception, (o) => o.constructor.name, Error.name),
         message,
         timestamp: DateUtils.build({ format: 'yyyy-MM-dd HH:mm:ss', type: 'iso' }),
         path: request.url
@@ -97,8 +108,8 @@ export class ExceptionHandlerFilter implements AppExceptionFilter {
   }
 
   private formatAxiosError(exception: AxiosError): string[] {
-    if (ObjectUtil.reach(exception, (o) => o.response.data)) {
-      const responseData = ObjectUtil.reach(exception, (o) => o.response.data) as AnyType
+    if (ObjectUtils.reach(exception, (o) => o.response.data)) {
+      const responseData = ObjectUtils.reach(exception, (o) => o.response.data) as AnyType
       if (typeof responseData === 'string') {
         return [responseData]
       }

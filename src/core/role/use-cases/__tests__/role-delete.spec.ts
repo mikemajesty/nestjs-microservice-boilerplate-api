@@ -86,7 +86,8 @@ describe(RoleDeleteUsecase.name, () => {
 
     await expect(usecase.execute(input)).resolves.toEqual({
       ...roleWithoutPermissions,
-      deletedAt: expect.any(Date)
+      deletedAt: expect.any(Date),
+      updatedAt: expect.any(Date)
     })
   })
 
@@ -96,7 +97,8 @@ describe(RoleDeleteUsecase.name, () => {
 
     await expect(usecase.execute(input)).resolves.toEqual({
       ...role,
-      deletedAt: expect.any(Date)
+      deletedAt: expect.any(Date),
+      updatedAt: expect.any(Date)
     })
   })
 })

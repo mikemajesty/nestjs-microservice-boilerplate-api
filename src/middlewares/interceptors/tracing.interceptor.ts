@@ -50,7 +50,7 @@ export class TracingInterceptor implements NestInterceptor {
 
           const http = axios.create({
             ...options,
-            headers: { traceid: request.id, authorization: request.headers.authorization }
+            headers: { traceid: requestId, authorization: request.headers.authorization }
           })
 
           axiosBetterStacktrace(http)

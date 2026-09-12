@@ -1,6 +1,6 @@
-# Metrics Interceptor
+# HTTP Metrics
 
-Interceptor that collects **HTTP request metrics** for every endpoint. Sends data to **Prometheus** for storage and **Grafana** for visualization.
+Global Fastify hooks collect **HTTP request metrics** for every endpoint, including requests rejected by guards. The metrics are sent to **Prometheus** for storage and **Grafana** for visualization.
 
 ## Metrics Collected
 
@@ -8,6 +8,7 @@ Interceptor that collects **HTTP request metrics** for every endpoint. Sends dat
 |--------|------|-------------|
 | `http_server_requests_count` | Counter | Total number of HTTP requests |
 | `http_server_requests_duration` | Histogram | Request duration in milliseconds |
+| `http_server_requests_active` | UpDownCounter | Number of active HTTP requests |
 
 ## Labels (Dimensions)
 
@@ -16,7 +17,6 @@ Each metric includes these labels for filtering:
 | Label | Example | Use Case |
 |-------|---------|----------|
 | `http.method` | `GET`, `POST` | Filter by HTTP verb |
-| `http.url` | `/api/users/123` | Full URL path |
 | `http.route` | `/api/users/:id` | Route pattern (for grouping) |
 | `http.status_code` | `200`, `404`, `500` | Exact status code |
 | `http.status_class` | `2xx`, `4xx`, `5xx` | Status family |

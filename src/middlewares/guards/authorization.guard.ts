@@ -3,7 +3,7 @@
  */
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
-import { SpanStatusCode } from '@opentelemetry/api'
+import { SpanStatusCode, trace } from '@opentelemetry/api'
 
 import { IUserRepository } from '@/core/user/repository/user'
 import { ICacheAdapter } from '@/infra/cache'
@@ -11,9 +11,10 @@ import { ITokenAdapter } from '@/libs/token'
 import { PERMISSION_GUARD, PUBLIC_GUARD } from '@/utils/decorators'
 import { ApiForbiddenException, ApiUnauthorizedException } from '@/utils/exception'
 import { DefaultErrorMessage } from '@/utils/http-status'
-import { IDGeneratorUtils } from '@/utils/id-generator'
-import { ObjectUtil } from '@/utils/object'
-import { AppFastifyRequest, TracingType, UserRequest } from '@/utils/request'
+import { ObjectUtils } from '@/utils/object'
+import { AppFastifyRequest, ensureTraceId, generalizePath, UserRequest } from '@/utils/request'
+
+import { name, version } from '../../../package.json'
 
 @Injectable()
 export class AuthorizationRoleGuard implements CanActivate {
@@ -38,11 +39,7 @@ export class AuthorizationRoleGuard implements CanActivate {
     const request = context.switchToHttp().getRequest<AppFastifyRequest>()
     const tokenHeader = request.headers.authorization
 
-    if (!request.headers?.traceid) {
-      request.headers.traceid = request.id || IDGeneratorUtils.uuid()
-    }
-
-    request.id = request.headers.traceid as string
+    ensureTraceId(request)
 
     if (!tokenHeader) {
       this.finishTracing(request, ApiUnauthorizedException.STATUS, 'no token provided')
@@ -67,7 +64,7 @@ export class AuthorizationRoleGuard implements CanActivate {
       return true
     }
 
-    const userId = ObjectUtil.reach(request, (o) => o.user.id)
+    const userId = ObjectUtils.reach(request, (o) => o.user.id)
 
     if (!userId) {
       this.finishTracing(request, ApiUnauthorizedException.STATUS, 'invalidToken')
@@ -102,11 +99,23 @@ export class AuthorizationRoleGuard implements CanActivate {
     return true
   }
 
-  private finishTracing(request: { tracing?: TracingType }, status: number, message: string) {
+  private finishTracing(request: AppFastifyRequest, status: number, message: string) {
     if (request?.tracing) {
       request.tracing.addAttribute('http.status_code', status)
+      request.tracing.addAttribute('error.message', message)
       request.tracing.setStatus({ message, code: SpanStatusCode.ERROR })
       request.tracing.finish()
+      return
     }
+
+    const span = trace.getTracer(name, version).startSpan(generalizePath(request.url?.split('?')[0] || '/'))
+
+    span.setAttribute('http.status_code', status)
+    if (request.headers.traceid) {
+      span.setAttribute('traceid', request.headers.traceid)
+    }
+    span.setAttribute('error.message', message)
+    span.setStatus({ message, code: SpanStatusCode.ERROR })
+    span.end()
   }
 }

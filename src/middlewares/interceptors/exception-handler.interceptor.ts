@@ -8,39 +8,68 @@ import { Observable } from 'rxjs'
 import { catchError } from 'rxjs/operators'
 import { ZodError } from 'zod'
 
-import { ApiBadRequestException, ApiInternalServerException, ApiTimeoutException } from '@/utils/exception'
-import { ObjectUtil } from '@/utils/object'
+import { NETWORK_RETRY_CODES } from '@/utils/axios'
+import {
+  ApiBadRequestException,
+  ApiExternalRequestException,
+  ApiInternalServerException,
+  ApiTimeoutException
+} from '@/utils/exception'
+import { ObjectUtils } from '@/utils/object'
 import { AppFastifyRequest } from '@/utils/request'
+import { AnyType } from '@/utils/types'
 
 @Injectable()
 export class ExceptionHandlerInterceptor implements NestInterceptor {
   intercept(executionContext: ExecutionContext, next: CallHandler): Observable<unknown> {
     return next.handle().pipe(
-      catchError((error) => {
-        error.status = this.getStatusCode(error)
+      catchError((error: AnyType) => {
+        const exception = this.toException(error)
 
         const request = executionContext.switchToHttp().getRequest<AppFastifyRequest>()
 
-        this.sanitizeExternalError(error)
-
-        if (typeof error === 'object' && !error.traceid) {
-          error.traceid = request.headers.traceid
+        if (typeof exception === 'object' && !exception.traceid) {
+          exception.traceid = request.headers.traceid as string
         }
 
-        if (!error?.context) {
-          const context = `${executionContext.getClass().name}/${executionContext.getHandler().name}`
-          error.context = context
+        if (!exception?.context) {
+          const context = `${executionContext.getClass().name}.${executionContext.getHandler().name}`
+          exception.context = context
         }
 
         if (request?.tracing) {
-          request.tracing.addAttribute('http.status_code', error.status)
-          request.tracing.setStatus({ message: error.message, code: SpanStatusCode.ERROR })
+          const statusCode = typeof exception.getStatus === 'function' ? exception.getStatus() : exception.status
+
+          request.tracing.addAttribute('http.status_code', statusCode)
+          request.tracing.setStatus({ message: exception.message, code: SpanStatusCode.ERROR })
+          request.tracing.addAttribute('error.message', exception.message)
           request.tracing.finish()
         }
 
-        throw error
+        throw exception
       })
     )
+  }
+
+  private toException(error: ZodError | AxiosError<ExternalErrorResponse> | AnyType): AnyType {
+    if (error?.isAxiosError) {
+      return this.toExternalRequestException(error)
+    }
+
+    error.status = this.getStatusCode(error)
+    return error
+  }
+
+  private toExternalRequestException(error: AxiosError<ExternalErrorResponse>): ApiExternalRequestException {
+    const status = this.getStatusCode(error)
+
+    const data = ObjectUtils.reach(error, (o) => o.response.data, {})
+    const nested = ObjectUtils.reach(data, (o) => o.error, {})
+
+    const message = ObjectUtils.firstDefined(nested.message, data.message, error.message) as string
+
+    const exception = new ApiExternalRequestException(status, message, nested ?? data, { cause: error })
+    return exception
   }
 
   private getStatusCode(error: ZodError | AxiosError<ExternalErrorResponse>): number {
@@ -50,31 +79,17 @@ export class ExceptionHandlerInterceptor implements NestInterceptor {
 
     const code = error?.code
 
-    if (code === 'ECONNABORTED' || code === 'ECONNRESET') {
+    if (code && NETWORK_RETRY_CODES.includes(code)) {
       return ApiTimeoutException.STATUS
     }
 
-    const data = ObjectUtil.reach(error, (o) => o.response.data, {})
-    const nested = ObjectUtil.reach(data, (o) => o.error, {})
+    const data = ObjectUtils.reach(error, (o) => o.response.data, {})
+    const nested = ObjectUtils.reach(data, (o) => o.error, {})
 
     return (
-      ObjectUtil.firstDefined(nested.code, data.code, error?.response?.status, error.status) ??
+      ObjectUtils.firstDefined(nested.code, data.code, error?.response?.status, error.status) ??
       ApiInternalServerException.STATUS
     )
-  }
-
-  private sanitizeExternalError(error: AxiosError<ExternalErrorResponse> & SanitizedAxiosError) {
-    if (!error?.isAxiosError || typeof error?.response !== 'object') return
-
-    const data = ObjectUtil.reach(error, (o) => o.response.data, {})
-    const nested = ObjectUtil.reach(data, (o) => o.error, {})
-
-    const status = ObjectUtil.firstDefined(data.code, nested.code, error.status)
-    const message = ObjectUtil.firstDefined(data.message, nested.message, error.message)
-
-    error.message = message as string
-    error.getResponse = () => nested ?? data
-    error.getStatus = () => status
   }
 }
 
@@ -85,9 +100,4 @@ type ExternalErrorResponse = {
     code?: number
     message?: string
   }
-}
-
-type SanitizedAxiosError = {
-  getResponse?: () => ExternalErrorResponse | ExternalErrorResponse['error']
-  getStatus?: () => number | undefined
 }
