@@ -7,7 +7,7 @@ import { Test } from '@nestjs/testing'
 import { PermissionEntity, PermissionEntitySchema } from '@/core/permission/entity/permission'
 import { IPermissionRepository } from '@/core/permission/repository/permission'
 import { CreatedModel } from '@/infra/repository'
-import { IRoleAddPermissionAdapter } from '@/modules/role/adapter'
+import { IRoleAddPermission } from '@/modules/role/interfaces'
 import { ApiNotFoundException } from '@/utils/exception'
 import { TestUtils } from '@/utils/test/utils'
 import { ZodExceptionIssue } from '@/utils/validator'
@@ -18,7 +18,7 @@ import { RoleAddPermissionUsecase } from '../role-add-permission'
 import { RoleAddPermissionInput, RoleAddPermissionSchema } from './../role-add-permission'
 
 describe(RoleAddPermissionUsecase.name, () => {
-  let usecase: IRoleAddPermissionAdapter
+  let usecase: IRoleAddPermission
   let repository: IRoleRepository
   let permissionRepository: IPermissionRepository
 
@@ -34,7 +34,7 @@ describe(RoleAddPermissionUsecase.name, () => {
           useValue: {}
         },
         {
-          provide: IRoleAddPermissionAdapter,
+          provide: IRoleAddPermission,
           useFactory: (roleRepository: IRoleRepository, permissionRepository: IPermissionRepository) => {
             return new RoleAddPermissionUsecase(roleRepository, permissionRepository)
           },
@@ -43,7 +43,7 @@ describe(RoleAddPermissionUsecase.name, () => {
       ]
     }).compile()
 
-    usecase = app.get(IRoleAddPermissionAdapter)
+    usecase = app.get(IRoleAddPermission)
     repository = app.get(IRoleRepository)
     permissionRepository = app.get(IPermissionRepository)
   })

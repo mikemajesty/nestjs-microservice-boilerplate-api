@@ -7,7 +7,7 @@ import { Test } from '@nestjs/testing'
 import { PermissionEntity, PermissionEntitySchema } from '@/core/permission/entity/permission'
 import { IPermissionRepository } from '@/core/permission/repository/permission'
 import { CreatedModel } from '@/infra/repository'
-import { IRoleDeletePermissionAdapter } from '@/modules/role/adapter'
+import { IRoleDeletePermission } from '@/modules/role/interfaces'
 import { ApiNotFoundException } from '@/utils/exception'
 import { IDGeneratorUtils } from '@/utils/id-generator'
 import { TestUtils } from '@/utils/test/utils'
@@ -22,7 +22,7 @@ import {
 } from '../role-delete-permission'
 
 describe(RoleDeletePermissionUsecase.name, () => {
-  let usecase: IRoleDeletePermissionAdapter
+  let usecase: IRoleDeletePermission
   let repository: IRoleRepository
   let permissionRepository: IPermissionRepository
 
@@ -38,7 +38,7 @@ describe(RoleDeletePermissionUsecase.name, () => {
           useValue: {}
         },
         {
-          provide: IRoleDeletePermissionAdapter,
+          provide: IRoleDeletePermission,
           useFactory: (roleRepository: IRoleRepository, permissionRepository: IPermissionRepository) => {
             return new RoleDeletePermissionUsecase(roleRepository, permissionRepository)
           },
@@ -47,7 +47,7 @@ describe(RoleDeletePermissionUsecase.name, () => {
       ]
     }).compile()
 
-    usecase = app.get(IRoleDeletePermissionAdapter)
+    usecase = app.get(IRoleDeletePermission)
     repository = app.get(IRoleRepository)
     permissionRepository = app.get(IPermissionRepository)
   })

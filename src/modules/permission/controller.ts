@@ -14,21 +14,21 @@ import { SearchHttpSchema } from '@/utils/search'
 import { SortHttpSchema } from '@/utils/sort'
 
 import {
-  IPermissionCreateAdapter,
-  IPermissionDeleteAdapter,
-  IPermissionGetByIdAdapter,
-  IPermissionListAdapter,
-  IPermissionUpdateAdapter
-} from './adapter'
+  IPermissionCreate,
+  IPermissionDelete,
+  IPermissionGetById,
+  IPermissionList,
+  IPermissionUpdate
+} from './interfaces'
 
 @Controller('permissions')
 export class PermissionController {
   constructor(
-    private readonly createUsecase: IPermissionCreateAdapter,
-    private readonly updateUsecase: IPermissionUpdateAdapter,
-    private readonly getByIdUsecase: IPermissionGetByIdAdapter,
-    private readonly listUsecase: IPermissionListAdapter,
-    private readonly deleteUsecase: IPermissionDeleteAdapter
+    private readonly createUsecase: IPermissionCreate,
+    private readonly updateUsecase: IPermissionUpdate,
+    private readonly getByIdUsecase: IPermissionGetById,
+    private readonly listUsecase: IPermissionList,
+    private readonly deleteUsecase: IPermissionDelete
   ) {}
 
   @Post()

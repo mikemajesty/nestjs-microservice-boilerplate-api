@@ -12,23 +12,23 @@ import { PermissionDeleteUsecase } from '@/core/permission/use-cases/permission-
 import { PermissionGetByIdUsecase } from '@/core/permission/use-cases/permission-get-by-id'
 import { PermissionListUsecase } from '@/core/permission/use-cases/permission-list'
 import { PermissionUpdateUsecase } from '@/core/permission/use-cases/permission-update'
-import { RedisCacheModule } from '@/infra/cache/redis'
+import { CacheRedisModule } from '@/infra/cache/redis'
 import { PermissionSchema } from '@/infra/database/postgres/schemas/permission'
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger'
 import { TokenLibModule } from '@/libs/token'
 
-import {
-  IPermissionCreateAdapter,
-  IPermissionDeleteAdapter,
-  IPermissionGetByIdAdapter,
-  IPermissionListAdapter,
-  IPermissionUpdateAdapter
-} from './adapter'
 import { PermissionController } from './controller'
+import {
+  IPermissionCreate,
+  IPermissionDelete,
+  IPermissionGetById,
+  IPermissionList,
+  IPermissionUpdate
+} from './interfaces'
 import { PermissionRepository } from './repository'
 
 @Module({
-  imports: [TokenLibModule, LoggerModule, RedisCacheModule, TypeOrmModule.forFeature([PermissionSchema])],
+  imports: [TokenLibModule, LoggerModule, CacheRedisModule, TypeOrmModule.forFeature([PermissionSchema])],
   controllers: [PermissionController],
   providers: [
     {
@@ -39,29 +39,29 @@ import { PermissionRepository } from './repository'
       inject: [getRepositoryToken(PermissionSchema)]
     },
     {
-      provide: IPermissionCreateAdapter,
+      provide: IPermissionCreate,
       useFactory: (logger: ILoggerAdapter, repository: IPermissionRepository) =>
         new PermissionCreateUsecase(repository, logger),
       inject: [ILoggerAdapter, IPermissionRepository]
     },
     {
-      provide: IPermissionUpdateAdapter,
+      provide: IPermissionUpdate,
       useFactory: (logger: ILoggerAdapter, repository: IPermissionRepository) =>
         new PermissionUpdateUsecase(repository, logger),
       inject: [ILoggerAdapter, IPermissionRepository]
     },
     {
-      provide: IPermissionGetByIdAdapter,
+      provide: IPermissionGetById,
       useFactory: (repository: IPermissionRepository) => new PermissionGetByIdUsecase(repository),
       inject: [IPermissionRepository]
     },
     {
-      provide: IPermissionListAdapter,
+      provide: IPermissionList,
       useFactory: (repository: IPermissionRepository) => new PermissionListUsecase(repository),
       inject: [IPermissionRepository]
     },
     {
-      provide: IPermissionDeleteAdapter,
+      provide: IPermissionDelete,
       useFactory: (repository: IPermissionRepository) => new PermissionDeleteUsecase(repository),
       inject: [IPermissionRepository]
     }

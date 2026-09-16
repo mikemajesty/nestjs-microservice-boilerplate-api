@@ -14,24 +14,17 @@ import { ApiRequest, UserRequest } from '@/utils/request'
 import { SearchHttpSchema } from '@/utils/search'
 import { SortHttpSchema } from '@/utils/sort'
 
-import {
-  IUserChangePasswordAdapter,
-  IUserCreateAdapter,
-  IUserDeleteAdapter,
-  IUserGetByIdAdapter,
-  IUserListAdapter,
-  IUserUpdateAdapter
-} from './adapter'
+import { IUserChangePassword, IUserCreate, IUserDelete, IUserGetById, IUserList, IUserUpdate } from './interfaces'
 
 @Controller('users')
 export class UserController {
   constructor(
-    private readonly createUsecase: IUserCreateAdapter,
-    private readonly updateUsecase: IUserUpdateAdapter,
-    private readonly deleteUsecase: IUserDeleteAdapter,
-    private readonly listUsecase: IUserListAdapter,
-    private readonly getByIdUsecase: IUserGetByIdAdapter,
-    private readonly changePassUsecase: IUserChangePasswordAdapter
+    private readonly createUsecase: IUserCreate,
+    private readonly updateUsecase: IUserUpdate,
+    private readonly deleteUsecase: IUserDelete,
+    private readonly listUsecase: IUserList,
+    private readonly getByIdUsecase: IUserGetById,
+    private readonly changePassUsecase: IUserChangePassword
   ) {}
 
   @Post()

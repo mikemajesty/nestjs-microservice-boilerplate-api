@@ -7,7 +7,7 @@ import os from 'os'
 import { Public } from '@/utils/decorators'
 
 import { version } from '../../../package.json'
-import { IHealthAdapter } from './adapter'
+import { IHealthAdapter } from './service'
 import { HealthOutput, HealthStatus } from './types'
 
 @Controller('health')

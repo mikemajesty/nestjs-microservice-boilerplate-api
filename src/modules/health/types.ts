@@ -3,7 +3,7 @@ export enum HealthStatus {
   DOWN = `DOWN 🔴`
 }
 
-export type MemotyOutput = {
+export type MemoryOutput = {
   process: {
     usedRam: string
     heapTotal: string
@@ -36,7 +36,7 @@ export type HealthOutput = {
     latency: string
     connections: number
   }
-  memory: MemotyOutput
+  memory: MemoryOutput
   cpu: {
     cpus: number
     globalAvarage: {

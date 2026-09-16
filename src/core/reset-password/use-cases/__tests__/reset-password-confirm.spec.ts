@@ -10,7 +10,7 @@ import { IUserRepository } from '@/core/user/repository/user'
 import { CreatedModel, RemovedModel } from '@/infra/repository'
 import { EmitEventOutput, IEventAdapter } from '@/libs/event'
 import { ITokenAdapter } from '@/libs/token'
-import { IConfirmResetPasswordAdapter } from '@/modules/reset-password/adapter'
+import { IConfirmResetPassword } from '@/modules/reset-password/interfaces'
 import { ApiBadRequestException, ApiNotFoundException, ApiUnauthorizedException } from '@/utils/exception'
 import { TestUtils } from '@/utils/test/utils'
 import { ZodExceptionIssue } from '@/utils/validator'
@@ -24,7 +24,7 @@ import {
 } from '../reset-password-confirm'
 
 describe(ResetPasswordConfirmUsecase.name, () => {
-  let usecase: IConfirmResetPasswordAdapter
+  let usecase: IConfirmResetPassword
   let repository: IResetPasswordRepository
   let userRepository: IUserRepository
 
@@ -53,7 +53,7 @@ describe(ResetPasswordConfirmUsecase.name, () => {
           }
         },
         {
-          provide: IConfirmResetPasswordAdapter,
+          provide: IConfirmResetPassword,
           useFactory: (
             repository: IResetPasswordRepository,
             userRepository: IUserRepository,
@@ -67,7 +67,7 @@ describe(ResetPasswordConfirmUsecase.name, () => {
       ]
     }).compile()
 
-    usecase = app.get(IConfirmResetPasswordAdapter)
+    usecase = app.get(IConfirmResetPassword)
     repository = app.get(IResetPasswordRepository)
     userRepository = app.get(IUserRepository)
   })

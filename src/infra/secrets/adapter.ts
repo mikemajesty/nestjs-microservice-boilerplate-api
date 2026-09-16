@@ -41,8 +41,8 @@ export abstract class ISecretsAdapter {
   PROMETHUES_URL!: string
   GRAFANA_URL!: string
 
-  TOKEN_EXPIRATION!: number | string
-  REFRESH_TOKEN_EXPIRATION!: number | string
+  TOKEN_EXPIRATION!: number
+  REFRESH_TOKEN_EXPIRATION!: number
 
   JWT_SECRET_KEY!: string
   JWT_REFRESH_SECRET_KEY!: string

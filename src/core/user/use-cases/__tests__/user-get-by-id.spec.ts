@@ -5,7 +5,7 @@ import { ZodMockSchema } from '@mikemajesty/zod-mock-schema'
 import { Test } from '@nestjs/testing'
 
 import { RoleEntity, RoleEntitySchema } from '@/core/role/entity/role'
-import { IUserGetByIdAdapter } from '@/modules/user/adapter'
+import { IUserGetById } from '@/modules/user/interfaces'
 import { ApiNotFoundException } from '@/utils/exception'
 import { TestUtils } from '@/utils/test/utils'
 import { ZodExceptionIssue } from '@/utils/validator'
@@ -15,7 +15,7 @@ import { IUserRepository } from '../../repository/user'
 import { UserGetByIdInput, UserGetByIdUsecase } from '../user-get-by-id'
 
 describe(UserGetByIdUsecase.name, () => {
-  let usecase: IUserGetByIdAdapter
+  let usecase: IUserGetById
   let repository: IUserRepository
 
   beforeEach(async () => {
@@ -27,7 +27,7 @@ describe(UserGetByIdUsecase.name, () => {
           useValue: {}
         },
         {
-          provide: IUserGetByIdAdapter,
+          provide: IUserGetById,
           useFactory: (userRepository: IUserRepository) => {
             return new UserGetByIdUsecase(userRepository)
           },
@@ -36,7 +36,7 @@ describe(UserGetByIdUsecase.name, () => {
       ]
     }).compile()
 
-    usecase = app.get(IUserGetByIdAdapter)
+    usecase = app.get(IUserGetById)
     repository = app.get(IUserRepository)
   })
 

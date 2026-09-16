@@ -11,7 +11,7 @@ import {
 } from '@/core/permission/use-cases/permission-delete'
 import { RoleEntity, RoleEnum } from '@/core/role/entity/role'
 import { CreatedModel } from '@/infra/repository'
-import { IPermissionDeleteAdapter } from '@/modules/permission/adapter'
+import { IPermissionDelete } from '@/modules/permission/interfaces'
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception'
 import { TestUtils } from '@/utils/test/utils'
 import { ZodExceptionIssue } from '@/utils/validator'
@@ -20,7 +20,7 @@ import { IPermissionRepository } from '../../repository/permission'
 import { PermissionEntity, PermissionEntitySchema } from './../../entity/permission'
 
 describe(PermissionDeleteUsecase.name, () => {
-  let usecase: IPermissionDeleteAdapter
+  let usecase: IPermissionDelete
   let repository: IPermissionRepository
 
   beforeEach(async () => {
@@ -31,7 +31,7 @@ describe(PermissionDeleteUsecase.name, () => {
           useValue: {}
         },
         {
-          provide: IPermissionDeleteAdapter,
+          provide: IPermissionDelete,
           useFactory: (permissionRepository: IPermissionRepository) => {
             return new PermissionDeleteUsecase(permissionRepository)
           },
@@ -40,7 +40,7 @@ describe(PermissionDeleteUsecase.name, () => {
       ]
     }).compile()
 
-    usecase = app.get(IPermissionDeleteAdapter)
+    usecase = app.get(IPermissionDelete)
     repository = app.get(IPermissionRepository)
   })
 

@@ -11,9 +11,9 @@ import { EventNameEnum } from '@/libs/event/types'
 import { ValidateSchema } from '@/utils/decorators'
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception'
 import { IDGeneratorUtils } from '@/utils/id-generator'
-import { ApiTrancingInput } from '@/utils/request'
+import { ApiTracingInput } from '@/utils/request'
 import { IUsecase } from '@/utils/usecase'
-import { Infer, InputValidator } from '@/utils/validator'
+import { InputValidator, SchemaInfer } from '@/utils/validator'
 
 import { UserEntity, UserEntitySchema } from '../entity/user'
 import { UserPasswordEntity, UserPasswordEntitySchema } from '../entity/user-password'
@@ -35,7 +35,7 @@ export class UserCreateUsecase implements IUsecase {
   ) {}
 
   @ValidateSchema(UserCreateSchema)
-  async execute(input: UserCreateInput, { tracing, user: userData }: ApiTrancingInput): Promise<UserCreateOutput> {
+  async execute(input: UserCreateInput, { tracing, user: userData }: ApiTracingInput): Promise<UserCreateOutput> {
     const roles = await this.roleRepository.findIn({ name: input.roles })
 
     if (roles.length < input.roles.length) {
@@ -75,5 +75,5 @@ export class UserCreateUsecase implements IUsecase {
   }
 }
 
-export type UserCreateInput = Infer<typeof UserCreateSchema>
+export type UserCreateInput = SchemaInfer<typeof UserCreateSchema>
 export type UserCreateOutput = CreatedModel

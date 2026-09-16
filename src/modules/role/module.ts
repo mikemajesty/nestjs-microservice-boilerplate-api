@@ -15,26 +15,26 @@ import { RoleDeletePermissionUsecase } from '@/core/role/use-cases/role-delete-p
 import { RoleGetByIdUsecase } from '@/core/role/use-cases/role-get-by-id'
 import { RoleListUsecase } from '@/core/role/use-cases/role-list'
 import { RoleUpdateUsecase } from '@/core/role/use-cases/role-update'
-import { RedisCacheModule } from '@/infra/cache/redis'
+import { CacheRedisModule } from '@/infra/cache/redis'
 import { RoleSchema } from '@/infra/database/postgres/schemas/role'
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger'
 import { TokenLibModule } from '@/libs/token'
 
 import { PermissionModule } from '../permission/module'
-import {
-  IRoleAddPermissionAdapter,
-  IRoleCreateAdapter,
-  IRoleDeleteAdapter,
-  IRoleDeletePermissionAdapter,
-  IRoleGetByIdAdapter,
-  IRoleListAdapter,
-  IRoleUpdateAdapter
-} from './adapter'
 import { RoleController } from './controller'
+import {
+  IRoleAddPermission,
+  IRoleCreate,
+  IRoleDelete,
+  IRoleDeletePermission,
+  IRoleGetById,
+  IRoleList,
+  IRoleUpdate
+} from './interfaces'
 import { RoleRepository } from './repository'
 
 @Module({
-  imports: [TokenLibModule, LoggerModule, RedisCacheModule, TypeOrmModule.forFeature([RoleSchema]), PermissionModule],
+  imports: [TokenLibModule, LoggerModule, CacheRedisModule, TypeOrmModule.forFeature([RoleSchema]), PermissionModule],
   controllers: [RoleController],
   providers: [
     {
@@ -45,38 +45,38 @@ import { RoleRepository } from './repository'
       inject: [getRepositoryToken(RoleSchema)]
     },
     {
-      provide: IRoleCreateAdapter,
+      provide: IRoleCreate,
       useFactory: (logger: ILoggerAdapter, repository: IRoleRepository) => new RoleCreateUsecase(repository, logger),
       inject: [ILoggerAdapter, IRoleRepository]
     },
     {
-      provide: IRoleUpdateAdapter,
+      provide: IRoleUpdate,
       useFactory: (logger: ILoggerAdapter, repository: IRoleRepository) => new RoleUpdateUsecase(repository, logger),
       inject: [ILoggerAdapter, IRoleRepository]
     },
     {
-      provide: IRoleGetByIdAdapter,
+      provide: IRoleGetById,
       useFactory: (repository: IRoleRepository) => new RoleGetByIdUsecase(repository),
       inject: [IRoleRepository]
     },
     {
-      provide: IRoleListAdapter,
+      provide: IRoleList,
       useFactory: (repository: IRoleRepository) => new RoleListUsecase(repository),
       inject: [IRoleRepository]
     },
     {
-      provide: IRoleDeleteAdapter,
+      provide: IRoleDelete,
       useFactory: (repository: IRoleRepository) => new RoleDeleteUsecase(repository),
       inject: [IRoleRepository]
     },
     {
-      provide: IRoleAddPermissionAdapter,
+      provide: IRoleAddPermission,
       useFactory: (repository: IRoleRepository, permissionRepository: IPermissionRepository) =>
         new RoleAddPermissionUsecase(repository, permissionRepository),
       inject: [IRoleRepository, IPermissionRepository]
     },
     {
-      provide: IRoleDeletePermissionAdapter,
+      provide: IRoleDeletePermission,
       useFactory: (repository: IRoleRepository, permissionRepository: IPermissionRepository) =>
         new RoleDeletePermissionUsecase(repository, permissionRepository),
       inject: [IRoleRepository, IPermissionRepository]

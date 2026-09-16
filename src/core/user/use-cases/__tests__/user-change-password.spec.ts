@@ -7,7 +7,7 @@ import { Test } from '@nestjs/testing'
 import { RoleEntity, RoleEntitySchema } from '@/core/role/entity/role'
 import { LoggerModule } from '@/infra/logger'
 import { CreatedModel } from '@/infra/repository'
-import { IUserChangePasswordAdapter } from '@/modules/user/adapter'
+import { IUserChangePassword } from '@/modules/user/interfaces'
 import { ApiBadRequestException, ApiNotFoundException } from '@/utils/exception'
 import { TestUtils } from '@/utils/test/utils'
 import { ZodExceptionIssue } from '@/utils/validator'
@@ -18,7 +18,7 @@ import { IUserRepository } from '../../repository/user'
 import { UserChangePasswordInput, UserChangePasswordSchema, UserChangePasswordUsecase } from '../user-change-password'
 
 describe(UserChangePasswordUsecase.name, () => {
-  let usecase: IUserChangePasswordAdapter
+  let usecase: IUserChangePassword
   let repository: IUserRepository
 
   beforeEach(async () => {
@@ -30,7 +30,7 @@ describe(UserChangePasswordUsecase.name, () => {
           useValue: {}
         },
         {
-          provide: IUserChangePasswordAdapter,
+          provide: IUserChangePassword,
           useFactory: (userRepository: IUserRepository) => {
             return new UserChangePasswordUsecase(userRepository)
           },
@@ -39,7 +39,7 @@ describe(UserChangePasswordUsecase.name, () => {
       ]
     }).compile()
 
-    usecase = app.get(IUserChangePasswordAdapter)
+    usecase = app.get(IUserChangePassword)
     repository = app.get(IUserRepository)
   })
 

@@ -48,8 +48,8 @@ import { EnvEnum } from './types'
           PROMETHUES_URL: InputValidator.url(),
           GRAFANA_URL: InputValidator.url(),
           REDIS_URL: InputValidator.url(),
-          TOKEN_EXPIRATION: InputValidator.string().or(InputValidator.number()),
-          REFRESH_TOKEN_EXPIRATION: InputValidator.string().or(InputValidator.number()),
+          TOKEN_EXPIRATION: InputValidator.number().transform((p) => Number(p)),
+          REFRESH_TOKEN_EXPIRATION: InputValidator.number().transform((p) => Number(p)),
           ZIPKIN_URL: InputValidator.url(),
           EMAIL: InputValidator.object({
             HOST: InputValidator.string(),

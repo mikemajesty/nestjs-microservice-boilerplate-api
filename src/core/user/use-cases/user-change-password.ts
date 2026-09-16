@@ -4,7 +4,7 @@
 import { ValidateSchema } from '@/utils/decorators'
 import { ApiBadRequestException, ApiNotFoundException } from '@/utils/exception'
 import { IUsecase } from '@/utils/usecase'
-import { Infer, InputValidator } from '@/utils/validator'
+import { InputValidator, SchemaInfer } from '@/utils/validator'
 
 import { UserEntitySchema } from '../entity/user'
 import { UserPasswordEntity } from '../entity/user-password'
@@ -45,5 +45,5 @@ export class UserChangePasswordUsecase implements IUsecase {
   }
 }
 
-export type UserChangePasswordInput = Infer<typeof UserChangePasswordSchema>
+export type UserChangePasswordInput = SchemaInfer<typeof UserChangePasswordSchema>
 export type UserChangePasswordOutput = void

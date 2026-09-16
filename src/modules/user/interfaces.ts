@@ -7,29 +7,29 @@ import { UserDeleteInput, UserDeleteOutput } from '@/core/user/use-cases/user-de
 import { UserGetByIdInput, UserGetByIdOutput } from '@/core/user/use-cases/user-get-by-id'
 import { UserListInput, UserListOutput } from '@/core/user/use-cases/user-list'
 import { UserUpdateInput, UserUpdateOutput } from '@/core/user/use-cases/user-update'
-import { ApiTrancingInput } from '@/utils/request'
+import { ApiTracingInput } from '@/utils/request'
 import { IUsecase } from '@/utils/usecase'
 
-export abstract class IUserCreateAdapter implements IUsecase {
-  abstract execute(input: UserCreateInput, trace: ApiTrancingInput): Promise<UserCreateOutput>
+export abstract class IUserCreate implements IUsecase {
+  abstract execute(input: UserCreateInput, trace: ApiTracingInput): Promise<UserCreateOutput>
 }
 
-export abstract class IUserUpdateAdapter implements IUsecase {
-  abstract execute(input: UserUpdateInput, trace: ApiTrancingInput): Promise<UserUpdateOutput>
+export abstract class IUserUpdate implements IUsecase {
+  abstract execute(input: UserUpdateInput, trace: ApiTracingInput): Promise<UserUpdateOutput>
 }
 
-export abstract class IUserListAdapter implements IUsecase {
+export abstract class IUserList implements IUsecase {
   abstract execute(input: UserListInput): Promise<UserListOutput>
 }
 
-export abstract class IUserDeleteAdapter implements IUsecase {
-  abstract execute(input: UserDeleteInput, trace: ApiTrancingInput): Promise<UserDeleteOutput>
+export abstract class IUserDelete implements IUsecase {
+  abstract execute(input: UserDeleteInput, trace: ApiTracingInput): Promise<UserDeleteOutput>
 }
 
-export abstract class IUserGetByIdAdapter implements IUsecase {
+export abstract class IUserGetById implements IUsecase {
   abstract execute(input: UserGetByIdInput): Promise<UserGetByIdOutput>
 }
 
-export abstract class IUserChangePasswordAdapter implements IUsecase {
+export abstract class IUserChangePassword implements IUsecase {
   abstract execute(input: UserChangePasswordInput): Promise<UserChangePasswordOutput>
 }

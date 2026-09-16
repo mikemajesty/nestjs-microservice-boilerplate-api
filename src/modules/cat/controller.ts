@@ -13,16 +13,16 @@ import { ApiRequest } from '@/utils/request'
 import { SearchHttpSchema } from '@/utils/search'
 import { SortHttpSchema } from '@/utils/sort'
 
-import { ICatCreateAdapter, ICatDeleteAdapter, ICatGetByIdAdapter, ICatListAdapter, ICatUpdateAdapter } from './adapter'
+import { ICatCreate, ICatDelete, ICatGetById, ICatList, ICatUpdate } from './interfaces'
 
 @Controller('cats')
 export class CatController {
   constructor(
-    private readonly createUsecase: ICatCreateAdapter,
-    private readonly updateUsecase: ICatUpdateAdapter,
-    private readonly getByIdUsecase: ICatGetByIdAdapter,
-    private readonly listUsecase: ICatListAdapter,
-    private readonly deleteUsecase: ICatDeleteAdapter
+    private readonly createUsecase: ICatCreate,
+    private readonly updateUsecase: ICatUpdate,
+    private readonly getByIdUsecase: ICatGetById,
+    private readonly listUsecase: ICatList,
+    private readonly deleteUsecase: ICatDelete
   ) {}
 
   @Post()

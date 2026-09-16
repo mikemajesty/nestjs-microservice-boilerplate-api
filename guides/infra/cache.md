@@ -3,6 +3,7 @@
 ## Problem
 
 Caching in applications requires:
+
 - Choosing between Redis (distributed) or in-memory (local) cache
 - Changing cache provider means rewriting all code that uses it
 - Different APIs for each cache library
@@ -25,6 +26,7 @@ await client.hSet('hash', 'field', 'value')
 ## Solution
 
 The **ICacheAdapter** provides a single interface for both cache providers:
+
 - **RedisService** — Distributed cache (production)
 - **MemoryCacheService** — In-memory cache (development/tests)
 
@@ -142,20 +144,20 @@ const user = await this.cache.hGetAll('user:123')
 
 ## Provider Differences
 
-| Method | Redis | Memory (node-cache) |
-|--------|-------|---------------------|
-| `set` | ✅ | ✅ |
-| `get` | ✅ | ✅ |
-| `del` | ✅ | ✅ |
-| `has` | ✅ | ✅ |
-| `mSet` | ✅ | ✅ |
-| `mGet` | ✅ | ✅ |
-| `pExpire` | ✅ | ✅ |
-| `hGet` | ✅ | ❌ |
-| `hSet` | ✅ | ❌ |
-| `hGetAll` | ✅ | ❌ |
-| `setMulti` | ✅ | ❌ |
-| `ping` | ✅ | ❌ |
+| Method     | Redis | Memory (node-cache) |
+| ---------- | ----- | ------------------- |
+| `set`      | ✅    | ✅                  |
+| `get`      | ✅    | ✅                  |
+| `del`      | ✅    | ✅                  |
+| `has`      | ✅    | ✅                  |
+| `mSet`     | ✅    | ✅                  |
+| `mGet`     | ✅    | ✅                  |
+| `pExpire`  | ✅    | ✅                  |
+| `hGet`     | ✅    | ❌                  |
+| `hSet`     | ✅    | ❌                  |
+| `hGetAll`  | ✅    | ❌                  |
+| `setMulti` | ✅    | ❌                  |
+| `ping`     | ✅    | ❌                  |
 
 > **Note:** Hash operations (`hGet`, `hSet`, `hGetAll`) are Redis-specific. MemoryCacheService doesn't implement them.
 
@@ -168,7 +170,7 @@ The logout feature uses cache to store invalidated tokens:
 ```typescript
 // src/modules/logout/module.ts
 @Module({
-  imports: [RedisCacheModule],
+  imports: [CacheRedisModule],
   providers: [
     {
       provide: ILogoutAdapter,
@@ -192,8 +194,8 @@ export class LogoutUsecase {
 
   async execute(token: string) {
     // Store invalidated token until it expires
-    await this.cache.set(`blacklist:${token}`, 'invalid', { 
-      EX: this.secrets.JWT.EXPIRATION 
+    await this.cache.set(`blacklist:${token}`, 'invalid', {
+      EX: this.secrets.JWT.EXPIRATION
     })
   }
 }
@@ -206,9 +208,9 @@ export class LogoutUsecase {
 ### Production (Redis)
 
 ```typescript
-// Import RedisCacheModule
+// Import CacheRedisModule
 @Module({
-  imports: [RedisCacheModule],
+  imports: [CacheRedisModule],
   // ...
 })
 ```

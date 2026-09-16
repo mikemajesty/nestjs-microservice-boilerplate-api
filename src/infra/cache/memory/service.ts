@@ -7,10 +7,19 @@ import NodeCache from 'node-cache'
 import { ILoggerAdapter } from '@/infra/logger'
 
 import { ICacheAdapter } from '../adapter'
-import { MemoryCacheKeyArgument, MemoryCacheSetType, MemoryCacheTTL, MemoryCacheValueArgument } from './types'
+import { CacheSetConfigInput } from '../types'
+import {
+  CacheMemoryKeyArgument,
+  CacheMemorySetConfigInput,
+  CacheMemorySetType,
+  CacheMemoryValueArgument
+} from './types'
 
 @Injectable()
-export class MemoryCacheService implements Partial<ICacheAdapter<NodeCache>> {
+export class CacheMemoryService implements Omit<
+  ICacheAdapter<NodeCache>,
+  'hGet' | 'hSet' | 'hGetAll' | 'setMulti' | 'ping' | 'setNX' | 'eval' | 'multiExec'
+> {
   client!: NodeCache
 
   constructor(private readonly logger: ILoggerAdapter) {}
@@ -21,7 +30,7 @@ export class MemoryCacheService implements Partial<ICacheAdapter<NodeCache>> {
     return this.client
   }
 
-  mSet<TSet extends MemoryCacheSetType = MemoryCacheSetType>(model: TSet[]): boolean {
+  mSet<TSet extends CacheMemorySetType = CacheMemorySetType>(model: TSet[]): boolean {
     return this.client.mset(model)
   }
 
@@ -33,23 +42,30 @@ export class MemoryCacheService implements Partial<ICacheAdapter<NodeCache>> {
     return this.client.has(key)
   }
 
-  set<TKey = MemoryCacheKeyArgument, TValue = MemoryCacheValueArgument, TConf = MemoryCacheTTL>(
-    key: TKey,
-    value: TValue,
-    config?: TConf
-  ): void {
-    this.client.set(key as MemoryCacheKeyArgument, value, config as MemoryCacheTTL)
+  set<
+    TKey = CacheMemoryKeyArgument,
+    TValue = CacheMemoryValueArgument,
+    TConf extends CacheSetConfigInput = CacheMemorySetConfigInput
+  >(key: TKey, value: TValue, config?: TConf): void {
+    const options = config as CacheMemorySetConfigInput
+    this.client.set(key as CacheMemoryKeyArgument, value, options?.ttlSeconds as number)
   }
 
-  del<TKey = MemoryCacheKeyArgument>(key: TKey): boolean {
-    return !!this.client.del(key as MemoryCacheKeyArgument)
+  del<TKey = CacheMemoryKeyArgument | CacheMemoryKeyArgument[]>(key: TKey | TKey[]): boolean {
+    if (Array.isArray(key)) {
+      if (key.length === 0) return false
+
+      return !!this.client.del(key as CacheMemoryKeyArgument[])
+    }
+
+    return !!this.client.del(key as CacheMemoryKeyArgument)
   }
 
-  get<TKey = MemoryCacheKeyArgument>(key: TKey): string {
-    return this.client.get(key as MemoryCacheKeyArgument) as string
+  get<TKey = CacheMemoryKeyArgument>(key: TKey): string {
+    return this.client.get(key as CacheMemoryKeyArgument) as string
   }
 
-  pExpire<TCache = MemoryCacheKeyArgument>(key: TCache, ttl: number): boolean {
-    return this.client.ttl(key as MemoryCacheKeyArgument, ttl)
+  pExpire<TCache = CacheMemoryKeyArgument>(key: TCache, ttl: number): boolean {
+    return this.client.ttl(key as CacheMemoryKeyArgument, ttl)
   }
 }

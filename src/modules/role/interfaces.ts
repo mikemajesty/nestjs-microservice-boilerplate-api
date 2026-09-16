@@ -10,30 +10,30 @@ import { RoleListInput, RoleListOutput } from '@/core/role/use-cases/role-list'
 import { RoleUpdateInput, RoleUpdateOutput } from '@/core/role/use-cases/role-update'
 import { IUsecase } from '@/utils/usecase'
 
-export abstract class IRoleCreateAdapter implements IUsecase {
+export abstract class IRoleCreate implements IUsecase {
   abstract execute(input: RoleCreateInput): Promise<RoleCreateOutput>
 }
 
-export abstract class IRoleUpdateAdapter implements IUsecase {
+export abstract class IRoleUpdate implements IUsecase {
   abstract execute(input: RoleUpdateInput): Promise<RoleUpdateOutput>
 }
 
-export abstract class IRoleGetByIdAdapter implements IUsecase {
+export abstract class IRoleGetById implements IUsecase {
   abstract execute(input: RoleGetByIdInput): Promise<RoleGetByIdOutput>
 }
 
-export abstract class IRoleListAdapter implements IUsecase {
+export abstract class IRoleList implements IUsecase {
   abstract execute(input: RoleListInput): Promise<RoleListOutput>
 }
 
-export abstract class IRoleDeleteAdapter implements IUsecase {
+export abstract class IRoleDelete implements IUsecase {
   abstract execute(input: RoleDeleteInput): Promise<RoleDeleteOutput>
 }
 
-export abstract class IRoleAddPermissionAdapter implements IUsecase {
+export abstract class IRoleAddPermission implements IUsecase {
   abstract execute(input: RoleAddPermissionInput): Promise<RoleAddPermissionOutput>
 }
 
-export abstract class IRoleDeletePermissionAdapter implements IUsecase {
+export abstract class IRoleDeletePermission implements IUsecase {
   abstract execute(input: RoleDeletePermissionInput): Promise<RoleDeletePermissionOutput>
 }

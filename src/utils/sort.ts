@@ -3,7 +3,7 @@
  */
 import { z } from 'zod'
 
-import { Infer, InputValidator } from './validator'
+import { InputValidator, SchemaInfer } from './validator'
 
 export enum SortEnum {
   asc = 1,
@@ -59,4 +59,4 @@ export const SortSchema = InputValidator.object({
     .default({})
 })
 
-export type SortInput = Infer<typeof SortSchema>
+export type SortInput = SchemaInfer<typeof SortSchema>

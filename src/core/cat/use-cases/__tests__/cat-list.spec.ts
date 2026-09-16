@@ -6,7 +6,7 @@ import { Test } from '@nestjs/testing'
 
 import { CatListInput, CatListOutput, CatListSchema, CatListUsecase } from '@/core/cat/use-cases/cat-list'
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger'
-import { ICatListAdapter } from '@/modules/cat/adapter'
+import { ICatList } from '@/modules/cat/interfaces'
 import { TestUtils } from '@/utils/test/utils'
 import { ZodExceptionIssue } from '@/utils/validator'
 
@@ -14,7 +14,7 @@ import { CatEntity, CatEntitySchema } from '../../entity/cat'
 import { ICatRepository } from '../../repository/cat'
 
 describe(CatListUsecase.name, () => {
-  let usecase: ICatListAdapter
+  let usecase: ICatList
   let repository: ICatRepository
 
   beforeEach(async () => {
@@ -26,7 +26,7 @@ describe(CatListUsecase.name, () => {
           useValue: {}
         },
         {
-          provide: ICatListAdapter,
+          provide: ICatList,
           useFactory: (catRepository: ICatRepository) => {
             return new CatListUsecase(catRepository)
           },
@@ -35,7 +35,7 @@ describe(CatListUsecase.name, () => {
       ]
     }).compile()
 
-    usecase = app.get(ICatListAdapter)
+    usecase = app.get(ICatList)
     repository = app.get(ICatRepository)
   })
 

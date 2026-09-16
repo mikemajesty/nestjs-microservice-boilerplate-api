@@ -5,7 +5,7 @@ import { ZodMockSchema } from '@mikemajesty/zod-mock-schema'
 import { Test } from '@nestjs/testing'
 
 import { CreatedModel } from '@/infra/repository'
-import { ICatCreateAdapter } from '@/modules/cat/adapter'
+import { ICatCreate } from '@/modules/cat/interfaces'
 import { ApiInternalServerException } from '@/utils/exception'
 import { TestUtils } from '@/utils/test/utils'
 import { ZodExceptionIssue } from '@/utils/validator'
@@ -15,7 +15,7 @@ import { ICatRepository } from '../../repository/cat'
 import { CatCreateInput, CatCreateUsecase } from '../cat-create'
 
 describe(CatCreateUsecase.name, () => {
-  let usecase: ICatCreateAdapter
+  let usecase: ICatCreate
   let repository: ICatRepository
 
   beforeEach(async () => {
@@ -27,7 +27,7 @@ describe(CatCreateUsecase.name, () => {
           useValue: {}
         },
         {
-          provide: ICatCreateAdapter,
+          provide: ICatCreate,
           useFactory: (catRepository: ICatRepository) => {
             return new CatCreateUsecase(catRepository)
           },
@@ -36,7 +36,7 @@ describe(CatCreateUsecase.name, () => {
       ]
     }).compile()
 
-    usecase = app.get(ICatCreateAdapter)
+    usecase = app.get(ICatCreate)
     repository = app.get(ICatRepository)
   })
 

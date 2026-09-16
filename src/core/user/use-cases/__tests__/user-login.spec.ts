@@ -3,7 +3,7 @@ import { Test } from '@nestjs/testing'
 
 import { RoleEntity, RoleEntitySchema } from '@/core/role/entity/role'
 import { ITokenAdapter, TokenLibModule } from '@/libs/token'
-import { ILoginAdapter } from '@/modules/login/adapter'
+import { ILogin } from '@/modules/login/interfaces'
 import { ApiBadRequestException, ApiNotFoundException } from '@/utils/exception'
 import { TestUtils } from '@/utils/test/utils'
 import { ZodExceptionIssue } from '@/utils/validator'
@@ -14,7 +14,7 @@ import { IUserRepository } from '../../repository/user'
 import { LoginInput, LoginOutput, LoginSchema, LoginUsecase } from '../user-login'
 
 describe(LoginUsecase.name, () => {
-  let usecase: ILoginAdapter
+  let usecase: ILogin
   let repository: IUserRepository
 
   beforeEach(async () => {
@@ -26,7 +26,7 @@ describe(LoginUsecase.name, () => {
           useValue: {}
         },
         {
-          provide: ILoginAdapter,
+          provide: ILogin,
           useFactory: (userRepository: IUserRepository, token: ITokenAdapter) => {
             return new LoginUsecase(userRepository, token)
           },
@@ -35,7 +35,7 @@ describe(LoginUsecase.name, () => {
       ]
     }).compile()
 
-    usecase = app.get(ILoginAdapter)
+    usecase = app.get(ILogin)
     repository = app.get(IUserRepository)
   })
 

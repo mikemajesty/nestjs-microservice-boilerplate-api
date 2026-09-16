@@ -6,7 +6,7 @@ import { CreatedModel } from '@/infra/repository'
 import { ValidateSchema } from '@/utils/decorators'
 import { IDGeneratorUtils } from '@/utils/id-generator'
 import { IUsecase } from '@/utils/usecase'
-import { Infer } from '@/utils/validator'
+import { SchemaInfer } from '@/utils/validator'
 
 import { IRoleRepository } from '../repository/role'
 import { RoleEntity, RoleEntitySchema } from './../entity/role'
@@ -33,5 +33,5 @@ export class RoleCreateUsecase implements IUsecase {
   }
 }
 
-export type RoleCreateInput = Infer<typeof RoleCreateSchema>
+export type RoleCreateInput = SchemaInfer<typeof RoleCreateSchema>
 export type RoleCreateOutput = CreatedModel

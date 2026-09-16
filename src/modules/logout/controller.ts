@@ -7,17 +7,17 @@ import { LogoutInput, LogoutOutput } from '@/core/user/use-cases/user-logout'
 import { Permission } from '@/utils/decorators'
 import { ApiRequest } from '@/utils/request'
 
-import { ILogoutAdapter } from './adapter'
+import { ILogout } from './interfaces'
 
 @Controller()
 export class LogoutController {
-  constructor(private readonly logoutUsecase: ILogoutAdapter) {}
+  constructor(private readonly logoutUsecase: ILogout) {}
 
   @Post('/logout')
   @HttpCode(401)
   @Version('1')
   @Permission('user:logout')
-  async logout(@Req() { body, user, tracing }: ApiRequest): LogoutOutput {
+  async logout(@Req() { body, user, tracing }: ApiRequest): Promise<LogoutOutput> {
     return this.logoutUsecase.execute(body as LogoutInput, { user, tracing })
   }
 }

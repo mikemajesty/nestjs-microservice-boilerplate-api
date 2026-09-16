@@ -4,9 +4,9 @@
 import { CreatedModel } from '@/infra/repository'
 import { ValidateSchema } from '@/utils/decorators'
 import { IDGeneratorUtils } from '@/utils/id-generator'
-import { ApiTrancingInput } from '@/utils/request'
+import { ApiTracingInput } from '@/utils/request'
 import { IUsecase } from '@/utils/usecase'
-import { Infer } from '@/utils/validator'
+import { SchemaInfer } from '@/utils/validator'
 
 import { CatEntity, CatEntitySchema } from '../entity/cat'
 import { ICatRepository } from '../repository/cat'
@@ -21,7 +21,7 @@ export class CatCreateUsecase implements IUsecase {
   constructor(private readonly catRepository: ICatRepository) {}
 
   @ValidateSchema(CatCreateSchema)
-  async execute(input: CatCreateInput, { tracing, user }: ApiTrancingInput): Promise<CatCreateOutput> {
+  async execute(input: CatCreateInput, { tracing, user }: ApiTracingInput): Promise<CatCreateOutput> {
     const entity = new CatEntity({ id: IDGeneratorUtils.uuid(), ...input })
 
     const created = await this.catRepository.create(entity.toObject())
@@ -32,5 +32,5 @@ export class CatCreateUsecase implements IUsecase {
   }
 }
 
-export type CatCreateInput = Infer<typeof CatCreateSchema>
+export type CatCreateInput = SchemaInfer<typeof CatCreateSchema>
 export type CatCreateOutput = CreatedModel

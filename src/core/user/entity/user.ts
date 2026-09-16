@@ -3,7 +3,7 @@
  */
 import { RoleEntity, RoleEntitySchema } from '@/core/role/entity/role'
 import { BaseEntity } from '@/utils/entity'
-import { Infer, InputValidator } from '@/utils/validator'
+import { InputValidator, SchemaInfer } from '@/utils/validator'
 
 import { UserPasswordEntity, UserPasswordEntitySchema } from './user-password'
 
@@ -27,7 +27,7 @@ export const UserEntitySchema = InputValidator.object({
   deletedAt: DeletedAt
 })
 
-type User = Infer<typeof UserEntitySchema>
+type User = SchemaInfer<typeof UserEntitySchema>
 
 export class UserEntity extends BaseEntity<UserEntity>() {
   name!: User['name']

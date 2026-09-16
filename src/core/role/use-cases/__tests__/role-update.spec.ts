@@ -6,7 +6,7 @@ import { Test } from '@nestjs/testing'
 
 import { ILoggerAdapter } from '@/infra/logger'
 import { CreatedModel } from '@/infra/repository'
-import { IRoleUpdateAdapter } from '@/modules/role/adapter'
+import { IRoleUpdate } from '@/modules/role/interfaces'
 import { ApiNotFoundException } from '@/utils/exception'
 import { TestUtils } from '@/utils/test/utils'
 import { ZodExceptionIssue } from '@/utils/validator'
@@ -16,7 +16,7 @@ import { RoleUpdateInput, RoleUpdateSchema, RoleUpdateUsecase } from '../role-up
 import { RoleEntity, RoleEntitySchema } from './../../entity/role'
 
 describe(RoleUpdateUsecase.name, () => {
-  let usecase: IRoleUpdateAdapter
+  let usecase: IRoleUpdate
   let repository: IRoleRepository
 
   beforeEach(async () => {
@@ -33,7 +33,7 @@ describe(RoleUpdateUsecase.name, () => {
           }
         },
         {
-          provide: IRoleUpdateAdapter,
+          provide: IRoleUpdate,
           useFactory: (roleRepository: IRoleRepository, logger: ILoggerAdapter) => {
             return new RoleUpdateUsecase(roleRepository, logger)
           },
@@ -42,7 +42,7 @@ describe(RoleUpdateUsecase.name, () => {
       ]
     }).compile()
 
-    usecase = app.get(IRoleUpdateAdapter)
+    usecase = app.get(IRoleUpdate)
     repository = app.get(IRoleRepository)
   })
 

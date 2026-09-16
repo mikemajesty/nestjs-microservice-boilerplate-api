@@ -5,7 +5,7 @@ import { ZodMockSchema } from '@mikemajesty/zod-mock-schema'
 import { Test } from '@nestjs/testing'
 
 import { ILoggerAdapter } from '@/infra/logger'
-import { IRoleCreateAdapter } from '@/modules/role/adapter'
+import { IRoleCreate } from '@/modules/role/interfaces'
 import { TestUtils } from '@/utils/test/utils'
 import { ZodExceptionIssue } from '@/utils/validator'
 
@@ -13,7 +13,7 @@ import { IRoleRepository } from '../../repository/role'
 import { RoleCreateInput, RoleCreateOutput, RoleCreateSchema, RoleCreateUsecase } from '../role-create'
 
 describe(RoleCreateUsecase.name, () => {
-  let usecase: IRoleCreateAdapter
+  let usecase: IRoleCreate
   let repository: IRoleRepository
 
   beforeEach(async () => {
@@ -30,7 +30,7 @@ describe(RoleCreateUsecase.name, () => {
           }
         },
         {
-          provide: IRoleCreateAdapter,
+          provide: IRoleCreate,
           useFactory: (roleRepository: IRoleRepository, logger: ILoggerAdapter) => {
             return new RoleCreateUsecase(roleRepository, logger)
           },
@@ -39,7 +39,7 @@ describe(RoleCreateUsecase.name, () => {
       ]
     }).compile()
 
-    usecase = app.get(IRoleCreateAdapter)
+    usecase = app.get(IRoleCreate)
     repository = app.get(IRoleRepository)
   })
 

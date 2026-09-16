@@ -1,7 +1,7 @@
 /**
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/utils/search.md
  */
-import { Infer, InputValidator } from './validator'
+import { InputValidator, SchemaInfer } from './validator'
 
 export type SearchInput<T> = { search: T | Partial<T> | null }
 
@@ -50,7 +50,7 @@ export const SearchHttpSchema = InputValidator.string()
     return search
   })
 
-export type SearchHttpSchemaInput = Infer<typeof SearchHttpSchema>
+export type SearchHttpSchemaInput = SchemaInfer<typeof SearchHttpSchema>
 
 export const SearchSchema = InputValidator.object({
   search: InputValidator.record(

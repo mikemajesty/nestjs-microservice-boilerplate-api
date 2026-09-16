@@ -12,7 +12,7 @@ import { CreatedModel } from '@/infra/repository'
 import { ISecretsAdapter } from '@/infra/secrets'
 import { EmitEventOutput, IEventAdapter } from '@/libs/event'
 import { ITokenAdapter, TokenSignOutput } from '@/libs/token'
-import { IConfirmResetPasswordAdapter, ISendEmailResetPasswordAdapter } from '@/modules/reset-password/adapter'
+import { IConfirmResetPassword, ISendEmailResetPassword } from '@/modules/reset-password/interfaces'
 import { ApiNotFoundException } from '@/utils/exception'
 import { TestUtils } from '@/utils/test/utils'
 import { ZodExceptionIssue } from '@/utils/validator'
@@ -22,7 +22,7 @@ import { IResetPasswordRepository } from '../../repository/reset-password'
 import { ResetPasswordSendEmailInput, ResetPasswordSendEmailUsecase } from '../reset-password-send-email'
 
 describe(ResetPasswordSendEmailUsecase.name, () => {
-  let usecase: ISendEmailResetPasswordAdapter
+  let usecase: ISendEmailResetPassword
   let repository: IResetPasswordRepository
   let userRepository: IUserRepository
 
@@ -57,7 +57,7 @@ describe(ResetPasswordSendEmailUsecase.name, () => {
           }
         },
         {
-          provide: IConfirmResetPasswordAdapter,
+          provide: IConfirmResetPassword,
           useFactory: (
             repository: IResetPasswordRepository,
             userRepository: IUserRepository,
@@ -72,7 +72,7 @@ describe(ResetPasswordSendEmailUsecase.name, () => {
       ]
     }).compile()
 
-    usecase = app.get(IConfirmResetPasswordAdapter)
+    usecase = app.get(IConfirmResetPassword)
     repository = app.get(IResetPasswordRepository)
     userRepository = app.get(IUserRepository)
   })

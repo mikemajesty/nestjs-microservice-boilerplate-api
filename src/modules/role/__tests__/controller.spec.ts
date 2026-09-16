@@ -4,6 +4,7 @@
 import { INestApplication } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
 import { getRepositoryToken } from '@nestjs/typeorm'
+import Redis from 'ioredis'
 import request from 'supertest'
 import { Repository } from 'typeorm'
 
@@ -15,7 +16,7 @@ import { RoleListOutput } from '@/core/role/use-cases/role-list'
 import { RoleUpdateOutput } from '@/core/role/use-cases/role-update'
 import { IUserRepository } from '@/core/user/repository/user'
 import { ICacheAdapter } from '@/infra/cache'
-import { RedisCacheModule } from '@/infra/cache/redis'
+import { CacheRedisModule } from '@/infra/cache/redis'
 import { RoleSchema } from '@/infra/database/postgres/schemas/role'
 import { ITokenAdapter } from '@/libs/token/adapter'
 import { TokenLibModule } from '@/libs/token/module'
@@ -38,7 +39,7 @@ describe(RoleController.name, () => {
   const tokenValue = TestEnd2EndUtils.AUTHORIZATION_HEADER[1].split(' ')[1]
 
   let app: INestApplication
-  let redisService: ICacheAdapter
+  let redisService: ICacheAdapter<Redis>
   let roleRepository: IRoleRepository
   let permissionRepository: IPermissionRepository
   let userRepository: IUserRepository
@@ -59,7 +60,7 @@ describe(RoleController.name, () => {
         UserModule,
         RoleModule,
         TokenLibModule,
-        RedisCacheModule,
+        CacheRedisModule,
         TestEnd2EndUtils.getPostgresModule(postgresContainer, postgresConfig)
       ],
       providers: [TestEnd2EndUtils.getGuardProvider([IUserRepository])]
@@ -196,7 +197,7 @@ describe(RoleController.name, () => {
     await userFixture.down(userRepository)
     await roleFixture.down(roleRepository)
     await permissionFixture.down(permissionRepository)
-    await redisService.client.flushAll()
+    await redisService.client.flushall()
     await postgresContainer.close()
     await redisContainer.close()
     await app.close()

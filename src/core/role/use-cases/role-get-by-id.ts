@@ -5,7 +5,7 @@ import { RoleEntitySchema } from '@/core/role/entity/role'
 import { ValidateSchema } from '@/utils/decorators'
 import { ApiNotFoundException } from '@/utils/exception'
 import { IUsecase } from '@/utils/usecase'
-import { Infer } from '@/utils/validator'
+import { SchemaInfer } from '@/utils/validator'
 
 import { RoleEntity } from '../entity/role'
 import { IRoleRepository } from '../repository/role'
@@ -29,5 +29,5 @@ export class RoleGetByIdUsecase implements IUsecase {
   }
 }
 
-export type RoleGetByIdInput = Infer<typeof RoleGetByIdSchema>
+export type RoleGetByIdInput = SchemaInfer<typeof RoleGetByIdSchema>
 export type RoleGetByIdOutput = RoleEntity

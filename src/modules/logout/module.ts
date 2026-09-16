@@ -5,26 +5,26 @@ import { Module } from '@nestjs/common'
 
 import { LogoutUsecase } from '@/core/user/use-cases/user-logout'
 import { ICacheAdapter } from '@/infra/cache'
-import { RedisCacheModule } from '@/infra/cache/redis'
+import { CacheRedisModule } from '@/infra/cache/redis'
 import { LoggerModule } from '@/infra/logger'
 import { ISecretsAdapter, SecretsModule } from '@/infra/secrets'
 
 import { TokenLibModule } from '../../libs/token/module'
-import { ILogoutAdapter } from './adapter'
 import { LogoutController } from './controller'
+import { ILogout } from './interfaces'
 
 @Module({
-  imports: [RedisCacheModule, SecretsModule, RedisCacheModule, TokenLibModule, LoggerModule],
+  imports: [CacheRedisModule, SecretsModule, CacheRedisModule, TokenLibModule, LoggerModule],
   controllers: [LogoutController],
   providers: [
     {
-      provide: ILogoutAdapter,
+      provide: ILogout,
       useFactory: (cache: ICacheAdapter, secrets: ISecretsAdapter) => {
         return new LogoutUsecase(cache, secrets)
       },
       inject: [ICacheAdapter, ISecretsAdapter]
     }
   ],
-  exports: [ILogoutAdapter]
+  exports: [ILogout]
 })
 export class LogoutModule {}

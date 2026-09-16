@@ -6,7 +6,7 @@ import { Test } from '@nestjs/testing'
 
 import { RoleEntity, RoleEntitySchema } from '@/core/role/entity/role'
 import { ITokenAdapter, TokenSignOutput } from '@/libs/token'
-import { IRefreshTokenAdapter } from '@/modules/login/adapter'
+import { IRefreshToken } from '@/modules/login/interfaces'
 import { ApiBadRequestException, ApiNotFoundException } from '@/utils/exception'
 import { TestUtils } from '@/utils/test/utils'
 import { ZodExceptionIssue } from '@/utils/validator'
@@ -22,7 +22,7 @@ import {
 } from '../user-refresh-token'
 
 describe(RefreshTokenUsecase.name, () => {
-  let usecase: IRefreshTokenAdapter
+  let usecase: IRefreshToken
   let repository: IUserRepository
   let token: ITokenAdapter
 
@@ -41,7 +41,7 @@ describe(RefreshTokenUsecase.name, () => {
           }
         },
         {
-          provide: IRefreshTokenAdapter,
+          provide: IRefreshToken,
           useFactory: (repository: IUserRepository, token: ITokenAdapter) => {
             return new RefreshTokenUsecase(repository, token)
           },
@@ -50,7 +50,7 @@ describe(RefreshTokenUsecase.name, () => {
       ]
     }).compile()
 
-    usecase = app.get(IRefreshTokenAdapter)
+    usecase = app.get(IRefreshToken)
     repository = app.get(IUserRepository)
     token = app.get(ITokenAdapter)
   })

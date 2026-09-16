@@ -4,7 +4,7 @@
 import { ZodMockSchema } from '@mikemajesty/zod-mock-schema'
 import { Test } from '@nestjs/testing'
 
-import { IPermissionGetByIdAdapter } from '@/modules/permission/adapter'
+import { IPermissionGetById } from '@/modules/permission/interfaces'
 import { ApiNotFoundException } from '@/utils/exception'
 import { TestUtils } from '@/utils/test/utils'
 import { ZodExceptionIssue } from '@/utils/validator'
@@ -14,7 +14,7 @@ import { PermissionGetByIdInput, PermissionGetByIdSchema, PermissionGetByIdUseca
 import { PermissionEntity, PermissionEntitySchema } from './../../entity/permission'
 
 describe(PermissionGetByIdUsecase.name, () => {
-  let usecase: IPermissionGetByIdAdapter
+  let usecase: IPermissionGetById
   let repository: IPermissionRepository
 
   beforeEach(async () => {
@@ -25,7 +25,7 @@ describe(PermissionGetByIdUsecase.name, () => {
           useValue: {}
         },
         {
-          provide: IPermissionGetByIdAdapter,
+          provide: IPermissionGetById,
           useFactory: (permissionRepository: IPermissionRepository) => {
             return new PermissionGetByIdUsecase(permissionRepository)
           },
@@ -34,7 +34,7 @@ describe(PermissionGetByIdUsecase.name, () => {
       ]
     }).compile()
 
-    usecase = app.get(IPermissionGetByIdAdapter)
+    usecase = app.get(IPermissionGetById)
     repository = app.get(IPermissionRepository)
   })
 

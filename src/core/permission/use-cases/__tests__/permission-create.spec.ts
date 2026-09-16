@@ -6,7 +6,7 @@ import { Test } from '@nestjs/testing'
 
 import { ILoggerAdapter } from '@/infra/logger'
 import { CreatedModel } from '@/infra/repository'
-import { IPermissionCreateAdapter } from '@/modules/permission/adapter'
+import { IPermissionCreate } from '@/modules/permission/interfaces'
 import { ApiConflictException } from '@/utils/exception'
 import { TestUtils } from '@/utils/test/utils'
 import { ZodExceptionIssue } from '@/utils/validator'
@@ -16,7 +16,7 @@ import { IPermissionRepository } from '../../repository/permission'
 import { PermissionCreateInput, PermissionCreateSchema, PermissionCreateUsecase } from '../permission-create'
 
 describe(PermissionCreateUsecase.name, () => {
-  let usecase: IPermissionCreateAdapter
+  let usecase: IPermissionCreate
   let repository: IPermissionRepository
 
   beforeEach(async () => {
@@ -33,7 +33,7 @@ describe(PermissionCreateUsecase.name, () => {
           }
         },
         {
-          provide: IPermissionCreateAdapter,
+          provide: IPermissionCreate,
           useFactory: (permissionRepository: IPermissionRepository, logger: ILoggerAdapter) => {
             return new PermissionCreateUsecase(permissionRepository, logger)
           },
@@ -42,7 +42,7 @@ describe(PermissionCreateUsecase.name, () => {
       ]
     }).compile()
 
-    usecase = app.get(IPermissionCreateAdapter)
+    usecase = app.get(IPermissionCreate)
     repository = app.get(IPermissionRepository)
   })
 

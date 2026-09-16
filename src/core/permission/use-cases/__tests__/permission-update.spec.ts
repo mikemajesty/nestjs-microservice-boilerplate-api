@@ -6,7 +6,7 @@ import { Test } from '@nestjs/testing'
 
 import { ILoggerAdapter } from '@/infra/logger'
 import { UpdatedModel } from '@/infra/repository'
-import { IPermissionUpdateAdapter } from '@/modules/permission/adapter'
+import { IPermissionUpdate } from '@/modules/permission/interfaces'
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception'
 import { TestUtils } from '@/utils/test/utils'
 import { ZodExceptionIssue } from '@/utils/validator'
@@ -16,7 +16,7 @@ import { PermissionUpdateInput, PermissionUpdateSchema, PermissionUpdateUsecase 
 import { PermissionEntity, PermissionEntitySchema } from './../../entity/permission'
 
 describe(PermissionUpdateUsecase.name, () => {
-  let usecase: IPermissionUpdateAdapter
+  let usecase: IPermissionUpdate
   let repository: IPermissionRepository
 
   beforeEach(async () => {
@@ -33,7 +33,7 @@ describe(PermissionUpdateUsecase.name, () => {
           }
         },
         {
-          provide: IPermissionUpdateAdapter,
+          provide: IPermissionUpdate,
           useFactory: (permissionRepository: IPermissionRepository, logger: ILoggerAdapter) => {
             return new PermissionUpdateUsecase(permissionRepository, logger)
           },
@@ -42,7 +42,7 @@ describe(PermissionUpdateUsecase.name, () => {
       ]
     }).compile()
 
-    usecase = app.get(IPermissionUpdateAdapter)
+    usecase = app.get(IPermissionUpdate)
     repository = app.get(IPermissionRepository)
   })
 

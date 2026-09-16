@@ -6,7 +6,7 @@ import { RoleEntity } from '@/core/role/entity/role'
 import { ValidateSchema } from '@/utils/decorators'
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception'
 import { IUsecase } from '@/utils/usecase'
-import { Infer } from '@/utils/validator'
+import { SchemaInfer } from '@/utils/validator'
 
 import { PermissionEntity, PermissionEntitySchema } from '../entity/permission'
 
@@ -41,5 +41,5 @@ export class PermissionDeleteUsecase implements IUsecase {
   }
 }
 
-export type PermissionDeleteInput = Infer<typeof PermissionDeleteSchema>
+export type PermissionDeleteInput = SchemaInfer<typeof PermissionDeleteSchema>
 export type PermissionDeleteOutput = PermissionEntity

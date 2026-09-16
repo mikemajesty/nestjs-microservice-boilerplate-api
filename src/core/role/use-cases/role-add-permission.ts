@@ -7,7 +7,7 @@ import { ValidateSchema } from '@/utils/decorators'
 import { ApiNotFoundException } from '@/utils/exception'
 import { IDGeneratorUtils } from '@/utils/id-generator'
 import { IUsecase } from '@/utils/usecase'
-import { Infer, InputValidator } from '@/utils/validator'
+import { InputValidator, SchemaInfer } from '@/utils/validator'
 
 import { RoleEntity, RoleEntitySchema } from '../entity/role'
 import { IRoleRepository } from '../repository/role'
@@ -48,5 +48,5 @@ export class RoleAddPermissionUsecase implements IUsecase {
   }
 }
 
-export type RoleAddPermissionInput = Infer<typeof RoleAddPermissionSchema>
+export type RoleAddPermissionInput = SchemaInfer<typeof RoleAddPermissionSchema>
 export type RoleAddPermissionOutput = void

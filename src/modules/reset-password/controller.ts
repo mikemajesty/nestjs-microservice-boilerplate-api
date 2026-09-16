@@ -14,14 +14,14 @@ import {
 import { Public } from '@/utils/decorators'
 import { ApiRequest } from '@/utils/request'
 
-import { IConfirmResetPasswordAdapter, ISendEmailResetPasswordAdapter } from './adapter'
+import { IConfirmResetPassword, ISendEmailResetPassword } from './interfaces'
 
 @Controller('/reset-password')
 @Public()
 export class ResetPasswordController {
   constructor(
-    private readonly sendEmailUsecase: ISendEmailResetPasswordAdapter,
-    private readonly confirmResetPasswordUsecase: IConfirmResetPasswordAdapter
+    private readonly sendEmailUsecase: ISendEmailResetPassword,
+    private readonly confirmResetPasswordUsecase: IConfirmResetPassword
   ) {}
 
   @Post('send-email')

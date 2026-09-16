@@ -2,7 +2,7 @@
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/core/entity.md
  */
 import { BaseEntity } from '@/utils/entity'
-import { Infer, InputValidator } from '@/utils/validator'
+import { InputValidator,SchemaInfer } from '@/utils/validator'
 
 const ID = InputValidator.uuid()
 const Name = InputValidator.string().trim().min(1).max(200)
@@ -22,7 +22,7 @@ export const CatEntitySchema = InputValidator.object({
   deletedAt: DeletedAt
 })
 
-type Cat = Infer<typeof CatEntitySchema>
+type Cat = SchemaInfer<typeof CatEntitySchema>
 
 export class CatEntity extends BaseEntity<CatEntity>() {
   name!: Cat['name']

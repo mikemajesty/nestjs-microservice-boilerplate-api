@@ -1,7 +1,7 @@
 import { exec } from 'child_process'
+import { Redis } from 'ioredis'
 import { Connection } from 'mongoose'
 import ping from 'ping'
-import { RedisClientType } from 'redis'
 import systeminformation from 'systeminformation'
 import { DataSource } from 'typeorm'
 import v8 from 'v8'
@@ -11,13 +11,12 @@ import { ErrorType, ILoggerAdapter } from '@/infra/logger'
 import { ISecretsAdapter } from '@/infra/secrets'
 
 import { ApiInternalServerException } from './../../utils/exception'
-import { IHealthAdapter } from './adapter'
-import { DatabaseConnectionOutput, DatabaseMemoryOutput, HealthStatus, Load } from './types'
+import { DatabaseConnectionOutput, DatabaseMemoryOutput, HealthStatus, Load, MemoryOutput } from './types'
 
 export class HealthService implements IHealthAdapter {
   postgres!: DataSource
   mongo!: Connection
-  redis!: ICacheAdapter<RedisClientType>
+  redis!: ICacheAdapter<Redis>
 
   constructor(
     private readonly logger: ILoggerAdapter,
@@ -251,4 +250,26 @@ export class HealthService implements IHealthAdapter {
   private bytesToMB = (bytes: number) => {
     return (bytes / 1024 / 1024).toFixed(2)
   }
+}
+
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/modules/adapter.md
+ */
+
+export abstract class IHealthAdapter {
+  abstract mongo: Connection
+  abstract postgres: DataSource
+  abstract redis: ICacheAdapter<Redis>
+  abstract getMongoStatus(): HealthStatus
+  abstract getRedisStatus(): Promise<HealthStatus>
+  abstract getPostgresStatus(): Promise<HealthStatus>
+  abstract getMemoryUsageInMB(): MemoryOutput
+  abstract getLoadAvarage(time: number, numCpus: number): Load
+  abstract getActiveConnections(): Promise<unknown>
+  abstract getLatency(host?: string): Promise<unknown>
+  abstract getMongoConnections(): Promise<DatabaseConnectionOutput>
+  abstract getPostgresConnections(): Promise<DatabaseConnectionOutput>
+  abstract getPostgresMemory(): Promise<DatabaseMemoryOutput>
+  abstract getMongoMemory(): Promise<DatabaseMemoryOutput>
+  abstract getCPUCore(): Promise<{ cpus: { load: number }[] }>
 }

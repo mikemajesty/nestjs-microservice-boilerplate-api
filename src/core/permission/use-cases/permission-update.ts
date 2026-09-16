@@ -6,7 +6,7 @@ import { ILoggerAdapter } from '@/infra/logger'
 import { ValidateSchema } from '@/utils/decorators'
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception'
 import { IUsecase } from '@/utils/usecase'
-import { Infer } from '@/utils/validator'
+import { SchemaInfer } from '@/utils/validator'
 
 import { PermissionEntity, PermissionEntitySchema } from './../entity/permission'
 
@@ -52,5 +52,5 @@ export class PermissionUpdateUsecase implements IUsecase {
   }
 }
 
-export type PermissionUpdateInput = Infer<typeof PermissionUpdateSchema>
+export type PermissionUpdateInput = SchemaInfer<typeof PermissionUpdateSchema>
 export type PermissionUpdateOutput = PermissionEntity

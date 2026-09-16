@@ -18,15 +18,15 @@ src/infra/
 
 ## Modules
 
-| Guide | Implementation | Description |
-|-------|----------------|-------------|
-| [Secrets](./secrets.md) | [secrets/](../../src/infra/secrets/) | Centralized env management with Zod validation, fail-fast on startup |
-| [Logger](./logger.md) | [logger/](../../src/infra/logger/) | Pino logger with Loki shipping, auto traceid, cURL on errors |
-| [HTTP](./http.md) | [http/](../../src/infra/http/) | Axios wrapper with retry, better stack traces, builder pattern |
-| [Email](./email.md) | [email/](../../src/infra/email/) | Nodemailer + Handlebars templates, event-driven |
-| [Cache](./cache.md) | [cache/](../../src/infra/cache/) | ICacheAdapter for Redis and Memory (node-cache) |
-| [Database](./database.md) | [database/](../../src/infra/database/) | Schemas and migrations for MongoDB and PostgreSQL |
-| [Repository](./repository.md) | [repository/](../../src/infra/repository/) | IRepository pattern for database-agnostic data access |
+| Guide                         | Implementation                             | Description                                                          |
+| ----------------------------- | ------------------------------------------ | -------------------------------------------------------------------- |
+| [Secrets](./secrets.md)       | [secrets/](../../src/infra/secrets/)       | Centralized env management with Zod validation, fail-fast on startup |
+| [Logger](./logger.md)         | [logger/](../../src/infra/logger/)         | Pino logger with Loki shipping, auto traceid, cURL on errors         |
+| [HTTP](./http.md)             | [http/](../../src/infra/http/)             | Axios wrapper with retry, better stack traces, builder pattern       |
+| [Email](./email.md)           | [email/](../../src/infra/email/)           | Nodemailer + Handlebars templates, event-driven                      |
+| [Cache](./cache.md)           | [cache/](../../src/infra/cache/)           | ICacheAdapter for Redis and Memory (node-cache)                      |
+| [Database](./database.md)     | [database/](../../src/infra/database/)     | Schemas and migrations for MongoDB and PostgreSQL                    |
+| [Repository](./repository.md) | [repository/](../../src/infra/repository/) | IRepository pattern for database-agnostic data access                |
 
 ## Adding a New Infra Module
 
@@ -61,14 +61,14 @@ After creating (via scaffold or manually), you **must** register it in `src/infr
 import { Module } from '@nestjs/common'
 
 import { MemoryCacheModule } from './cache/memory'
-import { RedisCacheModule } from './cache/redis'
+import { CacheRedisModule } from './cache/redis'
 import { MongoDatabaseModule } from './database/mongo'
 import { PostgresDatabaseModule } from './database/postgres/module'
 import { EmailModule } from './email'
 import { HttpModule } from './http'
 import { LoggerModule } from './logger'
 import { SecretsModule } from './secrets'
-import { NewModule } from './new-module'  // 👈 1. Import
+import { NewModule } from './new-module' // 👈 1. Import
 
 @Module({
   imports: [
@@ -77,10 +77,10 @@ import { NewModule } from './new-module'  // 👈 1. Import
     PostgresDatabaseModule,
     LoggerModule,
     HttpModule,
-    RedisCacheModule,
+    CacheRedisModule,
     MemoryCacheModule,
     EmailModule,
-    NewModule  // 👈 2. Add to imports
+    NewModule // 👈 2. Add to imports
   ],
   exports: [
     SecretsModule,
@@ -88,10 +88,10 @@ import { NewModule } from './new-module'  // 👈 1. Import
     PostgresDatabaseModule,
     LoggerModule,
     HttpModule,
-    RedisCacheModule,
+    CacheRedisModule,
     MemoryCacheModule,
     EmailModule,
-    NewModule  // 👈 3. Add to exports
+    NewModule // 👈 3. Add to exports
   ]
 })
 export class InfraModule {}
@@ -113,10 +113,12 @@ src/infra/new-module/
 ### Adapter Pattern
 
 All infra modules use the **adapter pattern**:
+
 - `adapter.ts` — Abstract class defining the interface
 - `service.ts` — Concrete implementation
 
 This allows:
+
 - Easy mocking in tests
 - Swapping implementations (e.g., Redis → Memory)
 - Loose coupling with business logic

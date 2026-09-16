@@ -11,7 +11,7 @@ import { ITokenAdapter } from '@/libs/token'
 import { ValidateSchema } from '@/utils/decorators'
 import { ApiBadRequestException, ApiNotFoundException, ApiUnauthorizedException } from '@/utils/exception'
 import { IUsecase } from '@/utils/usecase'
-import { Infer, InputValidator } from '@/utils/validator'
+import { InputValidator, SchemaInfer } from '@/utils/validator'
 
 import { IResetPasswordRepository } from '../repository/reset-password'
 
@@ -69,7 +69,7 @@ export class ResetPasswordConfirmUsecase implements IUsecase {
   }
 }
 
-export type ResetPasswordConfirmInput = Infer<typeof ResetPasswordConfirmSchema>
+export type ResetPasswordConfirmInput = SchemaInfer<typeof ResetPasswordConfirmSchema>
 export type ResetPasswordConfirmOutput = void
 
 export type ResetPasswordConfirmVerify = {

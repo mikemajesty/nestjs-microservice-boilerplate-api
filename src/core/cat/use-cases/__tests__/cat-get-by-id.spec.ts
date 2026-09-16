@@ -5,7 +5,7 @@ import { ZodMockSchema } from '@mikemajesty/zod-mock-schema'
 import { Test } from '@nestjs/testing'
 
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger'
-import { ICatGetByIdAdapter } from '@/modules/cat/adapter'
+import { ICatGetById } from '@/modules/cat/interfaces'
 import { ApiNotFoundException } from '@/utils/exception'
 import { TestUtils } from '@/utils/test/utils'
 import { ZodExceptionIssue } from '@/utils/validator'
@@ -15,7 +15,7 @@ import { ICatRepository } from '../../repository/cat'
 import { CatGetByIdInput, CatGetByIdUsecase } from '../cat-get-by-id'
 
 describe(CatGetByIdUsecase.name, () => {
-  let usecase: ICatGetByIdAdapter
+  let usecase: ICatGetById
   let repository: ICatRepository
 
   beforeEach(async () => {
@@ -27,7 +27,7 @@ describe(CatGetByIdUsecase.name, () => {
           useValue: {}
         },
         {
-          provide: ICatGetByIdAdapter,
+          provide: ICatGetById,
           useFactory: (catRepository: ICatRepository) => {
             return new CatGetByIdUsecase(catRepository)
           },
@@ -36,7 +36,7 @@ describe(CatGetByIdUsecase.name, () => {
       ]
     }).compile()
 
-    usecase = app.get(ICatGetByIdAdapter)
+    usecase = app.get(ICatGetById)
     repository = app.get(ICatRepository)
   })
 

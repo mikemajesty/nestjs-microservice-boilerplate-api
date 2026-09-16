@@ -6,14 +6,14 @@ import { Test } from '@nestjs/testing'
 import { ICacheAdapter } from '@/infra/cache'
 import { ISecretsAdapter, SecretsModule } from '@/infra/secrets'
 import { TokenLibModule } from '@/libs/token'
-import { ILogoutAdapter } from '@/modules/logout/adapter'
+import { ILogout } from '@/modules/logout/interfaces'
 import { TestUtils } from '@/utils/test/utils'
 import { ZodExceptionIssue } from '@/utils/validator'
 
 import { LogoutInput, LogoutUsecase } from '../user-logout'
 
 describe(LogoutUsecase.name, () => {
-  let usecase: ILogoutAdapter
+  let usecase: ILogout
   let cache: ICacheAdapter
 
   beforeEach(async () => {
@@ -27,7 +27,7 @@ describe(LogoutUsecase.name, () => {
           }
         },
         {
-          provide: ILogoutAdapter,
+          provide: ILogout,
           useFactory: (cache: ICacheAdapter, secrets: ISecretsAdapter) => {
             return new LogoutUsecase(cache, secrets)
           },
@@ -36,7 +36,7 @@ describe(LogoutUsecase.name, () => {
       ]
     }).compile()
 
-    usecase = app.get(ILogoutAdapter)
+    usecase = app.get(ILogout)
     cache = app.get(ICacheAdapter)
   })
 

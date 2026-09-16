@@ -8,7 +8,7 @@ import { RoleEntity, RoleEntitySchema, RoleEnum } from '@/core/role/entity/role'
 import { IRoleRepository } from '@/core/role/repository/role'
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger'
 import { CreatedModel } from '@/infra/repository'
-import { IUserUpdateAdapter } from '@/modules/user/adapter'
+import { IUserUpdate } from '@/modules/user/interfaces'
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception'
 import { IDGeneratorUtils } from '@/utils/id-generator'
 import { TestUtils } from '@/utils/test/utils'
@@ -19,7 +19,7 @@ import { IUserRepository } from '../../repository/user'
 import { UserUpdateInput, UserUpdateSchema, UserUpdateUsecase } from '../user-update'
 
 describe(UserUpdateUsecase.name, () => {
-  let usecase: IUserUpdateAdapter
+  let usecase: IUserUpdate
   let repository: IUserRepository
   let roleRepository: IRoleRepository
 
@@ -36,7 +36,7 @@ describe(UserUpdateUsecase.name, () => {
           useValue: {}
         },
         {
-          provide: IUserUpdateAdapter,
+          provide: IUserUpdate,
           useFactory: (userRepository: IUserRepository, logger: ILoggerAdapter, roleRepository: IRoleRepository) => {
             return new UserUpdateUsecase(userRepository, logger, roleRepository)
           },
@@ -45,7 +45,7 @@ describe(UserUpdateUsecase.name, () => {
       ]
     }).compile()
 
-    usecase = app.get(IUserUpdateAdapter)
+    usecase = app.get(IUserUpdate)
     repository = app.get(IUserRepository)
     roleRepository = app.get(IRoleRepository)
   })

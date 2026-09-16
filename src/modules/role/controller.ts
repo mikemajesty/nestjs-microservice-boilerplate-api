@@ -15,25 +15,25 @@ import { SearchHttpSchema } from '@/utils/search'
 import { SortHttpSchema } from '@/utils/sort'
 
 import {
-  IRoleAddPermissionAdapter,
-  IRoleCreateAdapter,
-  IRoleDeleteAdapter,
-  IRoleDeletePermissionAdapter,
-  IRoleGetByIdAdapter,
-  IRoleListAdapter,
-  IRoleUpdateAdapter
-} from './adapter'
+  IRoleAddPermission,
+  IRoleCreate,
+  IRoleDelete,
+  IRoleDeletePermission,
+  IRoleGetById,
+  IRoleList,
+  IRoleUpdate
+} from './interfaces'
 
 @Controller('roles')
 export class RoleController {
   constructor(
-    private readonly createUsecase: IRoleCreateAdapter,
-    private readonly updateUsecase: IRoleUpdateAdapter,
-    private readonly getByIdUsecase: IRoleGetByIdAdapter,
-    private readonly listUsecase: IRoleListAdapter,
-    private readonly deleteUsecase: IRoleDeleteAdapter,
-    private readonly addPermissionUsecase: IRoleAddPermissionAdapter,
-    private readonly deletePermissionUsecase: IRoleDeletePermissionAdapter
+    private readonly createUsecase: IRoleCreate,
+    private readonly updateUsecase: IRoleUpdate,
+    private readonly getByIdUsecase: IRoleGetById,
+    private readonly listUsecase: IRoleList,
+    private readonly deleteUsecase: IRoleDelete,
+    private readonly addPermissionUsecase: IRoleAddPermission,
+    private readonly deletePermissionUsecase: IRoleDeletePermission
   ) {}
 
   @Post()

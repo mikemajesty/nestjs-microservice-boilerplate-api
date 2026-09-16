@@ -9,7 +9,7 @@ import { PermissionUpdateInput } from '@/core/permission/use-cases/permission-up
 import { IRoleRepository } from '@/core/role/repository/role'
 import { IUserRepository } from '@/core/user/repository/user'
 import { ICacheAdapter } from '@/infra/cache'
-import { RedisCacheModule } from '@/infra/cache/redis'
+import { CacheRedisModule } from '@/infra/cache/redis'
 import { ITokenAdapter } from '@/libs/token'
 import { TokenLibModule } from '@/libs/token/module'
 import { UserModule } from '@/modules/user/module'
@@ -45,7 +45,7 @@ describe(PermissionController.name, () => {
         UserModule,
         PermissionModule,
         TokenLibModule,
-        RedisCacheModule,
+        CacheRedisModule,
         TestEnd2EndUtils.getPostgresModule(postgresContainer, postgresConfig)
       ],
       providers: [TestEnd2EndUtils.getGuardProvider([IUserRepository])]

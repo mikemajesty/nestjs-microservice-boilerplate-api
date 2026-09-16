@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common'
-import { createClient, RedisClientType } from 'redis'
+import Redis from 'ioredis'
 
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger'
 import { ISecretsAdapter, SecretsModule } from '@/infra/secrets'
 
 import { ICacheAdapter } from '../adapter'
-import { RedisService } from './service'
+import { CacheRedisService } from './service'
 
 @Module({
   imports: [LoggerModule, SecretsModule],
@@ -13,8 +13,14 @@ import { RedisService } from './service'
     {
       provide: ICacheAdapter,
       useFactory: async ({ REDIS_URL }: ISecretsAdapter, logger: ILoggerAdapter) => {
-        const client = createClient({ url: REDIS_URL }) as RedisClientType
-        const cacheService = new RedisService(logger, client)
+        const client = new Redis(REDIS_URL, {
+          tls: REDIS_URL.startsWith('rediss://') ? {} : undefined,
+          maxRetriesPerRequest: 3,
+          enableReadyCheck: true,
+          lazyConnect: false
+        })
+
+        const cacheService = new CacheRedisService(logger, client)
         await cacheService.connect()
         return cacheService
       },
@@ -23,4 +29,4 @@ import { RedisService } from './service'
   ],
   exports: [ICacheAdapter]
 })
-export class RedisCacheModule {}
+export class CacheRedisModule {}

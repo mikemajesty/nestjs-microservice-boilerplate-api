@@ -6,9 +6,9 @@ import { IRoleRepository } from '@/core/role/repository/role'
 import { ILoggerAdapter } from '@/infra/logger'
 import { ValidateSchema } from '@/utils/decorators'
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception'
-import { ApiTrancingInput } from '@/utils/request'
+import { ApiTracingInput } from '@/utils/request'
 import { IUsecase } from '@/utils/usecase'
-import { Infer, InputValidator } from '@/utils/validator'
+import { InputValidator, SchemaInfer } from '@/utils/validator'
 
 import { UserEntity, UserEntitySchema } from '../entity/user'
 import { IUserRepository } from '../repository/user'
@@ -27,7 +27,7 @@ export class UserUpdateUsecase implements IUsecase {
   ) {}
 
   @ValidateSchema(UserUpdateSchema)
-  async execute(input: UserUpdateInput, { tracing, user: userData }: ApiTrancingInput): Promise<UserUpdateOutput> {
+  async execute(input: UserUpdateInput, { tracing, user: userData }: ApiTracingInput): Promise<UserUpdateOutput> {
     const user = await this.userRepository.findOne({ id: input.id })
 
     if (!user) {
@@ -74,5 +74,5 @@ export class UserUpdateUsecase implements IUsecase {
   }
 }
 
-export type UserUpdateInput = Partial<Infer<typeof UserUpdateSchema>>
+export type UserUpdateInput = Partial<SchemaInfer<typeof UserUpdateSchema>>
 export type UserUpdateOutput = UserEntity

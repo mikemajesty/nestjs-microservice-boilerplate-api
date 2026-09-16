@@ -6,7 +6,7 @@ import { Test } from '@nestjs/testing'
 
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger'
 import { UpdatedModel } from '@/infra/repository'
-import { ICatUpdateAdapter } from '@/modules/cat/adapter'
+import { ICatUpdate } from '@/modules/cat/interfaces'
 import { ApiNotFoundException } from '@/utils/exception'
 import { TestUtils } from '@/utils/test/utils'
 import { ZodExceptionIssue } from '@/utils/validator'
@@ -16,7 +16,7 @@ import { ICatRepository } from '../../repository/cat'
 import { CatUpdateInput, CatUpdateUsecase } from '../cat-update'
 
 describe(CatUpdateUsecase.name, () => {
-  let usecase: ICatUpdateAdapter
+  let usecase: ICatUpdate
   let repository: ICatRepository
 
   beforeEach(async () => {
@@ -28,7 +28,7 @@ describe(CatUpdateUsecase.name, () => {
           useValue: {}
         },
         {
-          provide: ICatUpdateAdapter,
+          provide: ICatUpdate,
           useFactory: (catRepository: ICatRepository, logger: ILoggerAdapter) => {
             return new CatUpdateUsecase(catRepository, logger)
           },
@@ -37,7 +37,7 @@ describe(CatUpdateUsecase.name, () => {
       ]
     }).compile()
 
-    usecase = app.get(ICatUpdateAdapter)
+    usecase = app.get(ICatUpdate)
     repository = app.get(ICatRepository)
   })
 

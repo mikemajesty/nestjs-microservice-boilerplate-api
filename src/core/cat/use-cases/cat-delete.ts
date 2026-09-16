@@ -4,9 +4,9 @@
 import { ICatRepository } from '@/core/cat/repository/cat'
 import { ValidateSchema } from '@/utils/decorators'
 import { ApiNotFoundException } from '@/utils/exception'
-import { ApiTrancingInput } from '@/utils/request'
+import { ApiTracingInput } from '@/utils/request'
 import { IUsecase } from '@/utils/usecase'
-import { Infer } from '@/utils/validator'
+import { SchemaInfer } from '@/utils/validator'
 
 import { CatEntity, CatEntitySchema } from '../entity/cat'
 
@@ -18,7 +18,7 @@ export class CatDeleteUsecase implements IUsecase {
   constructor(private readonly catRepository: ICatRepository) {}
 
   @ValidateSchema(CatDeleteSchema)
-  async execute({ id }: CatDeleteInput, { tracing, user }: ApiTrancingInput): Promise<CatDeleteOutput> {
+  async execute({ id }: CatDeleteInput, { tracing, user }: ApiTracingInput): Promise<CatDeleteOutput> {
     const cat = await this.catRepository.findById(id)
 
     if (!cat) {
@@ -36,5 +36,5 @@ export class CatDeleteUsecase implements IUsecase {
   }
 }
 
-export type CatDeleteInput = Infer<typeof CatDeleteSchema>
+export type CatDeleteInput = SchemaInfer<typeof CatDeleteSchema>
 export type CatDeleteOutput = CatEntity

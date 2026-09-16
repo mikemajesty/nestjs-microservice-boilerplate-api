@@ -4,23 +4,22 @@
 import { Module } from '@nestjs/common'
 import { getConnectionToken } from '@nestjs/mongoose'
 import { getDataSourceToken } from '@nestjs/typeorm'
+import { Redis } from 'ioredis'
 import { Connection } from 'mongoose'
-import { RedisClientType } from 'redis'
 import { DataSource } from 'typeorm'
 
 import { ICacheAdapter } from '@/infra/cache'
-import { RedisCacheModule } from '@/infra/cache/redis'
+import { CacheRedisModule } from '@/infra/cache/redis'
 import { ConnectionName } from '@/infra/database/enum'
 import { PostgresDatabaseModule } from '@/infra/database/postgres'
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger'
 import { ISecretsAdapter, SecretsModule } from '@/infra/secrets'
 
-import { IHealthAdapter } from './adapter'
 import { HealthController, RootHealthController } from './controller'
-import { HealthService } from './service'
+import { HealthService, IHealthAdapter } from './service'
 
 @Module({
-  imports: [LoggerModule, PostgresDatabaseModule, RedisCacheModule, SecretsModule],
+  imports: [LoggerModule, PostgresDatabaseModule, CacheRedisModule, SecretsModule],
   controllers: [HealthController, RootHealthController],
   providers: [
     {
@@ -28,7 +27,7 @@ import { HealthService } from './service'
       useFactory: async (
         connection: Connection,
         dataSource: DataSource,
-        cache: ICacheAdapter<RedisClientType>,
+        cache: ICacheAdapter<Redis>,
         logger: ILoggerAdapter,
         secrets: ISecretsAdapter
       ) => {
@@ -41,7 +40,7 @@ import { HealthService } from './service'
       inject: [
         getConnectionToken(ConnectionName.CATS),
         getDataSourceToken(),
-        ICacheAdapter<RedisClientType>,
+        ICacheAdapter<Redis>,
         ILoggerAdapter,
         ISecretsAdapter
       ]

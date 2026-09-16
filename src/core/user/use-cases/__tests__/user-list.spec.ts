@@ -5,7 +5,7 @@ import { ZodMockSchema } from '@mikemajesty/zod-mock-schema'
 import { Test } from '@nestjs/testing'
 
 import { RoleEntity, RoleEntitySchema } from '@/core/role/entity/role'
-import { IUserListAdapter } from '@/modules/user/adapter'
+import { IUserList } from '@/modules/user/interfaces'
 import { TestUtils } from '@/utils/test/utils'
 import { ZodExceptionIssue } from '@/utils/validator'
 
@@ -14,7 +14,7 @@ import { IUserRepository } from '../../repository/user'
 import { UserListInput, UserListOutput, UserListSchema, UserListUsecase } from '../user-list'
 
 describe(UserListUsecase.name, () => {
-  let usecase: IUserListAdapter
+  let usecase: IUserList
   let repository: IUserRepository
 
   beforeEach(async () => {
@@ -26,7 +26,7 @@ describe(UserListUsecase.name, () => {
           useValue: {}
         },
         {
-          provide: IUserListAdapter,
+          provide: IUserList,
           useFactory: (userRepository: IUserRepository) => {
             return new UserListUsecase(userRepository)
           },
@@ -35,7 +35,7 @@ describe(UserListUsecase.name, () => {
       ]
     }).compile()
 
-    usecase = app.get(IUserListAdapter)
+    usecase = app.get(IUserList)
     repository = app.get(IUserRepository)
   })
 

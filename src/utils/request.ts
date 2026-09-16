@@ -44,7 +44,7 @@ export interface ApiRequest {
   }[]
 }
 
-export type ApiTrancingInput = Pick<ApiRequest, 'user' | 'tracing'>
+export type ApiTracingInput = Pick<ApiRequest, 'user' | 'tracing'>
 
 export type AppRequestHeaders = FastifyRequest['headers'] & {
   authorization?: string

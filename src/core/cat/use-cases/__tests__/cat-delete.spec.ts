@@ -6,7 +6,7 @@ import { Test } from '@nestjs/testing'
 
 import { CatDeleteInput, CatDeleteUsecase } from '@/core/cat/use-cases/cat-delete'
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger'
-import { ICatDeleteAdapter } from '@/modules/cat/adapter'
+import { ICatDelete } from '@/modules/cat/interfaces'
 import { ApiNotFoundException } from '@/utils/exception'
 import { TestUtils } from '@/utils/test/utils'
 import { ZodExceptionIssue } from '@/utils/validator'
@@ -15,7 +15,7 @@ import { CatEntity, CatEntitySchema } from '../../entity/cat'
 import { ICatRepository } from '../../repository/cat'
 
 describe(CatDeleteUsecase.name, () => {
-  let usecase: ICatDeleteAdapter
+  let usecase: ICatDelete
   let repository: ICatRepository
 
   beforeEach(async () => {
@@ -27,7 +27,7 @@ describe(CatDeleteUsecase.name, () => {
           useValue: {}
         },
         {
-          provide: ICatDeleteAdapter,
+          provide: ICatDelete,
           useFactory: (catRepository: ICatRepository) => {
             return new CatDeleteUsecase(catRepository)
           },
@@ -36,7 +36,7 @@ describe(CatDeleteUsecase.name, () => {
       ]
     }).compile()
 
-    usecase = app.get(ICatDeleteAdapter)
+    usecase = app.get(ICatDelete)
     repository = app.get(ICatRepository)
   })
 

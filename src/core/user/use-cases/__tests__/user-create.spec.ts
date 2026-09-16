@@ -9,7 +9,7 @@ import { IRoleRepository } from '@/core/role/repository/role'
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger'
 import { CreatedModel } from '@/infra/repository'
 import { EmitEventOutput, IEventAdapter } from '@/libs/event'
-import { IUserCreateAdapter } from '@/modules/user/adapter'
+import { IUserCreate } from '@/modules/user/interfaces'
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception'
 import { TestUtils } from '@/utils/test/utils'
 import { ZodExceptionIssue } from '@/utils/validator'
@@ -20,7 +20,7 @@ import { IUserRepository } from '../../repository/user'
 import { UserCreateInput, UserCreateSchema, UserCreateUsecase } from '../user-create'
 
 describe(UserCreateUsecase.name, () => {
-  let usecase: IUserCreateAdapter
+  let usecase: IUserCreate
   let repository: IUserRepository
   let roleRepository: IRoleRepository
 
@@ -43,7 +43,7 @@ describe(UserCreateUsecase.name, () => {
           }
         },
         {
-          provide: IUserCreateAdapter,
+          provide: IUserCreate,
           useFactory: (
             userRepository: IUserRepository,
             logger: ILoggerAdapter,
@@ -57,7 +57,7 @@ describe(UserCreateUsecase.name, () => {
       ]
     }).compile()
 
-    usecase = app.get(IUserCreateAdapter)
+    usecase = app.get(IUserCreate)
     repository = app.get(IUserRepository)
     roleRepository = app.get(IRoleRepository)
   })

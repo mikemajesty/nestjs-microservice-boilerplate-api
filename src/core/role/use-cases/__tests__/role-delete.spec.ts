@@ -7,7 +7,7 @@ import { Test } from '@nestjs/testing'
 import { PermissionEntity } from '@/core/permission/entity/permission'
 import { RoleDeleteInput, RoleDeleteSchema, RoleDeleteUsecase } from '@/core/role/use-cases/role-delete'
 import { CreatedModel } from '@/infra/repository'
-import { IRoleDeleteAdapter } from '@/modules/role/adapter'
+import { IRoleDelete } from '@/modules/role/interfaces'
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception'
 import { TestUtils } from '@/utils/test/utils'
 import { ZodExceptionIssue } from '@/utils/validator'
@@ -16,7 +16,7 @@ import { IRoleRepository } from '../../repository/role'
 import { RoleEntity, RoleEntitySchema } from './../../entity/role'
 
 describe(RoleDeleteUsecase.name, () => {
-  let usecase: IRoleDeleteAdapter
+  let usecase: IRoleDelete
   let repository: IRoleRepository
 
   beforeEach(async () => {
@@ -27,7 +27,7 @@ describe(RoleDeleteUsecase.name, () => {
           useValue: {}
         },
         {
-          provide: IRoleDeleteAdapter,
+          provide: IRoleDelete,
           useFactory: (roleRepository: IRoleRepository) => {
             return new RoleDeleteUsecase(roleRepository)
           },
@@ -36,7 +36,7 @@ describe(RoleDeleteUsecase.name, () => {
       ]
     }).compile()
 
-    usecase = app.get(IRoleDeleteAdapter)
+    usecase = app.get(IRoleDelete)
     repository = app.get(IRoleRepository)
   })
 

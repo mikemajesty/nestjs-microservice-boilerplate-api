@@ -64,8 +64,8 @@ export class SecretsService implements ISecretsAdapter {
 
   GRAFANA_URL = this.config.get('GRAFANA_URL')
 
-  TOKEN_EXPIRATION = this.config.get<number | string>('TOKEN_EXPIRATION') as string
-  REFRESH_TOKEN_EXPIRATION = this.config.get<number | string>('REFRESH_TOKEN_EXPIRATION') as string
+  TOKEN_EXPIRATION = Number(this.config.get<number>('TOKEN_EXPIRATION'))
+  REFRESH_TOKEN_EXPIRATION = Number(this.config.get<number>('REFRESH_TOKEN_EXPIRATION'))
 
   JWT_SECRET_KEY = this.config.get('JWT_SECRET_KEY')
   JWT_REFRESH_SECRET_KEY = this.config.get('JWT_REFRESH_SECRET_KEY')

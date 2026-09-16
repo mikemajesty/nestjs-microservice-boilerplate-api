@@ -6,7 +6,7 @@ import { ValidateSchema } from '@/utils/decorators'
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception'
 import { ObjectUtils } from '@/utils/object'
 import { IUsecase } from '@/utils/usecase'
-import { Infer } from '@/utils/validator'
+import { SchemaInfer } from '@/utils/validator'
 
 import { RoleEntity, RoleEntitySchema } from '../entity/role'
 
@@ -39,5 +39,5 @@ export class RoleDeleteUsecase implements IUsecase {
   }
 }
 
-export type RoleDeleteInput = Infer<typeof RoleDeleteSchema>
+export type RoleDeleteInput = SchemaInfer<typeof RoleDeleteSchema>
 export type RoleDeleteOutput = RoleEntity

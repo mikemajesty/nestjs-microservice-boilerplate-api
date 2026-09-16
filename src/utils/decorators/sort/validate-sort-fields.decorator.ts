@@ -5,7 +5,7 @@ import { ApiBadRequestException } from '@/utils/exception'
 import { PaginationSchema } from '@/utils/pagination'
 import { SearchSchema } from '@/utils/search'
 import { SortEnum, SortSchema } from '@/utils/sort'
-import { Infer, InputValidator } from '@/utils/validator'
+import { InputValidator, SchemaInfer } from '@/utils/validator'
 
 export const ListSchema = InputValidator.intersection(PaginationSchema, SortSchema.and(SearchSchema))
 
@@ -14,7 +14,7 @@ type AllowedSort<T> = { name: keyof T; map?: string }
 export function ValidateDatabaseSortAllowed<T>(...allowedSortList: AllowedSort<T>[]) {
   return (target: unknown, propertyKey: string, descriptor: PropertyDescriptor) => {
     const originalMethod = descriptor.value
-    descriptor.value = function (...args: Infer<typeof ListSchema>[]) {
+    descriptor.value = function (...args: SchemaInfer<typeof ListSchema>[]) {
       const input = args[0]
 
       const sort: { [key: string]: SortEnum } = {}

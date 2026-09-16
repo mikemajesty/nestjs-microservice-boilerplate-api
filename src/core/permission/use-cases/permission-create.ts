@@ -6,7 +6,7 @@ import { ValidateSchema } from '@/utils/decorators'
 import { ApiConflictException } from '@/utils/exception'
 import { IDGeneratorUtils } from '@/utils/id-generator'
 import { IUsecase } from '@/utils/usecase'
-import { Infer } from '@/utils/validator'
+import { SchemaInfer } from '@/utils/validator'
 
 import { IPermissionRepository } from '../repository/permission'
 import { PermissionEntity, PermissionEntitySchema } from './../entity/permission'
@@ -39,5 +39,5 @@ export class PermissionCreateUsecase implements IUsecase {
   }
 }
 
-export type PermissionCreateInput = Infer<typeof PermissionCreateSchema>
+export type PermissionCreateInput = SchemaInfer<typeof PermissionCreateSchema>
 export type PermissionCreateOutput = PermissionEntity

@@ -5,7 +5,7 @@ import { ZodMockSchema } from '@mikemajesty/zod-mock-schema'
 import { Test } from '@nestjs/testing'
 
 import { RoleEntity, RoleEntitySchema } from '@/core/role/entity/role'
-import { IUserDeleteAdapter } from '@/modules/user/adapter'
+import { IUserDelete } from '@/modules/user/interfaces'
 import { ApiNotFoundException } from '@/utils/exception'
 import { TestUtils } from '@/utils/test/utils'
 import { ZodExceptionIssue } from '@/utils/validator'
@@ -15,7 +15,7 @@ import { IUserRepository } from '../../repository/user'
 import { UserDeleteInput, UserDeleteUsecase } from '../user-delete'
 
 describe(UserDeleteUsecase.name, () => {
-  let usecase: IUserDeleteAdapter
+  let usecase: IUserDelete
   let repository: IUserRepository
 
   beforeEach(async () => {
@@ -27,7 +27,7 @@ describe(UserDeleteUsecase.name, () => {
           useValue: {}
         },
         {
-          provide: IUserDeleteAdapter,
+          provide: IUserDelete,
           useFactory: (userRepository: IUserRepository) => {
             return new UserDeleteUsecase(userRepository)
           },
@@ -36,7 +36,7 @@ describe(UserDeleteUsecase.name, () => {
       ]
     }).compile()
 
-    usecase = app.get(IUserDeleteAdapter)
+    usecase = app.get(IUserDelete)
     repository = app.get(IUserRepository)
   })
 

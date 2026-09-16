@@ -11,22 +11,22 @@ import { SecretsModule } from '@/infra/secrets'
 import { ITokenAdapter, TokenLibModule } from '@/libs/token'
 
 import { UserModule } from '../user/module'
-import { ILoginAdapter, IRefreshTokenAdapter } from './adapter'
 import { LoginController } from './controller'
+import { ILogin, IRefreshToken } from './interfaces'
 
 @Module({
   imports: [TokenLibModule, UserModule, SecretsModule, HttpModule, UserModule],
   controllers: [LoginController],
   providers: [
     {
-      provide: ILoginAdapter,
+      provide: ILogin,
       useFactory: (repository: IUserRepository, tokenService: ITokenAdapter) => {
         return new LoginUsecase(repository, tokenService)
       },
       inject: [IUserRepository, ITokenAdapter]
     },
     {
-      provide: IRefreshTokenAdapter,
+      provide: IRefreshToken,
       useFactory: (repository: IUserRepository, tokenService: ITokenAdapter) => {
         return new RefreshTokenUsecase(repository, tokenService)
       },

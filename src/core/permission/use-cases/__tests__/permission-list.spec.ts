@@ -10,7 +10,7 @@ import {
   PermissionListSchema,
   PermissionListUsecase
 } from '@/core/permission/use-cases/permission-list'
-import { IPermissionListAdapter } from '@/modules/permission/adapter'
+import { IPermissionList } from '@/modules/permission/interfaces'
 import { TestUtils } from '@/utils/test/utils'
 import { ZodExceptionIssue } from '@/utils/validator'
 
@@ -18,7 +18,7 @@ import { IPermissionRepository } from '../../repository/permission'
 import { PermissionEntity, PermissionEntitySchema } from './../../entity/permission'
 
 describe(PermissionListUsecase.name, () => {
-  let usecase: IPermissionListAdapter
+  let usecase: IPermissionList
   let repository: IPermissionRepository
 
   beforeEach(async () => {
@@ -29,7 +29,7 @@ describe(PermissionListUsecase.name, () => {
           useValue: {}
         },
         {
-          provide: IPermissionListAdapter,
+          provide: IPermissionList,
           useFactory: (permissionRepository: IPermissionRepository) => {
             return new PermissionListUsecase(permissionRepository)
           },
@@ -38,7 +38,7 @@ describe(PermissionListUsecase.name, () => {
       ]
     }).compile()
 
-    usecase = app.get(IPermissionListAdapter)
+    usecase = app.get(IPermissionList)
     repository = app.get(IPermissionRepository)
   })
 

@@ -8,26 +8,22 @@ import { PermissionListInput, PermissionListOutput } from '@/core/permission/use
 import { PermissionUpdateInput, PermissionUpdateOutput } from '@/core/permission/use-cases/permission-update'
 import { IUsecase } from '@/utils/usecase'
 
-export abstract class IPermissionCreateAdapter implements IUsecase {
+export abstract class IPermissionCreate implements IUsecase {
   abstract execute(input: PermissionCreateInput): Promise<PermissionCreateOutput>
 }
 
-export abstract class IPermissionUpdateAdapter implements IUsecase {
+export abstract class IPermissionUpdate implements IUsecase {
   abstract execute(input: PermissionUpdateInput): Promise<PermissionUpdateOutput>
 }
 
-export abstract class IPermissionGetByIdAdapter implements IUsecase {
+export abstract class IPermissionGetById implements IUsecase {
   abstract execute(input: PermissionGetByIdInput): Promise<PermissionGetByIdOutput>
 }
 
-export abstract class IPermissionListAdapter implements IUsecase {
+export abstract class IPermissionList implements IUsecase {
   abstract execute(input: PermissionListInput): Promise<PermissionListOutput>
 }
 
-export abstract class IPermissionDeleteAdapter implements IUsecase {
-  abstract execute(input: PermissionDeleteInput): Promise<PermissionDeleteOutput>
-}
-
-export abstract class IPermissionCreateCloneCascaDeBalaAdapter implements IUsecase {
+export abstract class IPermissionDelete implements IUsecase {
   abstract execute(input: PermissionDeleteInput): Promise<PermissionDeleteOutput>
 }

@@ -4,13 +4,13 @@
 import { MongoDBContainer, StartedMongoDBContainer } from '@testcontainers/mongodb'
 import { PostgreSqlContainer, StartedPostgreSqlContainer } from '@testcontainers/postgresql'
 import { RedisContainer, StartedRedisContainer } from '@testcontainers/redis'
+import { Redis, RedisOptions } from 'ioredis'
 import mongoose from 'mongoose'
 import path from 'path'
-import { createClient, RedisClientType } from 'redis'
 import { DataSource, DataSourceOptions } from 'typeorm'
 
 import { ICacheAdapter } from '@/infra/cache'
-import { RedisService } from '@/infra/cache/redis'
+import { CacheRedisService } from '@/infra/cache/redis'
 import { ConnectionName } from '@/infra/database/enum'
 import { PostgresService } from '@/infra/database/postgres'
 import { ILoggerAdapter, LoggerService } from '@/infra/logger'
@@ -101,19 +101,18 @@ export class TestPostgresContainer {
 
 export class TestRedisContainer {
   redisContainer!: StartedRedisContainer
-  client!: RedisClientType
+  client!: Redis
 
   getTestRedis = async (): Promise<ICacheAdapter> => {
     const logger: ILoggerAdapter = { error: console.error, log: LoggerService.log } as ILoggerAdapter
     this.redisContainer = await new RedisContainer('redis:7.2.4-alpine').start()
-    this.client = createClient({ url: this.redisContainer.getConnectionUrl() }) as RedisClientType
-    await this.client.connect()
-    const conn = new RedisService(logger, this.client)
+    this.client = new Redis(this.redisContainer.getConnectionUrl() as RedisOptions)
+    const conn = new CacheRedisService(logger, this.client)
     return conn as Partial<ICacheAdapter> as ICacheAdapter
   }
 
   async close() {
-    this.client?.destroy()
+    this.client?.disconnect()
     await this.redisContainer?.stop()
   }
 }

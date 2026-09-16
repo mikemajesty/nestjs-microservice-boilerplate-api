@@ -13,14 +13,14 @@ import { ITokenAdapter } from '@/libs/token'
 import { Public } from '@/utils/decorators'
 import { ApiRequest } from '@/utils/request'
 
-import { ILoginAdapter, IRefreshTokenAdapter } from './adapter'
+import { ILogin, IRefreshToken } from './interfaces'
 
 @Controller()
 @Public()
 export class LoginController {
   constructor(
-    private readonly loginUsecase: ILoginAdapter,
-    private readonly refreshTokenUsecase: IRefreshTokenAdapter,
+    private readonly loginUsecase: ILogin,
+    private readonly refreshTokenUsecase: IRefreshToken,
     private readonly secret: ISecretsAdapter,
     private readonly http: IHttpAdapter,
     private readonly userRepository: IUserRepository,

@@ -18,11 +18,11 @@ ICatUpdateAdapter            →  CatUpdateUsecase
 
 ## Location & Naming Conventions
 
-| Convention | Pattern | Example |
-|------------|---------|---------|
+| Convention | Pattern                 | Example            |
+| ---------- | ----------------------- | ------------------ |
 | **Folder** | `src/modules/{domain}/` | `src/modules/cat/` |
-| **File** | `module.ts` | `module.ts` |
-| **Class** | `{Domain}Module` | `CatModule` |
+| **File**   | `module.ts`             | `module.ts`        |
+| **Class**  | `{Domain}Module`        | `CatModule`        |
 
 ---
 
@@ -30,12 +30,12 @@ ICatUpdateAdapter            →  CatUpdateUsecase
 
 ```typescript
 @Module({
-  imports: [TokenLibModule, LoggerModule, RedisCacheModule],
+  imports: [TokenLibModule, LoggerModule, CacheRedisModule],
   controllers: [CatController],
   providers: [
     // Repository binding
     { provide: ICatRepository, useFactory: ..., inject: [...] },
-    
+
     // Use case bindings
     { provide: ICatCreateAdapter, useFactory: ..., inject: [...] },
     { provide: ICatUpdateAdapter, useFactory: ..., inject: [...] },
@@ -87,6 +87,7 @@ Each use case is bound to its **Adapter interface**:
 ```
 
 **Pattern:**
+
 - `provide:` — The abstract Adapter interface
 - `useFactory:` — Instantiates the concrete Use Case
 - `inject:` — Dependencies to inject (repository, logger, etc.)
@@ -100,17 +101,11 @@ See [Adapter](./adapter.md) for the interface definitions.
 **Best practice:** Export adapters and repositories that other modules might use:
 
 ```typescript
-exports: [
-  ICatRepository,
-  ICatCreateAdapter,
-  ICatUpdateAdapter,
-  ICatGetByIdAdapter,
-  ICatListAdapter,
-  ICatDeleteAdapter
-]
+exports: [ICatRepository, ICatCreateAdapter, ICatUpdateAdapter, ICatGetByIdAdapter, ICatListAdapter, ICatDeleteAdapter]
 ```
 
 This allows other modules to:
+
 - Import `CatModule` and use its use cases
 - Compose features across modules
 
@@ -196,6 +191,7 @@ MongooseModule.forFeature([{ name: Cat.name, schema: CatSchema }])
 4. **Same Result** — `connection.model()` does exactly what `MongooseModule.forFeature()` does internally
 
 **Key elements:**
+
 - `getConnectionToken(ConnectionName.CATS)` — Gets the specific MongoDB connection
 - `connection.model<CatDocument, Model>()` — Registers the model manually
 - `repository.connection = connection` — Enables transaction support
@@ -216,7 +212,7 @@ import { CatDeleteUsecase } from '@/core/cat/use-cases/cat-delete'
 import { CatGetByIdUsecase } from '@/core/cat/use-cases/cat-get-by-id'
 import { CatListUsecase } from '@/core/cat/use-cases/cat-list'
 import { CatUpdateUsecase } from '@/core/cat/use-cases/cat-update'
-import { RedisCacheModule } from '@/infra/cache/redis'
+import { CacheRedisModule } from '@/infra/cache/redis'
 import { ConnectionName } from '@/infra/database/enum'
 import { Cat, CatDocument, CatSchema } from '@/infra/database/mongo/schemas/cat'
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger'
@@ -229,7 +225,7 @@ import { CatController } from './controller'
 import { CatRepository } from './repository'
 
 @Module({
-  imports: [TokenLibModule, LoggerModule, RedisCacheModule],
+  imports: [TokenLibModule, LoggerModule, CacheRedisModule],
   controllers: [CatController],
   providers: [
     {
@@ -313,7 +309,7 @@ import { UserRepository } from './repository'
 @Module({
   imports: [
     LoggerModule,
-    TypeOrmModule.forFeature([UserSchema])  // Standard TypeORM
+    TypeOrmModule.forFeature([UserSchema]) // Standard TypeORM
   ],
   controllers: [UserController],
   providers: [

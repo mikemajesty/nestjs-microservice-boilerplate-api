@@ -5,9 +5,9 @@ import { ICatRepository } from '@/core/cat/repository/cat'
 import { ILoggerAdapter } from '@/infra/logger'
 import { ValidateSchema } from '@/utils/decorators'
 import { ApiNotFoundException } from '@/utils/exception'
-import { ApiTrancingInput } from '@/utils/request'
+import { ApiTracingInput } from '@/utils/request'
 import { IUsecase } from '@/utils/usecase'
-import { Infer } from '@/utils/validator'
+import { SchemaInfer } from '@/utils/validator'
 
 import { CatEntity, CatEntitySchema } from '../entity/cat'
 
@@ -22,7 +22,7 @@ export class CatUpdateUsecase implements IUsecase {
   ) {}
 
   @ValidateSchema(CatUpdateSchema)
-  async execute(input: CatUpdateInput, { tracing, user }: ApiTrancingInput): Promise<CatUpdateOutput> {
+  async execute(input: CatUpdateInput, { tracing, user }: ApiTracingInput): Promise<CatUpdateOutput> {
     const cat = await this.catRepository.findById(input.id)
 
     if (!cat) {
@@ -44,5 +44,5 @@ export class CatUpdateUsecase implements IUsecase {
   }
 }
 
-export type CatUpdateInput = Infer<typeof CatUpdateSchema>
+export type CatUpdateInput = SchemaInfer<typeof CatUpdateSchema>
 export type CatUpdateOutput = CatEntity

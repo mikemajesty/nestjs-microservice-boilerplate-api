@@ -11,19 +11,19 @@ import { CatDeleteUsecase } from '@/core/cat/use-cases/cat-delete'
 import { CatGetByIdUsecase } from '@/core/cat/use-cases/cat-get-by-id'
 import { CatListUsecase } from '@/core/cat/use-cases/cat-list'
 import { CatUpdateUsecase } from '@/core/cat/use-cases/cat-update'
-import { RedisCacheModule } from '@/infra/cache/redis'
+import { CacheRedisModule } from '@/infra/cache/redis'
 import { ConnectionName } from '@/infra/database/enum'
 import { Cat, CatDocument, CatSchema } from '@/infra/database/mongo/schemas/cat'
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger'
 import { TokenLibModule } from '@/libs/token'
 import { MongoRepositoryModelSessionType } from '@/utils/mongoose'
 
-import { ICatCreateAdapter, ICatDeleteAdapter, ICatGetByIdAdapter, ICatListAdapter, ICatUpdateAdapter } from './adapter'
 import { CatController } from './controller'
+import { ICatCreate, ICatDelete, ICatGetById, ICatList, ICatUpdate } from './interfaces'
 import { CatRepository } from './repository'
 
 @Module({
-  imports: [TokenLibModule, LoggerModule, RedisCacheModule],
+  imports: [TokenLibModule, LoggerModule, CacheRedisModule],
   controllers: [CatController],
   providers: [
     {
@@ -50,38 +50,31 @@ import { CatRepository } from './repository'
       inject: [getConnectionToken(ConnectionName.CATS)]
     },
     {
-      provide: ICatCreateAdapter,
+      provide: ICatCreate,
       useFactory: (repository: ICatRepository) => new CatCreateUsecase(repository),
       inject: [ICatRepository]
     },
     {
-      provide: ICatUpdateAdapter,
+      provide: ICatUpdate,
       useFactory: (logger: ILoggerAdapter, repository: ICatRepository) => new CatUpdateUsecase(repository, logger),
       inject: [ILoggerAdapter, ICatRepository]
     },
     {
-      provide: ICatGetByIdAdapter,
+      provide: ICatGetById,
       useFactory: (repository: ICatRepository) => new CatGetByIdUsecase(repository),
       inject: [ICatRepository]
     },
     {
-      provide: ICatListAdapter,
+      provide: ICatList,
       useFactory: (repository: ICatRepository) => new CatListUsecase(repository),
       inject: [ICatRepository]
     },
     {
-      provide: ICatDeleteAdapter,
+      provide: ICatDelete,
       useFactory: (repository: ICatRepository) => new CatDeleteUsecase(repository),
       inject: [ICatRepository]
     }
   ],
-  exports: [
-    ICatRepository,
-    ICatCreateAdapter,
-    ICatUpdateAdapter,
-    ICatGetByIdAdapter,
-    ICatListAdapter,
-    ICatDeleteAdapter
-  ]
+  exports: [ICatRepository, ICatCreate, ICatUpdate, ICatGetById, ICatList, ICatDelete]
 })
 export class CatModule {}

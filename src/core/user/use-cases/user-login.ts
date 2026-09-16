@@ -4,9 +4,9 @@
 import { ITokenAdapter } from '@/libs/token'
 import { ValidateSchema } from '@/utils/decorators'
 import { ApiNotFoundException } from '@/utils/exception'
-import { ApiTrancingInput, UserRequest } from '@/utils/request'
+import { ApiTracingInput, UserRequest } from '@/utils/request'
 import { IUsecase } from '@/utils/usecase'
-import { Infer } from '@/utils/validator'
+import { SchemaInfer } from '@/utils/validator'
 
 import { UserEntitySchema } from '../entity/user'
 import { UserPasswordEntity, UserPasswordEntitySchema } from '../entity/user-password'
@@ -23,7 +23,7 @@ export class LoginUsecase implements IUsecase {
   ) {}
 
   @ValidateSchema(LoginSchema)
-  async execute(input: LoginInput, { tracing }: ApiTrancingInput): Promise<LoginOutput> {
+  async execute(input: LoginInput, { tracing }: ApiTracingInput): Promise<LoginOutput> {
     const user = await this.userRepository.findOneWithRelation(
       {
         email: input.email
@@ -58,5 +58,5 @@ export class LoginUsecase implements IUsecase {
   }
 }
 
-export type LoginInput = Infer<typeof LoginSchema>
+export type LoginInput = SchemaInfer<typeof LoginSchema>
 export type LoginOutput = { accessToken: string; refreshToken: string }

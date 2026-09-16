@@ -11,10 +11,10 @@ import {
 } from '@/core/reset-password/use-cases/reset-password-send-email'
 import { IUsecase } from '@/utils/usecase'
 
-export abstract class ISendEmailResetPasswordAdapter implements IUsecase {
+export abstract class ISendEmailResetPassword implements IUsecase {
   abstract execute(input: ResetPasswordSendEmailInput): Promise<ResetPasswordSendEmailOutput>
 }
 
-export abstract class IConfirmResetPasswordAdapter implements IUsecase {
+export abstract class IConfirmResetPassword implements IUsecase {
   abstract execute(input: ResetPasswordConfirmInput): Promise<ResetPasswordConfirmOutput>
 }

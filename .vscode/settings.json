@@ -9,36 +9,30 @@
       "source.fixAll": "always",
       "source.organizeImports": "always"
     },
-    "editor.formatOnSave": true,
+    "editor.formatOnSave": true
   },
   "[javascript]": {
     "editor.codeActionsOnSave": {
       "source.fixAll": "always",
       "source.organizeImports": "always"
     },
-    "editor.formatOnSave": true,
+    "editor.formatOnSave": true
   },
   "editor.formatOnSave": true,
   "editor.detectIndentation": true,
-  "javascript.format.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces": false,
-  "typescript.format.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces": false,
   "[javascript][typescript]": {
     "editor.codeActionsOnSave": {
       "source.fixAll": "always",
       "source.organizeImports": "always"
     }
   },
+  "js/ts.tsdk.path": "./node_modules/typescript/lib",
+  "js/ts.tsdk.promptToUseWorkspaceVersion": true,
   "jestrunner.jestPath": "./node_modules/.bin/jest",
   "jestrunner.configPath": "test/jest.config.ts",
   "jestrunner.debugOptions": {
     "runtimeExecutable": "node",
-    "runtimeArgs": [
-      "--inspect=9229",
-      "-r",
-      "ts-node/register",
-      "-r",
-      "tsconfig-paths/register"
-    ],
+    "runtimeArgs": ["--inspect=9229", "-r", "ts-node/register", "-r", "tsconfig-paths/register"],
     "console": "integratedTerminal",
     "internalConsoleOptions": "neverOpen",
     "env": {
@@ -47,7 +41,5 @@
   },
   "jest.jestCommandLine": "npm run test",
   "jest.rootPath": ".",
-  "jest.testMatch": [
-    "**/__tests__/**/*.spec.ts"
-  ]
+  "jest.testMatch": ["**/__tests__/**/*.spec.ts"]
 }

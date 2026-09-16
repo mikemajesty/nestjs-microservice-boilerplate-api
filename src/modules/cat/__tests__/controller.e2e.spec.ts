@@ -16,7 +16,7 @@ import { IPermissionRepository } from '@/core/permission/repository/permission'
 import { IRoleRepository } from '@/core/role/repository/role'
 import { IUserRepository } from '@/core/user/repository/user'
 import { ICacheAdapter } from '@/infra/cache'
-import { RedisCacheModule } from '@/infra/cache/redis'
+import { CacheRedisModule } from '@/infra/cache/redis'
 import { ConnectionName } from '@/infra/database/enum'
 import { Cat, CatDocument, CatSchema } from '@/infra/database/mongo/schemas/cat'
 import { ITokenAdapter } from '@/libs/token'
@@ -61,7 +61,7 @@ describe(CatController.name, () => {
         UserModule,
         CatModule,
         TokenLibModule,
-        RedisCacheModule,
+        CacheRedisModule,
         TestEnd2EndUtils.getPostgresModule(postgresContainer, postgresConfig)
       ],
       providers: [TestEnd2EndUtils.getGuardProvider([IUserRepository])]

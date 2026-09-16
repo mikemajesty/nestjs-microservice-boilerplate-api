@@ -10,7 +10,7 @@ import { IResetPasswordRepository } from '@/core/reset-password/repository/reset
 import { ResetPasswordConfirmUsecase } from '@/core/reset-password/use-cases/reset-password-confirm'
 import { ResetPasswordSendEmailUsecase } from '@/core/reset-password/use-cases/reset-password-send-email'
 import { IUserRepository } from '@/core/user/repository/user'
-import { RedisCacheModule } from '@/infra/cache/redis'
+import { CacheRedisModule } from '@/infra/cache/redis'
 import { ResetPasswordSchema } from '@/infra/database/postgres/schemas/reset-password'
 import { LoggerModule } from '@/infra/logger'
 import { ISecretsAdapter, SecretsModule } from '@/infra/secrets'
@@ -18,8 +18,8 @@ import { EventLibModule, IEventAdapter } from '@/libs/event'
 import { ITokenAdapter, TokenLibModule } from '@/libs/token'
 
 import { UserModule } from '../user/module'
-import { IConfirmResetPasswordAdapter, ISendEmailResetPasswordAdapter } from './adapter'
 import { ResetPasswordController } from './controller'
+import { IConfirmResetPassword, ISendEmailResetPassword } from './interfaces'
 import { ResetPasswordRepository } from './repository'
 
 @Module({
@@ -27,7 +27,7 @@ import { ResetPasswordRepository } from './repository'
     TokenLibModule,
     SecretsModule,
     LoggerModule,
-    RedisCacheModule,
+    CacheRedisModule,
     UserModule,
     TokenLibModule,
     EventLibModule,
@@ -43,7 +43,7 @@ import { ResetPasswordRepository } from './repository'
       inject: [getRepositoryToken(ResetPasswordSchema)]
     },
     {
-      provide: ISendEmailResetPasswordAdapter,
+      provide: ISendEmailResetPassword,
       useFactory: (
         resetpasswordtokenRepository: IResetPasswordRepository,
         userRepository: IUserRepository,
@@ -56,7 +56,7 @@ import { ResetPasswordRepository } from './repository'
       inject: [IResetPasswordRepository, IUserRepository, ITokenAdapter, IEventAdapter, ISecretsAdapter]
     },
     {
-      provide: IConfirmResetPasswordAdapter,
+      provide: IConfirmResetPassword,
       useFactory: (
         resetpasswordtokenRepository: IResetPasswordRepository,
         userRepository: IUserRepository,
@@ -68,6 +68,6 @@ import { ResetPasswordRepository } from './repository'
       inject: [IResetPasswordRepository, IUserRepository, ITokenAdapter, IEventAdapter]
     }
   ],
-  exports: [IResetPasswordRepository, ISendEmailResetPasswordAdapter]
+  exports: [IResetPasswordRepository, ISendEmailResetPassword]
 })
 export class ResetPasswordModule {}
