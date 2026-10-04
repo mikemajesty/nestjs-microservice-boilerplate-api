@@ -37,4 +37,8 @@ export class PermissionEntity extends BaseEntity<PermissionEntity>() {
     this.validate(entity)
     this.ensureID()
   }
+
+  removeAllRoles() {
+    delete this.roles
+  }
 }

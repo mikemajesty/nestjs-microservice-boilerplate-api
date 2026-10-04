@@ -8,7 +8,7 @@ import { ILoggerAdapter, LoggerModule } from '@/infra/logger'
 import { UpdatedModel } from '@/infra/repository'
 import { ICatUpdate } from '@/modules/cat/interfaces'
 import { ApiNotFoundException } from '@/utils/exception'
-import { TestUtils } from '@/utils/test/utils'
+import { MockUtils, TestUtils } from '@/utils/test'
 import { ZodExceptionIssue } from '@/utils/validator'
 
 import { CatEntity, CatEntitySchema } from '../../entity/cat'
@@ -23,10 +23,7 @@ describe(CatUpdateUsecase.name, () => {
     const app = await Test.createTestingModule({
       imports: [LoggerModule],
       providers: [
-        {
-          provide: ICatRepository,
-          useValue: {}
-        },
+        TestUtils.mockProvider(ICatRepository),
         {
           provide: ICatUpdate,
           useFactory: (catRepository: ICatRepository, logger: ILoggerAdapter) => {
@@ -43,7 +40,7 @@ describe(CatUpdateUsecase.name, () => {
 
   test('when no input is specified, should expect an error', async () => {
     await TestUtils.expectZodError(
-      () => usecase.execute({} as CatUpdateInput, TestUtils.getMockTracing()),
+      () => usecase.execute({} as CatUpdateInput, MockUtils.Tracing()),
       (issues: ZodExceptionIssue[]) => {
         expect(issues).toEqual([
           {
@@ -58,9 +55,7 @@ describe(CatUpdateUsecase.name, () => {
   test('when cat not found, should expect an error', async () => {
     repository.findById = TestUtils.mockResolvedValue<CatEntity>(null)
 
-    await expect(usecase.execute({ id: TestUtils.mockUUID() }, TestUtils.getMockTracing())).rejects.toThrow(
-      ApiNotFoundException
-    )
+    await expect(usecase.execute({ id: MockUtils.UUID() }, MockUtils.Tracing())).rejects.toThrow(ApiNotFoundException)
   })
 
   const mock = new ZodMockSchema(CatEntitySchema)
@@ -76,6 +71,6 @@ describe(CatUpdateUsecase.name, () => {
     repository.findById = TestUtils.mockResolvedValue<CatEntity>(input)
     repository.updateOne = TestUtils.mockResolvedValue<UpdatedModel>()
 
-    await expect(usecase.execute({ id: TestUtils.mockUUID() }, TestUtils.getMockTracing())).resolves.toEqual(input)
+    await expect(usecase.execute({ id: MockUtils.UUID() }, MockUtils.Tracing())).resolves.toEqual(input)
   })
 })

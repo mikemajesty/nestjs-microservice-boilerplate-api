@@ -15,7 +15,9 @@ Collection of utility functions and helpers that enhance development experience 
 - [**Pagination**](./pagination.md) | [📄 Code](../../src/utils/pagination.ts) - Pagination logic and response formatting
 - [**Mongoose**](./mongoose.md) | [📄 Code](../../src/utils/mongoose.ts) - MongoDB text search utilities with diacritic handling
 - [**ID Generator**](./id-generator.md) | [📄 Code](../../src/utils/id-generator.ts) - Centralized ID generation with multiple algorithm support
+- [**Jitter**](./jitter.md) | [📄 Code](../../src/utils/jitter.ts) - Controlled random variation for TTLs, retries, and scheduled work
 - [**Http Status**](./http-status.md) | [📄 Code](../../src/utils/http-status.ts) - HTTP status codes and user-friendly error messages
+- [**Namespaces**](./namespaces.md) | [📄 Code](../../src/utils/namespaces.ts) - Stable structured identifiers for cache and external boundaries
 - [**Exception**](./exception.md) | [📄 Code](../../src/utils/exception.ts) - Centralized exception handling and error management
 - [**Excel**](./excel.md) | [📄 Code](../../src/utils/excel.ts) - Excel file generation with customizable formatting
 - [**Entity**](./entity.md) | [📄 Code](../../src/utils/entity.ts) - Base entity foundation for domain-driven design

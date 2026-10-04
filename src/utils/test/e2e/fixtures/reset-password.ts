@@ -5,9 +5,9 @@ import { IResetPasswordRepository } from '@/core/reset-password/repository/reset
 import { ResetPasswordSchema } from '@/infra/database/postgres/schemas/reset-password'
 import { RunInTransactionType } from '@/infra/repository'
 
-import { TestFixture } from './adpater'
+import { ITestFixture } from './adpater'
 
-export class ResetPasswordFixture implements Omit<TestFixture<ResetPasswordEntity>, 'override' | 'up' | `entity`> {
+export class ResetPasswordFixture implements Omit<ITestFixture<ResetPasswordEntity>, 'override' | 'up' | `entity`> {
   async clear(manager: DataSource): Promise<void> {
     const dataSource = await manager.initialize()
     const entities = dataSource.entityMetadatas.filter((e) => e.name === ResetPasswordEntity.name)

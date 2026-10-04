@@ -1,5 +1,4 @@
-import { FactoryProvider, INestApplication, InjectionToken } from '@nestjs/common'
-import { APP_GUARD, Reflector } from '@nestjs/core'
+import { INestApplication } from '@nestjs/common'
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify'
 import { TestingModule } from '@nestjs/testing'
 import { TypeOrmModule } from '@nestjs/typeorm'
@@ -7,10 +6,6 @@ import { FastifyRequest } from 'fastify'
 import { DataSourceOptions } from 'typeorm'
 
 import { UserEntity } from '@/core/user/entity/user'
-import { IUserRepository } from '@/core/user/repository/user'
-import { ICacheAdapter } from '@/infra/cache'
-import { ITokenAdapter } from '@/libs/token'
-import { AuthorizationRoleGuard } from '@/middlewares/guards'
 import { AlertController } from '@/modules/alert/controller'
 import { CatController } from '@/modules/cat/controller'
 import { HealthController } from '@/modules/health/controller'
@@ -22,7 +17,7 @@ import { RoleController } from '@/modules/role/controller'
 import { UserController } from '@/modules/user/controller'
 import { ApiRequest } from '@/utils/request'
 
-import { TestUtils } from '../utils'
+import { MockUtils } from '../mock'
 import { TestPostgresContainer } from './containers'
 
 export class TestEnd2EndUtils {
@@ -54,6 +49,7 @@ export class TestEnd2EndUtils {
     [PermissionController.name]: [
       { name: 'permission:create' },
       { name: 'permission:update' },
+      { name: 'permission:routes-view' },
       { name: 'permission:getbyid' },
       { name: 'permission:list' },
       { name: 'permission:delete' }
@@ -65,6 +61,7 @@ export class TestEnd2EndUtils {
     [AlertController.name]: []
   } as const
 
+  // @todo: ver se é possivel chamar o routes-explorer para popular todas as permissões dinamicamente
   static readonly ALL_PERMISSIONS: PermisisonRequestMinimal[] = Object.values(
     TestEnd2EndUtils.PERMISSIONS_BY_CONTROLLER
   ).flat()
@@ -87,7 +84,7 @@ export class TestEnd2EndUtils {
 
     fastify.addHook('preHandler', async (request: FastifyRequest) => {
       const reqWithTracing = request as FastifyRequest & { tracing?: ApiRequest['tracing'] }
-      reqWithTracing.tracing = TestUtils.getMockTracing().tracing
+      reqWithTracing.tracing = MockUtils.Tracing().tracing
     })
   }
 
@@ -100,16 +97,6 @@ export class TestEnd2EndUtils {
         return await postgresContainer.getDataSource(options)
       }
     })
-  }
-
-  static getGuardProvider(injectList: InjectionToken[]): FactoryProvider {
-    return {
-      provide: APP_GUARD,
-      useFactory: (repository: IUserRepository, tokenService: ITokenAdapter, cache: ICacheAdapter) => {
-        return new AuthorizationRoleGuard(new Reflector(), repository, tokenService, cache)
-      },
-      inject: [...injectList, ITokenAdapter, ICacheAdapter]
-    } as FactoryProvider
   }
 }
 

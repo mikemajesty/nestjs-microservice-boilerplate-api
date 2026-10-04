@@ -7,7 +7,7 @@ process.env.LOG_LEVEL = `silent`
 process.env.JWT_SECRET = 'test-secret'
 process.env.TOKEN_EXPIRATION = String(300)
 process.env.JWT_REFRESH_SECRET_KEY = 'test-refresh-secret'
-
+process.env.NODE_OPTIONS = '--experimental-vm-modules'
 try {
   execSync('docker info', { stdio: 'ignore' })
 } catch {

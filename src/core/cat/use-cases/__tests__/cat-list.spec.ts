@@ -5,7 +5,6 @@ import { ZodMockSchema } from '@mikemajesty/zod-mock-schema'
 import { Test } from '@nestjs/testing'
 
 import { CatListInput, CatListOutput, CatListSchema, CatListUsecase } from '@/core/cat/use-cases/cat-list'
-import { ILoggerAdapter, LoggerModule } from '@/infra/logger'
 import { ICatList } from '@/modules/cat/interfaces'
 import { TestUtils } from '@/utils/test/utils'
 import { ZodExceptionIssue } from '@/utils/validator'
@@ -19,18 +18,15 @@ describe(CatListUsecase.name, () => {
 
   beforeEach(async () => {
     const app = await Test.createTestingModule({
-      imports: [LoggerModule],
+      imports: [],
       providers: [
-        {
-          provide: ICatRepository,
-          useValue: {}
-        },
+        TestUtils.mockProvider(ICatRepository),
         {
           provide: ICatList,
           useFactory: (catRepository: ICatRepository) => {
             return new CatListUsecase(catRepository)
           },
-          inject: [ICatRepository, ILoggerAdapter]
+          inject: [ICatRepository]
         }
       ]
     }).compile()

@@ -7,6 +7,7 @@ import NodeCache from 'node-cache'
 import { ILoggerAdapter } from '@/infra/logger'
 
 import { ICacheAdapter } from '../adapter'
+import { CacheRedisKeyArgument } from '../redis/types'
 import { CacheSetConfigInput } from '../types'
 import {
   CacheMemoryKeyArgument,
@@ -18,11 +19,15 @@ import {
 @Injectable()
 export class CacheMemoryService implements Omit<
   ICacheAdapter<NodeCache>,
-  'hGet' | 'hSet' | 'hGetAll' | 'setMulti' | 'ping' | 'setNX' | 'eval' | 'multiExec'
+  'hGet' | 'hSet' | 'hGetAll' | 'setMulti' | 'ping' | 'setNX' | 'eval' | 'multiExec' | 'mGet'
 > {
   client!: NodeCache
 
   constructor(private readonly logger: ILoggerAdapter) {}
+
+  getTtl(key: CacheRedisKeyArgument): number | undefined {
+    return this.client.getTtl(key as CacheMemoryKeyArgument)
+  }
 
   connect(config?: NodeCache.Options): NodeCache {
     this.client = new NodeCache(config || { stdTTL: 3600, checkperiod: 3600 })
@@ -32,10 +37,6 @@ export class CacheMemoryService implements Omit<
 
   mSet<TSet extends CacheMemorySetType = CacheMemorySetType>(model: TSet[]): boolean {
     return this.client.mset(model)
-  }
-
-  mGet(key: string[]): unknown {
-    return this.client.mget(key)
   }
 
   has(key: string | number): boolean {

@@ -61,13 +61,13 @@ export class PaymentService {
 │           │                                                                 │
 │           ▼                                                                 │
 │  ┌─────────────────┐                                                        │
-│  │ SecretsService  │  (Maps env vars to typed properties)                   │
+│  │ SecretsService  │  (Builds the raw configuration object)                 │
 │  └────────┬────────┘                                                        │
 │           │                                                                 │
 │           ▼                                                                 │
 │  ┌─────────────────┐     ┌──────────────────────────────────────────────┐  │
-│  │  SecretsSchema  │ ──▶ │  Zod Validation                              │  │
-│  │    (module.ts)  │     │  • Required fields present?                  │  │
+│  │  schema.ts      │ ──▶ │  Zod Validation                              │  │
+│  │ SecretsSchema() │     │  • Required fields present?                  │  │
 │  └─────────────────┘     │  • Types correct?                            │  │
 │                          │  • URLs valid?                               │  │
 │                          │  • Enums match allowed values?               │  │
@@ -77,7 +77,7 @@ export class PaymentService {
 │                     │                                   │                  │
 │                     ▼                                   ▼                  │
 │              ✅ All valid                        ❌ Validation failed       │
-│              App starts normally                 App CRASHES with:          │
+│              Frozen object injected              App exits with:             │
 │                                                                             │
 │                                    SecretsService.PAYMENT.API_KEY: Required │
 │                                    SecretsService.EMAIL.FROM: Invalid email │
@@ -90,8 +90,9 @@ export class PaymentService {
 | File | Purpose |
 |------|---------|
 | `adapter.ts` | Abstract class defining the **interface** (types) |
-| `service.ts` | **Implementation** - maps env vars to properties |
-| `module.ts` | **Validation** - Zod schema that validates at startup |
+| `service.ts` | **Builder** - maps env vars into a configuration object |
+| `schema.ts` | **Validation schema** - defines conversion and validation rules |
+| `module.ts` | **Provider** - builds, validates, freezes, and exposes the configuration |
 
 ## Adding a New Environment Variable
 
@@ -115,27 +116,32 @@ export abstract class ISecretsAdapter {
 
 ```typescript
 // src/infra/secrets/service.ts
-@Injectable()
-export class SecretsService implements ISecretsAdapter {
-  // ... existing properties
-  
-  PAYMENT = {
-    API_KEY: this.config.get('PAYMENT_API_KEY'),
-    WEBHOOK_URL: this.config.get('PAYMENT_WEBHOOK_URL')
+export class SecretsService {
+  build(): ISecretsAdapter {
+    return {
+      // ... existing configuration
+      PAYMENT: {
+        API_KEY: this.get('PAYMENT_API_KEY'),
+        WEBHOOK_URL: this.get('PAYMENT_WEBHOOK_URL')
+      }
+    }
   }
 }
 ```
 
-### Step 3: Add Validation (module.ts)
+`build(): ISecretsAdapter` makes the compiler require the new property in the builder. `get()` only helps TypeScript describe the expected shape; it does not convert runtime values.
+
+### Step 3: Add Validation (schema.ts)
 
 ```typescript
-// src/infra/secrets/module.ts
-const SecretsSchema = InputValidator.object<ZodInferSchema<ISecretsAdapter>>({
+// src/infra/secrets/schema.ts
+export const SecretsSchema = () =>
+  InputValidator.object<ZodInferSchema<ISecretsAdapter>>({
   // ... existing validations
-  
+
   PAYMENT: InputValidator.object({
-    API_KEY: InputValidator.string().min(1),           // Required, non-empty
-    WEBHOOK_URL: InputValidator.string().url()          // Required, must be valid URL
+    API_KEY: InputValidator.string().min(1),
+    WEBHOOK_URL: InputValidator.string().url()
   })
 })
 ```
@@ -237,18 +243,26 @@ Some secrets are **computed** from multiple env vars:
 
 ```typescript
 // service.ts
-POSTGRES = {
-  // Built from multiple env vars
-  POSTGRES_URL: `postgresql://${this.config.get('POSTGRES_USER')}:${this.config.get(
-    'POSTGRES_PASSWORD'
-  )}@${this.config.get('POSTGRES_HOST')}:${this.config.get('POSTGRES_PORT')}/${this.config.get('POSTGRES_DATABASE')}`,
-  
-  POSTGRES_PGADMIN_URL: this.config.get('PGADMIN_URL')
+private getPostgresUrl(): string {
+  return (
+    this.get('POSTGRES_URL') ??
+    `postgresql://${this.get('POSTGRES_USER')}:${this.get('POSTGRES_PASSWORD')}@${this.get(
+      'POSTGRES_HOST'
+    )}:${this.get('POSTGRES_PORT')}/${this.get('POSTGRES_DATABASE')}`
+  )
 }
 
-// Convenience booleans
-IS_LOCAL = this.config.get<EnvEnum>('NODE_ENV') === EnvEnum.LOCAL
-IS_PRODUCTION = this.config.get<EnvEnum>('NODE_ENV') === EnvEnum.PRD
+build(): ISecretsAdapter {
+  return {
+    // ...
+    POSTGRES: {
+      POSTGRES_URL: this.getPostgresUrl(),
+      POSTGRES_PGADMIN_URL: this.get('PGADMIN_URL')
+    },
+    IS_LOCAL: this.get('NODE_ENV') === EnvEnum.LOCAL,
+    IS_PRODUCTION: this.get('NODE_ENV') === EnvEnum.PRD
+  }
+}
 ```
 
 Usage:
@@ -267,9 +281,9 @@ The magic of `ZodInferSchema<ISecretsAdapter>` ensures the validation schema **m
 
 ```typescript
 // If you add a property to ISecretsAdapter but forget to add validation,
-// TypeScript will show an error in module.ts!
+// TypeScript will show an error in schema.ts!
 
-const SecretsSchema = InputValidator.object<ZodInferSchema<ISecretsAdapter>>({
+const SecretsSchema = () => InputValidator.object<ZodInferSchema<ISecretsAdapter>>({
   // TypeScript: "Property 'PAYMENT' is missing"
 })
 ```

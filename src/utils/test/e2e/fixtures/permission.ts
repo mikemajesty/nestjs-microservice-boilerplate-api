@@ -9,9 +9,9 @@ import { PermissionModel } from '@/modules/permission/repository'
 import { IDGeneratorUtils } from '@/utils/id-generator'
 
 import { TestEnd2EndUtils } from '../utils'
-import { TestFixture } from './adpater'
+import { ITestFixture } from './adpater'
 
-export class PermissionFixture implements Omit<TestFixture<PermissionEntity>, 'override'> {
+export class PermissionFixture implements Omit<ITestFixture<PermissionEntity>, 'override'> {
   entity: PermissionEntity[] = []
 
   constructor() {

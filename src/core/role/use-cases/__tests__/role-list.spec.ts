@@ -19,10 +19,7 @@ describe(RoleListUsecase.name, () => {
   beforeEach(async () => {
     const app = await Test.createTestingModule({
       providers: [
-        {
-          provide: IRoleRepository,
-          useValue: {}
-        },
+        TestUtils.mockProvider(IRoleRepository),
         {
           provide: IRoleList,
           useFactory: (roleRepository: IRoleRepository) => {

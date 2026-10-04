@@ -42,7 +42,7 @@ export const createRelations = <T>(joins?: JoinType<T>): FindOptionsRelations<T>
   const relations: FindOptionsRelations<T> = {}
 
   for (const key in joins) {
-    if (!Object.prototype.hasOwnProperty.call(joins, key)) continue
+    if (!Object.hasOwn(joins, key)) continue
 
     const value = joins[key as keyof JoinType<T>]
     const propertyKey = key as keyof T

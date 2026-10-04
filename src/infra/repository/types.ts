@@ -1,6 +1,8 @@
 import { ClientSession, ObjectId } from 'mongoose'
 import { EntityManager } from 'typeorm'
 
+import { IEntity } from '@/utils/entity'
+
 export type UpdatedModel = {
   matchedCount: number
   modifiedCount: number
@@ -38,21 +40,18 @@ export type DatabaseOperationCommand<T> = {
   command: DatabaseOperationEnum
 }
 
+type JoinValue<T> = T extends infer U | undefined
+  ? U extends Array<infer V>
+    ? V extends IEntity
+      ? boolean | (keyof V)[]
+      : never
+    : U extends IEntity
+      ? boolean | (keyof U)[]
+      : never
+  : never
+
 export type JoinType<T> = {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-  [K in keyof T]?: T[K] extends Function
-    ? never
-    : T[K] extends infer U | undefined
-      ? U extends Array<infer V>
-        ? boolean | (keyof V)[]
-        : U extends object
-          ? boolean | (keyof U)[]
-          : never
-      : T[K] extends Array<infer U>
-        ? boolean | (keyof U)[]
-        : T[K] extends object
-          ? boolean | (keyof T[K])[]
-          : never
+  [K in keyof T as T[K] extends Function ? never : JoinValue<T[K]> extends never ? never : K]?: JoinValue<T[K]>
 }
-
 export type RunInTransactionType = EntityManager | ClientSession

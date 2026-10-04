@@ -22,16 +22,10 @@ describe(RoleUpdateUsecase.name, () => {
   beforeEach(async () => {
     const app = await Test.createTestingModule({
       providers: [
-        {
-          provide: IRoleRepository,
-          useValue: {}
-        },
-        {
-          provide: ILoggerAdapter,
-          useValue: {
-            info: TestUtils.mockReturnValue<void>()
-          }
-        },
+        TestUtils.mockProvider(IRoleRepository),
+        TestUtils.mockProvider(ILoggerAdapter, {
+          info: TestUtils.mockReturnValue<void>()
+        }),
         {
           provide: IRoleUpdate,
           useFactory: (roleRepository: IRoleRepository, logger: ILoggerAdapter) => {

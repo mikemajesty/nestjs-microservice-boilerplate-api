@@ -15,6 +15,7 @@ import { RoleDeletePermissionUsecase } from '@/core/role/use-cases/role-delete-p
 import { RoleGetByIdUsecase } from '@/core/role/use-cases/role-get-by-id'
 import { RoleListUsecase } from '@/core/role/use-cases/role-list'
 import { RoleUpdateUsecase } from '@/core/role/use-cases/role-update'
+import { CacheAsideModule, ICacheAsideAdapter } from '@/infra/cache/aside'
 import { CacheRedisModule } from '@/infra/cache/redis'
 import { RoleSchema } from '@/infra/database/postgres/schemas/role'
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger'
@@ -34,7 +35,14 @@ import {
 import { RoleRepository } from './repository'
 
 @Module({
-  imports: [TokenLibModule, LoggerModule, CacheRedisModule, TypeOrmModule.forFeature([RoleSchema]), PermissionModule],
+  imports: [
+    TokenLibModule,
+    LoggerModule,
+    CacheRedisModule,
+    TypeOrmModule.forFeature([RoleSchema]),
+    PermissionModule,
+    CacheAsideModule
+  ],
   controllers: [RoleController],
   providers: [
     {
@@ -66,20 +74,27 @@ import { RoleRepository } from './repository'
     },
     {
       provide: IRoleDelete,
-      useFactory: (repository: IRoleRepository) => new RoleDeleteUsecase(repository),
-      inject: [IRoleRepository]
+      useFactory: (repository: IRoleRepository, cacheAside: ICacheAsideAdapter) =>
+        new RoleDeleteUsecase(repository, cacheAside),
+      inject: [IRoleRepository, ICacheAsideAdapter]
     },
     {
       provide: IRoleAddPermission,
-      useFactory: (repository: IRoleRepository, permissionRepository: IPermissionRepository) =>
-        new RoleAddPermissionUsecase(repository, permissionRepository),
-      inject: [IRoleRepository, IPermissionRepository]
+      useFactory: (
+        repository: IRoleRepository,
+        permissionRepository: IPermissionRepository,
+        cacheAside: ICacheAsideAdapter
+      ) => new RoleAddPermissionUsecase(repository, permissionRepository, cacheAside),
+      inject: [IRoleRepository, IPermissionRepository, ICacheAsideAdapter]
     },
     {
       provide: IRoleDeletePermission,
-      useFactory: (repository: IRoleRepository, permissionRepository: IPermissionRepository) =>
-        new RoleDeletePermissionUsecase(repository, permissionRepository),
-      inject: [IRoleRepository, IPermissionRepository]
+      useFactory: (
+        repository: IRoleRepository,
+        permissionRepository: IPermissionRepository,
+        cacheAside: ICacheAsideAdapter
+      ) => new RoleDeletePermissionUsecase(repository, permissionRepository, cacheAside),
+      inject: [IRoleRepository, IPermissionRepository, ICacheAsideAdapter]
     }
   ],
   exports: [IRoleRepository]

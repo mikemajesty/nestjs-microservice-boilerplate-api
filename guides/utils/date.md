@@ -5,92 +5,198 @@ Centralized date manipulation utility that handles timezone-aware operations, co
 ## Why Centralized Date Management is Essential
 
 Working with dates in applications is **notoriously complex** due to:
+
 - **Timezone confusion** between client, server, and database
-- **Inconsistent formatting** across different parts of the app  
+- **Inconsistent formatting** across different parts of the app
 - **Date arithmetic mistakes** leading to off-by-one errors
 - **UTC vs local time** mixing causing bugs in production
 
 DateUtils solves all of this by providing a **single source of truth** for date operations.
 
-## Timezone Management - The Game Changer
+## Design Principles
 
-### Automatic Timezone Handling
+### UTC by default, timezone by parameter
+
+`DateUtils` **does not** read a global `APP_TIMEZONE` from the environment. Every date is handled in **UTC** by default, and any method that needs a different timezone accepts it **explicitly** as a parameter.
+
+Why:
+
+- **Deterministic**: same code, same result, regardless of server timezone.
+- **Multi-tenant friendly**: different users can have different timezones.
+- **No hidden state**: no `process.env.TZ` frozen at import time.
+- **Testable**: tests don't need to mock environment variables.
 
 ```typescript
-// Environment configuration
-process.env.TZ = 'America/Sao_Paulo'  // Your app timezone
+// Default: UTC
+const iso = DateUtils.now<string>({ type: 'iso' })
+// → '2026-09-17T12:00:00.000Z'
 
-export class OrderService {
-  async createOrder(input: CreateOrderInput): Promise<OrderOutput> {
-    const order = new OrderEntity({
-      ...input,
-      // Always use DateUtils for consistent timezone handling
-      createdAt: DateUtils.getJSDate(),  // Automatically in São Paulo timezone
-      deliveryDate: DateUtils.addDays(DateUtils.getJSDate(), 3)
-    })
+// Explicit timezone
+const spTime = DateUtils.now<string>({ type: 'iso', timezone: 'America/Sao_Paulo' })
+// → '2026-09-17T09:00:00.000-03:00'
+```
 
-    await this.orderRepository.save(order)
-    
-    return {
-      order: order.toObject(),
-      // Formatted for Brazilian users
-      createdAtFormatted: DateUtils.getDateStringWithFormat({
-        date: order.createdAt,
-        format: 'dd/MM/yyyy HH:mm'
-      })
-    }
-  }
+### When to use a timezone
+
+Only pass a `timezone` when the **user-facing output** needs it. Business logic and persistence should always use **UTC**.
+
+| Layer                                | Timezone                         |
+| ------------------------------------ | -------------------------------- |
+| Database                             | UTC                              |
+| Business logic / calculations        | UTC                              |
+| API responses (ISO)                  | UTC                              |
+| Formatted output for a specific user | User's timezone                  |
+| Formatted output for the server      | UTC (or server's tz, explicitly) |
+
+## API Reference
+
+### `DateUtils.build<T>(input: BuildInput): T`
+
+Parses a date and returns either an ISO string (formatted) or a `Date`.
+
+```typescript
+type BuildInput = {
+  date?: Date | string
+  format?: string
+  timezone?: string
+} & { type: 'iso' | 'js' | 'timestamp' }
+```
+
+| Field      | Default                                   | Description                                              |
+| ---------- | ----------------------------------------- | -------------------------------------------------------- |
+| `date`     | `new Date()`                              | Date to parse. Accepts `Date` or ISO string.             |
+| `format`   | `process.env.DATE_FORMAT ?? 'yyyy-MM-dd'` | Luxon format string (only used when `type: 'iso'`).      |
+| `timezone` | `'utc'`                                   | Target timezone. Must be a valid IANA zone.              |
+| `type`     | —                                         | `'iso'` returns formatted string; `'js'` returns `Date`. |
+
+Throws `ApiInternalServerException` if the date string is invalid or the timezone is unknown.
+
+```typescript
+// Formatted string in UTC
+DateUtils.build<string>({
+  date: '2026-09-17T12:00:00Z',
+  format: 'dd/MM/yyyy HH:mm',
+  type: 'iso'
+})
+// → '17/09/2026 12:00'
+
+// Formatted string in a specific timezone
+DateUtils.build<string>({
+  date: new Date(),
+  format: 'dd/MM/yyyy HH:mm',
+  timezone: 'America/Sao_Paulo',
+  type: 'iso'
+})
+// → '17/09/2026 09:00'
+
+// Native Date in UTC
+DateUtils.build<Date>({
+  date: '2026-09-17T12:00:00Z',
+  type: 'js'
+})
+```
+
+### `DateUtils.now<T>(input?: NowInput): T`
+
+Returns the current date, in UTC by default.
+
+```typescript
+type NowInput = {
+  timezone?: string
+} & { type: 'iso' | 'js' | 'timestamp' }
+```
+
+```typescript
+DateUtils.now<string>({ type: 'iso' })
+// → '2026-09-17T12:00:00.000Z'
+
+DateUtils.now<Date>({ type: 'js' })
+// → Date object
+
+DateUtils.now<string>({ type: 'iso', timezone: 'America/Sao_Paulo' })
+// → '2026-09-17T09:00:00.000-03:00'
+```
+
+### `DateUtils.asLuxonDate(date?, timezone?): DateTime`
+
+Returns a Luxon `DateTime` converted to the given timezone (UTC by default). Useful when you need Luxon's full API (`diff`, `toFormat`, `plus`, etc).
+
+```typescript
+const dt = DateUtils.asLuxonDate(new Date(), 'America/Sao_Paulo')
+dt.toFormat('dd/MM/yyyy HH:mm')
+```
+
+### `DateUtils.isAfter(date, compareTo): boolean`
+
+```typescript
+if (DateUtils.isAfter(appointmentDate, now)) {
+  /* ... */
 }
 ```
 
-### Why This Matters
+### `DateUtils.isBefore(date, compareTo): boolean`
 
-**Without DateUtils:**
 ```typescript
-// ❌ WRONG: Different developers, different approaches
-const date1 = new Date()                    // Local timezone (inconsistent)
-const date2 = new Date().toISOString()      // UTC (good, but inconsistent usage)
-const date3 = moment().format('YYYY-MM-DD') // Another library (inconsistent)
+if (DateUtils.isBefore(appointmentDate, now)) {
+  /* ... */
+}
 ```
 
-**With DateUtils:**
+### `DateUtils.addDays(date, days): Date`
+
 ```typescript
-// ✅ CORRECT: Consistent across entire application
-const date1 = DateUtils.getJSDate()         // Always app timezone
-const date2 = DateUtils.getISODateString()  // Always UTC format
-const date3 = DateUtils.getDateStringWithFormat({ format: 'yyyy-MM-dd' })
+const followUp = DateUtils.addDays(appointmentDate, 7)
 ```
 
-## Useful Methods for Real Scenarios
+### `DateUtils.subtractDays(date, days): Date`
+
+```typescript
+const reminder = DateUtils.subtractDays(appointmentDate, 1)
+```
+
+### `DateUtils.isValidTimezone(timezone): boolean`
+
+Validates an IANA timezone string. Use before passing a user-provided timezone into any other method.
+
+```typescript
+if (!DateUtils.isValidTimezone(input.timezone)) {
+  throw new ApiBadRequestException('invalidTimezone')
+}
+```
+
+## Usage Examples
 
 ### Business Hours and Scheduling
 
 ```typescript
 export class AppointmentService {
   async scheduleAppointment(input: ScheduleInput): Promise<AppointmentOutput> {
-    const now = DateUtils.getJSDate()
-    const appointmentDate = DateUtils.createJSDate({ 
-      date: input.requestedDate 
+    const now = DateUtils.now<Date>({ type: 'js' })
+    const appointmentDate = DateUtils.build<Date>({
+      date: input.requestedDate,
+      type: 'js'
     })
 
-    // Business rule validation with timezone-aware dates
     if (DateUtils.isBefore(appointmentDate, now)) {
       throw new ApiBadRequestException('appointmentInPast', {
         context: 'AppointmentService.scheduleAppointment',
-        details: [{
-          requestedDate: DateUtils.getDateStringWithFormat({
-            date: appointmentDate,
-            format: 'dd/MM/yyyy HH:mm'
-          }),
-          currentDate: DateUtils.getDateStringWithFormat({
-            date: now,
-            format: 'dd/MM/yyyy HH:mm'
-          })
-        }]
+        details: [
+          {
+            requestedDate: DateUtils.build<string>({
+              date: appointmentDate,
+              format: 'dd/MM/yyyy HH:mm',
+              type: 'iso'
+            }),
+            currentDate: DateUtils.build<string>({
+              date: now,
+              format: 'dd/MM/yyyy HH:mm',
+              type: 'iso'
+            })
+          }
+        ]
       })
     }
 
-    // Calculate reminder dates
     const reminderDate = DateUtils.subtractDays(appointmentDate, 1)
     const followUpDate = DateUtils.addDays(appointmentDate, 7)
 
@@ -110,38 +216,37 @@ export class AppointmentService {
 ```typescript
 export class FinancialReportService {
   async generateMonthlyReport(month: string, year: string): Promise<ReportOutput> {
-    // Parse user input consistently
-    const startDate = DateUtils.createJSDate({
-      date: `${year}-${month.padStart(2, '0')}-01T00:00:00`
+    const startDate = DateUtils.build<Date>({
+      date: `${year}-${month.padStart(2, '0')}-01T00:00:00Z`,
+      type: 'js'
     })
-    
-    const endDate = DateUtils.createJSDate({
-      date: `${year}-${month.padStart(2, '0')}-01T00:00:00`
-    })
-    const lastDay = DateUtils.addDays(
-      DateUtils.subtractDays(DateUtils.addDays(endDate, 32), endDate.getDate()), 
-      1
-    )
 
-    const transactions = await this.transactionRepository.findByDateRange(
-      startDate, 
-      lastDay
-    )
+    const endDate = DateUtils.build<Date>({
+      date: `${year}-${month.padStart(2, '0')}-01T00:00:00Z`,
+      type: 'js'
+    })
+
+    const lastDay = DateUtils.addDays(DateUtils.subtractDays(DateUtils.addDays(endDate, 32), endDate.getUTCDate()), 1)
+
+    const transactions = await this.transactionRepository.findByDateRange(startDate, lastDay)
 
     return {
       report: {
-        period: DateUtils.getDateStringWithFormat({
+        period: DateUtils.build<string>({
           date: startDate,
-          format: 'MMMM yyyy'  // "Janeiro 2024"
+          format: 'MMMM yyyy',
+          type: 'iso'
         }),
-        generated: DateUtils.getDateStringWithFormat({
-          format: 'dd/MM/yyyy HH:mm:ss'
+        generated: DateUtils.build<string>({
+          format: 'dd/MM/yyyy HH:mm:ss',
+          type: 'iso'
         }),
-        transactions: transactions.map(t => ({
+        transactions: transactions.map((t) => ({
           ...t.toObject(),
-          dateFormatted: DateUtils.getDateStringWithFormat({
+          dateFormatted: DateUtils.build<string>({
             date: t.createdAt,
-            format: 'dd/MM/yyyy'
+            format: 'dd/MM/yyyy',
+            type: 'iso'
           })
         }))
       }
@@ -158,34 +263,33 @@ export class SubscriptionService {
     const subscription = await this.subscriptionRepository.findById(subscriptionId)
     const entity = new SubscriptionEntity(subscription)
 
-    const now = DateUtils.getJSDate()
+    const now = DateUtils.now<Date>({ type: 'js' })
     const expiresAt = entity.toObject().expiresAt
 
-    // Check if subscription is about to expire (3 days warning)
     const warningDate = DateUtils.subtractDays(expiresAt, 3)
-    
+
     if (DateUtils.isAfter(now, warningDate) && DateUtils.isBefore(now, expiresAt)) {
-      // Send renewal warning
       await this.emailService.sendRenewalWarning({
         userId: entity.toObject().userId,
-        expiresOn: DateUtils.getDateStringWithFormat({
+        expiresOn: DateUtils.build<string>({
           date: expiresAt,
-          format: 'dd/MM/yyyy'
+          format: 'dd/MM/yyyy',
+          type: 'iso'
         })
       })
     }
 
-    // Calculate next billing cycle
     const nextBillingDate = DateUtils.addDays(expiresAt, 30)
-    
     const renewedSubscription = entity.renew(nextBillingDate)
+
     await this.subscriptionRepository.save(renewedSubscription)
 
     return {
       subscription: renewedSubscription.toObject(),
-      nextBilling: DateUtils.getDateStringWithFormat({
+      nextBilling: DateUtils.build<string>({
         date: nextBillingDate,
-        format: 'dd/MM/yyyy'
+        format: 'dd/MM/yyyy',
+        type: 'iso'
       })
     }
   }
@@ -197,26 +301,25 @@ export class SubscriptionService {
 ```typescript
 export class UserRegistrationService {
   async validateUserAge(birthDate: string): Promise<boolean> {
-    const birth = DateUtils.createJSDate({ date: birthDate })
-    const now = DateUtils.getJSDate()
+    const birth = DateUtils.build<Date>({ date: birthDate, type: 'js' })
+    const now = DateUtils.now<Date>({ type: 'js' })
 
-    // Calculate age in years
-    const birthDateTime = DateTime.fromJSDate(birth)
-    const nowDateTime = DateTime.fromJSDate(now)
-    const age = nowDateTime.diff(birthDateTime, 'years').years
+    const age = DateUtils.asLuxonDate(now).diff(DateUtils.asLuxonDate(birth), 'years').years
 
-    // Business rule: must be 18 or older
     if (age < 18) {
       throw new ApiBadRequestException('userTooYoung', {
         context: 'UserRegistrationService.validateUserAge',
-        details: [{
-          age: Math.floor(age),
-          birthDate: DateUtils.getDateStringWithFormat({
-            date: birth,
-            format: 'dd/MM/yyyy'
-          }),
-          minimumAge: 18
-        }]
+        details: [
+          {
+            age: Math.floor(age),
+            birthDate: DateUtils.build<string>({
+              date: birth,
+              format: 'dd/MM/yyyy',
+              type: 'iso'
+            }),
+            minimumAge: 18
+          }
+        ]
       })
     }
 
@@ -225,42 +328,39 @@ export class UserRegistrationService {
 }
 ```
 
-## Advanced Timezone Operations
+## Multi-Timezone Support
 
-### Multi-Timezone Support for Global Apps
+When the app serves users across different timezones, the timezone must come from the **user/request context**, not from a global env var. Store all dates in **UTC** and convert only at the edges.
 
 ```typescript
 export class GlobalEventService {
   async scheduleGlobalEvent(input: GlobalEventInput): Promise<EventOutput> {
-    // Event time in organizer's timezone
-    const organizerTimezone = input.organizerTimezone || 'UTC'
-    
-    // Validate timezone
+    const organizerTimezone = input.organizerTimezone ?? 'UTC'
+
     if (!DateUtils.isValidTimezone(organizerTimezone)) {
       throw new ApiBadRequestException('invalidTimezone', {
         details: [{ providedTimezone: organizerTimezone }]
       })
     }
 
-    // Create event in organizer timezone then convert to UTC for storage
-    const eventDate = DateTime.fromISO(input.eventDateTime, { 
-      zone: organizerTimezone 
-    }).toUTC().toJSDate()
+    const eventDate = DateUtils.asLuxonDate(input.eventDateTime, organizerTimezone).toUTC().toJSDate()
 
     const event = new EventEntity({
       title: input.title,
-      scheduledAt: eventDate,  // Stored as UTC in database
+      scheduledAt: eventDate,
       organizerTimezone
     })
 
-    // For participants in different timezones
     const participants = await this.getEventParticipants(input.participantIds)
-    
-    const notificationData = participants.map(participant => ({
+
+    const notificationData = participants.map((participant) => ({
       userId: participant.id,
-      eventTime: DateTime.fromJSDate(eventDate)
-        .setZone(participant.timezone)
-        .toFormat('dd/MM/yyyy HH:mm'),
+      eventTime: DateUtils.build<string>({
+        date: eventDate,
+        format: 'dd/MM/yyyy HH:mm',
+        timezone: participant.timezone,
+        type: 'iso'
+      }),
       timezone: participant.timezone
     }))
 
@@ -272,35 +372,29 @@ export class GlobalEventService {
 }
 ```
 
-### Date Formatting for Different Locales
+## Locale-Aware Formatting
+
+Formatting is a **presentation concern**. Keep the locale in the user context, and build the format string accordingly.
 
 ```typescript
 export class NotificationService {
   async sendDateBasedNotification(userId: string, date: Date): Promise<void> {
     const user = await this.userRepository.findById(userId)
     const userEntity = new UserEntity(user)
-    
-    // Format date according to user's locale preference
-    const locale = userEntity.toObject().locale || 'pt-BR'
-    
-    let dateFormat: string
-    switch (locale) {
-      case 'pt-BR':
-        dateFormat = 'dd/MM/yyyy HH:mm'
-        break
-      case 'en-US':
-        dateFormat = 'MM/dd/yyyy hh:mm a'
-        break
-      case 'en-GB':
-        dateFormat = 'dd/MM/yyyy HH:mm'
-        break
-      default:
-        dateFormat = 'yyyy-MM-dd HH:mm'
-    }
+    const locale = userEntity.toObject().locale ?? 'pt-BR'
 
-    const formattedDate = DateUtils.getDateStringWithFormat({
+    const dateFormat =
+      {
+        'pt-BR': 'dd/MM/yyyy HH:mm',
+        'en-US': 'MM/dd/yyyy hh:mm a',
+        'en-GB': 'dd/MM/yyyy HH:mm'
+      }[locale] ?? 'yyyy-MM-dd HH:mm'
+
+    const formattedDate = DateUtils.build<string>({
       date,
-      format: dateFormat
+      format: dateFormat,
+      timezone: userEntity.toObject().timezone,
+      type: 'iso'
     })
 
     await this.emailService.send({
@@ -309,7 +403,7 @@ export class NotificationService {
       data: {
         userName: userEntity.toObject().name,
         eventDate: formattedDate,
-        timezone: process.env.TZ
+        timezone: userEntity.toObject().timezone
       }
     })
   }
@@ -318,39 +412,70 @@ export class NotificationService {
 
 ## Environment Configuration
 
-```typescript
-// .env configuration
-TZ=America/Sao_Paulo           // App timezone
-DATE_FORMAT=dd/MM/yyyy         // Default date format
+`DateUtils` no longer reads a global `APP_TIMEZONE`. Only `DATE_FORMAT` is read from the environment, and it's used as the **default format** when none is provided.
 
-// Usage in different environments
-// Development: TZ=America/Sao_Paulo
-// Production: TZ=UTC (recommended for global apps)
-// Testing: TZ=UTC (for consistent test results)
+```env
+# .env
+DATE_FORMAT=dd/MM/yyyy
 ```
+
+| Variable      | Default        | Purpose                                                   |
+| ------------- | -------------- | --------------------------------------------------------- |
+| `DATE_FORMAT` | `'yyyy-MM-dd'` | Default Luxon format string for `build({ type: 'iso' })`. |
+
+Timezones are **always** passed explicitly. There is no `TZ` or `APP_TIMEZONE` configuration at the utility level.
 
 ## Benefits of Centralized Date Management
 
 ### Consistency Across Teams
-- **Same methods** used by all developers
-- **Consistent timezone handling** preventing bugs
-- **Standard formatting** across all features
-- **Easy environment switching** (dev/prod timezones)
 
-### Production Reliability  
-- **Timezone bugs eliminated** through centralization
-- **Date arithmetic errors** reduced with tested methods
+- **Same methods** used by all developers
+- **UTC by default** eliminates timezone bugs
+- **Explicit timezones** at the edges, where they belong
+- **No hidden environment state**
+
+### Production Reliability
+
+- **Deterministic behavior** regardless of server timezone
+- **Date arithmetic** tested once, reused everywhere
 - **Locale-aware formatting** for international users
-- **Environment-based configuration** for different deployments
+- **No environment-based surprises**
 
 ### Developer Experience
+
 - **Simple API** for common date operations
-- **Timezone validation** prevents invalid configurations
+- **Timezone validation** prevents invalid input
 - **Luxon integration** provides powerful date manipulation
 - **Type safety** with clear input/output types
 
 ### Maintenance Benefits
-- **Single place** to update date logic across entire app
+
+- **Single place** to update date logic across the entire app
 - **Easy debugging** when date issues occur
 - **Consistent testing** with predictable date behavior
 - **Future extensibility** for new date features
+
+## Migration Notes
+
+If you're coming from the previous version of `DateUtils`:
+
+| Old                                                   | New                                                      |
+| ----------------------------------------------------- | -------------------------------------------------------- |
+| `process.env.TZ` as global timezone                   | Timezone passed explicitly per call                      |
+| `DateUtils.getJSDate()`                               | `DateUtils.now<Date>({ type: 'js' })`                    |
+| `DateUtils.getISODateString()`                        | `DateUtils.now<string>({ type: 'iso' })`                 |
+| `DateUtils.createJSDate({ date })`                    | `DateUtils.build<Date>({ date, type: 'js' })`            |
+| `DateUtils.getDateStringWithFormat({ date, format })` | `DateUtils.build<string>({ date, format, type: 'iso' })` |
+
+## Summary
+
+| Method                     | Purpose                                          |
+| -------------------------- | ------------------------------------------------ |
+| `build<T>`                 | Parse + format a date (ISO string or `Date`)     |
+| `now<T>`                   | Current date in UTC (or given timezone)          |
+| `asLuxonDate`              | Get a Luxon `DateTime` for advanced manipulation |
+| `isAfter` / `isBefore`     | Compare two dates                                |
+| `addDays` / `subtractDays` | Date arithmetic                                  |
+| `isValidTimezone`          | Validate IANA timezone strings                   |
+
+**Default timezone:** `UTC`. **Configurable timezone:** via explicit parameter. **Configurable format:** via `DATE_FORMAT` env var or per-call `format`.

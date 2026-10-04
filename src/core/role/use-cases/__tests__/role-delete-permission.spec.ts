@@ -6,6 +6,7 @@ import { Test } from '@nestjs/testing'
 
 import { PermissionEntity, PermissionEntitySchema } from '@/core/permission/entity/permission'
 import { IPermissionRepository } from '@/core/permission/repository/permission'
+import { ICacheAsideAdapter } from '@/infra/cache/aside'
 import { CreatedModel } from '@/infra/repository'
 import { IRoleDeletePermission } from '@/modules/role/interfaces'
 import { ApiNotFoundException } from '@/utils/exception'
@@ -29,20 +30,21 @@ describe(RoleDeletePermissionUsecase.name, () => {
   beforeEach(async () => {
     const app = await Test.createTestingModule({
       providers: [
-        {
-          provide: IRoleRepository,
-          useValue: {}
-        },
-        {
-          provide: IPermissionRepository,
-          useValue: {}
-        },
+        TestUtils.mockProvider(IRoleRepository),
+        TestUtils.mockProvider(IPermissionRepository),
+        TestUtils.mockProvider(ICacheAsideAdapter, {
+          invalidate: TestUtils.mockResolvedValue()
+        }),
         {
           provide: IRoleDeletePermission,
-          useFactory: (roleRepository: IRoleRepository, permissionRepository: IPermissionRepository) => {
-            return new RoleDeletePermissionUsecase(roleRepository, permissionRepository)
+          useFactory: (
+            roleRepository: IRoleRepository,
+            permissionRepository: IPermissionRepository,
+            cacheAside: ICacheAsideAdapter
+          ) => {
+            return new RoleDeletePermissionUsecase(roleRepository, permissionRepository, cacheAside)
           },
-          inject: [IRoleRepository, IPermissionRepository]
+          inject: [IRoleRepository, IPermissionRepository, ICacheAsideAdapter]
         }
       ]
     }).compile()

@@ -18,7 +18,7 @@ export const CacheSetNXInputSchema = InputValidator.object({
 })
 
 @Injectable()
-export class CacheRedisService implements Omit<ICacheAdapter<Redis>, 'mSet' | 'mGet'> {
+export class CacheRedisService implements Omit<ICacheAdapter<Redis>, 'mSet'> {
   client!: Redis
 
   constructor(
@@ -26,6 +26,17 @@ export class CacheRedisService implements Omit<ICacheAdapter<Redis>, 'mSet' | 'm
     client: Redis
   ) {
     this.client = client
+  }
+
+  async mGet<T = string>(keys: CacheKeyArgument[]): Promise<(T | null)[]> {
+    if (!keys?.length) return []
+    const values = await this.client.mget(...keys)
+    return values.map((v) => (v === undefined ? null : v)) as (T | null)[]
+  }
+
+  async getTtl(key: CacheRedisKeyArgument): Promise<number | undefined> {
+    const ttl = await this.client.ttl(key as CacheRedisKeyArgument)
+    return ttl >= 0 ? ttl : undefined
   }
 
   async set<

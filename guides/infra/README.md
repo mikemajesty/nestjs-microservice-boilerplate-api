@@ -25,6 +25,7 @@ src/infra/
 | [HTTP](./http.md)             | [http/](../../src/infra/http/)             | Axios wrapper with retry, better stack traces, builder pattern       |
 | [Email](./email.md)           | [email/](../../src/infra/email/)           | Nodemailer + Handlebars templates, event-driven                      |
 | [Cache](./cache.md)           | [cache/](../../src/infra/cache/)           | ICacheAdapter for Redis and Memory (node-cache)                      |
+| [Cache Aside](./cache-aside.md) | [cache/aside/](../../src/infra/cache/aside/) | Read-through cache with batching, single-flight, and invalidation |
 | [Database](./database.md)     | [database/](../../src/infra/database/)     | Schemas and migrations for MongoDB and PostgreSQL                    |
 | [Repository](./repository.md) | [repository/](../../src/infra/repository/) | IRepository pattern for database-agnostic data access                |
 

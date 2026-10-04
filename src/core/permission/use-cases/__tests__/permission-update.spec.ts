@@ -4,10 +4,13 @@
 import { ZodMockSchema } from '@mikemajesty/zod-mock-schema'
 import { Test } from '@nestjs/testing'
 
+import { RoleEntity } from '@/core/role/entity/role'
+import { ICacheAsideAdapter } from '@/infra/cache/aside'
 import { ILoggerAdapter } from '@/infra/logger'
 import { UpdatedModel } from '@/infra/repository'
 import { IPermissionUpdate } from '@/modules/permission/interfaces'
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception'
+import { IDGeneratorUtils } from '@/utils/id-generator'
 import { TestUtils } from '@/utils/test/utils'
 import { ZodExceptionIssue } from '@/utils/validator'
 
@@ -22,22 +25,23 @@ describe(PermissionUpdateUsecase.name, () => {
   beforeEach(async () => {
     const app = await Test.createTestingModule({
       providers: [
-        {
-          provide: IPermissionRepository,
-          useValue: {}
-        },
-        {
-          provide: ILoggerAdapter,
-          useValue: {
-            info: TestUtils.mockReturnValue<void>()
-          }
-        },
+        TestUtils.mockProvider(IPermissionRepository),
+        TestUtils.mockProvider(ILoggerAdapter, {
+          info: TestUtils.mockReturnValue()
+        }),
+        TestUtils.mockProvider(ICacheAsideAdapter, {
+          invalidateMany: TestUtils.mockResolvedValue()
+        }),
         {
           provide: IPermissionUpdate,
-          useFactory: (permissionRepository: IPermissionRepository, logger: ILoggerAdapter) => {
-            return new PermissionUpdateUsecase(permissionRepository, logger)
+          useFactory: (
+            permissionRepository: IPermissionRepository,
+            logger: ILoggerAdapter,
+            cacheAside: ICacheAsideAdapter
+          ) => {
+            return new PermissionUpdateUsecase(permissionRepository, logger, cacheAside)
           },
-          inject: [IPermissionRepository, ILoggerAdapter]
+          inject: [IPermissionRepository, ILoggerAdapter, ICacheAsideAdapter]
         }
       ]
     }).compile()
@@ -68,7 +72,7 @@ describe(PermissionUpdateUsecase.name, () => {
   })
 
   test('when permission not found, should expect an error', async () => {
-    repository.findById = TestUtils.mockResolvedValue<PermissionEntity>(null)
+    repository.findOneWithRelation = TestUtils.mockResolvedValue<PermissionEntity>(null)
 
     await expect(usecase.execute(input)).rejects.toThrow(ApiNotFoundException)
   })
@@ -77,18 +81,18 @@ describe(PermissionUpdateUsecase.name, () => {
   const permission = mock.generate<PermissionEntity>({
     overrides: {
       name: 'name:permission',
-      roles: []
+      roles: [new RoleEntity({ id: IDGeneratorUtils.generate(), name: 'role:name' })]
     }
   })
   test('when permission exists, should expect an error', async () => {
-    repository.findById = TestUtils.mockResolvedValue<PermissionEntity>(permission)
+    repository.findOneWithRelation = TestUtils.mockResolvedValue<PermissionEntity>(permission)
     repository.existsOnUpdate = TestUtils.mockResolvedValue<boolean>(true)
 
     await expect(usecase.execute({ ...input, name: 'permission:create' })).rejects.toThrow(ApiConflictException)
   })
 
   test('when permission updated successfully, should expect a permission updated', async () => {
-    repository.findById = TestUtils.mockResolvedValue<PermissionEntity>(permission)
+    repository.findOneWithRelation = TestUtils.mockResolvedValue<PermissionEntity>(permission)
     repository.updateOne = TestUtils.mockResolvedValue<UpdatedModel>(null)
     repository.existsOnUpdate = TestUtils.mockResolvedValue<boolean>(false)
 
@@ -101,7 +105,7 @@ describe(PermissionUpdateUsecase.name, () => {
         name: undefined
       }
     })
-    repository.findById = TestUtils.mockResolvedValue<PermissionEntity>(permission)
+    repository.findOneWithRelation = TestUtils.mockResolvedValue<PermissionEntity>(permission)
     repository.updateOne = TestUtils.mockResolvedValue<UpdatedModel>(null)
 
     await expect(usecase.execute(inputWithoutName)).resolves.toBeDefined()

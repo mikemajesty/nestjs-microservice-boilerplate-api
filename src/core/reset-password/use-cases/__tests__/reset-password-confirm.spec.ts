@@ -12,7 +12,7 @@ import { EmitEventOutput, IEventAdapter } from '@/libs/event'
 import { ITokenAdapter } from '@/libs/token'
 import { IConfirmResetPassword } from '@/modules/reset-password/interfaces'
 import { ApiBadRequestException, ApiNotFoundException, ApiUnauthorizedException } from '@/utils/exception'
-import { TestUtils } from '@/utils/test/utils'
+import { MockUtils, TestUtils } from '@/utils/test'
 import { ZodExceptionIssue } from '@/utils/validator'
 
 import { ResetPasswordEntity } from '../../entity/reset-password'
@@ -32,26 +32,16 @@ describe(ResetPasswordConfirmUsecase.name, () => {
     const app = await Test.createTestingModule({
       imports: [],
       providers: [
-        {
-          provide: IUserRepository,
-          useValue: {}
-        },
-        {
-          provide: IResetPasswordRepository,
-          useValue: {}
-        },
-        {
-          provide: ITokenAdapter,
-          useValue: {
-            verify: TestUtils.mockReturnValue<ResetPasswordConfirmVerify>({ id: TestUtils.mockUUID() })
-          }
-        },
-        {
-          provide: IEventAdapter,
-          useValue: {
-            emit: TestUtils.mockResolvedValue<EmitEventOutput>()
-          }
-        },
+        TestUtils.mockProvider(IUserRepository),
+        TestUtils.mockProvider(IResetPasswordRepository),
+        TestUtils.mockProvider(ITokenAdapter, {
+          verify: TestUtils.mockResolvedValue<ResetPasswordConfirmVerify>({
+            id: MockUtils.UUID()
+          }) as ITokenAdapter['verify']
+        }),
+        TestUtils.mockProvider(IEventAdapter, {
+          emit: TestUtils.mockReturnValue<EmitEventOutput>()
+        }),
         {
           provide: IConfirmResetPassword,
           useFactory: (
@@ -129,7 +119,7 @@ describe(ResetPasswordConfirmUsecase.name, () => {
     await expect(usecase.execute(input)).rejects.toThrow(ApiUnauthorizedException)
   })
 
-  const defaultResetPassword = new ResetPasswordEntity({ id: TestUtils.mockUUID(), token: 'token', user })
+  const defaultResetPassword = new ResetPasswordEntity({ id: MockUtils.UUID(), token: 'token', user })
   test('when confirm successfully, should expect a void', async () => {
     userRepository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(user)
     userRepository.create = TestUtils.mockResolvedValue<CreatedModel>()

@@ -45,6 +45,10 @@ export class TokenService implements ITokenAdapter {
       })
     })
   }
+
+  decode<T>(input: TokenDecodeInput): T {
+    return jwt.decode(input.token) as T
+  }
 }
 
 export type TokenSignInput = {
@@ -59,5 +63,9 @@ export type TokenSignOutput = {
 
 export type TokenVerifyInput = {
   secret?: string
+  token: string
+}
+
+export type TokenDecodeInput = {
   token: string
 }

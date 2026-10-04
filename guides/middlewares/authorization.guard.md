@@ -1,6 +1,6 @@
 # Authorization Guard
 
-Guard that verifies if a request has **permission to access** a protected endpoint. Uses a **Role-Based Access Control (RBAC)** system with roles and permissions.
+Guard that verifies if an **authenticated** request has **permission to access** a protected endpoint. Uses a **Role-Based Access Control (RBAC)** system with roles and permissions. Runs **after** the Authentication Guard.
 
 ## The Problem
 
@@ -43,7 +43,7 @@ Guard that verifies if a request has **permission to access** a protected endpoi
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │  1. Check if endpoint requires permission (@Permission)         │
-│  2. Extract user ID from JWT (request.user.id)                  │
+│  2. Extract user ID from request.user.id                        │
 │  3. Fetch user with roles from database                         │
 │  4. Collect all permissions from user's roles                   │
 │  5. Check if required permission exists                         │
@@ -61,13 +61,13 @@ import { Permission } from '@/utils/decorators'
 @Controller('users')
 export class UserController {
   @Post()
-  @Permission('user:create')  // Only users with this permission
+  @Permission('user:create') // Only users with this permission
   async createUser(@Body() input: CreateUserInput) {
     return this.userService.create(input)
   }
 
   @Delete(':id')
-  @Permission('user:delete')  // Admin-only operation
+  @Permission('user:delete') // Admin-only operation
   async deleteUser(@Param('id') id: string) {
     return this.userService.delete(id)
   }
@@ -78,18 +78,18 @@ export class UserController {
 
 Permissions follow the pattern `resource:action`:
 
-| Permission | Description |
-|------------|-------------|
+| Permission    | Description  |
+| ------------- | ------------ |
 | `user:create` | Create users |
-| `user:read` | Read users |
+| `user:read`   | Read users   |
 | `user:update` | Update users |
 | `user:delete` | Delete users |
 | `role:create` | Create roles |
 | `role:update` | Update roles |
 
-### No Permission = Public
+### No Permission = Public (to authenticated users)
 
-If no `@Permission()` decorator is present, the endpoint is accessible to any authenticated user:
+If no `@Permission()` decorator is present, the endpoint is accessible to any **authenticated** user:
 
 ```typescript
 @Get('profile')
@@ -116,7 +116,7 @@ Request
    │ Yes
    ▼
 ┌──────────────────────────┐
-│ User exists in DB?       │──── No ────▶ ❌ 401 Unauthorized
+│ User exists in DB?       │──── No ────▶ ❌ 403 Forbidden
 └──────────────────────────┘
    │ Yes
    ▼
@@ -130,7 +130,8 @@ Request
 
 ## Error Responses
 
-**401 Unauthorized** - No valid token:
+**401 Unauthorized** - No valid token (from Authentication Guard):
+
 ```json
 {
   "error": {
@@ -140,7 +141,19 @@ Request
 }
 ```
 
+**403 Forbidden** - User not found (access revoked):
+
+```json
+{
+  "error": {
+    "code": 403,
+    "message": ["accessRevoked"]
+  }
+}
+```
+
 **403 Forbidden** - No permission:
+
 ```json
 {
   "error": {
@@ -154,12 +167,13 @@ Request
 
 ## Summary
 
-| Feature | Description |
-|---------|-------------|
-| **Model** | Role-Based Access Control (RBAC) |
-| **Decorator** | `@Permission('resource:action')` |
-| **Check** | User → Roles → Permissions |
-| **401** | Invalid or missing token |
-| **403** | Valid token, no permission |
+| Feature       | Description                                          |
+| ------------- | ---------------------------------------------------- |
+| **Model**     | Role-Based Access Control (RBAC)                     |
+| **Decorator** | `@Permission('resource:action')`                     |
+| **Check**     | User → Roles → Permissions                           |
+| **401**       | Invalid or missing token (from Authentication Guard) |
+| **403**       | Valid token, no permission                           |
+| **Runs**      | After `AuthenticationGuard`                          |
 
-**Authorization Guard** - *Fine-grained access control with RBAC.*
+**Authorization Guard** - _Fine-grained access control with RBAC._

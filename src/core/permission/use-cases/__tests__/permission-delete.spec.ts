@@ -26,10 +26,7 @@ describe(PermissionDeleteUsecase.name, () => {
   beforeEach(async () => {
     const app = await Test.createTestingModule({
       providers: [
-        {
-          provide: IPermissionRepository,
-          useValue: {}
-        },
+        TestUtils.mockProvider(IPermissionRepository),
         {
           provide: IPermissionDelete,
           useFactory: (permissionRepository: IPermissionRepository) => {

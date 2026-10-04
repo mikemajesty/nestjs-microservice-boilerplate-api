@@ -31,6 +31,7 @@
     "docker:run": "docker run -p 5000:5000 --env-file .env --network host --name nestjs-api --rm nestjs-api",
     "docker:stop": "docker stop nestjs-api 2>/dev/null || true",
     "docker:start": "npm run docker:stop && npm run docker:build && npm run docker:run",
+    "redis:web": "docker run --rm -p 5540:5540 redis/redisinsight:latest",
     "scaffold": "./node_modules/@mikemajesty/microservice-crud/bin/microservice-crud",
     "typeorm": "ts-node -r tsconfig-paths/register \"./node_modules/typeorm/cli.js\"",
     "migration-postgres:create": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:create ./src/infra/database/postgres/migrations/Name",

@@ -3,9 +3,11 @@
  */
 import { RoleEntity, RoleEnum } from '@/core/role/entity/role'
 import { IRoleRepository } from '@/core/role/repository/role'
+import { ICacheAsideAdapter } from '@/infra/cache/aside'
 import { ILoggerAdapter } from '@/infra/logger'
 import { ValidateSchema } from '@/utils/decorators'
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception'
+import { Namespaces } from '@/utils/namespaces'
 import { ApiTracingInput } from '@/utils/request'
 import { IUsecase } from '@/utils/usecase'
 import { InputValidator, SchemaInfer } from '@/utils/validator'
@@ -23,12 +25,13 @@ export class UserUpdateUsecase implements IUsecase {
   constructor(
     private readonly userRepository: IUserRepository,
     private readonly loggerService: ILoggerAdapter,
-    private readonly roleRepository: IRoleRepository
+    private readonly roleRepository: IRoleRepository,
+    private readonly cacheAside: ICacheAsideAdapter
   ) {}
 
   @ValidateSchema(UserUpdateSchema)
   async execute(input: UserUpdateInput, { tracing, user: userData }: ApiTracingInput): Promise<UserUpdateOutput> {
-    const user = await this.userRepository.findOne({ id: input.id })
+    const user = await this.userRepository.findOneWithRelation({ id: input.id }, { roles: true })
 
     if (!user) {
       throw new ApiNotFoundException('userNotFound')
@@ -47,6 +50,7 @@ export class UserUpdateUsecase implements IUsecase {
     }
 
     await this.userRepository.create(entity.toObject())
+    await this.cacheAside.invalidate(Namespaces.userById(entity.id))
 
     this.loggerService.info({ message: 'user updated.', metadata: { user: input } })
 
@@ -63,7 +67,7 @@ export class UserUpdateUsecase implements IUsecase {
     if (input.roles) {
       const roles = await this.roleRepository.findIn({ name: input.roles })
 
-      if (roles.length < (input.roles as RoleEnum[]).length) {
+      if (roles.length < input.roles.length) {
         throw new ApiNotFoundException('roleNotFound')
       }
 

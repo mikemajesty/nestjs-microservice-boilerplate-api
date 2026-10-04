@@ -44,6 +44,49 @@ private getErrorMessage(exception: BaseException, status: number): string[] {
 }
 ```
 
+## Retryable Failures
+
+The same utility also centralizes failures that are normally safe to retry for outbound HTTP requests.
+
+### `DEFAULT_RETRY_STATUS`
+
+`DEFAULT_RETRY_STATUS` lists retryable HTTP responses:
+
+```typescript
+export const DEFAULT_RETRY_STATUS = [408, 429, 500, 502, 503, 504]
+```
+
+They represent temporary request, rate-limit, or upstream-server failures:
+
+| Status | Meaning | Why retry can help |
+| --- | --- | --- |
+| `408` | Request Timeout | The upstream request may succeed on a new attempt. |
+| `429` | Too Many Requests | The caller can wait and try again. |
+| `500` | Internal Server Error | The upstream may recover from a transient failure. |
+| `502` | Bad Gateway | A proxy or gateway may recover. |
+| `503` | Service Unavailable | The upstream is temporarily unavailable. |
+| `504` | Gateway Timeout | A gateway did not receive a timely upstream response. |
+
+`AxiosUtils.requestRetry` uses this list by default. A request can provide a different status list through the HTTP builder retry configuration.
+
+### `NETWORK_RETRY_CODES`
+
+`NETWORK_RETRY_CODES` lists transport failures where no usable HTTP response was received:
+
+```typescript
+export const NETWORK_RETRY_CODES = ['ECONNABORTED', 'ECONNRESET', 'ETIMEDOUT']
+```
+
+| Code | Meaning |
+| --- | --- |
+| `ECONNABORTED` | The client aborted the connection, commonly because of a timeout. |
+| `ECONNRESET` | The peer unexpectedly closed or reset the connection. |
+| `ETIMEDOUT` | A network operation exceeded its timeout. |
+
+These codes are retried by the outbound HTTP utility. The exception interceptor also classifies them as timeout errors, which gives callers a consistent API response even when an upstream service did not return an HTTP status.
+
+Retry only idempotent operations by default. Retrying a request that creates or charges a resource can duplicate side effects unless the upstream supports idempotency keys.
+
 ## Real-World Examples
 
 ### Authentication & Authorization

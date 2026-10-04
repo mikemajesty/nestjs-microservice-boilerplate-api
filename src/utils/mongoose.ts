@@ -1,7 +1,7 @@
 /**
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/utils/mongoose.md
  */
-import { Connection, Types } from 'mongoose'
+import { Connection, PaginateModel, Types } from 'mongoose'
 
 import { AnyType } from './types'
 
@@ -68,6 +68,10 @@ export class MongoUtils {
   static toObjectIdArray = (ids: (string | Types.ObjectId)[]): Types.ObjectId[] => {
     return ids.map((id) => this.toObjectId(id))
   }
+}
+
+export interface IMongoSchema<T> {
+  repository(connection: Connection): PaginateModel<T>
 }
 
 export type MongoRepositoryModelSessionType<T> = T & { connection?: Connection }

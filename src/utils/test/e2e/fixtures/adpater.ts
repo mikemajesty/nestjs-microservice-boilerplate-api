@@ -3,7 +3,7 @@ import { DataSource } from 'typeorm'
 import { IRepository } from '@/infra/repository'
 import { IEntity } from '@/utils/entity'
 
-export interface TestFixture<T extends IEntity> {
+export interface ITestFixture<T extends IEntity> {
   entity: T | T[]
   override(entity: T): T
   clear(manager: DataSource): Promise<void>

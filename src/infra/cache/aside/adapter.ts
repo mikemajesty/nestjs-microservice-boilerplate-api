@@ -1,6 +1,13 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/infra/cache-aside.md
+ */
 import { AnyType } from '@/utils/types'
 
-import { CacheAsideReadThroughOptionsInput, CacheAsideSingleFlightOptionsInput } from './service'
+import {
+  CacheAsideReadThroughManyLoaderInput,
+  CacheAsideReadThroughOptionsInput,
+  CacheAsideSingleFlightOptionsInput
+} from './service'
 
 export abstract class ICacheAsideAdapter {
   /**
@@ -19,6 +26,21 @@ export abstract class ICacheAsideAdapter {
     loader: () => Promise<T> | T,
     options: CacheAsideReadThroughOptionsInput
   ): Promise<T>
+
+  /**
+   * Read-through cache lookup for multiple keys.
+   *
+   * Returns the cached values if present. On a MISS, runs the `loader`
+   * for the missing keys, stores the results in cache, and returns them.
+   *
+   * The returned array maintains the order of the input keys, with `null`
+   * for any key that could not be loaded.
+   */
+  abstract readThroughMany<T>(
+    keys: string[],
+    loader: CacheAsideReadThroughManyLoaderInput<T>,
+    options: CacheAsideReadThroughOptionsInput
+  ): Promise<(T | null)[]>
 
   /**
    * Read-through cache lookup with single-flight protection.

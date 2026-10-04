@@ -4,7 +4,6 @@
 import { ZodMockSchema } from '@mikemajesty/zod-mock-schema'
 import { INestApplication } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
-import mongoose, { PaginateModel, Schema } from 'mongoose'
 import request from 'supertest'
 
 import { ICatRepository } from '@/core/cat/repository/cat'
@@ -16,20 +15,18 @@ import { IPermissionRepository } from '@/core/permission/repository/permission'
 import { IRoleRepository } from '@/core/role/repository/role'
 import { IUserRepository } from '@/core/user/repository/user'
 import { ICacheAdapter } from '@/infra/cache'
-import { CacheRedisModule } from '@/infra/cache/redis'
 import { ConnectionName } from '@/infra/database/enum'
-import { Cat, CatDocument, CatSchema } from '@/infra/database/mongo/schemas/cat'
+import { Cat } from '@/infra/database/mongo/schemas/cat'
 import { ITokenAdapter } from '@/libs/token'
-import { TokenLibModule } from '@/libs/token/module'
-import { UserModule } from '@/modules/user/module'
+import { GuardsModule } from '@/middlewares/guards/module'
 import { UserRequest } from '@/utils/request'
+import { MockUtils, TestUtils } from '@/utils/test'
 import { TestMongoContainer, TestPostgresContainer, TestRedisContainer } from '@/utils/test/e2e/containers'
 import { PermissionFixture } from '@/utils/test/e2e/fixtures/permission'
 import { RoleFixture } from '@/utils/test/e2e/fixtures/role'
 import { UserFixture } from '@/utils/test/e2e/fixtures/user'
 import { FixtureUtils } from '@/utils/test/e2e/fixtures/utils'
 import { TestEnd2EndUtils } from '@/utils/test/e2e/utils'
-import { TestUtils } from '@/utils/test/utils'
 
 import { CatController } from '../controller'
 import { CatModule } from '../module'
@@ -57,29 +54,10 @@ describe(CatController.name, () => {
     redisService = await redisContainer.getTestRedis()
 
     const moduleRef = await Test.createTestingModule({
-      imports: [
-        UserModule,
-        CatModule,
-        TokenLibModule,
-        CacheRedisModule,
-        TestEnd2EndUtils.getPostgresModule(postgresContainer, postgresConfig)
-      ],
-      providers: [TestEnd2EndUtils.getGuardProvider([IUserRepository])]
+      imports: [CatModule, GuardsModule, TestEnd2EndUtils.getPostgresModule(postgresContainer, postgresConfig)]
     })
       .overrideProvider(ICatRepository)
-      .useFactory({
-        factory() {
-          {
-            type Model = mongoose.PaginateModel<CatDocument>
-
-            const repository: PaginateModel<CatDocument> = mongoConnection.model<CatDocument, Model>(
-              Cat.name,
-              CatSchema as Schema
-            )
-            return new CatRepository(repository)
-          }
-        }
-      })
+      .useValue(new CatRepository(new Cat().repository(mongoConnection)))
       .overrideProvider(ITokenAdapter)
       .useValue({
         verify: TestUtils.mockResolvedValue<UserRequest>({
@@ -171,9 +149,9 @@ describe(CatController.name, () => {
     const id = createRes.body.id
 
     const update = {
-      name: TestUtils.faker.animal.cat(),
-      breed: TestUtils.faker.animal.cat(),
-      age: TestUtils.faker.number.int({ min: 1, max: 20 })
+      name: MockUtils.faker.animal.cat(),
+      breed: MockUtils.faker.animal.cat(),
+      age: MockUtils.faker.number.int({ min: 1, max: 20 })
     }
 
     const response = await request(app.getHttpServer())

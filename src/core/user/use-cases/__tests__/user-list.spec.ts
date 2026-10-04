@@ -21,10 +21,7 @@ describe(UserListUsecase.name, () => {
     const app = await Test.createTestingModule({
       imports: [],
       providers: [
-        {
-          provide: IUserRepository,
-          useValue: {}
-        },
+        TestUtils.mockProvider(IUserRepository),
         {
           provide: IUserList,
           useFactory: (userRepository: IUserRepository) => {

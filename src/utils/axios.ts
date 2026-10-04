@@ -8,11 +8,8 @@ import { AxiosConverter } from 'nestjs-convert-to-curl'
 import { ILoggerAdapter } from '@/infra/logger'
 
 import { ApiInternalServerException } from './exception'
-import { DefaultErrorMessage } from './http-status'
+import { DEFAULT_RETRY_STATUS, DefaultErrorMessage, NETWORK_RETRY_CODES } from './http-status'
 import { ObjectUtils } from './object'
-
-const DEFAULT_RETRY_STATUS = [408, 429, 500, 502, 503, 504]
-export const NETWORK_RETRY_CODES = ['ECONNABORTED', 'ECONNRESET', 'ETIMEDOUT']
 
 export class AxiosUtils {
   static interceptAxiosResponseError = (error: CustomAxiosError): void => {

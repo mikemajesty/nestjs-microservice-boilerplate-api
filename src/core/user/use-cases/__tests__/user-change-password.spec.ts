@@ -25,10 +25,7 @@ describe(UserChangePasswordUsecase.name, () => {
     const app = await Test.createTestingModule({
       imports: [LoggerModule],
       providers: [
-        {
-          provide: IUserRepository,
-          useValue: {}
-        },
+        TestUtils.mockProvider(IUserRepository),
         {
           provide: IUserChangePassword,
           useFactory: (userRepository: IUserRepository) => {

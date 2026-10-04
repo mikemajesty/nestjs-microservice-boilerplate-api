@@ -10,6 +10,18 @@
       "console": "integratedTerminal",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run-script", "start:debug"]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug: Tests",
+      "program": "${workspaceFolder}/node_modules/jest/bin/jest.js",
+      "args": ["-c", "test/jest.config.ts", "--detectOpenHandles", "--runInBand", "${relativeFile}"],
+      "env": {
+        "NODE_OPTIONS": "--experimental-vm-modules"
+      },
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
     }
   ]
 }

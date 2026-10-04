@@ -8,7 +8,7 @@ import { ILoggerAdapter } from '@/infra/logger'
 import { CreatedModel } from '@/infra/repository'
 import { IPermissionCreate } from '@/modules/permission/interfaces'
 import { ApiConflictException } from '@/utils/exception'
-import { TestUtils } from '@/utils/test/utils'
+import { MockUtils, TestUtils } from '@/utils/test'
 import { ZodExceptionIssue } from '@/utils/validator'
 
 import { PermissionEntity, PermissionEntitySchema } from '../../entity/permission'
@@ -22,16 +22,10 @@ describe(PermissionCreateUsecase.name, () => {
   beforeEach(async () => {
     const app = await Test.createTestingModule({
       providers: [
-        {
-          provide: IPermissionRepository,
-          useValue: {}
-        },
-        {
-          provide: ILoggerAdapter,
-          useValue: {
-            info: TestUtils.mockReturnValue<void>()
-          }
-        },
+        TestUtils.mockProvider(IPermissionRepository),
+        TestUtils.mockProvider(ILoggerAdapter, {
+          info: TestUtils.mockReturnValue()
+        }),
         {
           provide: IPermissionCreate,
           useFactory: (permissionRepository: IPermissionRepository, logger: ILoggerAdapter) => {
@@ -81,7 +75,7 @@ describe(PermissionCreateUsecase.name, () => {
   })
 
   test('when permission created successfully, should expect a permission created', async () => {
-    repository.create = TestUtils.mockResolvedValue<CreatedModel>({ created: true, id: TestUtils.mockUUID() })
+    repository.create = TestUtils.mockResolvedValue<CreatedModel>({ created: true, id: MockUtils.UUID() })
     repository.findOne = TestUtils.mockResolvedValue<PermissionEntity>(null)
 
     await expect(usecase.execute(input)).resolves.toBeDefined()

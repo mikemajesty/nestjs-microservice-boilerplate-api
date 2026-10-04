@@ -3,7 +3,7 @@
  */
 import { Module } from '@nestjs/common'
 import { getConnectionToken } from '@nestjs/mongoose'
-import mongoose, { Connection, PaginateModel, Schema } from 'mongoose'
+import { Connection, PaginateModel } from 'mongoose'
 
 import { ICatRepository } from '@/core/cat/repository/cat'
 import { CatCreateUsecase } from '@/core/cat/use-cases/cat-create'
@@ -13,7 +13,7 @@ import { CatListUsecase } from '@/core/cat/use-cases/cat-list'
 import { CatUpdateUsecase } from '@/core/cat/use-cases/cat-update'
 import { CacheRedisModule } from '@/infra/cache/redis'
 import { ConnectionName } from '@/infra/database/enum'
-import { Cat, CatDocument, CatSchema } from '@/infra/database/mongo/schemas/cat'
+import { Cat, CatDocument } from '@/infra/database/mongo/schemas/cat'
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger'
 import { TokenLibModule } from '@/libs/token'
 import { MongoRepositoryModelSessionType } from '@/utils/mongoose'
@@ -29,21 +29,12 @@ import { CatRepository } from './repository'
     {
       provide: ICatRepository,
       useFactory: async (connection: Connection) => {
-        type Model = mongoose.PaginateModel<CatDocument>
-
-        //  use if you want transaction
-        const repository: MongoRepositoryModelSessionType<PaginateModel<CatDocument>> = connection.model<
-          CatDocument,
-          Model
-        >(Cat.name, CatSchema as Schema)
+        const repository: MongoRepositoryModelSessionType<PaginateModel<CatDocument>> = new Cat().repository(connection)
 
         repository.connection = connection
 
         // use if you not want transaction
-        // const repository: PaginateModel<UserDocument> = connection.model<UserDocument, Model>(
-        //   User.name,
-        //   UserSchema as Schema
-        // );
+        // const repository = new Cat().repository(connection)
 
         return new CatRepository(repository)
       },

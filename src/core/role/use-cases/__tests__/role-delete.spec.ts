@@ -6,6 +6,7 @@ import { Test } from '@nestjs/testing'
 
 import { PermissionEntity } from '@/core/permission/entity/permission'
 import { RoleDeleteInput, RoleDeleteSchema, RoleDeleteUsecase } from '@/core/role/use-cases/role-delete'
+import { ICacheAsideAdapter } from '@/infra/cache/aside'
 import { CreatedModel } from '@/infra/repository'
 import { IRoleDelete } from '@/modules/role/interfaces'
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception'
@@ -22,16 +23,16 @@ describe(RoleDeleteUsecase.name, () => {
   beforeEach(async () => {
     const app = await Test.createTestingModule({
       providers: [
-        {
-          provide: IRoleRepository,
-          useValue: {}
-        },
+        TestUtils.mockProvider(IRoleRepository),
+        TestUtils.mockProvider(ICacheAsideAdapter, {
+          invalidate: TestUtils.mockResolvedValue()
+        }),
         {
           provide: IRoleDelete,
-          useFactory: (roleRepository: IRoleRepository) => {
-            return new RoleDeleteUsecase(roleRepository)
+          useFactory: (roleRepository: IRoleRepository, cacheAside: ICacheAsideAdapter) => {
+            return new RoleDeleteUsecase(roleRepository, cacheAside)
           },
-          inject: [IRoleRepository]
+          inject: [IRoleRepository, ICacheAsideAdapter]
         }
       ]
     }).compile()

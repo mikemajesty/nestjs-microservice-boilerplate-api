@@ -21,10 +21,10 @@ interface LoginController {
   @route("/login")
   @doc("user login")
   @returnsDoc("login successfully")
-  login(...VersionParams, @body login: LoginInput): DefaultSuccessResponse<
-    LoginOutput,
-    200
-  > | LoginNotFoundException | LoginInputException;
+  login(...VersionParams, @body login: LoginInput):
+    | DefaultSuccessResponse<LoginOutput, 200>
+    | LoginNotFoundException
+    | LoginInputException;
 
   @post
   @route("/refresh")

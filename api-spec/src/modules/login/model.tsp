@@ -2,8 +2,8 @@ namespace api.Login;
 
 @doc("login input")
 model LoginInput {
-  email: string;
-  password: string;
+  email: string = "admin@admin.com";
+  password: string = "admin";
 }
 
 @doc("login ouput")

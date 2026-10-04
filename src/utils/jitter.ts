@@ -1,14 +1,9 @@
-// src/utils/jitter.ts
-
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/utils/jitter.md
+ */
 import { InputValidator, SchemaInfer } from './validator'
 
 export const JITTER_DEFAULT_PERCENTAGE = 0.1
-
-export type JitterOptions = {
-  min?: number
-  max?: number
-  integer?: boolean
-}
 
 export const JitterApplySchema = InputValidator.object({
   base: InputValidator.number(),
@@ -19,8 +14,6 @@ export const JitterApplySchema = InputValidator.object({
     integer: InputValidator.boolean().optional()
   }).optional()
 })
-
-export type JitterApplyOptionsInput = SchemaInfer<typeof JitterApplySchema>
 
 export class JitterUtils {
   static apply({ base, percentage = JITTER_DEFAULT_PERCENTAGE, options }: JitterApplyOptionsInput): number {
@@ -58,3 +51,11 @@ export class JitterUtils {
     return Math.min(Math.max(value, lower), upper)
   }
 }
+
+export type JitterOptions = {
+  min?: number
+  max?: number
+  integer?: boolean
+}
+
+export type JitterApplyOptionsInput = SchemaInfer<typeof JitterApplySchema>

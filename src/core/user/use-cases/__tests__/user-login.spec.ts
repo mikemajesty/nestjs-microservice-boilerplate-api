@@ -5,7 +5,7 @@ import { RoleEntity, RoleEntitySchema } from '@/core/role/entity/role'
 import { ITokenAdapter, TokenLibModule } from '@/libs/token'
 import { ILogin } from '@/modules/login/interfaces'
 import { ApiBadRequestException, ApiNotFoundException } from '@/utils/exception'
-import { TestUtils } from '@/utils/test/utils'
+import { MockUtils, TestUtils } from '@/utils/test'
 import { ZodExceptionIssue } from '@/utils/validator'
 
 import { UserEntity, UserEntitySchema } from '../../entity/user'
@@ -21,10 +21,7 @@ describe(LoginUsecase.name, () => {
     const app = await Test.createTestingModule({
       imports: [TokenLibModule],
       providers: [
-        {
-          provide: IUserRepository,
-          useValue: {}
-        },
+        TestUtils.mockProvider(IUserRepository),
         {
           provide: ILogin,
           useFactory: (userRepository: IUserRepository, token: ITokenAdapter) => {
@@ -41,7 +38,7 @@ describe(LoginUsecase.name, () => {
 
   test('when no input is specified, should expect an error', async () => {
     await TestUtils.expectZodError(
-      () => usecase.execute({} as LoginInput, TestUtils.getMockTracing()),
+      () => usecase.execute({} as LoginInput, MockUtils.Tracing()),
       (issues: ZodExceptionIssue[]) => {
         expect(issues).toEqual([
           {
@@ -68,7 +65,7 @@ describe(LoginUsecase.name, () => {
   test('when user not found, should expect an error', async () => {
     repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(null)
 
-    await expect(usecase.execute(input, TestUtils.getMockTracing())).rejects.toThrow(ApiNotFoundException)
+    await expect(usecase.execute(input, MockUtils.Tracing())).rejects.toThrow(ApiNotFoundException)
   })
 
   const userPasswordMock = new ZodMockSchema(UserPasswordEntitySchema)
@@ -96,14 +93,14 @@ describe(LoginUsecase.name, () => {
   test('when password is incorrect, should expect an error', async () => {
     repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(user)
 
-    await expect(usecase.execute(input, TestUtils.getMockTracing())).rejects.toThrow(ApiBadRequestException)
+    await expect(usecase.execute(input, MockUtils.Tracing())).rejects.toThrow(ApiBadRequestException)
   })
 
   test('when user login successfully, should expect a token', async () => {
     user.password.password = '69bf0bc46f51b33377c4f3d92caf876714f6bbbe99e7544487327920873f9820'
     repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(user)
 
-    await expect(usecase.execute(input, TestUtils.getMockTracing())).resolves.toEqual({
+    await expect(usecase.execute(input, MockUtils.Tracing())).resolves.toEqual({
       accessToken: expect.any(String),
       refreshToken: expect.any(String)
     } as LoginOutput)

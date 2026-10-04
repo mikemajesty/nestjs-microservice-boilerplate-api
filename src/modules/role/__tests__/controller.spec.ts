@@ -3,10 +3,8 @@
  */
 import { INestApplication } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
-import { getRepositoryToken } from '@nestjs/typeorm'
 import Redis from 'ioredis'
 import request from 'supertest'
-import { Repository } from 'typeorm'
 
 import { IPermissionRepository } from '@/core/permission/repository/permission'
 import { IRoleRepository } from '@/core/role/repository/role'
@@ -16,24 +14,20 @@ import { RoleListOutput } from '@/core/role/use-cases/role-list'
 import { RoleUpdateOutput } from '@/core/role/use-cases/role-update'
 import { IUserRepository } from '@/core/user/repository/user'
 import { ICacheAdapter } from '@/infra/cache'
-import { CacheRedisModule } from '@/infra/cache/redis'
-import { RoleSchema } from '@/infra/database/postgres/schemas/role'
 import { ITokenAdapter } from '@/libs/token/adapter'
-import { TokenLibModule } from '@/libs/token/module'
-import { UserModule } from '@/modules/user/module'
+import { GuardsModule } from '@/middlewares/guards/module'
 import { ApiBadRequestException, ApiConflictException, ApiNotFoundException } from '@/utils/exception'
 import { UserRequest } from '@/utils/request'
+import { MockUtils, TestUtils } from '@/utils/test'
 import { TestPostgresContainer, TestRedisContainer } from '@/utils/test/e2e/containers'
 import { PermissionFixture } from '@/utils/test/e2e/fixtures/permission'
 import { RoleFixture } from '@/utils/test/e2e/fixtures/role'
 import { UserFixture } from '@/utils/test/e2e/fixtures/user'
 import { FixtureUtils } from '@/utils/test/e2e/fixtures/utils'
 import { TestEnd2EndUtils } from '@/utils/test/e2e/utils'
-import { TestUtils } from '@/utils/test/utils'
 
 import { RoleController } from '../controller'
 import { RoleModule } from '../module'
-import { RoleModel, RoleRepository } from '../repository'
 
 describe(RoleController.name, () => {
   const tokenValue = TestEnd2EndUtils.AUTHORIZATION_HEADER[1].split(' ')[1]
@@ -56,22 +50,8 @@ describe(RoleController.name, () => {
     redisService = await redisContainer.getTestRedis()
 
     const moduleRef = await Test.createTestingModule({
-      imports: [
-        UserModule,
-        RoleModule,
-        TokenLibModule,
-        CacheRedisModule,
-        TestEnd2EndUtils.getPostgresModule(postgresContainer, postgresConfig)
-      ],
-      providers: [TestEnd2EndUtils.getGuardProvider([IUserRepository])]
+      imports: [RoleModule, GuardsModule, TestEnd2EndUtils.getPostgresModule(postgresContainer, postgresConfig)]
     })
-      .overrideProvider(IRoleRepository)
-      .useFactory({
-        factory(repository: Repository<RoleModel>) {
-          return new RoleRepository(repository)
-        },
-        inject: [getRepositoryToken(RoleSchema)]
-      })
       .overrideProvider(ITokenAdapter)
       .useValue({
         verify: TestUtils.mockResolvedValue<UserRequest>({
@@ -160,7 +140,7 @@ describe(RoleController.name, () => {
 
   it('/GET /v1/roles/:id not found', async () => {
     await request(app.getHttpServer())
-      .get(`/roles/${TestUtils.mockUUID()}`)
+      .get(`/roles/${MockUtils.UUID()}`)
       .set(...TestEnd2EndUtils.AUTHORIZATION_HEADER)
       .expect(ApiNotFoundException.STATUS)
   })

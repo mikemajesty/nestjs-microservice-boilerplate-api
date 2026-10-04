@@ -20,10 +20,7 @@ describe(PermissionGetByIdUsecase.name, () => {
   beforeEach(async () => {
     const app = await Test.createTestingModule({
       providers: [
-        {
-          provide: IPermissionRepository,
-          useValue: {}
-        },
+        TestUtils.mockProvider(IPermissionRepository),
         {
           provide: IPermissionGetById,
           useFactory: (permissionRepository: IPermissionRepository) => {

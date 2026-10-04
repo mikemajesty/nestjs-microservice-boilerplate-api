@@ -2,6 +2,7 @@
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/modules/module.md
  */
 import { Module } from '@nestjs/common'
+import { DiscoveryModule } from '@nestjs/core'
 import { getRepositoryToken, TypeOrmModule } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 
@@ -12,6 +13,7 @@ import { PermissionDeleteUsecase } from '@/core/permission/use-cases/permission-
 import { PermissionGetByIdUsecase } from '@/core/permission/use-cases/permission-get-by-id'
 import { PermissionListUsecase } from '@/core/permission/use-cases/permission-list'
 import { PermissionUpdateUsecase } from '@/core/permission/use-cases/permission-update'
+import { CacheAsideModule, ICacheAsideAdapter } from '@/infra/cache/aside'
 import { CacheRedisModule } from '@/infra/cache/redis'
 import { PermissionSchema } from '@/infra/database/postgres/schemas/permission'
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger'
@@ -26,11 +28,20 @@ import {
   IPermissionUpdate
 } from './interfaces'
 import { PermissionRepository } from './repository'
+import { RoutesExplorer } from './routes'
 
 @Module({
-  imports: [TokenLibModule, LoggerModule, CacheRedisModule, TypeOrmModule.forFeature([PermissionSchema])],
+  imports: [
+    TokenLibModule,
+    LoggerModule,
+    CacheRedisModule,
+    TypeOrmModule.forFeature([PermissionSchema]),
+    DiscoveryModule,
+    CacheAsideModule
+  ],
   controllers: [PermissionController],
   providers: [
+    RoutesExplorer,
     {
       provide: IPermissionRepository,
       useFactory: (repository: Repository<PermissionSchema & PermissionEntity>) => {
@@ -46,9 +57,9 @@ import { PermissionRepository } from './repository'
     },
     {
       provide: IPermissionUpdate,
-      useFactory: (logger: ILoggerAdapter, repository: IPermissionRepository) =>
-        new PermissionUpdateUsecase(repository, logger),
-      inject: [ILoggerAdapter, IPermissionRepository]
+      useFactory: (logger: ILoggerAdapter, repository: IPermissionRepository, cacheAside: ICacheAsideAdapter) =>
+        new PermissionUpdateUsecase(repository, logger, cacheAside),
+      inject: [ILoggerAdapter, IPermissionRepository, ICacheAsideAdapter]
     },
     {
       provide: IPermissionGetById,

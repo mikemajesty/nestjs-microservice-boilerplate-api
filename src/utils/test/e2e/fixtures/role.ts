@@ -7,9 +7,9 @@ import { IRepository, RunInTransactionType } from '@/infra/repository'
 import { RoleModel } from '@/modules/role/repository'
 import { IDGeneratorUtils } from '@/utils/id-generator'
 
-import { TestFixture } from './adpater'
+import { ITestFixture } from './adpater'
 
-export class RoleFixture implements Omit<TestFixture<RoleEntity>, 'override'> {
+export class RoleFixture implements Omit<ITestFixture<RoleEntity>, 'override'> {
   entity: RoleEntity[] = []
 
   constructor() {
@@ -28,7 +28,7 @@ export class RoleFixture implements Omit<TestFixture<RoleEntity>, 'override'> {
   }
 
   addPermissions(role: RoleEntity, permissions: PermissionEntity[]): void {
-    role.permissions = role.permissions.concat(permissions)
+    permissions.forEach((permission) => role.addPermission(permission))
   }
 
   async up(repository: IRepository<RoleEntity>): Promise<void> {

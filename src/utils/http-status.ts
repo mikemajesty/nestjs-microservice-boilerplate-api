@@ -1,7 +1,7 @@
 /**
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/utils/http-status.md
  */
-export const DefaultErrorMessage: { [key: string]: string } = {
+export const DefaultErrorMessage: { [key: string | number]: string } = {
   ECONNREFUSED: 'Connection refused',
   ETIMEDOUT: 'Connection timed out',
   ECONNRESET: 'Connection was reset',
@@ -27,3 +27,13 @@ export const DefaultErrorMessage: { [key: string]: string } = {
   507: 'Insufficient Storage',
   508: 'Loop Detected'
 }
+
+/**
+ * HTTP responses that are retried by default because they are usually transient.
+ */
+export const DEFAULT_RETRY_STATUS = [408, 429, 500, 502, 503, 504]
+
+/**
+ * Transport error codes retried without receiving an HTTP response.
+ */
+export const NETWORK_RETRY_CODES = ['ECONNABORTED', 'ECONNRESET', 'ETIMEDOUT']

@@ -6,6 +6,7 @@ import { Test } from '@nestjs/testing'
 
 import { PermissionEntity, PermissionEntitySchema } from '@/core/permission/entity/permission'
 import { IPermissionRepository } from '@/core/permission/repository/permission'
+import { ICacheAsideAdapter } from '@/infra/cache/aside/adapter'
 import { CreatedModel } from '@/infra/repository'
 import { IRoleAddPermission } from '@/modules/role/interfaces'
 import { ApiNotFoundException } from '@/utils/exception'
@@ -25,20 +26,21 @@ describe(RoleAddPermissionUsecase.name, () => {
   beforeEach(async () => {
     const app = await Test.createTestingModule({
       providers: [
-        {
-          provide: IRoleRepository,
-          useValue: {}
-        },
-        {
-          provide: IPermissionRepository,
-          useValue: {}
-        },
+        TestUtils.mockProvider(IRoleRepository),
+        TestUtils.mockProvider(IPermissionRepository),
+        TestUtils.mockProvider(ICacheAsideAdapter, {
+          invalidate: TestUtils.mockResolvedValue()
+        }),
         {
           provide: IRoleAddPermission,
-          useFactory: (roleRepository: IRoleRepository, permissionRepository: IPermissionRepository) => {
-            return new RoleAddPermissionUsecase(roleRepository, permissionRepository)
+          useFactory: (
+            roleRepository: IRoleRepository,
+            permissionRepository: IPermissionRepository,
+            cacheAsideAdapter: ICacheAsideAdapter
+          ) => {
+            return new RoleAddPermissionUsecase(roleRepository, permissionRepository, cacheAsideAdapter)
           },
-          inject: [IRoleRepository, IPermissionRepository]
+          inject: [IRoleRepository, IPermissionRepository, ICacheAsideAdapter]
         }
       ]
     }).compile()

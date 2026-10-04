@@ -3,7 +3,7 @@
  */
 import { AxiosRequestConfig } from 'axios'
 
-import { HttpData } from './types'
+import { HttpData, HttpRetryInput } from './types'
 
 export abstract class IHttpAdapter {
   abstract request(): IHttpBuilder<unknown>
@@ -30,8 +30,14 @@ export abstract class IHttpBuilder<Response = unknown> {
 
   abstract headers(headers: Record<string, string>): IHttpBuilder<Response>
   abstract header(key: string, value: string): IHttpBuilder<Response>
+  /**
+   * Set the network timeout for the HTTP request in milliseconds.
+   */
   abstract timeout(ms: number): IHttpBuilder<Response>
-  abstract retry(retries: number, status?: number[]): IHttpBuilder<Response>
+  /**
+   * Set the number of retries and optionally the status codes that should trigger a retry. @DEFAULT_RETRY_STATUS
+   */
+  abstract retry(input: HttpRetryInput): IHttpBuilder<Response>
 
   abstract execute(): Promise<Response>
 }

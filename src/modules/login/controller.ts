@@ -65,28 +65,32 @@ export class LoginController {
         redirect_uri: this.secret.AUTH.GOOGLE.REDIRECT_URL,
         grant_type: 'authorization_code'
       })
-      .retry(3)
+      .retry({ retries: 3 })
       .execute()
 
     const { access_token } = tokenResponse
 
     const profile = await this.http
       .request()
-      .get<GoogleProfile>('https://www.googleapis.com/oauth2/v1/userinfo', {
-        headers: { Authorization: `Bearer ${access_token}` }
-      })
+      .get<GoogleProfile>('https://www.googleapis.com/oauth2/v1/userinfo')
+      .headers({ Authorization: `Bearer ${access_token}` })
       .execute()
 
     const user = await this.userRepository.findOneWithRelation({ email: profile.email }, { password: true })
 
+    if (!user) {
+      reply.code(404).send({ error: `User: ${profile.email} not found` })
+      return
+    }
+
     const tokenNewPassword = this.tokenService.sign({
       body: {
-        email: user?.email,
+        email: user.email,
         name: profile.name
       }
     })
 
-    if (!user?.password) {
+    if (!user.password) {
       reply.redirect(`/create-new-password=${tokenNewPassword.token}`)
       return
     }

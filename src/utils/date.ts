@@ -6,40 +6,49 @@ import { DateTime } from 'luxon'
 import { ApiInternalServerException } from './exception'
 
 export class DateUtils {
-  private static readonly DEFAULT_DATE_FORMAT = process.env.DATE_FORMAT
-  private static readonly APP_TIMEZONE = process.env.TZ
+  private static readonly DEFAULT_DATE_FORMAT = 'yyyy-MM-dd'
+  private static readonly UTC = 'utc'
 
-  static build<T extends Date | string>(input: GetDateWithFormatFormatInput): T {
-    const parseDate = (val?: Date | string): Date => {
-      if (!val) return this.now<Date>({ type: 'js' })
-      if (val instanceof Date) return val
-      const parsed = new Date(val)
-      if (isNaN(parsed.getTime()))
-        throw new ApiInternalServerException('Invalid date string provided to DateUtils.build')
-      return parsed
+  static build<T extends Date | string>(input: BuildInput): T {
+    const date = this.parseDate(input?.date)
+    const format = input?.format ?? this.defaultFormat
+    const zone = input?.timezone ?? this.UTC
+
+    if (!this.isValidTimezone(zone)) {
+      throw new ApiInternalServerException(`Invalid timezone provided to DateUtils.build: ${zone}`)
     }
 
-    const date = parseDate(input?.date)
-    const format = (input?.format ?? this.DEFAULT_DATE_FORMAT) as string
-    const zone = input?.timezone ?? this.APP_TIMEZONE
+    const dateTime = DateTime.fromJSDate(date, { zone: this.UTC }).setZone(zone)
+
     if (input.type === 'iso') {
-      return DateTime.fromJSDate(date, { zone: 'utc' }).setZone(zone).toFormat(format) as T
+      return dateTime.toFormat(format) as T
     }
-    return DateTime.fromJSDate(date, { zone: 'utc' }).setZone(zone).toJSDate() as T
+
+    return dateTime.toJSDate() as T
   }
 
-  static asLuxonDate(date?: Date | string): DateTime {
+  static asLuxonDate(date?: Date | string, timezone?: string): DateTime {
+    const zone = timezone ?? this.UTC
+
+    if (!this.isValidTimezone(zone)) {
+      throw new ApiInternalServerException(`Invalid timezone provided to DateUtils.asLuxonDate: ${zone}`)
+    }
+
     if (typeof date === 'string') {
-      return DateTime.fromISO(date ?? DateTime.now().toISO()).setZone(this.APP_TIMEZONE)
+      return DateTime.fromISO(date, { zone }).setZone(zone)
     }
-    return DateTime.fromJSDate(date ?? DateTime.now().toJSDate()).setZone(this.APP_TIMEZONE)
+
+    return DateTime.fromJSDate(date ?? DateTime.now().toJSDate(), { zone })
   }
 
-  static now<T>(input?: DateInput): T {
+  static now<T>(input?: NowInput): T {
+    const zone = input?.timezone ?? this.UTC
+
     if (input?.type === 'iso') {
-      return DateTime.now().setZone(this.APP_TIMEZONE).toISO()! as T
+      return DateTime.now().setZone(zone).toISO()! as T
     }
-    return DateTime.now().setZone(this.APP_TIMEZONE).toJSDate() as T
+
+    return DateTime.now().setZone(zone).toJSDate() as T
   }
 
   static isAfter(date: Date, compareTo: Date): boolean {
@@ -59,21 +68,36 @@ export class DateUtils {
   }
 
   static isValidTimezone(timezone: string): boolean {
-    try {
-      DateTime.now().setZone(timezone)
-      return true
-    } catch {
-      return false
+    return DateTime.local().setZone(timezone).isValid
+  }
+
+  private static get defaultFormat(): string {
+    return process.env.DATE_FORMAT ?? this.DEFAULT_DATE_FORMAT
+  }
+
+  private static parseDate(val?: Date | string): Date {
+    if (!val) return new Date()
+    if (val instanceof Date) return val
+
+    const parsed = new Date(val)
+
+    if (isNaN(parsed.getTime())) {
+      throw new ApiInternalServerException('Invalid date string provided to DateUtils')
     }
+
+    return parsed
   }
 }
 
-type GetDateWithFormatFormatInput = {
+type BuildInput = {
   date?: Date | string
   format?: string
-  utc?: boolean
   timezone?: string
 } & DateInput
+
+type NowInput = DateInput & {
+  timezone?: string
+}
 
 type DateInput = {
   type: 'iso' | 'js' | 'timestamp'

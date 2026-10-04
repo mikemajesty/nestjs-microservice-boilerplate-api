@@ -4,45 +4,42 @@
 import { Test } from '@nestjs/testing'
 
 import { ICacheAdapter } from '@/infra/cache'
-import { ISecretsAdapter, SecretsModule } from '@/infra/secrets'
-import { TokenLibModule } from '@/libs/token'
+import { ITokenAdapter } from '@/libs/token'
 import { ILogout } from '@/modules/logout/interfaces'
-import { TestUtils } from '@/utils/test/utils'
+import { MockUtils, TestUtils } from '@/utils/test'
 import { ZodExceptionIssue } from '@/utils/validator'
 
 import { LogoutInput, LogoutUsecase } from '../user-logout'
 
 describe(LogoutUsecase.name, () => {
   let usecase: ILogout
-  let cache: ICacheAdapter
+  let token: ITokenAdapter
 
   beforeEach(async () => {
     const app = await Test.createTestingModule({
-      imports: [TokenLibModule, SecretsModule],
+      imports: [],
       providers: [
-        {
-          provide: ICacheAdapter,
-          useValue: {
-            set: TestUtils.mockResolvedValue<void>()
-          }
-        },
+        TestUtils.mockProvider(ICacheAdapter, {
+          set: TestUtils.mockResolvedValue()
+        }),
+        TestUtils.mockProvider(ITokenAdapter),
         {
           provide: ILogout,
-          useFactory: (cache: ICacheAdapter, secrets: ISecretsAdapter) => {
-            return new LogoutUsecase(cache, secrets)
+          useFactory: (cache: ICacheAdapter, token: ITokenAdapter) => {
+            return new LogoutUsecase(cache, token)
           },
-          inject: [ICacheAdapter, ISecretsAdapter]
+          inject: [ICacheAdapter, ITokenAdapter]
         }
       ]
     }).compile()
 
     usecase = app.get(ILogout)
-    cache = app.get(ICacheAdapter)
+    token = app.get(ITokenAdapter)
   })
 
   test('when no input is specified, should expect an error', async () => {
     await TestUtils.expectZodError(
-      () => usecase.execute({} as LogoutInput, TestUtils.getMockTracing()),
+      () => usecase.execute({} as LogoutInput, MockUtils.Tracing()),
       (issues: ZodExceptionIssue[]) => {
         expect(issues).toEqual([
           {
@@ -54,9 +51,21 @@ describe(LogoutUsecase.name, () => {
     )
   })
 
-  test('when user logout, should expect set token to blacklist', async () => {
-    cache.set = TestUtils.mockResolvedValue<void>()
+  test('when decode is missing, should ignore logout', async () => {
+    token.decode = TestUtils.mockImplementation(() => null)
 
-    await expect(usecase.execute({ token: '12345678910' }, TestUtils.getMockTracing())).resolves.toBeUndefined()
+    await expect(usecase.execute({ token: '12345678910' }, MockUtils.Tracing())).resolves.toBeUndefined()
+  })
+
+  test('when token already expired, should ignore logout', async () => {
+    token.decode = TestUtils.mockImplementation<() => { exp: number }>(() => ({ exp: Date.now() / 1000 - 60 }))
+
+    await expect(usecase.execute({ token: '12345678910' }, MockUtils.Tracing())).resolves.toBeUndefined()
+  })
+
+  test('when user logout, should expect set token to blacklist', async () => {
+    token.decode = TestUtils.mockImplementation<() => { exp: number }>(() => ({ exp: Date.now() / 1000 + 60 }))
+
+    await expect(usecase.execute({ token: '12345678910' }, MockUtils.Tracing())).resolves.toBeUndefined()
   })
 })

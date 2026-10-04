@@ -17,6 +17,7 @@ export const SUPPORTED_LOCALES = {
 type SupportedLocale = keyof typeof SUPPORTED_LOCALES
 
 let defaultRequestLocale: SupportedLocale = 'en-US'
+
 const localeStorage = new AsyncLocalStorage<SupportedLocale>()
 const zodLocaleErrors = {
   'en-US': z.locales.en().localeError,

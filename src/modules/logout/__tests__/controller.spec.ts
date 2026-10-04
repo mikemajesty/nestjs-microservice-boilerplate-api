@@ -7,10 +7,8 @@ import { IRoleRepository } from '@/core/role/repository/role'
 import { IUserRepository } from '@/core/user/repository/user'
 import { LogoutInput } from '@/core/user/use-cases/user-logout'
 import { ICacheAdapter } from '@/infra/cache'
-import { CacheRedisModule } from '@/infra/cache/redis'
-import { TokenLibModule } from '@/libs/token/module'
+import { GuardsModule } from '@/middlewares/guards/module'
 import { LoginModule } from '@/modules/login/module'
-import { UserModule } from '@/modules/user/module'
 import { ApiUnauthorizedException } from '@/utils/exception'
 import { TestPostgresContainer, TestRedisContainer } from '@/utils/test/e2e/containers'
 import { PermissionFixture } from '@/utils/test/e2e/fixtures/permission'
@@ -40,16 +38,13 @@ describe(LogoutController.name, () => {
     const moduleRef = await Test.createTestingModule({
       imports: [
         LoginModule,
-        UserModule,
         LogoutModule,
-        TokenLibModule,
-        CacheRedisModule,
+        GuardsModule,
         TestEnd2EndUtils.getPostgresModule(postgresContainer, postgresConfig)
-      ],
-      providers: [TestEnd2EndUtils.getGuardProvider([IUserRepository])]
+      ]
     })
       .overrideProvider(ICacheAdapter)
-      .useFactory({ factory: async () => redisContainer.getTestRedis() })
+      .useValue(await redisContainer.getTestRedis())
       .compile()
 
     app = await TestEnd2EndUtils.createApp(moduleRef)

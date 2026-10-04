@@ -24,10 +24,7 @@ describe(PermissionListUsecase.name, () => {
   beforeEach(async () => {
     const app = await Test.createTestingModule({
       providers: [
-        {
-          provide: IPermissionRepository,
-          useValue: {}
-        },
+        TestUtils.mockProvider(IPermissionRepository),
         {
           provide: IPermissionList,
           useFactory: (permissionRepository: IPermissionRepository) => {

@@ -23,7 +23,7 @@ export class UserRepository extends TypeORMRepository<UserModel> implements IUse
   ])
   @ValidateDatabaseSortAllowed<UserEntity>({ name: 'email' }, { name: 'name' }, { name: 'createdAt' })
   async paginate(input: UserListInput): Promise<UserListOutput> {
-    const docs = await this.applyPagination(input)
+    const docs = await this.applyPagination(input, { roles: true })
     return {
       ...docs,
       docs: docs.docs.map((doc: UserEntity) => new UserEntity(doc).toObject())

@@ -4,10 +4,9 @@
 import { ZodMockSchema } from '@mikemajesty/zod-mock-schema'
 import { Test } from '@nestjs/testing'
 
-import { ILoggerAdapter, LoggerModule } from '@/infra/logger'
 import { ICatGetById } from '@/modules/cat/interfaces'
 import { ApiNotFoundException } from '@/utils/exception'
-import { TestUtils } from '@/utils/test/utils'
+import { MockUtils, TestUtils } from '@/utils/test'
 import { ZodExceptionIssue } from '@/utils/validator'
 
 import { CatEntity, CatEntitySchema } from '../../entity/cat'
@@ -20,18 +19,15 @@ describe(CatGetByIdUsecase.name, () => {
 
   beforeEach(async () => {
     const app = await Test.createTestingModule({
-      imports: [LoggerModule],
+      imports: [],
       providers: [
-        {
-          provide: ICatRepository,
-          useValue: {}
-        },
+        TestUtils.mockProvider(ICatRepository),
         {
           provide: ICatGetById,
           useFactory: (catRepository: ICatRepository) => {
             return new CatGetByIdUsecase(catRepository)
           },
-          inject: [ICatRepository, ILoggerAdapter]
+          inject: [ICatRepository]
         }
       ]
     }).compile()
@@ -57,7 +53,7 @@ describe(CatGetByIdUsecase.name, () => {
   test('when cat not found, should expect an error', async () => {
     repository.findById = TestUtils.mockResolvedValue<CatEntity>(null)
 
-    await expect(usecase.execute({ id: TestUtils.mockUUID() })).rejects.toThrow(ApiNotFoundException)
+    await expect(usecase.execute({ id: MockUtils.UUID() })).rejects.toThrow(ApiNotFoundException)
   })
 
   const mock = new ZodMockSchema(CatEntitySchema)
@@ -66,6 +62,6 @@ describe(CatGetByIdUsecase.name, () => {
   test('when cat found, should expect a cat found', async () => {
     repository.findById = TestUtils.mockResolvedValue<CatEntity>(input)
 
-    await expect(usecase.execute({ id: TestUtils.mockUUID() })).resolves.toEqual(input)
+    await expect(usecase.execute({ id: MockUtils.UUID() })).resolves.toEqual(input)
   })
 })

@@ -3,6 +3,7 @@ import { IDGeneratorUtils } from '@/utils/id-generator'
 import { MigrationInterface, QueryDeepPartialEntity, QueryRunner } from 'typeorm'
 import { PermissionSchema } from '../schemas/permission'
 
+// @todo: Ver se é possivel pegar isso dinamicamente, ou de alguma outra forma centralizada, pois ja tenho isso no src/utils/test/e2e/utils.ts
 export const userPermissions = [
   'cat:create',
   'cat:update',
@@ -23,6 +24,7 @@ export const backofficePermissions = [
   'permission:getbyid',
   'permission:list',
   'permission:delete',
+  'permission:routes-view',
   'role:create',
   'role:update',
   'role:getbyid',

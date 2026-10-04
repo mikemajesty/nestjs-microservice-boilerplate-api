@@ -14,7 +14,7 @@ import {
 import { ObjectUtils } from '@/utils/object'
 
 import { IHttpBuilder } from './adapter'
-import { HttpData, HttpMethod } from './types'
+import { HttpData, HttpMethod, HttpRetryInput } from './types'
 
 declare module 'axios-retry' {
   interface IAxiosRetryConfig {
@@ -120,11 +120,11 @@ export class HttpBuilder<Response = unknown> implements IHttpBuilder<Response> {
     return this
   }
 
-  retry(retries: number, status?: number[]): this {
+  retry({ retries, retryStatusCodes }: HttpRetryInput): this {
     this.requestConfig.axiosConfig['axios-retry'] = {
       ...this.requestConfig.axiosConfig['axios-retry'],
       retries,
-      ...(status ? { status } : {})
+      ...(retryStatusCodes ? { status: retryStatusCodes } : {})
     }
     return this
   }

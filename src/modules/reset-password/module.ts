@@ -10,7 +10,6 @@ import { IResetPasswordRepository } from '@/core/reset-password/repository/reset
 import { ResetPasswordConfirmUsecase } from '@/core/reset-password/use-cases/reset-password-confirm'
 import { ResetPasswordSendEmailUsecase } from '@/core/reset-password/use-cases/reset-password-send-email'
 import { IUserRepository } from '@/core/user/repository/user'
-import { CacheRedisModule } from '@/infra/cache/redis'
 import { ResetPasswordSchema } from '@/infra/database/postgres/schemas/reset-password'
 import { LoggerModule } from '@/infra/logger'
 import { ISecretsAdapter, SecretsModule } from '@/infra/secrets'
@@ -27,7 +26,6 @@ import { ResetPasswordRepository } from './repository'
     TokenLibModule,
     SecretsModule,
     LoggerModule,
-    CacheRedisModule,
     UserModule,
     TokenLibModule,
     EventLibModule,

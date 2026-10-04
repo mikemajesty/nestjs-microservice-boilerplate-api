@@ -20,6 +20,7 @@ import {
   IPermissionList,
   IPermissionUpdate
 } from './interfaces'
+import { RouteInfo, RoutesExplorer } from './routes'
 
 @Controller('permissions')
 export class PermissionController {
@@ -28,7 +29,8 @@ export class PermissionController {
     private readonly updateUsecase: IPermissionUpdate,
     private readonly getByIdUsecase: IPermissionGetById,
     private readonly listUsecase: IPermissionList,
-    private readonly deleteUsecase: IPermissionDelete
+    private readonly deleteUsecase: IPermissionDelete,
+    private readonly routesExplorer: RoutesExplorer
   ) {}
 
   @Post()
@@ -44,6 +46,13 @@ export class PermissionController {
   @Permission('permission:update')
   async update(@Req() { body, params }: ApiRequest): Promise<PermissionUpdateOutput> {
     return await this.updateUsecase.execute({ ...body, id: params.id } as PermissionUpdateInput)
+  }
+
+  @Get(`routes`)
+  @Version('1')
+  @Permission('permission:routes-view')
+  getRoutes(): RouteInfo[] {
+    return this.routesExplorer.extractRoutes()
   }
 
   @Get(':id')

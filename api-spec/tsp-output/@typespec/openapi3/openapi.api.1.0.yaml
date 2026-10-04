@@ -1879,8 +1879,10 @@ components:
       properties:
         email:
           type: string
+          default: admin@admin.com
         password:
           type: string
+          default: admin
       description: login input
     Login.LoginOutput:
       type: object

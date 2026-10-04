@@ -14,12 +14,10 @@ import { UserDeleteUsecase } from '@/core/user/use-cases/user-delete'
 import { UserGetByIdUsecase } from '@/core/user/use-cases/user-get-by-id'
 import { UserListUsecase } from '@/core/user/use-cases/user-list'
 import { UserUpdateUsecase } from '@/core/user/use-cases/user-update'
-import { CacheRedisModule } from '@/infra/cache/redis'
+import { CacheAsideModule, ICacheAsideAdapter } from '@/infra/cache/aside'
 import { UserSchema } from '@/infra/database/postgres/schemas/user'
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger'
-import { SecretsModule } from '@/infra/secrets'
 import { EventLibModule, IEventAdapter } from '@/libs/event'
-import { TokenLibModule } from '@/libs/token'
 
 import { RoleModule } from '../role/module'
 import { UserController } from './controller'
@@ -27,15 +25,7 @@ import { IUserChangePassword, IUserCreate, IUserDelete, IUserGetById, IUserList,
 import { UserRepository } from './repository'
 
 @Module({
-  imports: [
-    TokenLibModule,
-    SecretsModule,
-    LoggerModule,
-    CacheRedisModule,
-    EventLibModule,
-    TypeOrmModule.forFeature([UserSchema]),
-    RoleModule
-  ],
+  imports: [LoggerModule, EventLibModule, TypeOrmModule.forFeature([UserSchema]), RoleModule, CacheAsideModule],
   controllers: [UserController],
   providers: [
     {
@@ -59,10 +49,15 @@ import { UserRepository } from './repository'
     },
     {
       provide: IUserUpdate,
-      useFactory: (userRepository: IUserRepository, loggerService: ILoggerAdapter, roleRepository: IRoleRepository) => {
-        return new UserUpdateUsecase(userRepository, loggerService, roleRepository)
+      useFactory: (
+        userRepository: IUserRepository,
+        loggerService: ILoggerAdapter,
+        roleRepository: IRoleRepository,
+        cacheAside: ICacheAsideAdapter
+      ) => {
+        return new UserUpdateUsecase(userRepository, loggerService, roleRepository, cacheAside)
       },
-      inject: [IUserRepository, ILoggerAdapter, IRoleRepository]
+      inject: [IUserRepository, ILoggerAdapter, IRoleRepository, ICacheAsideAdapter]
     },
     {
       provide: IUserList,
@@ -73,10 +68,10 @@ import { UserRepository } from './repository'
     },
     {
       provide: IUserDelete,
-      useFactory: (userRepository: IUserRepository) => {
-        return new UserDeleteUsecase(userRepository)
+      useFactory: (userRepository: IUserRepository, cacheAside: ICacheAsideAdapter) => {
+        return new UserDeleteUsecase(userRepository, cacheAside)
       },
-      inject: [IUserRepository]
+      inject: [IUserRepository, ICacheAsideAdapter]
     },
     {
       provide: IUserGetById,
@@ -93,6 +88,6 @@ import { UserRepository } from './repository'
       inject: [IUserRepository]
     }
   ],
-  exports: [IUserRepository, IUserCreate, IUserUpdate, IUserList, IUserDelete, IUserGetById]
+  exports: [IUserRepository, IUserCreate, IUserUpdate, IUserList, IUserDelete, IUserGetById, IUserChangePassword]
 })
 export class UserModule {}

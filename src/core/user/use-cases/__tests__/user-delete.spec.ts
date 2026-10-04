@@ -5,9 +5,10 @@ import { ZodMockSchema } from '@mikemajesty/zod-mock-schema'
 import { Test } from '@nestjs/testing'
 
 import { RoleEntity, RoleEntitySchema } from '@/core/role/entity/role'
+import { ICacheAsideAdapter } from '@/infra/cache/aside'
 import { IUserDelete } from '@/modules/user/interfaces'
 import { ApiNotFoundException } from '@/utils/exception'
-import { TestUtils } from '@/utils/test/utils'
+import { MockUtils, TestUtils } from '@/utils/test'
 import { ZodExceptionIssue } from '@/utils/validator'
 
 import { UserEntity, UserEntitySchema } from '../../entity/user'
@@ -22,16 +23,16 @@ describe(UserDeleteUsecase.name, () => {
     const app = await Test.createTestingModule({
       imports: [],
       providers: [
-        {
-          provide: IUserRepository,
-          useValue: {}
-        },
+        TestUtils.mockProvider(IUserRepository),
+        TestUtils.mockProvider(ICacheAsideAdapter, {
+          invalidate: TestUtils.mockResolvedValue()
+        }),
         {
           provide: IUserDelete,
-          useFactory: (userRepository: IUserRepository) => {
-            return new UserDeleteUsecase(userRepository)
+          useFactory: (userRepository: IUserRepository, cacheAside: ICacheAsideAdapter) => {
+            return new UserDeleteUsecase(userRepository, cacheAside)
           },
-          inject: [IUserRepository]
+          inject: [IUserRepository, ICacheAsideAdapter]
         }
       ]
     }).compile()
@@ -42,7 +43,7 @@ describe(UserDeleteUsecase.name, () => {
 
   test('when no input is specified, should expect an error', async () => {
     await TestUtils.expectZodError(
-      () => usecase.execute({ id: 'uuid' } as UserDeleteInput, TestUtils.getMockTracing()),
+      () => usecase.execute({ id: 'uuid' } as UserDeleteInput, MockUtils.Tracing()),
       (issues: ZodExceptionIssue[]) => {
         expect(issues).toEqual([{ message: 'Invalid UUID', path: TestUtils.nameOf<UserDeleteInput>('id') }])
       }
@@ -52,9 +53,7 @@ describe(UserDeleteUsecase.name, () => {
   test('when user not found, should expect an error', async () => {
     repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(null)
 
-    await expect(usecase.execute({ id: TestUtils.mockUUID() }, TestUtils.getMockTracing())).rejects.toThrow(
-      ApiNotFoundException
-    )
+    await expect(usecase.execute({ id: MockUtils.UUID() }, MockUtils.Tracing())).rejects.toThrow(ApiNotFoundException)
   })
 
   const roleMock = new ZodMockSchema(RoleEntitySchema)
@@ -75,9 +74,7 @@ describe(UserDeleteUsecase.name, () => {
     repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(user)
     repository.softRemove = TestUtils.mockResolvedValue<UserEntity>()
 
-    await expect(usecase.execute({ id: TestUtils.mockUUID() }, TestUtils.getMockTracing())).resolves.toEqual(
-      expect.any(Object)
-    )
+    await expect(usecase.execute({ id: MockUtils.UUID() }, MockUtils.Tracing())).resolves.toEqual(expect.any(Object))
     expect(repository.softRemove).toHaveBeenCalled()
   })
 })

@@ -11,7 +11,7 @@ import { CreatedModel } from '@/infra/repository'
 import { EmitEventOutput, IEventAdapter } from '@/libs/event'
 import { IUserCreate } from '@/modules/user/interfaces'
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception'
-import { TestUtils } from '@/utils/test/utils'
+import { MockUtils, TestUtils } from '@/utils/test'
 import { ZodExceptionIssue } from '@/utils/validator'
 
 import { UserEntity, UserEntitySchema } from '../../entity/user'
@@ -28,20 +28,11 @@ describe(UserCreateUsecase.name, () => {
     const app = await Test.createTestingModule({
       imports: [LoggerModule],
       providers: [
-        {
-          provide: IUserRepository,
-          useValue: {}
-        },
-        {
-          provide: IRoleRepository,
-          useValue: {}
-        },
-        {
-          provide: IEventAdapter,
-          useValue: {
-            emit: TestUtils.mockResolvedValue<EmitEventOutput>()
-          }
-        },
+        TestUtils.mockProvider(IUserRepository),
+        TestUtils.mockProvider(IRoleRepository),
+        TestUtils.mockProvider(IEventAdapter, {
+          emit: TestUtils.mockReturnValue<EmitEventOutput>()
+        }),
         {
           provide: IUserCreate,
           useFactory: (
@@ -64,7 +55,7 @@ describe(UserCreateUsecase.name, () => {
 
   test('when no input is specified, should expect an error', async () => {
     await TestUtils.expectZodError(
-      () => usecase.execute({} as UserCreateInput, TestUtils.getMockTracing()),
+      () => usecase.execute({} as UserCreateInput, MockUtils.Tracing()),
       (issues: ZodExceptionIssue[]) => {
         expect(issues).toEqual([
           {
@@ -94,7 +85,7 @@ describe(UserCreateUsecase.name, () => {
   test('when role not found, should expect an error', async () => {
     roleRepository.findIn = TestUtils.mockResolvedValue<RoleEntity[]>([])
 
-    await expect(usecase.execute(input, TestUtils.getMockTracing())).rejects.toThrow(ApiNotFoundException)
+    await expect(usecase.execute(input, MockUtils.Tracing())).rejects.toThrow(ApiNotFoundException)
   })
 
   const roleMock = new ZodMockSchema(RoleEntitySchema)
@@ -123,15 +114,15 @@ describe(UserCreateUsecase.name, () => {
     roleRepository.findIn = TestUtils.mockResolvedValue<RoleEntity[]>(roles)
     repository.findOne = TestUtils.mockResolvedValue<UserEntity>(user)
 
-    await expect(usecase.execute(input, TestUtils.getMockTracing())).rejects.toThrow(ApiConflictException)
+    await expect(usecase.execute(input, MockUtils.Tracing())).rejects.toThrow(ApiConflictException)
   })
 
   test('when user created successfully, should expect a user', async () => {
     roleRepository.findIn = TestUtils.mockResolvedValue<RoleEntity[]>(roles)
     repository.findOne = TestUtils.mockResolvedValue<UserEntity>(null)
-    const createOutput = { created: true, id: TestUtils.mockUUID() }
+    const createOutput = { created: true, id: MockUtils.UUID() }
     repository.create = TestUtils.mockResolvedValue<CreatedModel>(createOutput)
 
-    await expect(usecase.execute(input, TestUtils.getMockTracing())).resolves.toEqual(createOutput)
+    await expect(usecase.execute(input, MockUtils.Tracing())).resolves.toEqual(createOutput)
   })
 })

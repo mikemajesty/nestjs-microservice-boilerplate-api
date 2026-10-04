@@ -8,13 +8,13 @@ import { Observable } from 'rxjs'
 import { catchError } from 'rxjs/operators'
 import { ZodError } from 'zod'
 
-import { NETWORK_RETRY_CODES } from '@/utils/axios'
 import {
   ApiBadRequestException,
   ApiExternalRequestException,
   ApiInternalServerException,
   ApiTimeoutException
 } from '@/utils/exception'
+import { NETWORK_RETRY_CODES } from '@/utils/http-status'
 import { ObjectUtils } from '@/utils/object'
 import { AppFastifyRequest } from '@/utils/request'
 import { AnyType } from '@/utils/types'
@@ -86,10 +86,8 @@ export class ExceptionHandlerInterceptor implements NestInterceptor {
     const data = ObjectUtils.reach(error, (o) => o.response.data, {})
     const nested = ObjectUtils.reach(data, (o) => o.error, {})
 
-    return (
-      ObjectUtils.firstDefined(nested.code, data.code, error?.response?.status, error.status) ??
-      ApiInternalServerException.STATUS
-    )
+    const status = ObjectUtils.reach(error, (o) => o.response.status)
+    return ObjectUtils.firstDefined(nested.code, data.code, status, error.status) ?? ApiInternalServerException.STATUS
   }
 }
 

@@ -14,6 +14,8 @@ export abstract class ICacheAdapter<T = AnyType> {
 
   abstract connect(): Promise<T> | T
 
+  abstract getTtl(key: CacheRedisKeyArgument): number | undefined | Promise<number | undefined>
+
   abstract set<
     TKey extends CacheRedisKeyArgument = CacheRedisKeyArgument,
     TValue extends CacheRedisValueArgument = CacheRedisValueArgument,
@@ -50,7 +52,7 @@ export abstract class ICacheAdapter<T = AnyType> {
 
   abstract mSet<TSet extends CacheMemorySetType = CacheMemorySetType>(model?: TSet[]): boolean
 
-  abstract mGet(key?: string[]): unknown | null
+  abstract mGet(keys: CacheRedisKeyArgument[]): Promise<(string | null)[]> | (string | null)[]
 
   abstract has(key?: string | number): boolean | Promise<boolean>
 

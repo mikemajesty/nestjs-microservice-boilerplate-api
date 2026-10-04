@@ -47,7 +47,7 @@ describe(ResetPasswordController.name, () => {
         })
       })
       .overrideProvider(ICacheAdapter)
-      .useFactory({ factory: async () => redisContainer.getTestRedis() })
+      .useValue(await redisContainer.getTestRedis())
       .compile()
 
     app = await TestEnd2EndUtils.createApp(moduleRef)

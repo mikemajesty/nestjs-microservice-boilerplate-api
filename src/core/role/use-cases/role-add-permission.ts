@@ -3,9 +3,11 @@
  */
 import { PermissionEntity } from '@/core/permission/entity/permission'
 import { IPermissionRepository } from '@/core/permission/repository/permission'
+import { ICacheAsideAdapter } from '@/infra/cache/aside'
 import { ValidateSchema } from '@/utils/decorators'
 import { ApiNotFoundException } from '@/utils/exception'
 import { IDGeneratorUtils } from '@/utils/id-generator'
+import { Namespaces } from '@/utils/namespaces'
 import { IUsecase } from '@/utils/usecase'
 import { InputValidator, SchemaInfer } from '@/utils/validator'
 
@@ -19,7 +21,8 @@ export const RoleAddPermissionSchema = RoleEntitySchema.pick({
 export class RoleAddPermissionUsecase implements IUsecase {
   constructor(
     private readonly roleRepository: IRoleRepository,
-    private readonly permissionRepository: IPermissionRepository
+    private readonly permissionRepository: IPermissionRepository,
+    private readonly cacheAside: ICacheAsideAdapter
   ) {}
 
   @ValidateSchema(RoleAddPermissionSchema)
@@ -45,6 +48,7 @@ export class RoleAddPermissionUsecase implements IUsecase {
     }
 
     await this.roleRepository.create(entity.toObject())
+    await this.cacheAside.invalidate(Namespaces.roleById(entity.id))
   }
 }
 

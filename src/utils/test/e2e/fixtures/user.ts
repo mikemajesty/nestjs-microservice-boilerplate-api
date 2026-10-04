@@ -11,10 +11,10 @@ import { UserModel } from '@/modules/user/repository'
 import { CryptoUtils } from '@/utils/crypto'
 import { IDGeneratorUtils } from '@/utils/id-generator'
 
-import { TestUtils } from '../../utils'
-import { TestFixture } from './adpater'
+import { MockUtils } from '../../mock'
+import { ITestFixture } from './adpater'
 
-export class UserFixture implements TestFixture<UserEntity> {
+export class UserFixture implements ITestFixture<UserEntity> {
   private password = new UserPasswordEntity({
     id: IDGeneratorUtils.uuid(),
     password: CryptoUtils.createHash('admin')
@@ -22,8 +22,8 @@ export class UserFixture implements TestFixture<UserEntity> {
 
   public entity = new UserEntity({
     id: IDGeneratorUtils.uuid(),
-    email: TestUtils.faker.internet.email(),
-    name: TestUtils.faker.person.fullName(),
+    email: MockUtils.faker.internet.email(),
+    name: MockUtils.faker.person.fullName(),
     password: this.password,
     roles: []
   })

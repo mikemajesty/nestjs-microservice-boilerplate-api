@@ -3,93 +3,58 @@
  */
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
-import { SpanStatusCode, trace } from '@opentelemetry/api'
 
+import { IRoleRepository } from '@/core/role/repository/role'
 import { IUserRepository } from '@/core/user/repository/user'
-import { ICacheAdapter } from '@/infra/cache'
-import { ITokenAdapter } from '@/libs/token'
-import { PERMISSION_GUARD, PUBLIC_GUARD } from '@/utils/decorators'
-import { ApiForbiddenException, ApiUnauthorizedException } from '@/utils/exception'
+import { ICacheAsideAdapter } from '@/infra/cache/aside'
+import { PERMISSION_GUARD } from '@/utils/decorators'
+import { ApiForbiddenException } from '@/utils/exception'
 import { DefaultErrorMessage } from '@/utils/http-status'
+import { Namespaces, NamespacesKeys } from '@/utils/namespaces'
 import { ObjectUtils } from '@/utils/object'
-import { AppFastifyRequest, ensureTraceId, generalizePath, UserRequest } from '@/utils/request'
 
-import { name, version } from '../../../package.json'
+import { FastifyRequest, finishTracing } from './utils'
 
 @Injectable()
-export class AuthorizationRoleGuard implements CanActivate {
+export class AuthorizationGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
     private readonly userRepository: IUserRepository,
-    private readonly tokenService: ITokenAdapter,
-    private readonly redisService: ICacheAdapter
+    private readonly cacheAside: ICacheAsideAdapter,
+    private readonly roleRepository: IRoleRepository
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const isPublic = this.reflector.getAllAndOverride<boolean>(PUBLIC_GUARD, [context.getHandler(), context.getClass()])
-
-    if (isPublic) {
-      return true
-    }
-
     const requiredPermission = this.reflector.getAllAndOverride<string>(PERMISSION_GUARD, [
       context.getHandler(),
       context.getClass()
     ])
-    const request = context.switchToHttp().getRequest<AppFastifyRequest>()
-    const tokenHeader = request.headers.authorization
-
-    ensureTraceId(request)
-
-    if (!tokenHeader) {
-      this.finishTracing(request, ApiUnauthorizedException.STATUS, 'no token provided')
-      throw new ApiUnauthorizedException('no token provided')
-    }
-
-    const token = tokenHeader.split(' ')[1] || ''
-    const blackListToken = await this.redisService.get(token)
-
-    if (blackListToken) {
-      this.finishTracing(request, ApiUnauthorizedException.STATUS, 'you have been logged out')
-      throw new ApiUnauthorizedException('you have been logged out')
-    }
-
-    request.user = (await this.tokenService.verify<UserRequest>({ token }).catch((error) => {
-      error.status = ApiUnauthorizedException.STATUS
-      this.finishTracing(request, ApiUnauthorizedException.STATUS, 'invalidToken')
-      throw error
-    })) as UserRequest
 
     if (!requiredPermission) {
       return true
     }
 
+    const request = context.switchToHttp().getRequest<FastifyRequest>()
     const userId = ObjectUtils.reach(request, (o) => o.user.id)
 
     if (!userId) {
-      this.finishTracing(request, ApiUnauthorizedException.STATUS, 'invalidToken')
-      throw new ApiUnauthorizedException('invalidToken')
+      finishTracing(request, ApiForbiddenException.STATUS, 'accessRevoked')
+      throw new ApiForbiddenException('accessRevoked')
     }
 
-    const user = await this.userRepository.findOneWithRelation({ id: userId }, { roles: true })
+    const permissions = await this.getPermissions(userId)
 
-    if (!user) {
-      this.finishTracing(request, ApiUnauthorizedException.STATUS, 'userNotFound')
-      throw new ApiUnauthorizedException('userNotFound')
+    if (!permissions || permissions.size === 0) {
+      finishTracing(request, ApiForbiddenException.STATUS, 'accessRevoked')
+      throw new ApiForbiddenException('accessRevoked')
     }
 
-    const permissions = []
-
-    for (const role of user.roles) {
-      permissions.push(...role.permissions.map((p) => p.name))
-    }
-
-    const hasPermission = new Set(permissions).has(requiredPermission)
+    const hasPermission = permissions.has(requiredPermission)
 
     if (!hasPermission) {
       const appContext = `${context.getClass().name}/${context.getHandler().name}`
       const permission = this.reflector.get(PERMISSION_GUARD, context.getHandler())
-      this.finishTracing(request, ApiForbiddenException.STATUS, ApiForbiddenException.name)
+      finishTracing(request, ApiForbiddenException.STATUS, ApiForbiddenException.name)
       throw new ApiForbiddenException(DefaultErrorMessage[ApiForbiddenException.STATUS], {
         context: appContext,
         parameters: { permission }
@@ -99,23 +64,43 @@ export class AuthorizationRoleGuard implements CanActivate {
     return true
   }
 
-  private finishTracing(request: AppFastifyRequest, status: number, message: string) {
-    if (request?.tracing) {
-      request.tracing.addAttribute('http.status_code', status)
-      request.tracing.addAttribute('error.message', message)
-      request.tracing.setStatus({ message, code: SpanStatusCode.ERROR })
-      request.tracing.finish()
-      return
+  private async getPermissions(userId: string): Promise<Set<string>> {
+    const user = await this.cacheAside.readThrough(
+      Namespaces.userById(userId),
+      async () => {
+        const u = await this.userRepository.findOneWithRelation({ id: userId }, { roles: true })
+        if (!u) return null
+        return { id: u.id, roleIds: u.roles.map((r) => r.id) }
+      },
+      { ttlSeconds: 300, nullTtlSeconds: 30 }
+    )
+
+    if (!user) {
+      throw new ApiForbiddenException('accessRevoked')
     }
 
-    const span = trace.getTracer(name, version).startSpan(generalizePath(request.url?.split('?')[0] || '/'))
+    const roleKeys = user.roleIds.map((id) => Namespaces.roleById(id))
+    const permissions = await this.cacheAside.readThroughMany(
+      roleKeys,
+      async (missingKeys) => {
+        const ids = missingKeys.map((k) => k.replace(NamespacesKeys.roleById, ''))
+        const found = await this.roleRepository.findIn({ id: ids })
 
-    span.setAttribute('http.status_code', status)
-    if (request.headers.traceid) {
-      span.setAttribute('traceid', request.headers.traceid)
+        return new Map(
+          found.map((r) => [
+            `${NamespacesKeys.roleById}${r.id}`,
+            { id: r.id, permissions: r.permissions.map((p) => p.name) }
+          ])
+        )
+      },
+      { ttlSeconds: 600 }
+    )
+
+    const mapPermissions = new Set<string>()
+    for (const role of permissions) {
+      if (!role) continue
+      for (const p of role.permissions) mapPermissions.add(p)
     }
-    span.setAttribute('error.message', message)
-    span.setStatus({ message, code: SpanStatusCode.ERROR })
-    span.end()
+    return mapPermissions
   }
 }

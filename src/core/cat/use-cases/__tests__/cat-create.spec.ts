@@ -7,6 +7,7 @@ import { Test } from '@nestjs/testing'
 import { CreatedModel } from '@/infra/repository'
 import { ICatCreate } from '@/modules/cat/interfaces'
 import { ApiInternalServerException } from '@/utils/exception'
+import { MockUtils } from '@/utils/test'
 import { TestUtils } from '@/utils/test/utils'
 import { ZodExceptionIssue } from '@/utils/validator'
 
@@ -22,10 +23,7 @@ describe(CatCreateUsecase.name, () => {
     const app = await Test.createTestingModule({
       imports: [],
       providers: [
-        {
-          provide: ICatRepository,
-          useValue: {}
-        },
+        TestUtils.mockProvider(ICatRepository),
         {
           provide: ICatCreate,
           useFactory: (catRepository: ICatRepository) => {
@@ -42,7 +40,7 @@ describe(CatCreateUsecase.name, () => {
 
   test('when no input is specified, should expect an error', async () => {
     await TestUtils.expectZodError(
-      () => usecase.execute({} as CatCreateInput, TestUtils.getMockTracing()),
+      () => usecase.execute({} as CatCreateInput, MockUtils.Tracing()),
       (issues: ZodExceptionIssue[]) => {
         expect(issues).toEqual([
           {
@@ -68,12 +66,12 @@ describe(CatCreateUsecase.name, () => {
   test('when cat created successfully, should expect a cat created', async () => {
     repository.create = TestUtils.mockResolvedValue<CreatedModel>(input)
 
-    await expect(usecase.execute(input, TestUtils.getMockTracing())).resolves.toEqual(input)
+    await expect(usecase.execute(input, MockUtils.Tracing())).resolves.toEqual(input)
   })
 
   test('when transaction throw an error, should expect an error', async () => {
     repository.create = TestUtils.mockRejectedValue(new ApiInternalServerException())
 
-    await expect(usecase.execute(input, TestUtils.getMockTracing())).rejects.toThrow(ApiInternalServerException)
+    await expect(usecase.execute(input, MockUtils.Tracing())).rejects.toThrow(ApiInternalServerException)
   })
 })

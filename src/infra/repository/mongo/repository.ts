@@ -20,6 +20,7 @@ import { IEntity } from '@/utils/entity'
 import { ApiBadRequestException } from '@/utils/exception'
 import { FilterQuery, MongoRepositoryModelSessionType } from '@/utils/mongoose'
 import { PaginationInput, PaginationOutput } from '@/utils/pagination'
+import { MakePartial } from '@/utils/types'
 
 import { IRepository } from '../adapter'
 import {
@@ -57,11 +58,13 @@ export class MongoRepository<T extends Document = Document> implements IReposito
     }
   }
 
-  async applyPagination<R>(input: PaginationInput<R>): Promise<PaginationOutput<T>> {
+  async applyPagination<R>(input: PaginationInput<R>, joins?: JoinType<T>): Promise<PaginationOutput<T>> {
+    const populatePaths = this.getPopulatePaths(joins)
     const cats = await this.paginateModel.paginate(input.search as FilterQuery<R>, {
       page: input.page,
       limit: input.limit,
-      sort: input.sort as object
+      sort: input.sort as object,
+      populate: populatePaths
     })
     return {
       docs: cats.docs.map((u) => this.toObject(u)),
@@ -386,7 +389,7 @@ export class MongoRepository<T extends Document = Document> implements IReposito
   }
 
   @ConvertMongoFilterToBaseRepository()
-  async findOneWithRelation<Filter = Partial<T>>(filter: Filter, joins?: JoinType<T>): Promise<T | null> {
+  async findOneWithRelation<Filter = MakePartial<T>>(filter: Filter, joins?: JoinType<T>): Promise<T | null> {
     const populatePaths = this.getPopulatePaths(joins)
 
     const query = this.model.findOne(filter as FilterQuery<T>)
@@ -401,7 +404,7 @@ export class MongoRepository<T extends Document = Document> implements IReposito
   }
 
   @ConvertMongoFilterToBaseRepository()
-  async findAllWithRelation<Filter = Partial<T>>(filter?: Filter, joins?: JoinType<T>): Promise<T[]> {
+  async findAllWithRelation<Filter = MakePartial<T>>(filter?: Filter, joins?: JoinType<T>): Promise<T[]> {
     const populatePaths = this.getPopulatePaths(joins)
 
     const query = this.model.find(filter ?? {})
@@ -418,20 +421,20 @@ export class MongoRepository<T extends Document = Document> implements IReposito
   }
 
   @ConvertMongoFilterToBaseRepository()
-  async exists<TQuery = Partial<T>>(filter: TQuery): Promise<boolean> {
+  async exists<TQuery = MakePartial<T>>(filter: TQuery): Promise<boolean> {
     const result = await this.model.exists(filter as FilterQuery<T>)
     return !!result
   }
 
   @ConvertMongoFilterToBaseRepository()
-  async existsOnUpdate<TQuery = Partial<T>>(filter: TQuery, id: string | number): Promise<boolean> {
+  async existsOnUpdate<TQuery = MakePartial<T>>(filter: TQuery, id: string | number): Promise<boolean> {
     const query = { ...filter, _id: { $ne: id } }
     const result = await this.model.exists(query as FilterQuery<T>)
     return !!result
   }
 
   @ConvertMongoFilterToBaseRepository()
-  async softRemove(entity: Partial<T>): Promise<T> {
+  async softRemove(entity: MakePartial<T>): Promise<T> {
     return (await this.findOneAndUpdate(
       entity as FilterQuery<T>,
       { deletedAt: DateUtils.now() } as UpdateQuery<T>

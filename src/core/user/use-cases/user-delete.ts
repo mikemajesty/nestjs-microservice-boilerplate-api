@@ -1,8 +1,10 @@
 /**
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/core/usecase.md
  */
+import { ICacheAsideAdapter } from '@/infra/cache/aside'
 import { ValidateSchema } from '@/utils/decorators'
 import { ApiNotFoundException } from '@/utils/exception'
+import { Namespaces } from '@/utils/namespaces'
 import { ApiTracingInput } from '@/utils/request'
 import { IUsecase } from '@/utils/usecase'
 import { SchemaInfer } from '@/utils/validator'
@@ -15,7 +17,10 @@ export const UserDeleteSchema = UserEntitySchema.pick({
 })
 
 export class UserDeleteUsecase implements IUsecase {
-  constructor(private readonly userRepository: IUserRepository) {}
+  constructor(
+    private readonly userRepository: IUserRepository,
+    private readonly cacheAside: ICacheAsideAdapter
+  ) {}
 
   @ValidateSchema(UserDeleteSchema)
   async execute({ id }: UserDeleteInput, { tracing, user: userData }: ApiTracingInput): Promise<UserDeleteOutput> {
@@ -30,6 +35,7 @@ export class UserDeleteUsecase implements IUsecase {
     entity.deactivate()
 
     await this.userRepository.softRemove({ id: entity.id })
+    await this.cacheAside.invalidate(Namespaces.userById(entity.id))
 
     tracing.logEvent('user-deleted', { action: 'deleted', by: userData.id, entity: user.id })
 

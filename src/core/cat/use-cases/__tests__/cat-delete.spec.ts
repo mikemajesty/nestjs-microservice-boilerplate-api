@@ -5,9 +5,9 @@ import { ZodMockSchema } from '@mikemajesty/zod-mock-schema'
 import { Test } from '@nestjs/testing'
 
 import { CatDeleteInput, CatDeleteUsecase } from '@/core/cat/use-cases/cat-delete'
-import { ILoggerAdapter, LoggerModule } from '@/infra/logger'
 import { ICatDelete } from '@/modules/cat/interfaces'
 import { ApiNotFoundException } from '@/utils/exception'
+import { MockUtils } from '@/utils/test'
 import { TestUtils } from '@/utils/test/utils'
 import { ZodExceptionIssue } from '@/utils/validator'
 
@@ -20,18 +20,15 @@ describe(CatDeleteUsecase.name, () => {
 
   beforeEach(async () => {
     const app = await Test.createTestingModule({
-      imports: [LoggerModule],
+      imports: [],
       providers: [
-        {
-          provide: ICatRepository,
-          useValue: {}
-        },
+        TestUtils.mockProvider(ICatRepository),
         {
           provide: ICatDelete,
           useFactory: (catRepository: ICatRepository) => {
             return new CatDeleteUsecase(catRepository)
           },
-          inject: [ICatRepository, ILoggerAdapter]
+          inject: [ICatRepository]
         }
       ]
     }).compile()
@@ -42,7 +39,7 @@ describe(CatDeleteUsecase.name, () => {
 
   test('when no input is specified, should expect an error', async () => {
     await TestUtils.expectZodError(
-      () => usecase.execute({} as CatDeleteInput, TestUtils.getMockTracing()),
+      () => usecase.execute({} as CatDeleteInput, MockUtils.Tracing()),
       (issues: ZodExceptionIssue[]) => {
         expect(issues).toEqual([
           {
@@ -57,9 +54,7 @@ describe(CatDeleteUsecase.name, () => {
   test('when cat not found, should expect an error', async () => {
     repository.findById = TestUtils.mockResolvedValue<CatEntity>(null)
 
-    await expect(usecase.execute({ id: TestUtils.mockUUID() }, TestUtils.getMockTracing())).rejects.toThrow(
-      ApiNotFoundException
-    )
+    await expect(usecase.execute({ id: MockUtils.UUID() }, MockUtils.Tracing())).rejects.toThrow(ApiNotFoundException)
   })
 
   const mock = new ZodMockSchema(CatEntitySchema)
@@ -69,7 +64,7 @@ describe(CatDeleteUsecase.name, () => {
     repository.findById = TestUtils.mockResolvedValue<CatEntity>(input)
     repository.softRemove = TestUtils.mockResolvedValue<CatEntity>()
 
-    await expect(usecase.execute({ id: TestUtils.mockUUID() }, TestUtils.getMockTracing())).resolves.toEqual({
+    await expect(usecase.execute({ id: MockUtils.UUID() }, MockUtils.Tracing())).resolves.toEqual({
       ...input,
       deletedAt: expect.any(Date),
       updatedAt: expect.any(Date)

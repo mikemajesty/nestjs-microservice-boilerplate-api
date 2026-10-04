@@ -8,8 +8,9 @@ const { compilerOptions } = tsconfig
 const config: Config.InitialOptions = {
   moduleFileExtensions: ['js', 'json', 'ts'],
   rootDir: '..',
-  roots: ['src/core', 'src/modules'],
+  roots: ['src/core', 'src/infra/cache/aside', 'src/modules'],
   testRegex: '.*\\.spec\\.ts$',
+  transformIgnorePatterns: ['node_modules/(?!(@nestjs)|uuid|babel-jest|@faker-js/faker|@mikemajesty/zod-mock-schema/)'],
   transform: {
     '^.+\\.(t|j)s$': [
       '@swc/jest',
@@ -20,6 +21,10 @@ const config: Config.InitialOptions = {
             syntax: 'typescript',
             decorators: true,
             dynamicImport: true
+          },
+          transform: {
+            legacyDecorator: true,
+            decoratorMetadata: true
           }
         },
         sourceMaps: 'inline'
@@ -27,6 +32,8 @@ const config: Config.InitialOptions = {
     ]
   },
   setupFilesAfterEnv: ['<rootDir>/test/initialization.ts'],
+  detectOpenHandles: true,
+  forceExit: true,
   testEnvironment: 'node',
   collectCoverageFrom: ['**/*.ts'],
   coverageDirectory: './coverage',

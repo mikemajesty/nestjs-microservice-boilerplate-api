@@ -47,7 +47,7 @@ export class UserSchema extends BaseEntity {
   @JoinColumn()
   password!: Relation<UserPasswordSchema>
 
-  @ManyToMany(() => RoleSchema, { eager: true, cascade: ['recover'] })
+  @ManyToMany(() => RoleSchema, { cascade: ['recover'] })
   @JoinTable({ name: 'users_roles' })
   roles!: Relation<RoleSchema[]>
 

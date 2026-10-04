@@ -2,8 +2,10 @@
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/core/usecase.md
  */
 import { IPermissionRepository } from '@/core/permission/repository/permission'
+import { ICacheAsideAdapter } from '@/infra/cache/aside'
 import { ValidateSchema } from '@/utils/decorators'
 import { ApiNotFoundException } from '@/utils/exception'
+import { Namespaces } from '@/utils/namespaces'
 import { IUsecase } from '@/utils/usecase'
 import { InputValidator, SchemaInfer } from '@/utils/validator'
 
@@ -17,7 +19,8 @@ export const RoleDeletePermissionSchema = RoleEntitySchema.pick({
 export class RoleDeletePermissionUsecase implements IUsecase {
   constructor(
     private readonly roleRepository: IRoleRepository,
-    private readonly permissionRepository: IPermissionRepository
+    private readonly permissionRepository: IPermissionRepository,
+    private readonly cacheAside: ICacheAsideAdapter
   ) {}
 
   @ValidateSchema(RoleDeletePermissionSchema)
@@ -41,6 +44,7 @@ export class RoleDeletePermissionUsecase implements IUsecase {
     }
 
     await this.roleRepository.create(entity.toObject())
+    await this.cacheAside.invalidate(Namespaces.roleById(entity.id))
   }
 }
 

@@ -9,19 +9,17 @@ import { PermissionUpdateInput } from '@/core/permission/use-cases/permission-up
 import { IRoleRepository } from '@/core/role/repository/role'
 import { IUserRepository } from '@/core/user/repository/user'
 import { ICacheAdapter } from '@/infra/cache'
-import { CacheRedisModule } from '@/infra/cache/redis'
 import { ITokenAdapter } from '@/libs/token'
-import { TokenLibModule } from '@/libs/token/module'
-import { UserModule } from '@/modules/user/module'
+import { GuardsModule } from '@/middlewares/guards/module'
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception'
 import { UserRequest } from '@/utils/request'
+import { MockUtils, TestUtils } from '@/utils/test'
 import { TestPostgresContainer, TestRedisContainer } from '@/utils/test/e2e/containers'
 import { PermissionFixture } from '@/utils/test/e2e/fixtures/permission'
 import { RoleFixture } from '@/utils/test/e2e/fixtures/role'
 import { UserFixture } from '@/utils/test/e2e/fixtures/user'
 import { FixtureUtils } from '@/utils/test/e2e/fixtures/utils'
 import { TestEnd2EndUtils } from '@/utils/test/e2e/utils'
-import { TestUtils } from '@/utils/test/utils'
 
 import { PermissionController } from '../controller'
 import { PermissionModule } from '../module'
@@ -41,14 +39,7 @@ describe(PermissionController.name, () => {
     const { postgresConfig } = await postgresContainer.getPostgres()
 
     const moduleRef = await Test.createTestingModule({
-      imports: [
-        UserModule,
-        PermissionModule,
-        TokenLibModule,
-        CacheRedisModule,
-        TestEnd2EndUtils.getPostgresModule(postgresContainer, postgresConfig)
-      ],
-      providers: [TestEnd2EndUtils.getGuardProvider([IUserRepository])]
+      imports: [PermissionModule, GuardsModule, TestEnd2EndUtils.getPostgresModule(postgresContainer, postgresConfig)]
     })
       .overrideProvider(ITokenAdapter)
       .useValue({
@@ -59,7 +50,7 @@ describe(PermissionController.name, () => {
         })
       })
       .overrideProvider(ICacheAdapter)
-      .useFactory({ factory: async () => redisContainer.getTestRedis() })
+      .useValue(await redisContainer.getTestRedis())
       .compile()
 
     app = await TestEnd2EndUtils.createApp(moduleRef)
@@ -139,7 +130,7 @@ describe(PermissionController.name, () => {
 
   it('/GET /permissions/:id should 404 for not found', async () => {
     await request(app.getHttpServer())
-      .get(`/permissions/${TestUtils.mockUUID()}`)
+      .get(`/permissions/${MockUtils.UUID()}`)
       .set(...TestEnd2EndUtils.AUTHORIZATION_HEADER)
       .expect(ApiNotFoundException.STATUS)
   })
@@ -157,7 +148,7 @@ describe(PermissionController.name, () => {
 
   it('/PUT /permissions/:id should 404 for not found', async () => {
     await request(app.getHttpServer())
-      .put(`/permissions/${TestUtils.mockUUID()}`)
+      .put(`/permissions/${MockUtils.UUID()}`)
       .set(...TestEnd2EndUtils.AUTHORIZATION_HEADER)
       .send({ name: basePermission.name } as PermissionUpdateInput)
       .expect(ApiNotFoundException.STATUS)
@@ -174,7 +165,7 @@ describe(PermissionController.name, () => {
 
   it('/DELETE /permissions/:id should 404 for not found', async () => {
     await request(app.getHttpServer())
-      .delete(`/permissions/${TestUtils.mockUUID()}`)
+      .delete(`/permissions/${MockUtils.UUID()}`)
       .set(...TestEnd2EndUtils.AUTHORIZATION_HEADER)
       .expect(ApiNotFoundException.STATUS)
   })

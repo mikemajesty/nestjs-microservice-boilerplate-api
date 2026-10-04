@@ -4,7 +4,6 @@ import request from 'supertest'
 
 import { IUserRepository } from '@/core/user/repository/user'
 import { ICacheAdapter } from '@/infra/cache'
-import { UserModule } from '@/modules/user/module'
 import { TestPostgresContainer, TestRedisContainer } from '@/utils/test/e2e/containers'
 import { UserFixture } from '@/utils/test/e2e/fixtures/user'
 import { TestEnd2EndUtils } from '@/utils/test/e2e/utils'
@@ -26,7 +25,7 @@ describe(LoginController.name, () => {
     redisService = await redisContainer.getTestRedis()
 
     const moduleRef = await Test.createTestingModule({
-      imports: [LoginModule, UserModule, TestEnd2EndUtils.getPostgresModule(postgresContainer, postgresConfig)]
+      imports: [LoginModule, TestEnd2EndUtils.getPostgresModule(postgresContainer, postgresConfig)]
     })
       .overrideProvider(ICacheAdapter)
       .useValue(redisService)

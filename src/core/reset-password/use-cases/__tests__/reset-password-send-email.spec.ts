@@ -12,9 +12,9 @@ import { CreatedModel } from '@/infra/repository'
 import { ISecretsAdapter } from '@/infra/secrets'
 import { EmitEventOutput, IEventAdapter } from '@/libs/event'
 import { ITokenAdapter, TokenSignOutput } from '@/libs/token'
-import { IConfirmResetPassword, ISendEmailResetPassword } from '@/modules/reset-password/interfaces'
+import { ISendEmailResetPassword } from '@/modules/reset-password/interfaces'
 import { ApiNotFoundException } from '@/utils/exception'
-import { TestUtils } from '@/utils/test/utils'
+import { MockUtils, TestUtils } from '@/utils/test'
 import { ZodExceptionIssue } from '@/utils/validator'
 
 import { ResetPasswordEntity } from '../../entity/reset-password'
@@ -30,34 +30,19 @@ describe(ResetPasswordSendEmailUsecase.name, () => {
     const app = await Test.createTestingModule({
       imports: [],
       providers: [
+        TestUtils.mockProvider(IUserRepository),
+        TestUtils.mockProvider(IResetPasswordRepository),
+        TestUtils.mockProvider(ITokenAdapter, {
+          sign: TestUtils.mockReturnValue<TokenSignOutput>({ token: 'token' })
+        }),
+        TestUtils.mockProvider(IEventAdapter, {
+          emit: TestUtils.mockReturnValue<EmitEventOutput>()
+        }),
+        TestUtils.mockProvider(ISecretsAdapter, {
+          HOST: 'localhost'
+        }),
         {
-          provide: IUserRepository,
-          useValue: {}
-        },
-        {
-          provide: ISecretsAdapter,
-          useValue: {
-            HOST: 'localhost'
-          }
-        },
-        {
-          provide: IResetPasswordRepository,
-          useValue: {}
-        },
-        {
-          provide: ITokenAdapter,
-          useValue: {
-            sign: TestUtils.mockReturnValue<TokenSignOutput>({ token: 'token' })
-          }
-        },
-        {
-          provide: IEventAdapter,
-          useValue: {
-            emit: TestUtils.mockResolvedValue<EmitEventOutput>()
-          }
-        },
-        {
-          provide: IConfirmResetPassword,
+          provide: ISendEmailResetPassword,
           useFactory: (
             repository: IResetPasswordRepository,
             userRepository: IUserRepository,
@@ -72,7 +57,7 @@ describe(ResetPasswordSendEmailUsecase.name, () => {
       ]
     }).compile()
 
-    usecase = app.get(IConfirmResetPassword)
+    usecase = app.get(ISendEmailResetPassword)
     repository = app.get(IResetPasswordRepository)
     userRepository = app.get(IUserRepository)
   })
@@ -102,7 +87,7 @@ describe(ResetPasswordSendEmailUsecase.name, () => {
   const userMock = new ZodMockSchema(UserEntitySchema)
   const user = userMock.generate<UserEntity>({
     overrides: {
-      roles: [new RoleEntity({ id: TestUtils.mockUUID(), name: RoleEnum.USER })]
+      roles: [new RoleEntity({ id: MockUtils.UUID(), name: RoleEnum.USER })]
     }
   })
 

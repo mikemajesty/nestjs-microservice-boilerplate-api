@@ -6,12 +6,13 @@ import { Test } from '@nestjs/testing'
 
 import { RoleEntity, RoleEntitySchema, RoleEnum } from '@/core/role/entity/role'
 import { IRoleRepository } from '@/core/role/repository/role'
+import { ICacheAsideAdapter } from '@/infra/cache/aside'
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger'
 import { CreatedModel } from '@/infra/repository'
 import { IUserUpdate } from '@/modules/user/interfaces'
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception'
 import { IDGeneratorUtils } from '@/utils/id-generator'
-import { TestUtils } from '@/utils/test/utils'
+import { MockUtils, TestUtils } from '@/utils/test'
 import { ZodExceptionIssue } from '@/utils/validator'
 
 import { UserEntity, UserEntitySchema } from '../../entity/user'
@@ -27,20 +28,22 @@ describe(UserUpdateUsecase.name, () => {
     const app = await Test.createTestingModule({
       imports: [LoggerModule],
       providers: [
-        {
-          provide: IUserRepository,
-          useValue: {}
-        },
-        {
-          provide: IRoleRepository,
-          useValue: {}
-        },
+        TestUtils.mockProvider(IUserRepository),
+        TestUtils.mockProvider(IRoleRepository),
+        TestUtils.mockProvider(ICacheAsideAdapter, {
+          invalidate: TestUtils.mockResolvedValue()
+        }),
         {
           provide: IUserUpdate,
-          useFactory: (userRepository: IUserRepository, logger: ILoggerAdapter, roleRepository: IRoleRepository) => {
-            return new UserUpdateUsecase(userRepository, logger, roleRepository)
+          useFactory: (
+            userRepository: IUserRepository,
+            logger: ILoggerAdapter,
+            roleRepository: IRoleRepository,
+            cacheAsise: ICacheAsideAdapter
+          ) => {
+            return new UserUpdateUsecase(userRepository, logger, roleRepository, cacheAsise)
           },
-          inject: [IUserRepository, ILoggerAdapter, IRoleRepository]
+          inject: [IUserRepository, ILoggerAdapter, IRoleRepository, ICacheAsideAdapter]
         }
       ]
     }).compile()
@@ -52,7 +55,7 @@ describe(UserUpdateUsecase.name, () => {
 
   test('when no input is specified, should expect an error', async () => {
     await TestUtils.expectZodError(
-      () => usecase.execute({} as UserUpdateInput, TestUtils.getMockTracing()),
+      () => usecase.execute({} as UserUpdateInput, MockUtils.Tracing()),
       (issues: ZodExceptionIssue[]) => {
         expect(issues).toEqual([
           {
@@ -84,43 +87,45 @@ describe(UserUpdateUsecase.name, () => {
     }
   })
   test('when user not found, should expect an error', async () => {
-    repository.findOne = TestUtils.mockResolvedValue<UserEntity>(null)
+    repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(null)
 
-    await expect(usecase.execute(input, TestUtils.getMockTracing())).rejects.toThrow(ApiNotFoundException)
+    await expect(usecase.execute(input, MockUtils.Tracing())).rejects.toThrow(ApiNotFoundException)
   })
 
   const role = new RoleEntity({ id: IDGeneratorUtils.uuid(), name: RoleEnum.USER })
 
   test('when user already exists, should expect an error', async () => {
-    repository.findOne = TestUtils.mockResolvedValue<UserEntity>(user)
+    repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(user)
     repository.existsOnUpdate = TestUtils.mockResolvedValue<boolean>(true)
     roleRepository.findIn = TestUtils.mockResolvedValue<RoleEntity[]>([role])
 
-    await expect(usecase.execute(input, TestUtils.getMockTracing())).rejects.toThrow(ApiConflictException)
+    await expect(usecase.execute(input, MockUtils.Tracing())).rejects.toThrow(ApiConflictException)
   })
 
   test('when role not found, should expect an error', async () => {
-    repository.findOne = TestUtils.mockResolvedValue<UserEntity>(user)
+    repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(user)
     roleRepository.findIn = TestUtils.mockResolvedValue<RoleEntity[]>([])
 
-    await expect(usecase.execute(input, TestUtils.getMockTracing())).rejects.toThrow(ApiNotFoundException)
+    await expect(usecase.execute(input, MockUtils.Tracing())).rejects.toThrow(ApiNotFoundException)
   })
 
   test('when user updated successfully, should expect a user updated', async () => {
-    repository.findOne = TestUtils.mockResolvedValue<UserEntity>(user)
+    repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(user)
     repository.existsOnUpdate = TestUtils.mockResolvedValue<boolean>(false)
     roleRepository.findIn = TestUtils.mockResolvedValue<RoleEntity[]>([role])
     repository.create = TestUtils.mockResolvedValue<CreatedModel>()
+    repository.findOne = TestUtils.mockResolvedValue<UserEntity>(user)
 
-    await expect(usecase.execute(input, TestUtils.getMockTracing())).resolves.toEqual(user)
+    await expect(usecase.execute(input, MockUtils.Tracing())).resolves.toEqual(user)
   })
 
   test('when user role not provided, should use user role, then should expect a user updated', async () => {
-    repository.findOne = TestUtils.mockResolvedValue<UserEntity>(user)
+    repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(user)
     repository.existsOnUpdate = TestUtils.mockResolvedValue<boolean>(false)
     roleRepository.findIn = TestUtils.mockResolvedValue<RoleEntity[]>([role])
     repository.create = TestUtils.mockResolvedValue<CreatedModel>()
+    repository.findOne = TestUtils.mockResolvedValue<UserEntity>(user)
 
-    await expect(usecase.execute({ id: user.id }, TestUtils.getMockTracing())).resolves.toEqual(user)
+    await expect(usecase.execute({ id: user.id }, MockUtils.Tracing())).resolves.toEqual(user)
   })
 })

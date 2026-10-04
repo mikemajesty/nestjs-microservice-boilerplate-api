@@ -35,6 +35,25 @@ export class ObjectUtils {
   static clone<T>(obj: T): T {
     return globalThis.structuredClone(obj)
   }
+
+  static isPlainObject(value: unknown): value is Record<string, unknown> {
+    if (value === null || typeof value !== 'object') return false
+
+    const prototype = Object.getPrototypeOf(value)
+    return prototype === Object.prototype || prototype === null
+  }
+
+  static mergeShallow<T extends object>(target: T, ...sources: T[]): T {
+    for (const source of sources) {
+      if (source == null || typeof source !== 'object') continue
+
+      for (const key of Object.keys(source)) {
+        if (key === '__proto__' || key === 'constructor' || key === 'prototype') continue
+        ;(target as Record<string, unknown>)[key] = source[key as keyof typeof source]
+      }
+    }
+    return target
+  }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type

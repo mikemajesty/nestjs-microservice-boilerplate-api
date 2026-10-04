@@ -28,18 +28,8 @@
   },
   "js/ts.tsdk.path": "./node_modules/typescript/lib",
   "js/ts.tsdk.promptToUseWorkspaceVersion": true,
-  "jestrunner.jestPath": "./node_modules/.bin/jest",
-  "jestrunner.configPath": "test/jest.config.ts",
-  "jestrunner.debugOptions": {
-    "runtimeExecutable": "node",
-    "runtimeArgs": ["--inspect=9229", "-r", "ts-node/register", "-r", "tsconfig-paths/register"],
-    "console": "integratedTerminal",
-    "internalConsoleOptions": "neverOpen",
-    "env": {
-      "TS_NODE_PROJECT": "tsconfig.json"
-    }
-  },
-  "jest.jestCommandLine": "npm run test",
-  "jest.rootPath": ".",
-  "jest.testMatch": ["**/__tests__/**/*.spec.ts"]
+  "jestRunIt.jestPath": "node_modules/jest/bin/jest.js",
+  "jestRunIt.jestConfigPath": "test/jest.config.ts",
+  "jestRunIt.environmentVariables": "NODE_OPTIONS=--experimental-vm-modules",
+  "js/ts.experimental.useTsgo": false
 }

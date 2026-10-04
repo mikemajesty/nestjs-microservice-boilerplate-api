@@ -6,7 +6,7 @@ import { Test } from '@nestjs/testing'
 
 import { ILoggerAdapter } from '@/infra/logger'
 import { IRoleCreate } from '@/modules/role/interfaces'
-import { TestUtils } from '@/utils/test/utils'
+import { MockUtils, TestUtils } from '@/utils/test'
 import { ZodExceptionIssue } from '@/utils/validator'
 
 import { IRoleRepository } from '../../repository/role'
@@ -19,16 +19,10 @@ describe(RoleCreateUsecase.name, () => {
   beforeEach(async () => {
     const app = await Test.createTestingModule({
       providers: [
-        {
-          provide: IRoleRepository,
-          useValue: {}
-        },
-        {
-          provide: ILoggerAdapter,
-          useValue: {
-            info: TestUtils.mockReturnValue<void>()
-          }
-        },
+        TestUtils.mockProvider(IRoleRepository),
+        TestUtils.mockProvider(ILoggerAdapter, {
+          info: TestUtils.mockReturnValue()
+        }),
         {
           provide: IRoleCreate,
           useFactory: (roleRepository: IRoleRepository, logger: ILoggerAdapter) => {
@@ -61,7 +55,7 @@ describe(RoleCreateUsecase.name, () => {
   const input = mock.generate()
 
   test('when role created successfully, should expect a role created', async () => {
-    const output: RoleCreateOutput = { created: true, id: TestUtils.mockUUID() }
+    const output: RoleCreateOutput = { created: true, id: MockUtils.UUID() }
     repository.create = TestUtils.mockResolvedValue<RoleCreateOutput>(output)
 
     await expect(usecase.execute(input)).resolves.toEqual(output)

@@ -3,12 +3,11 @@
  */
 import { INestApplication } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
-import { getRepositoryToken } from '@nestjs/typeorm'
 import { Redis } from 'ioredis'
 import request from 'supertest'
-import { Repository } from 'typeorm'
 
 import { IPermissionRepository } from '@/core/permission/repository/permission'
+import { RoleEnum } from '@/core/role/entity/role'
 import { IRoleRepository } from '@/core/role/repository/role'
 import { IUserRepository } from '@/core/user/repository/user'
 import { UserChangePasswordInput } from '@/core/user/use-cases/user-change-password'
@@ -17,23 +16,21 @@ import { UserGetByIdOutput } from '@/core/user/use-cases/user-get-by-id'
 import { UserListOutput } from '@/core/user/use-cases/user-list'
 import { UserUpdateInput, UserUpdateOutput } from '@/core/user/use-cases/user-update'
 import { ICacheAdapter } from '@/infra/cache'
-import { CacheRedisModule } from '@/infra/cache/redis'
-import { UserSchema } from '@/infra/database/postgres/schemas/user'
 import { ITokenAdapter } from '@/libs/token/adapter'
-import { TokenLibModule } from '@/libs/token/module'
+import { GuardsModule } from '@/middlewares/guards/module'
 import { ApiBadRequestException, ApiNotFoundException, ApiUnauthorizedException } from '@/utils/exception'
+import { Namespaces } from '@/utils/namespaces'
 import { UserRequest } from '@/utils/request'
+import { MockUtils, TestUtils } from '@/utils/test'
 import { TestPostgresContainer, TestRedisContainer } from '@/utils/test/e2e/containers'
 import { PermissionFixture } from '@/utils/test/e2e/fixtures/permission'
 import { RoleFixture } from '@/utils/test/e2e/fixtures/role'
 import { UserFixture } from '@/utils/test/e2e/fixtures/user'
 import { FixtureUtils } from '@/utils/test/e2e/fixtures/utils'
 import { TestEnd2EndUtils } from '@/utils/test/e2e/utils'
-import { TestUtils } from '@/utils/test/utils'
 
 import { UserController } from '../controller'
 import { UserModule } from '../module'
-import { UserModel, UserRepository } from '../repository'
 
 describe(UserController.name, () => {
   const tokenValue = TestEnd2EndUtils.AUTHORIZATION_HEADER[1].split(' ')[1]
@@ -56,23 +53,8 @@ describe(UserController.name, () => {
     redisService = await redisContainer.getTestRedis()
 
     const moduleRef = await Test.createTestingModule({
-      imports: [
-        UserModule,
-        TokenLibModule,
-        CacheRedisModule,
-        TestEnd2EndUtils.getPostgresModule(postgresContainer, postgresConfig)
-      ],
-      providers: [TestEnd2EndUtils.getGuardProvider([IUserRepository])]
+      imports: [UserModule, GuardsModule, TestEnd2EndUtils.getPostgresModule(postgresContainer, postgresConfig)]
     })
-      .overrideProvider(IUserRepository)
-      .useFactory({
-        factory(repository: Repository<UserModel>) {
-          {
-            return new UserRepository(repository)
-          }
-        },
-        inject: [getRepositoryToken(UserSchema)]
-      })
       .overrideProvider(ITokenAdapter)
       .useValue({
         verify: TestUtils.mockResolvedValue<UserRequest>({
@@ -102,13 +84,24 @@ describe(UserController.name, () => {
     await userFixture.down(userRepository)
     await permissionFixture.down(permissionRepository)
     await roleFixture.down(roleRepository)
-    await redisService.del(tokenValue)
+    await redisService.del(Namespaces.blacklist(userFixture.entity.id))
+    await redisService.del(Namespaces.userById(userFixture.entity.id))
   })
 
   beforeEach(async () => {
     await permissionFixture.up(permissionRepository)
     await roleFixture.up(roleRepository)
     await userFixture.up(userRepository)
+  })
+
+  afterAll(async () => {
+    await userFixture.down(userRepository)
+    await permissionFixture.down(permissionRepository)
+    await roleFixture.down(roleRepository)
+    await redisService.client.flushall()
+    await postgresContainer.close()
+    await redisContainer.close()
+    await app.close()
   })
 
   it(`/GET /v1/users with admin user returns response`, async () => {
@@ -157,18 +150,18 @@ describe(UserController.name, () => {
 
   it(`/GET /v1/users/:id not found`, async () => {
     await request(app.getHttpServer())
-      .get(`/users/${TestUtils.mockUUID()}`)
+      .get(`/users/${MockUtils.UUID()}`)
       .set(...TestEnd2EndUtils.AUTHORIZATION_HEADER)
       .expect(ApiNotFoundException.STATUS)
   })
 
   it(`/POST /v1/users`, async () => {
-    const user = {
-      name: TestUtils.faker.person.fullName(),
-      email: TestUtils.faker.internet.email(),
-      password: TestUtils.faker.internet.password(),
-      roles: userFixture.entity.roles.map((r) => r.name)
-    } as UserCreateInput
+    const user: UserCreateInput = {
+      name: MockUtils.faker.person.fullName(),
+      email: MockUtils.faker.internet.email(),
+      password: MockUtils.faker.internet.password(),
+      roles: userFixture.entity.roles.map((r) => r.name) as RoleEnum[]
+    }
 
     const response = await request(app.getHttpServer())
       .post('/users')
@@ -180,7 +173,8 @@ describe(UserController.name, () => {
   })
 
   it(`/POST /v1/users blacklist token error`, async () => {
-    await redisService.set(tokenValue, tokenValue, { PX: 3000 })
+    const key = Namespaces.blacklist(userFixture.entity.id)
+    await redisService.set(key, tokenValue, { PX: 3000 })
     await request(app.getHttpServer())
       .post('/users')
       .set(...TestEnd2EndUtils.AUTHORIZATION_HEADER)
@@ -210,7 +204,7 @@ describe(UserController.name, () => {
 
   it(`/PUT /v1/users/:id not found`, async () => {
     await request(app.getHttpServer())
-      .put(`/users/${TestUtils.mockUUID()}`)
+      .put(`/users/${MockUtils.UUID()}`)
       .set(...TestEnd2EndUtils.AUTHORIZATION_HEADER)
       .send({ name: 'Updated Name' })
       .expect(ApiNotFoundException.STATUS)
@@ -257,18 +251,8 @@ describe(UserController.name, () => {
 
   it(`/DELETE /v1/users/:id not found`, async () => {
     await request(app.getHttpServer())
-      .delete(`/users/${TestUtils.mockUUID()}`)
+      .delete(`/users/${MockUtils.UUID()}`)
       .set(...TestEnd2EndUtils.AUTHORIZATION_HEADER)
       .expect(ApiNotFoundException.STATUS)
-  })
-
-  afterAll(async () => {
-    await userFixture.down(userRepository)
-    await permissionFixture.down(permissionRepository)
-    await roleFixture.down(roleRepository)
-    await redisService.client.flushall()
-    await postgresContainer.close()
-    await redisContainer.close()
-    await app.close()
   })
 })
