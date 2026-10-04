@@ -1,4 +1,4 @@
-import { INestApplication } from '@nestjs/common'
+import { INestApplication, Type } from '@nestjs/common'
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify'
 import { TestingModule } from '@nestjs/testing'
 import { TypeOrmModule } from '@nestjs/typeorm'
@@ -15,56 +15,55 @@ import { PermissionController } from '@/modules/permission/controller'
 import { ResetPasswordController } from '@/modules/reset-password/controller'
 import { RoleController } from '@/modules/role/controller'
 import { UserController } from '@/modules/user/controller'
+import { PERMISSION_GUARD } from '@/utils/decorators'
 import { ApiRequest } from '@/utils/request'
 
 import { MockUtils } from '../mock'
 import { TestPostgresContainer } from './containers'
 
 export class TestEnd2EndUtils {
-  static readonly PERMISSIONS_BY_CONTROLLER: { [ControllerType: string]: PermisisonRequestMinimal[] } = {
-    [CatController.name]: [
-      { name: 'cat:create' },
-      { name: 'cat:update' },
-      { name: 'cat:getbyid' },
-      { name: 'cat:list' },
-      { name: 'cat:delete' }
-    ],
-    [UserController.name]: [
-      { name: 'user:create' },
-      { name: 'user:update' },
-      { name: 'user:list' },
-      { name: 'user:getbyid' },
-      { name: 'user:changepassword' },
-      { name: 'user:delete' }
-    ],
-    [RoleController.name]: [
-      { name: 'role:create' },
-      { name: 'role:update' },
-      { name: 'role:getbyid' },
-      { name: 'role:list' },
-      { name: 'role:delete' },
-      { name: 'role:addpermission' },
-      { name: 'role:deletepermission' }
-    ],
-    [PermissionController.name]: [
-      { name: 'permission:create' },
-      { name: 'permission:update' },
-      { name: 'permission:routes-view' },
-      { name: 'permission:getbyid' },
-      { name: 'permission:list' },
-      { name: 'permission:delete' }
-    ],
-    [LogoutController.name]: [{ name: 'user:logout' }],
-    [LoginController.name]: [],
-    [HealthController.name]: [],
-    [ResetPasswordController.name]: [],
-    [AlertController.name]: []
-  } as const
+  static readonly CONTROLLERS: Type[] = [
+    CatController,
+    UserController,
+    RoleController,
+    PermissionController,
+    LogoutController,
+    LoginController,
+    HealthController,
+    ResetPasswordController,
+    AlertController
+  ]
 
-  // @todo: ver se é possivel chamar o routes-explorer para popular todas as permissões dinamicamente
-  static readonly ALL_PERMISSIONS: PermisisonRequestMinimal[] = Object.values(
-    TestEnd2EndUtils.PERMISSIONS_BY_CONTROLLER
-  ).flat()
+  /**
+   * reads the @Permission(...) metadata directly from a controller's prototype.
+   * works without any NestJS DI/app running, since SetMetadata writes via
+   * Reflect.defineMetadata at class-definition time (import time).
+   */
+  static getControllerPermissions(controller: Type): string[] {
+    const prototype = controller.prototype as Record<string, unknown>
+    const permissions: string[] = []
+
+    for (const methodName of Object.getOwnPropertyNames(prototype)) {
+      if (methodName === 'constructor') continue
+
+      const handler = prototype[methodName]
+      if (typeof handler !== 'function') continue
+
+      const permission = Reflect.getMetadata(PERMISSION_GUARD, handler) as string | undefined
+      if (permission) permissions.push(permission)
+    }
+
+    return permissions
+  }
+
+  static getPermissions(controllers: Type[]): PermisisonRequestMinimal[] {
+    const names = new Set(controllers.flatMap((controller) => TestEnd2EndUtils.getControllerPermissions(controller)))
+    return [...names].map((name) => ({ name }))
+  }
+
+  static readonly ALL_PERMISSIONS: PermisisonRequestMinimal[] = TestEnd2EndUtils.getPermissions(
+    TestEnd2EndUtils.CONTROLLERS
+  )
 
   static readonly AUTHORIZATION_HEADER: [string, string] = ['Authorization', 'Bearer fake-token']
 
