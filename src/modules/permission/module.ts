@@ -15,6 +15,7 @@ import { PermissionListUsecase } from '@/core/permission/use-cases/permission-li
 import { PermissionUpdateUsecase } from '@/core/permission/use-cases/permission-update'
 import { CacheAsideModule, ICacheAsideAdapter } from '@/infra/cache/aside'
 import { CacheRedisModule } from '@/infra/cache/redis'
+import { PostgresConnectionName } from '@/infra/database'
 import { PermissionSchema } from '@/infra/database/postgres/schemas/permission'
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger'
 import { TokenLibModule } from '@/libs/token'
@@ -35,7 +36,7 @@ import { RoutesExplorer } from './routes'
     TokenLibModule,
     LoggerModule,
     CacheRedisModule,
-    TypeOrmModule.forFeature([PermissionSchema]),
+    TypeOrmModule.forFeature([PermissionSchema], PostgresConnectionName.POSTGRES),
     DiscoveryModule,
     CacheAsideModule
   ],
@@ -47,7 +48,7 @@ import { RoutesExplorer } from './routes'
       useFactory: (repository: Repository<PermissionSchema & PermissionEntity>) => {
         return new PermissionRepository(repository)
       },
-      inject: [getRepositoryToken(PermissionSchema)]
+      inject: [getRepositoryToken(PermissionSchema, PostgresConnectionName.POSTGRES)]
     },
     {
       provide: IPermissionCreate,

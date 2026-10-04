@@ -12,7 +12,7 @@ import { CatGetByIdUsecase } from '@/core/cat/use-cases/cat-get-by-id'
 import { CatListUsecase } from '@/core/cat/use-cases/cat-list'
 import { CatUpdateUsecase } from '@/core/cat/use-cases/cat-update'
 import { CacheRedisModule } from '@/infra/cache/redis'
-import { ConnectionName } from '@/infra/database/enum'
+import { MongoConnectionName } from '@/infra/database'
 import { Cat, CatDocument } from '@/infra/database/mongo/schemas/cat'
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger'
 import { TokenLibModule } from '@/libs/token'
@@ -38,7 +38,7 @@ import { CatRepository } from './repository'
 
         return new CatRepository(repository)
       },
-      inject: [getConnectionToken(ConnectionName.CATS)]
+      inject: [getConnectionToken(MongoConnectionName.MONGO)]
     },
     {
       provide: ICatCreate,

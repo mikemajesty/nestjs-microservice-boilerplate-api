@@ -6,6 +6,7 @@ import { FastifyRequest } from 'fastify'
 import { DataSourceOptions } from 'typeorm'
 
 import { UserEntity } from '@/core/user/entity/user'
+import { PostgresConnectionName } from '@/infra/database'
 import { AlertController } from '@/modules/alert/controller'
 import { CatController } from '@/modules/cat/controller'
 import { HealthController } from '@/modules/health/controller'
@@ -89,6 +90,7 @@ export class TestEnd2EndUtils {
 
   static getPostgresModule(postgresContainer: TestPostgresContainer, postgresConfig: DataSourceOptions) {
     return TypeOrmModule.forRootAsync({
+      name: PostgresConnectionName.POSTGRES,
       useFactory: async () => {
         return postgresConfig
       },

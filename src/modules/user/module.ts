@@ -15,6 +15,7 @@ import { UserGetByIdUsecase } from '@/core/user/use-cases/user-get-by-id'
 import { UserListUsecase } from '@/core/user/use-cases/user-list'
 import { UserUpdateUsecase } from '@/core/user/use-cases/user-update'
 import { CacheAsideModule, ICacheAsideAdapter } from '@/infra/cache/aside'
+import { PostgresConnectionName } from '@/infra/database'
 import { UserSchema } from '@/infra/database/postgres/schemas/user'
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger'
 import { EventLibModule, IEventAdapter } from '@/libs/event'
@@ -25,7 +26,13 @@ import { IUserChangePassword, IUserCreate, IUserDelete, IUserGetById, IUserList,
 import { UserRepository } from './repository'
 
 @Module({
-  imports: [LoggerModule, EventLibModule, TypeOrmModule.forFeature([UserSchema]), RoleModule, CacheAsideModule],
+  imports: [
+    LoggerModule,
+    EventLibModule,
+    TypeOrmModule.forFeature([UserSchema], PostgresConnectionName.POSTGRES),
+    RoleModule,
+    CacheAsideModule
+  ],
   controllers: [UserController],
   providers: [
     {
@@ -33,7 +40,7 @@ import { UserRepository } from './repository'
       useFactory: (repository: Repository<UserSchema & UserEntity>) => {
         return new UserRepository(repository)
       },
-      inject: [getRepositoryToken(UserSchema)]
+      inject: [getRepositoryToken(UserSchema, PostgresConnectionName.POSTGRES)]
     },
     {
       provide: IUserCreate,

@@ -8,6 +8,7 @@ import { SnakeNamingStrategy } from '@/infra/repository/util'
 import { ISecretsAdapter, SecretsModule } from '@/infra/secrets'
 
 import { name } from '../../../../package.json'
+import { PostgresConnectionName } from '../enum'
 import { PostgresService } from './service'
 
 const logger = new LoggerService()
@@ -15,6 +16,7 @@ const logger = new LoggerService()
 @Module({
   imports: [
     TypeOrmModule.forRootAsync({
+      name: PostgresConnectionName.POSTGRES,
       useFactory: ({ POSTGRES: { POSTGRES_URL }, IS_LOCAL }: ISecretsAdapter) => {
         const conn = new PostgresService().getConnection({ URI: POSTGRES_URL })
         logger.log(

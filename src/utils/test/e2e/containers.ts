@@ -11,8 +11,8 @@ import { DataSource, DataSourceOptions } from 'typeorm'
 
 import { ICacheAdapter } from '@/infra/cache'
 import { CacheRedisService } from '@/infra/cache/redis'
-import { ConnectionName } from '@/infra/database/enum'
-import { PostgresService } from '@/infra/database/postgres'
+import { MongoConnectionName } from '@/infra/database'
+import { PostgresService } from '@/infra/database/postgres/service'
 import { ILoggerAdapter, LoggerService } from '@/infra/logger'
 import { SnakeNamingStrategy } from '@/infra/repository/util'
 
@@ -21,14 +21,17 @@ import { ApiUnprocessableEntityException } from '../../exception'
 export class TestMongoContainer {
   mongoContainer!: StartedMongoDBContainer
   mongoDatabase = process.env.MONGO_DATABASE
-  getTestMongo = async (conectionName: ConnectionName): Promise<{ mongoConnection: mongoose.Connection }> => {
+  getTestMongo = async (): Promise<{ mongoConnection: mongoose.Connection }> => {
     this.mongoContainer = await new MongoDBContainer('mongo:7.0.2').start()
 
     if (!this.mongoDatabase) {
       throw new ApiUnprocessableEntityException('MONGO_DATABASE env var is not set')
     }
     const mongo: mongoose.Connection = mongoose
-      .createConnection(this.mongoContainer.getConnectionString(), { directConnection: true, appName: conectionName })
+      .createConnection(this.mongoContainer.getConnectionString(), {
+        directConnection: true,
+        appName: MongoConnectionName.MONGO
+      })
       .useDb(this.mongoDatabase, { useCache: true })
     return { mongoConnection: mongo }
   }

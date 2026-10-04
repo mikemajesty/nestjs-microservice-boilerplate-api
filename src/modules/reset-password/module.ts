@@ -10,6 +10,7 @@ import { IResetPasswordRepository } from '@/core/reset-password/repository/reset
 import { ResetPasswordConfirmUsecase } from '@/core/reset-password/use-cases/reset-password-confirm'
 import { ResetPasswordSendEmailUsecase } from '@/core/reset-password/use-cases/reset-password-send-email'
 import { IUserRepository } from '@/core/user/repository/user'
+import { PostgresConnectionName } from '@/infra/database'
 import { ResetPasswordSchema } from '@/infra/database/postgres/schemas/reset-password'
 import { LoggerModule } from '@/infra/logger'
 import { ISecretsAdapter, SecretsModule } from '@/infra/secrets'
@@ -29,7 +30,7 @@ import { ResetPasswordRepository } from './repository'
     UserModule,
     TokenLibModule,
     EventLibModule,
-    TypeOrmModule.forFeature([ResetPasswordSchema])
+    TypeOrmModule.forFeature([ResetPasswordSchema], PostgresConnectionName.POSTGRES)
   ],
   controllers: [ResetPasswordController],
   providers: [
@@ -38,7 +39,7 @@ import { ResetPasswordRepository } from './repository'
       useFactory: (repository: Repository<ResetPasswordSchema & ResetPasswordEntity>) => {
         return new ResetPasswordRepository(repository)
       },
-      inject: [getRepositoryToken(ResetPasswordSchema)]
+      inject: [getRepositoryToken(ResetPasswordSchema, PostgresConnectionName.POSTGRES)]
     },
     {
       provide: ISendEmailResetPassword,

@@ -8,13 +8,13 @@ import { ISecretsAdapter, SecretsModule } from '@/infra/secrets'
 import { ApiInternalServerException } from '@/utils/exception'
 
 import { name } from '../../../../package.json'
-import { ConnectionName } from '../enum'
+import { MongoConnectionName } from '../enum'
 import { MongoService } from './service'
 
 @Module({
   imports: [
     MongooseModule.forRootAsync({
-      connectionName: ConnectionName.CATS,
+      connectionName: MongoConnectionName.MONGO,
       useFactory: ({ MONGO: { MONGO_URL }, IS_DOCUMENTDB, IS_PRODUCTION }: ISecretsAdapter, logger: ILoggerAdapter) => {
         const connection = new MongoService().getConnection({ URI: MONGO_URL })
         return {

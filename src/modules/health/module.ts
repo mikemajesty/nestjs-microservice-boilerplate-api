@@ -10,7 +10,7 @@ import { DataSource } from 'typeorm'
 
 import { ICacheAdapter } from '@/infra/cache'
 import { CacheRedisModule } from '@/infra/cache/redis'
-import { ConnectionName } from '@/infra/database/enum'
+import { MongoConnectionName, PostgresConnectionName } from '@/infra/database'
 import { PostgresDatabaseModule } from '@/infra/database/postgres'
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger'
 import { ISecretsAdapter, SecretsModule } from '@/infra/secrets'
@@ -38,8 +38,8 @@ import { HealthService, IHealthAdapter } from './service'
         return service
       },
       inject: [
-        getConnectionToken(ConnectionName.CATS),
-        getDataSourceToken(),
+        getConnectionToken(MongoConnectionName.MONGO),
+        getDataSourceToken(PostgresConnectionName.POSTGRES),
         ICacheAdapter<Redis>,
         ILoggerAdapter,
         ISecretsAdapter

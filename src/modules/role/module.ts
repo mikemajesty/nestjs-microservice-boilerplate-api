@@ -17,6 +17,7 @@ import { RoleListUsecase } from '@/core/role/use-cases/role-list'
 import { RoleUpdateUsecase } from '@/core/role/use-cases/role-update'
 import { CacheAsideModule, ICacheAsideAdapter } from '@/infra/cache/aside'
 import { CacheRedisModule } from '@/infra/cache/redis'
+import { PostgresConnectionName } from '@/infra/database'
 import { RoleSchema } from '@/infra/database/postgres/schemas/role'
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger'
 import { TokenLibModule } from '@/libs/token'
@@ -39,7 +40,7 @@ import { RoleRepository } from './repository'
     TokenLibModule,
     LoggerModule,
     CacheRedisModule,
-    TypeOrmModule.forFeature([RoleSchema]),
+    TypeOrmModule.forFeature([RoleSchema], PostgresConnectionName.POSTGRES),
     PermissionModule,
     CacheAsideModule
   ],
@@ -50,7 +51,7 @@ import { RoleRepository } from './repository'
       useFactory: (repository: Repository<RoleSchema & RoleEntity>) => {
         return new RoleRepository(repository)
       },
-      inject: [getRepositoryToken(RoleSchema)]
+      inject: [getRepositoryToken(RoleSchema, PostgresConnectionName.POSTGRES)]
     },
     {
       provide: IRoleCreate,
