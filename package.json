@@ -12,7 +12,10 @@
     "undici": "6.27.0",
     "fast-uri": "^4.1.4",
     "fastify": "^5.12.1",
-    "find-my-way": "^9.6.0"
+    "find-my-way": "^9.6.0",
+    "nestjs-i18n": {
+      "chokidar": "^4.0.3"
+    }
   },
   "scripts": {
     "prepare": "husky",
