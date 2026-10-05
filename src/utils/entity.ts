@@ -3,11 +3,10 @@
  */
 import 'reflect-metadata'
 
-import z from 'zod'
-
 import { DateUtils } from './date'
 import { ApiUnprocessableEntityException } from './exception'
 import { IDGeneratorType, IDGeneratorTypes, IDGeneratorUtils } from './id-generator'
+import { BaseZodType } from './validator'
 
 const normalizeID = (entity: { _id?: string; id?: string }) => {
   Object.assign(entity, { id: [entity?.id, entity?._id, null].find(Boolean) })
@@ -17,7 +16,7 @@ const normalizeID = (entity: { _id?: string; id?: string }) => {
 export const BaseEntity = <T>() => {
   const eventsMap = new WeakMap<object, DomainEvent<unknown>[]>()
   abstract class Entity implements IEntity, IDomainEventPublisher {
-    protected constructor(readonly _schema: z.ZodType) {
+    protected constructor(readonly _schema: BaseZodType) {
       if (!_schema) {
         throw new ApiUnprocessableEntityException(`${this.constructor.name} required a schema`)
       }

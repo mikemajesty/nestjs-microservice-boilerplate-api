@@ -1,11 +1,11 @@
 /**
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/decorators/validate-schema.md
  */
-import zod from 'zod'
 
 import { ApiBadRequestException } from '../exception'
+import { BaseZodType, ZodExceptionIssue } from '../validator'
 
-export function ValidateSchema(...schemas: zod.Schema[]) {
+export function ValidateSchema(...schemas: BaseZodType[]) {
   if (schemas?.length === 0 || !schemas) {
     throw new ApiBadRequestException('At least one schema must be provided')
   }
@@ -14,7 +14,7 @@ export function ValidateSchema(...schemas: zod.Schema[]) {
     const originalMethod = descriptor.value
 
     descriptor.value = function (...args: unknown[]) {
-      const errors: zod.core.$ZodIssue[] = []
+      const errors: ZodExceptionIssue[] = []
 
       schemas.forEach((schema, index) => {
         if (index >= args.length) return
@@ -34,7 +34,7 @@ export function ValidateSchema(...schemas: zod.Schema[]) {
 
           args[index] = cleanedData
         } catch (error) {
-          errors.push(...(error as zod.ZodError).issues)
+          errors.push(...(error as { issues: ZodExceptionIssue[] }).issues)
         }
       })
 

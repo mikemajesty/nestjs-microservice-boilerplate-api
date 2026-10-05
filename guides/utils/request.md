@@ -56,6 +56,26 @@ export class CatController {
 
 The `user` property contains the **authenticated user information** (extracted from JWT token), and `tracing` provides **monitoring capabilities** for logging business events and performance tracking.
 
+## Path Generalization
+
+`generalizePath()` replaces dynamic UUID and MongoDB ObjectId path segments
+before they are used in trace names. This prevents one trace series per
+resource ID while preserving the route shape:
+
+```typescript
+generalizePath('/users/550e8400-e29b-41d4-a716-446655440000')
+// '/users/:uuid'
+
+generalizePath('/cats/507f1f77bcf86cd799439011')
+// '/cats/:objectid'
+
+generalizePath('/orders/123/items/456')
+// '/orders/:number/items/:number'
+
+generalizePath('/users/550e8400-e29b-41d4-a716-446655440000/roles/507f1f77bcf86cd799439011')
+// '/users/:uuid/roles/:objectid'
+```
+
 ### TracingType
 
 Defines the complete tracing interface available in every request context.

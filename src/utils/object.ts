@@ -1,4 +1,4 @@
-import { AnyType } from './types'
+import { AnyFunction, AnyType } from './types'
 
 export class ObjectUtils {
   static reach<T extends object, R>(
@@ -56,8 +56,7 @@ export class ObjectUtils {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-type NotFunction<R> = R extends Function ? never : R
+type NotFunction<R> = R extends AnyFunction ? never : R
 
 type DeepRequired<T> = {
   [K in keyof T]-?: NonNullable<T[K]> extends object ? DeepRequired<NonNullable<T[K]>> : NonNullable<T[K]>

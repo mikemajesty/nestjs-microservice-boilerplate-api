@@ -21,7 +21,7 @@ nano .env
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `PORT` | `5000` | HTTP server port |
-| `TIMEOUT` | `5000` | Request timeout in milliseconds |
+| `HTTP_REQUEST_TIMEOUT_MS` | `5000` | Default HTTP request timeout in milliseconds; routes may override it with `@RequestTimeout()` |
 | `NODE_ENV` | `local` | Environment: `local`, `dev`, `hml`, `prod` |
 | `HOST` | `http://localhost:5000` | Application base URL |
 | `WEBHOOK_HOST` | - | Your public IP for webhooks |

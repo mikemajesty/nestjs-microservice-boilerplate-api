@@ -17,7 +17,7 @@ import {
     {
       provide: APP_INTERCEPTOR,
       useFactory(reflector: Reflector, secret: ISecretsAdapter) {
-        return new RequestTimeoutInterceptor(reflector, secret.TIMEOUT)
+        return new RequestTimeoutInterceptor(reflector, secret.HTTP_REQUEST_TIMEOUT_MS)
       },
       inject: [Reflector, ISecretsAdapter]
     },

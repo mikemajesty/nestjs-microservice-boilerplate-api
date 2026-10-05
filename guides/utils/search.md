@@ -1,6 +1,8 @@
 # Search
 
-Standardized search system that works consistently across all list endpoints, allowing multiple field filters with flexible value matching regardless of database backend.
+Standardized HTTP search syntax for list endpoints. The parser returns a
+database-agnostic object; repository decorators validate allowed fields and
+translate that object into MongoDB or PostgreSQL queries.
 
 ## Purpose
 
@@ -37,66 +39,28 @@ GET /api/v1/users?search=name:john
 # Search by email
 GET /api/v1/users?search=email:john@example.com
 
-# Search by status
-GET /api/v1/orders?search=status:pending
+# Search a numeric field
+GET /api/v1/cats?search=age:2
 ```
 
 ### Multiple Field Search
 
 ```bash
-# Search by name AND role
-GET /api/v1/users?search=name:john,role:admin
+# Search by name AND email
+GET /api/v1/users?search=name:john,email:john@example.com
 
-# Search by status AND date range
-GET /api/v1/orders?search=status:completed,createdAt:2024-01-01
-
-# Search by multiple criteria
-GET /api/v1/products?search=category:electronics,brand:apple,price:1000
+# Search cats by name, breed, and age
+GET /api/v1/cats?search=name:luna,breed:siamese,age:2
 ```
 
 ### Multiple Values for Same Field (OR Logic)
 
 ```bash
-# Search users with role admin OR manager
-GET /api/v1/users?search=role:admin|manager
+# Search cats with either breed
+GET /api/v1/cats?search=breed:siamese|persian
 
-# Search orders with status pending OR processing
-GET /api/v1/orders?search=status:pending|processing
-
-# Search products in multiple categories  
-GET /api/v1/products?search=category:electronics|clothing|books
-
-# Combine multiple fields with multiple values
-GET /api/v1/products?search=category:electronics|clothing,brand:apple|samsung
-```
-
-## Advanced Examples
-
-### E-commerce Product Search
-```bash
-# Products in electronics OR clothing categories, from apple OR samsung
-GET /api/v1/products?search=category:electronics|clothing,brand:apple|samsung
-
-# Products with specific price range and multiple brands
-GET /api/v1/products?search=price:100,brand:apple|google|microsoft
-```
-
-### User Management Search
-```bash
-# Users with admin OR manager role, active status
-GET /api/v1/users?search=role:admin|manager,status:active
-
-# Users created in January OR February, from specific departments
-GET /api/v1/users?search=month:january|february,department:engineering|marketing
-```
-
-### Order Filtering
-```bash
-# Orders that are pending OR processing, from multiple customers
-GET /api/v1/orders?search=status:pending|processing,customerId:123|456|789
-
-# Orders with high OR urgent priority, from last month
-GET /api/v1/orders?search=priority:high|urgent,period:last_month
+# Combine a list and a single field
+GET /api/v1/cats?search=breed:siamese|persian,age:2
 ```
 
 ## Internal Transformation
@@ -107,35 +71,51 @@ The system transforms HTTP query strings into standardized objects:
 // Single values
 "name:john" → { name: "john" }
 
-// Multiple fields  
-"name:john,role:admin" → { name: "john", role: "admin" }
+// Multiple fields
+"name:john,email:john@example.com" → { name: "john", email: "john@example.com" }
 
 // Multiple values (OR logic)
-"role:admin|manager" → { role: ["admin", "manager"] }
+"breed:siamese|persian" → { breed: ["siamese", "persian"] }
 
 // Complex combination
-"role:admin|manager,status:active,department:tech|sales" 
-→ { 
-  role: ["admin", "manager"], 
-  status: "active", 
-  department: ["tech", "sales"] 
+"breed:siamese|persian,age:2"
+→ {
+  breed: ["siamese", "persian"],
+  age: "2"
 }
 ```
 
-## Database Compatibility
+## Filter Behavior
+
+`SearchHttpSchema` only parses the HTTP value. The repository's
+`@ConvertTypeOrmFilter()` or `@ConvertMongooseFilter()` decorator defines:
+
+- which fields are accepted;
+- the comparison type (`equal` or `like`);
+- optional value conversion, such as `Number`.
+
+For example, the Cats repository permits `name` and `breed` as `like`, and
+`age` as an equality filter converted to a number. Sending a field that is not
+explicitly allowed results in a `400 Bad Request`.
+
+`|` produces an array. `equal` converts that array to an `IN` query in
+PostgreSQL; `like` generates one partial-match condition per value. Consult
+the relevant repository decorator when adding a new filter.
+
+## Database Translation
 
 ### MongoDB
 ```typescript
-// Direct object matching
-{ role: ["admin", "manager"] }  // Uses $in operator
-{ status: "active" }           // Direct match
+// Decorators build MongoDB equality or case-insensitive regex conditions.
+{ status: "active" }
+{ name: { $regex: "john", $options: "i" } }
 ```
 
 ### PostgreSQL
 ```typescript
-// Repository adapters convert to SQL
-{ role: ["admin", "manager"] }  → "WHERE role IN ('admin', 'manager')"
-{ status: "active" }           → "WHERE status = 'active'"
+// Repository decorators convert parsed filters to TypeORM operators.
+{ status: ["active", "pending"] } → "WHERE status IN ('active', 'pending')"
+{ name: "john" }                 → "WHERE unaccent(name) ILIKE unaccent('john')"
 ```
 
 ## Use Case Integration
@@ -163,22 +143,30 @@ export class UserListUsecase implements IUsecase {
 
 ## Validation Rules
 
-- Format: `field:value` for single values
-- Multiple fields: separated by commas `field1:value1,field2:value2`
-- Multiple values: separated by pipes `field:value1|value2|value3`
-- Cannot start with colon `:value` (invalid)
-- Must contain at least one colon `field:value`
+- One filter uses `field:value`.
+- Multiple filters are separated by commas:
+  `field1:value1,field2:value2`.
+- Multiple values for one field are separated by pipes:
+  `field:value1|value2|value3`.
+- A filter cannot start with `:` and every filter must have a value.
+- Whitespace around values is trimmed.
+- Field names and values cannot safely contain `,`, `|`, or `:` because they
+  are syntax separators. Use a different filter or extend the parser before
+  accepting values that require those characters.
+- Repeating the same field in the query keeps the last value:
+  `search=name:first,name:last` becomes `{ name: 'last' }`.
 
 ## Benefits
 
 ### Flexible Filtering
-- **Single field, single value**: `status:active`
-- **Single field, multiple values**: `role:admin|manager`  
-- **Multiple fields**: `name:john,role:admin`
-- **Complex combinations**: `role:admin|manager,status:active|pending`
+- **Single field, single value**: `name:john`
+- **Single field, multiple values**: `breed:siamese|persian`
+- **Multiple fields**: `name:john,email:john@example.com`
+- **Complex combinations**: `breed:siamese|persian,age:2`
 
 ### Database Agnostic
-Core business logic receives standardized search objects, independent of database-specific query syntax.
+Core business logic receives standardized search objects, while each repository
+applies the database-specific query syntax and its allowed field list.
 
 ### Consistent API
 All list endpoints accept search filters in the same format, making the API predictable and easy to use.

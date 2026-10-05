@@ -66,19 +66,20 @@ describe(UserListUsecase.name, () => {
 
   const input = new ZodMockSchema(UserListSchema).generate()
   test('when users are found, should expect an user list', async () => {
-    const output: UserListOutput = { docs: users, page: 1, limit: 1, total: 1 }
+    const output: UserListOutput = { docs: users, page: 1, limit: 1, total: 1, totalPages: 1 }
     repository.paginate = TestUtils.mockResolvedValue<UserListOutput>(output)
 
     await expect(usecase.execute(input)).resolves.toEqual({
       docs: users,
       page: 1,
       limit: 1,
-      total: 1
+      total: 1,
+      totalPages: 1
     })
   })
 
   test('when users not found, should expect an empty list', async () => {
-    const output: UserListOutput = { docs: [], page: 1, limit: 1, total: 1 }
+    const output: UserListOutput = { docs: [], page: 1, limit: 1, total: 1, totalPages: 1 }
     repository.paginate = TestUtils.mockResolvedValue<UserListOutput>(output)
 
     await expect(usecase.execute(input)).resolves.toEqual(output)

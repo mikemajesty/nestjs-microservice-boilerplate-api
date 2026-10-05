@@ -8,7 +8,7 @@ export class CryptoUtils {
     return crypto.createHash('sha256').update(input).digest('hex')
   }
 
-  static generateRandomBase64(): string {
-    return crypto.randomBytes(16).toString('base64')
+  static generateRandomBase64(randomBytesLength: number = 16): string {
+    return crypto.randomBytes(randomBytesLength).toString('base64')
   }
 }

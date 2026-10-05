@@ -28,6 +28,10 @@ Request → Interceptor → Set timeout → Handler executes
                                                     ApiTimeoutException (408)
 ```
 
+The generated exception includes `RequestTimeoutInterceptor` as its context
+and a `timeoutMs` detail, so structured logs and error responses identify the
+limit that was exceeded.
+
 ## Global Configuration
 
 ```typescript

@@ -145,5 +145,5 @@ jobs:
           ### 📝 Next Steps
 
           1. ✅ Tag \`$TAG_NAME\` created successfully
-          2. 🚀 Run the **Release** workflow to deploy, generate changelog, and create the GitHub Release
+          2. 🚀 [Run Release workflow](https://github.com/${{ github.repository }}/actions/workflows/release.yml) to deploy, generate changelog, and create the GitHub Release
           EOF

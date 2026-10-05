@@ -16,7 +16,7 @@ Used primarily in **configuration modules** where you need to create Zod schemas
 // Example: Secrets configuration
 interface ISecretsAdapter {
   ENV: string
-  TIMEOUT: number  
+  HTTP_REQUEST_TIMEOUT_MS: number
   HOST: string
   IS_LOCAL?: boolean  // Optional field
   IS_PRODUCTION: boolean
@@ -25,7 +25,7 @@ interface ISecretsAdapter {
 // Create Zod schema that matches the interface
 const SecretsSchema = InputValidator.object<ZodInferSchema<ISecretsAdapter>>({
   ENV: InputValidator.enum(EnvEnum),
-  TIMEOUT: InputValidator.number().or(InputValidator.string()).transform(p => Number(p)),
+  HTTP_REQUEST_TIMEOUT_MS: InputValidator.number().or(InputValidator.string()).transform(p => Number(p)),
   HOST: InputValidator.string(),
   IS_LOCAL: InputValidator.boolean(),  // Automatically handles optionality
   IS_PRODUCTION: InputValidator.boolean()

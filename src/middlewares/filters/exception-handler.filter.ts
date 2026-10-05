@@ -4,7 +4,6 @@
 import { ArgumentsHost, Catch, ExceptionFilter as AppExceptionFilter, HttpException } from '@nestjs/common'
 import { AxiosError } from 'axios'
 import { FastifyReply } from 'fastify'
-import { ZodError } from 'zod'
 
 import { ILoggerAdapter } from '@/infra/logger/adapter'
 import { DateUtils } from '@/utils/date'
@@ -13,6 +12,7 @@ import { DefaultErrorMessage } from '@/utils/http-status'
 import { ObjectUtils } from '@/utils/object'
 import { AppFastifyRequest } from '@/utils/request'
 import { AnyType } from '@/utils/types'
+import { ZodException } from '@/utils/validator'
 
 @Catch()
 export class ExceptionHandlerFilter implements AppExceptionFilter {
@@ -77,7 +77,7 @@ export class ExceptionHandlerFilter implements AppExceptionFilter {
       return [defaultError]
     }
 
-    if (exception instanceof ZodError) {
+    if (exception instanceof ZodException) {
       return this.formatZodErrors(exception)
     }
 
@@ -88,7 +88,7 @@ export class ExceptionHandlerFilter implements AppExceptionFilter {
     return this.formatBaseException(exception)
   }
 
-  private formatZodErrors(exception: ZodError): string[] {
+  private formatZodErrors(exception: ZodException): string[] {
     return exception.issues.map((issue: AnyType) => {
       const isUnrecognizedKeys = issue.code === 'unrecognized_keys'
 
@@ -137,7 +137,7 @@ export class ExceptionHandlerFilter implements AppExceptionFilter {
   }
 
   private getStatus(exception: BaseException): number {
-    if (exception instanceof ZodError) {
+    if (exception instanceof ZodException) {
       return ApiBadRequestException.STATUS
     }
 

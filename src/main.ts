@@ -156,7 +156,7 @@ async function bootstrap() {
 
   const {
     ENV,
-    TIMEOUT,
+    HTTP_REQUEST_TIMEOUT_MS,
     MONGO: { MONGO_URL, MONGO_EXPRESS_URL },
     POSTGRES: { POSTGRES_URL, POSTGRES_PGADMIN_URL },
     PORT,
@@ -222,7 +222,7 @@ async function bootstrap() {
   })
 
   const server = fastify.server
-  server.timeout = TIMEOUT + 1000
+  server.timeout = HTTP_REQUEST_TIMEOUT_MS + 1000
   server.keepAliveTimeout = 60000
   server.headersTimeout = 61000
 }

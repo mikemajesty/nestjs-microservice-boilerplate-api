@@ -2,10 +2,10 @@
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/utils/exception.md
  */
 import { HttpException, HttpStatus } from '@nestjs/common'
-import { z } from 'zod'
 
 import { ObjectUtils } from './object'
 import { AnyType } from './types'
+import { ZodExceptionIssue } from './validator'
 
 export class BaseException extends HttpException {
   traceid!: string
@@ -145,7 +145,7 @@ export type ParametersType = {
    * and you still want to expose the full underlying detail for debugging — for example, the complete list of
    * Zod validation issues, or additional explanatory text about what went wrong.
    */
-  details?: string[] | z.core.$ZodIssue[]
+  details?: string[] | ZodExceptionIssue[]
   /** The original error that caused this one, preserved for root-cause debugging (see `Error.cause`). */
   cause?: Error | (unknown & { stack?: string }) | unknown
 }

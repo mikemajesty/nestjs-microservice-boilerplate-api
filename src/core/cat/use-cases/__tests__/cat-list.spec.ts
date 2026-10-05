@@ -58,19 +58,20 @@ describe(CatListUsecase.name, () => {
 
   const input = new ZodMockSchema(CatListSchema).generate()
   test('when cats are found, should expect a cat list', async () => {
-    const output = { docs, page: 1, limit: 1, total: 1 }
+    const output = { docs, page: 1, limit: 1, total: 1, totalPages: 1 }
     repository.paginate = TestUtils.mockResolvedValue<CatListOutput>(output)
 
     await expect(usecase.execute(input)).resolves.toEqual({
       docs: output.docs,
       page: 1,
       limit: 1,
-      total: 1
+      total: 1,
+      totalPages: 1
     })
   })
 
   test('when cats not found, should expect an empty list', async () => {
-    const output = { docs, page: 1, limit: 1, total: 1 }
+    const output = { docs, page: 1, limit: 1, total: 1, totalPages: 1 }
     repository.paginate = TestUtils.mockResolvedValue<CatListOutput>(output)
 
     await expect(usecase.execute(input)).resolves.toEqual(output)

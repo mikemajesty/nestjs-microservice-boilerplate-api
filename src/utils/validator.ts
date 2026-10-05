@@ -103,6 +103,7 @@ export const normalizeLocale = (locale: string): SupportedLocale => {
 
 export type SchemaInfer<T extends z.ZodType> = z.infer<T>
 
+export const ZodException = z.ZodError
 export type ZodException = z.ZodError
 export type ZodExceptionIssue = z.core.$ZodIssue
 
@@ -119,6 +120,7 @@ export type {
   ZodDefault,
   ZodDiscriminatedUnion,
   ZodEnum,
+  ZodError,
   ZodFunction,
   ZodIntersection,
   ZodLazy,

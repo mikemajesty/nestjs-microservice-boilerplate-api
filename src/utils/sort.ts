@@ -1,7 +1,6 @@
 /**
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/utils/sort.md
  */
-import { z } from 'zod'
 
 import { InputValidator, SchemaInfer } from './validator'
 
@@ -10,8 +9,7 @@ export enum SortEnum {
   desc = -1
 }
 
-export const SortHttpSchema = z
-  .string()
+export const SortHttpSchema = InputValidator.string()
   .optional()
   .refine(
     (check) => {
@@ -38,19 +36,18 @@ export const SortHttpSchema = z
     }
   )
   .transform((sort) => {
-    const sortDefault = sort || 'createdAt:desc'
+    const sortEntries = String(sort || 'createdAt:desc')
+      .split(',')
+      .map((s) => {
+        const [field, order] = s.split(':')
+        return [field.trim(), SortEnum[order.trim().toLowerCase() as keyof typeof SortEnum]] as const
+      })
 
-    const order = Object.fromEntries(
-      String(sort && !sort.includes('createdAt') ? sort : sortDefault)
-        .split(',')
-        .map((s) => {
-          const [field, order] = s.split(':')
-          const sorted = [field.trim(), SortEnum[(order.trim().toLowerCase() || 'asc') as keyof typeof SortEnum]]
-          return sorted
-        })
-    )
+    if (!sortEntries.some(([field]) => field === 'createdAt')) {
+      sortEntries.push(['createdAt', SortEnum.desc])
+    }
 
-    return order
+    return Object.fromEntries(sortEntries)
   })
 
 export const SortSchema = InputValidator.object({

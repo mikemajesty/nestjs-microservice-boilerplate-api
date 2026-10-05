@@ -19,7 +19,7 @@ import { ConvertMongoFilterToBaseRepository } from '@/utils/decorators'
 import { IEntity } from '@/utils/entity'
 import { ApiBadRequestException } from '@/utils/exception'
 import { FilterQuery, MongoRepositoryModelSessionType } from '@/utils/mongoose'
-import { PaginationInput, PaginationOutput } from '@/utils/pagination'
+import { PaginationInput, PaginationOutput, PaginationUtils } from '@/utils/pagination'
 import { MakePartial } from '@/utils/types'
 
 import { IRepository } from '../adapter'
@@ -70,7 +70,8 @@ export class MongoRepository<T extends Document = Document> implements IReposito
       docs: cats.docs.map((u) => this.toObject(u)),
       limit: input.limit,
       page: input.page,
-      total: cats.totalDocs
+      total: cats.totalDocs,
+      totalPages: PaginationUtils.calculateTotalPages({ limit: input.limit, total: cats.totalDocs })
     }
   }
 

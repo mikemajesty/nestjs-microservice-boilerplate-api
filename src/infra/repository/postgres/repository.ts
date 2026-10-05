@@ -67,7 +67,13 @@ export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEn
       relations
     })
 
-    return { docs, total, page: input.page, limit: input.limit }
+    return {
+      docs,
+      total,
+      page: input.page,
+      limit: input.limit,
+      totalPages: PaginationUtils.calculateTotalPages({ limit: input.limit, total })
+    }
   }
 
   async findOr(propertyList: (keyof T)[], value: string): Promise<T[]> {

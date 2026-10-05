@@ -6,7 +6,6 @@ import { SpanStatusCode } from '@opentelemetry/api'
 import { AxiosError } from 'axios'
 import { Observable } from 'rxjs'
 import { catchError } from 'rxjs/operators'
-import { ZodError } from 'zod'
 
 import {
   ApiBadRequestException,
@@ -18,6 +17,7 @@ import { NETWORK_RETRY_CODES } from '@/utils/http-status'
 import { ObjectUtils } from '@/utils/object'
 import { AppFastifyRequest } from '@/utils/request'
 import { AnyType } from '@/utils/types'
+import { ZodException } from '@/utils/validator'
 
 @Injectable()
 export class ExceptionHandlerInterceptor implements NestInterceptor {
@@ -51,7 +51,7 @@ export class ExceptionHandlerInterceptor implements NestInterceptor {
     )
   }
 
-  private toException(error: ZodError | AxiosError<ExternalErrorResponse> | AnyType): AnyType {
+  private toException(error: ZodException | AxiosError<ExternalErrorResponse> | AnyType): AnyType {
     if (error?.isAxiosError) {
       return this.toExternalRequestException(error)
     }
@@ -72,8 +72,8 @@ export class ExceptionHandlerInterceptor implements NestInterceptor {
     return exception
   }
 
-  private getStatusCode(error: ZodError | AxiosError<ExternalErrorResponse>): number {
-    if (error instanceof ZodError) {
+  private getStatusCode(error: ZodException | AxiosError<ExternalErrorResponse>): number {
+    if (error instanceof ZodException) {
       return ApiBadRequestException.STATUS
     }
 

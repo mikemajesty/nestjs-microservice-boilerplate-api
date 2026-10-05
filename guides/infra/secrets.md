@@ -12,7 +12,7 @@ Without centralized secrets management:
 export class PaymentService {
   async charge() {
     const apiKey = process.env.PAYMENT_API_KEY  // Typo? Missing? Who knows!
-    const timeout = process.env.TIMEOUT         // String "30000" not number 30000
+    const timeout = process.env.HTTP_REQUEST_TIMEOUT_MS // String "30000" not number 30000
     const apiUrl = process.env.PAYMENT_URL      // Is it a valid URL? 🤷
     
     // App starts fine, then CRASHES in production when this code runs
@@ -37,7 +37,7 @@ export class PaymentService {
   
   async charge() {
     const apiKey = this.secrets.PAYMENT.API_KEY  // ✅ Type-safe
-    const timeout = this.secrets.TIMEOUT          // ✅ Already a number
+    const timeout = this.secrets.HTTP_REQUEST_TIMEOUT_MS // ✅ Already a number
     const apiUrl = this.secrets.PAYMENT.URL       // ✅ Validated as URL
     
     // If any env is missing, app FAILS TO START with clear error

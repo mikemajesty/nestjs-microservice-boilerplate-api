@@ -82,7 +82,7 @@ make artillery-help       # Show all options
 
 **⏱️ Smart Timeout Coordination:**
 - Artillery: 7s (local) / 8s (production) timeout configuration
-- Application: 6s coordinated timeout (TIMEOUT=5000 + 1000ms server)
+- Application: 6s coordinated timeout (HTTP_REQUEST_TIMEOUT_MS=5000 + 1000ms server)
 - Prevents timeout cascade failures and false negatives
 - **Timeout simulation system** for edge case testing
 
@@ -140,7 +140,7 @@ export default {
 export default {
   target: process.env.ARTILLERY_TARGET,
   
-  // ⏱️ Timeout settings (aligned with app TIMEOUT=5000 + server +1000ms = 6s total)
+  // ⏱️ Timeout settings (aligned with HTTP_REQUEST_TIMEOUT_MS=5000 + server +1000ms = 6s total)
   http: {
     timeout: 7000,         // 7s - App uses 6s, Artillery has 1s margin
     connectTimeout: 3000,  // 3s - Connection establishment limit

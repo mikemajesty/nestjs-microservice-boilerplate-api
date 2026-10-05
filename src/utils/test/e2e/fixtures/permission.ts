@@ -20,10 +20,10 @@ export class PermissionFixture implements Omit<ITestFixture<PermissionEntity>, '
     }
   }
 
-  async removeRole(permission: PermissionEntity, role: RoleEntity[], roleRepository: IRoleRepository) {
+  async removeRole(permission: PermissionEntity, roles: RoleEntity[], roleRepository: IRoleRepository) {
     await roleRepository.runInTransaction(async (context: RunInTransactionType) => {
       const ctx = context as EntityManager
-      for (const r of role) {
+      for (const r of roles) {
         await ctx.createQueryBuilder().relation(PermissionSchema, 'roles').of(permission.id).remove(r.id)
       }
     })

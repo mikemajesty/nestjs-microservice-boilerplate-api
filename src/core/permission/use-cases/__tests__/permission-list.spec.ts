@@ -64,19 +64,20 @@ describe(PermissionListUsecase.name, () => {
   })
 
   test('when permissions are found, should expect a permission list', async () => {
-    const output: PermissionListOutput = { docs: permissions, page: 1, limit: 1, total: 1 }
+    const output: PermissionListOutput = { docs: permissions, page: 1, limit: 1, total: 1, totalPages: 1 }
     repository.paginate = TestUtils.mockResolvedValue<PermissionListOutput>(output)
 
     await expect(usecase.execute(input)).resolves.toEqual({
       docs: permissions,
       page: 1,
       limit: 1,
-      total: 1
+      total: 1,
+      totalPages: 1
     })
   })
 
   test('when permissions not found, should expect an empty list', async () => {
-    const output: PermissionListOutput = { docs: [], page: 1, limit: 1, total: 1 }
+    const output: PermissionListOutput = { docs: [], page: 1, limit: 1, total: 1, totalPages: 1 }
     repository.paginate = TestUtils.mockResolvedValue<PermissionListOutput>(output)
 
     await expect(usecase.execute(input)).resolves.toEqual(output)

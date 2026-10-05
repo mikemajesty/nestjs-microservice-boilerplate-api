@@ -3,9 +3,8 @@
  */
 
 import { BaseException } from '@/utils/exception'
-import { ZodExceptionIssue } from '@/utils/validator'
+import { ZodException, ZodExceptionIssue } from '@/utils/validator'
 import { Provider } from '@nestjs/common'
-import { z } from 'zod'
 import { AnyFunction } from '../types'
 
 export class TestUtils {
@@ -63,7 +62,7 @@ export class TestUtils {
     try {
       await callback()
     } catch (error) {
-      if (error instanceof z.ZodError) {
+      if (error instanceof ZodException) {
         const issues = error.issues.map(({ message, path }: ZodExceptionIssue) => ({ message, path: path[0] }))
         expected(issues)
       }

@@ -12,7 +12,7 @@ export class SecretsService {
   build(): ISecretsAdapter {
     return {
       ENV: this.get('NODE_ENV'),
-      TIMEOUT: this.get<number>('TIMEOUT'),
+      HTTP_REQUEST_TIMEOUT_MS: this.get<number>('HTTP_REQUEST_TIMEOUT_MS'),
       PORT: this.get<number>('PORT'),
       HOST: this.get('HOST'),
       LOG_LEVEL: this.get('LOG_LEVEL'),

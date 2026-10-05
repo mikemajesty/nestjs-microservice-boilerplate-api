@@ -8,9 +8,12 @@ import { EnvEnum } from './types'
 export const SecretsSchema = () =>
   InputValidator.object<ZodInferSchema<ISecretsAdapter>>({
     ENV: InputValidator.enum(EnvEnum),
-    TIMEOUT: InputValidator.number()
+    HTTP_REQUEST_TIMEOUT_MS: InputValidator.number()
       .or(InputValidator.string())
-      .transform((p) => Number(p)),
+      .transform((p) => Number(p))
+      .refine((timeout) => Number.isInteger(timeout) && timeout > 0, {
+        message: 'timeoutMustBePositiveInteger'
+      }),
     HOST: InputValidator.string(),
     IS_LOCAL: InputValidator.boolean(),
     IS_DOCUMENTDB: InputValidator.boolean().optional(),

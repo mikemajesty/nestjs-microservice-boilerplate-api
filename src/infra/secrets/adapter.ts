@@ -3,7 +3,8 @@
  */
 export abstract class ISecretsAdapter {
   ENV!: string
-  TIMEOUT!: number
+  /** Default HTTP request timeout in milliseconds. Route decorators may override it. */
+  HTTP_REQUEST_TIMEOUT_MS!: number
 
   PORT!: number | string
 

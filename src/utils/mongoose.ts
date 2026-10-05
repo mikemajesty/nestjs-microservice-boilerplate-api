@@ -76,12 +76,6 @@ export interface IMongoSchema<T> {
 
 export type MongoRepositoryModelSessionType<T> = T & { connection?: Connection }
 
-export type MongoSession = {
-  abortTransaction: () => Promise<void>
-  commitTransaction: () => Promise<void>
-  endSession: () => void
-}
-
 type MongoOperators<T> = {
   $eq?: T
   $ne?: T
@@ -93,7 +87,7 @@ type MongoOperators<T> = {
   $lte?: T
 }
 
-export type FieldQuery<T> = T | MongoOperators<T>
+type FieldQuery<T> = T | MongoOperators<T>
 
 export type FilterQuery<T> = {
   [K in keyof T]?: T[K] extends object ? FilterQuery<T[K]> | FieldQuery<T[K]> : FieldQuery<T[K]>

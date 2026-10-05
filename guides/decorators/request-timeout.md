@@ -53,6 +53,10 @@ export class OperationController {
 }
 ```
 
+The timeout must be a positive integer in milliseconds. Invalid configuration
+such as `@RequestTimeout(0)`, negative values, fractional values, or `NaN`
+throws during application setup.
+
 ## How It Works with RequestTimeoutInterceptor
 
 ### **Timeout Resolution Hierarchy**

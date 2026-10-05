@@ -36,8 +36,8 @@ GET /api/v1/users?sort=name:asc
 GET /api/v1/products?sort=price:desc
 
 # Multiple fields (priority order)
-GET /api/v1/orders?sort=status:asc,createdAt:desc
-GET /api/v1/users?sort=role:asc,name:asc
+GET /api/v1/users?sort=name:asc,createdAt:desc
+GET /api/v1/users?sort=email:asc,name:asc
 
 # Default sorting (if not provided)
 GET /api/v1/cats  # → Automatically sorted by createdAt:desc
@@ -48,10 +48,11 @@ GET /api/v1/cats  # → Automatically sorted by createdAt:desc
 - `desc` - Descending order (3, 2, 1... / Z, Y, X...)
 
 ### Validation Rules
-- Format must be `field:order` 
-- Multiple sorts separated by commas
-- Order defaults to `asc` if not specified
-- Automatically adds `createdAt:desc` if no sort provided
+- Format must be `field:order`.
+- Valid orders are `asc` and `desc`; an order is required for every field.
+- Multiple sorts are separated by commas.
+- `createdAt:desc` is added as a final tie-breaker unless it was explicitly
+  included in the request.
 
 ## Use Case Integration
 
@@ -91,7 +92,7 @@ The system transforms HTTP query strings into standardized objects:
 // Output: { name: 1, createdAt: -1 }
 
 // Input: "price:desc"  
-// Output: { price: -1, createdAt: -1 }  // Auto-adds createdAt
+// Output: { price: -1, createdAt: -1 }  // Adds a stable tie-breaker
 
 // Input: undefined
 // Output: { createdAt: -1 }  // Default sort
@@ -117,8 +118,8 @@ The system transforms HTTP query strings into standardized objects:
 All list endpoints accept sorting in the same format:
 ```bash
 GET /api/v1/users?sort=name:asc
-GET /api/v1/products?sort=price:desc  
-GET /api/v1/orders?sort=status:asc,total:desc
+GET /api/v1/users?sort=email:desc
+GET /api/v1/cats?sort=breed:asc
 ```
 
 ### Framework Agnostic
@@ -127,5 +128,8 @@ Core business logic receives standardized sort objects, independent of:
 - Database-specific syntax
 - Query parameter parsing
 
-### Default Behavior
-Every list automatically sorts by `createdAt:desc` if no sort is specified, ensuring predictable and chronological results.
+### Stable Pagination
+Every list sorts by `createdAt:desc` when no sort is specified. When a client
+chooses another field, `createdAt:desc` is appended unless the client included
+`createdAt` explicitly, ensuring predictable ordering for records tied on the
+primary sort field.

@@ -110,7 +110,7 @@ app.use(compression())
 ```typescript
 function setTimeout() {
   const httpServer = app.getHttpServer()
-  httpServer.timeout = TIMEOUT + 1000
+  httpServer.timeout = HTTP_REQUEST_TIMEOUT_MS + 1000
   httpServer.keepAliveTimeout = 60000
   httpServer.headersTimeout = 61000
 }

@@ -51,5 +51,5 @@ export type PaginationInput<T> = SchemaInfer<typeof PaginationSchema> & SortInpu
 export type PaginationOutput<T> = SchemaInfer<typeof PaginationSchema> & {
   total: number
   docs: T[]
-  totalPages?: number
+  totalPages: number
 }

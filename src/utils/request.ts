@@ -63,10 +63,17 @@ declare module 'fastify' {
   }
 }
 
+const UUID_PATH_SEGMENT = /(^|\/)[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}(?=\/|$)/gi
+const OBJECT_ID_PATH_SEGMENT = /(^|\/)[0-9a-f]{24}(?=\/|$)/gi
+const NUMBER_PATH_SEGMENT = /(^|\/)\d+(?=\/|$)/g
+
 export const generalizePath = (path: string): string => {
   if (!path) return '/'
 
-  return path.replace(/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/gi, ':uuid')
+  return path
+    .replace(UUID_PATH_SEGMENT, '$1:uuid')
+    .replace(OBJECT_ID_PATH_SEGMENT, '$1:objectid')
+    .replace(NUMBER_PATH_SEGMENT, '$1:number')
 }
 
 /**
