@@ -1,4 +1,10 @@
 
+## [1.1.15](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/v1.1.14...v1.1.15) (2026-10-04)
+
+### Bug Fixes
+
+* **deps:** resolve npm audit vulnerabilities for production deps ([6aa620d](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/commit/6aa620df87b73f4f6c446ebedfacdfe9ced63fdc))
+
 ## [1.1.14](https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/compare/v1.1.13...v1.1.14) (2026-09-12)
 
 ### Features
