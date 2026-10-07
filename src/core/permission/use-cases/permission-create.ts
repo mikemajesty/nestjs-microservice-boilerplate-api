@@ -31,11 +31,11 @@ export class PermissionCreateUsecase implements IUsecase {
 
     const entity = new PermissionEntity({ id: IDGeneratorUtils.uuid(), ...input })
 
-    await this.permissionRepository.create(entity.toObject())
+    await this.permissionRepository.create(entity.toData())
 
     this.loggerService.info({ message: 'permission created.', metadata: { permission } })
 
-    return entity.toObject()
+    return entity.toData()
   }
 }
 

@@ -23,6 +23,7 @@ import { ExceptionHandlerFilter } from '@/middlewares/filters'
 
 import { name, version } from '../package.json'
 import { AppModule } from './app.module'
+import { IUserRepository } from './core/user/repository/user'
 import { ErrorType } from './infra/logger'
 import { initI18n, normalizeLocale, runWithRequestLocale } from './utils/validator'
 
@@ -99,6 +100,10 @@ async function bootstrap() {
       runWithRequestLocale(getPreferredLocale(request), done)
     }
   )
+
+  const userRepository = app.get(IUserRepository)
+
+  userRepository.findOneWithRelation({ id: '475ab54e-5753-455d-89e0-b10c57ec6db6' }, { password: true })
 
   fastify.addHook('onRequest', (request: FastifyRequest, _reply: FastifyReply, done: HookHandlerDoneFunction) => {
     requestStartTimes.set(request, process.hrtime.bigint())

@@ -59,18 +59,19 @@ describe(CatUpdateUsecase.name, () => {
   })
 
   const mock = new ZodMockSchema(CatEntitySchema)
-  const input = mock.generate<CatEntity>({
+  const input = mock.generate({
     overrides: {
       updatedAt: null,
       createdAt: null,
       deletedAt: null
-    }
+    },
+    factory: (data) => new CatEntity(data)
   })
 
   test('when cat updated successfully, should expect a cat updated', async () => {
-    repository.findById = TestUtils.mockResolvedValue<CatEntity>(input)
+    repository.findById = TestUtils.mockResolvedValueOnce<CatEntity>(input.clone()).mockResolvedValue(input.clone())
     repository.updateOne = TestUtils.mockResolvedValue<UpdatedModel>()
 
-    await expect(usecase.execute({ id: MockUtils.UUID() }, MockUtils.Tracing())).resolves.toEqual(input)
+    await expect(usecase.execute({ id: MockUtils.UUID() }, MockUtils.Tracing())).resolves.toEqual(input.toData())
   })
 })

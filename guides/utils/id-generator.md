@@ -198,7 +198,7 @@ export class ExampleCreateUsecase implements IUsecase {
       ...input 
     })
     
-    return await this.repository.create(entity.toObject())
+    return await this.repository.create(entity.toData())
   }
 }
 ```

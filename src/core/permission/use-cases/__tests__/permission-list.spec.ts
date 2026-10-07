@@ -56,11 +56,12 @@ describe(PermissionListUsecase.name, () => {
   const input = new ZodMockSchema(PermissionListSchema).generate()
 
   const permissionEntityMock = new ZodMockSchema(PermissionEntitySchema)
-  const permissions = permissionEntityMock.generateMany<PermissionEntity>(5, {
+  const permissions = permissionEntityMock.generateMany(5, {
     overrides: {
       name: 'name:permission',
       roles: []
-    }
+    },
+    factory: (data) => new PermissionEntity(data)
   })
 
   test('when permissions are found, should expect a permission list', async () => {

@@ -47,12 +47,11 @@ export class PermissionUpdateUsecase implements IUsecase {
       }
     }
 
-    const entity = new PermissionEntity(permission)
-    entity.merge(input)
+    permission.merge(input)
 
-    entity.removeAllRoles()
+    permission.removeAllRoles()
 
-    await this.permissionRepository.updateOne({ id: entity.id }, entity.toObject())
+    await this.permissionRepository.updateOne({ id: permission.id }, permission.toData())
 
     if (input.name) {
       await this.cacheAside.invalidateMany(roleCacheKeys)
@@ -60,7 +59,7 @@ export class PermissionUpdateUsecase implements IUsecase {
 
     this.loggerService.info({ message: 'permission updated.', metadata: { permission: input } })
 
-    return entity.toObject()
+    return permission.toData()
   }
 }
 

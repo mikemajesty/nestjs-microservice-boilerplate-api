@@ -88,7 +88,7 @@ The system transforms HTTP query strings into standardized objects:
 ## Filter Behavior
 
 `SearchHttpSchema` only parses the HTTP value. The repository's
-`@ConvertTypeOrmFilter()` or `@ConvertMongooseFilter()` decorator defines:
+`@TransformTypeOrmSearch()` or `@TransformMongooseSearch()` decorator defines:
 
 - which fields are accepted;
 - the comparison type (`equal` or `like`);

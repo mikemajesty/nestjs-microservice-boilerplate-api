@@ -13,7 +13,7 @@ import { TestUtils } from '@/utils/test/utils'
 import { ZodExceptionIssue } from '@/utils/validator'
 
 import { UserEntity, UserEntitySchema } from '../../entity/user'
-import { UserPasswordEntitySchema } from '../../entity/user-password'
+import { UserPasswordEntity, UserPasswordEntitySchema } from '../../entity/user-password'
 import { IUserRepository } from '../../repository/user'
 import { UserChangePasswordInput, UserChangePasswordSchema, UserChangePasswordUsecase } from '../user-change-password'
 
@@ -84,30 +84,33 @@ describe(UserChangePasswordUsecase.name, () => {
   const password = passwordMock.generate({
     overrides: {
       password: '69bf0bc46f51b33377c4f3d92caf876714f6bbbe99e7544487327920873f9820'
-    }
+    },
+    factory: (data) => new UserPasswordEntity(data)
   })
   const roleMock = new ZodMockSchema(RoleEntitySchema)
-  const role = roleMock.generate<RoleEntity>({
+  const role = roleMock.generate({
     overrides: {
       permissions: []
-    }
+    },
+    factory: (data) => new RoleEntity(data)
   })
   const userMock = new ZodMockSchema(UserEntitySchema)
-  const user = userMock.generate<UserEntity>({
+  const user = userMock.generate({
     overrides: {
       password,
       roles: [role]
-    }
+    },
+    factory: (data) => new UserEntity(data)
   })
 
   test('when user password is incorrect, should expect an error', async () => {
-    repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(user)
+    repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(user.clone())
 
     await expect(usecase.execute({ ...input, password: 'wrongPassword' })).rejects.toThrow(ApiBadRequestException)
   })
 
   test('when user passwords are not equal, should expect an error', async () => {
-    repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(user)
+    repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(user.clone())
 
     await expect(usecase.execute({ ...input, confirmPassword: 'wrongPassword' })).rejects.toThrow(
       ApiBadRequestException
@@ -115,7 +118,7 @@ describe(UserChangePasswordUsecase.name, () => {
   })
 
   test('when change password successfully, should change password', async () => {
-    repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(user)
+    repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(user.clone())
     repository.create = TestUtils.mockResolvedValue<CreatedModel>()
 
     await expect(usecase.execute(input)).resolves.toBeUndefined()

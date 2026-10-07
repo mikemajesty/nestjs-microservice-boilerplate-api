@@ -39,28 +39,24 @@ export class UserUpdateUsecase implements IUsecase {
 
     const roles = await this.getRoles(input, user.roles as RoleEntity[])
 
-    const entity = new UserEntity(user)
+    user.merge({ ...input, roles })
 
-    entity.merge({ ...input, roles })
-
-    const userExists = await this.userRepository.existsOnUpdate({ email: entity.email }, entity.id)
+    const userExists = await this.userRepository.existsOnUpdate({ email: user.email }, user.id)
 
     if (userExists) {
       throw new ApiConflictException('userExists')
     }
 
-    await this.userRepository.create(entity.toObject())
-    await this.cacheAside.invalidate(Namespaces.userById(entity.id))
+    await this.userRepository.create(user.toData())
+    await this.cacheAside.invalidate(Namespaces.userById(user.id))
 
     this.loggerService.info({ message: 'user updated.', metadata: { user: input } })
 
-    const updated = await this.userRepository.findOne({ id: entity.id })
+    const updated = await this.userRepository.findOne({ id: user.id })
 
-    const entityUpdated = new UserEntity(updated as UserEntity)
+    tracing.logEvent('user-updated', { action: 'updated', by: userData.id, entity: updated!.id })
 
-    tracing.logEvent('user-updated', { action: 'updated', by: userData.id, entity: entityUpdated.id })
-
-    return entityUpdated.toObject()
+    return updated!.toData()
   }
 
   private async getRoles(input: UserUpdateInput, currentRoles: RoleEntity[]): Promise<RoleEntity[]> {

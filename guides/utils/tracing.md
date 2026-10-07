@@ -78,7 +78,7 @@ Here's how the system is currently used in your use cases:
 export class CatCreateUsecase implements IUsecase {
   async execute(input: CatCreateInput, { tracing, user }: ApiTrancingInput): Promise<CatCreateOutput> {
     const entity = new CatEntity({ id: IDGeneratorUtils.uuid(), ...input })
-    const created = await this.catRepository.create(entity.toObject())
+    const created = await this.catRepository.create(entity.toData())
 
     // Log business event with context
     tracing.logEvent('cat-created', `cat created by: ${user.email}`)

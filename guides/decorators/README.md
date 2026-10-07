@@ -43,16 +43,16 @@ These decorators solve **real-world problems** by eliminating boilerplate code, 
 
 ### **🗄️ Database Optimization**
 
-#### **[ValidateDatabaseSortAllowed](validate-database-sort-allowed.md)** | **[📄 Code](../../src/utils/decorators/database/validate-database-sort-allowed.decorator.ts)**
+#### **[TransformSort](validate-database-sort-allowed.md)** | **[📄 Code](../../src/utils/decorators/sort/transform-sort.decorator.ts)**
 **Type-safe sorting validation for repositories.** Automatic sort object generation with field whitelisting, custom mapping, and type-safe validation for pagination methods.
 
-#### **[ConvertTypeOrmFilter](convert-typeorm-filter.md)** | **[📄 Code](../../src/utils/decorators/database/postgres/validate-typeorm-filter.decorator.ts)**
+#### **[TransformTypeOrmSearch](convert-typeorm-filter.md)** | **[📄 Code](../../src/utils/decorators/filter/typeorm/transform-type-orm-search.decorator.ts)**
 **Automatic TypeORM WHERE clause generation.** Transforms manual filter construction into elegant, type-safe PostgreSQL queries with unaccent support and automatic type conversion.
 
-#### **[ConvertMongooseFilter](validate-mongoose-filter.md)** | **[📄 Code](../../src/utils/decorators/database/mongo/validate-mongoose-filter.decorator.ts)**
+#### **[TransformMongooseSearch](validate-mongoose-filter.md)** | **[📄 Code](../../src/utils/decorators/filter/mongoose/transform-mongoose-search.decorator.ts)**
 **MongoDB query builder automation (Repository layer).** Automatic MongoDB filter generation with regex optimization, type conversion, and $or/$and structure for complex queries.
 
-#### **[ConvertMongoFilterToBaseRepository](convert-mongoose-filter.md)** | **[📄 Code](../../src/utils/decorators/database/mongo/convert-mongoose-filter.decorator.ts)**
+#### **[NormalizeMongoFilter](convert-mongoose-filter.md)** | **[📄 Code](../../src/utils/decorators/filter/mongoose/normalize-mongo-filter.decorator.ts)**
 **MongoDB filter normalization (Base Repository / Infra layer).** Flattens nested filter objects, handles id→_id conversion, and prepares queries for base repository operations.
 
 
@@ -72,10 +72,10 @@ These decorators solve **real-world problems** by eliminating boilerplate code, 
 - **RunInNewProcess** - Memory-intensive task isolation
 
 ### **Data Access Layer**
-- **ValidateDatabaseSortAllowed** - Sort validation and mapping
-- **ConvertTypeOrmFilter** - PostgreSQL query automation
-- **ConvertMongooseFilter** - MongoDB query automation  
-- **ConvertMongoFilterToBaseRepository** - Base repository enhancement
+- **TransformSort** - Sort validation and mapping
+- **TransformTypeOrmSearch** - PostgreSQL query automation
+- **TransformMongooseSearch** - MongoDB query automation
+- **NormalizeMongoFilter** - Base repository enhancement
 
 ---
 
@@ -84,8 +84,8 @@ These decorators solve **real-world problems** by eliminating boilerplate code, 
 | **Problem Solved** | **Lines Saved** | **Decorators** |
 |---------------------|------------------|----------------|
 | Manual validation hell | 50+ lines → 1 line | ValidateSchema, Permission |
-| TypeORM query construction | 100+ lines → 2 lines | ConvertTypeOrmFilter, ValidateDatabaseSortAllowed |
-| MongoDB filter building | 70+ lines → 2 lines | ConvertMongooseFilter |
+| TypeORM query construction | 100+ lines → 2 lines | TransformTypeOrmSearch, TransformSort |
+| MongoDB filter building | 70+ lines → 2 lines | TransformMongooseSearch |
 | Worker/Process management | 150+ lines → 1 line | RunInNewThread, RunInNewProcess |
 | Circuit breaker setup | 80+ lines → 1 line | CircuitBreaker |
 | Performance monitoring | 20+ lines → 1 line | LogExecutionTime |

@@ -25,9 +25,7 @@ export class CatGetByIdUsecase implements IUsecase {
       throw new ApiNotFoundException()
     }
 
-    const entity = new CatEntity(cat)
-
-    return entity.toObject()
+    return cat.toData()
   }
 }
 

@@ -87,7 +87,7 @@ type MongoOperators<T> = {
   $lte?: T
 }
 
-type FieldQuery<T> = T | MongoOperators<T>
+export type FieldQuery<T> = T | MongoOperators<T>
 
 export type FilterQuery<T> = {
   [K in keyof T]?: T[K] extends object ? FilterQuery<T[K]> | FieldQuery<T[K]> : FieldQuery<T[K]>

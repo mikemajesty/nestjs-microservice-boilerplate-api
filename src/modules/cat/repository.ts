@@ -10,23 +10,22 @@ import { ICatRepository } from '@/core/cat/repository/cat'
 import { CatListInput, CatListOutput } from '@/core/cat/use-cases/cat-list'
 import { Cat, CatDocument } from '@/infra/database/mongo/schemas/cat'
 import { MongoRepository } from '@/infra/repository'
-import { ConvertMongooseFilter, SearchTypeEnum, ValidateDatabaseSortAllowed } from '@/utils/decorators'
+import { SearchTypeEnum, TransformMongooseSearch, TransformSort } from '@/utils/decorators'
 import { MongoRepositoryModelSessionType } from '@/utils/mongoose'
 
 @Injectable()
-export class CatRepository extends MongoRepository<CatDocument> implements ICatRepository {
+export class CatRepository extends MongoRepository<CatDocument, CatEntity> implements ICatRepository {
   constructor(@InjectModel(Cat.name) readonly entity: MongoRepositoryModelSessionType<PaginateModel<CatDocument>>) {
-    super(entity)
+    super(entity, CatEntity)
   }
 
-  @ValidateDatabaseSortAllowed<CatEntity>({ name: 'createdAt' }, { name: 'breed' })
-  @ConvertMongooseFilter<CatEntity>([
+  @TransformSort<CatEntity>({ name: 'createdAt' }, { name: 'breed' })
+  @TransformMongooseSearch<CatEntity>([
     { name: 'name', type: SearchTypeEnum.like },
     { name: 'breed', type: SearchTypeEnum.like },
     { name: 'age', type: SearchTypeEnum.equal, format: 'Number' }
   ])
   async paginate(input: CatListInput): Promise<CatListOutput> {
-    const cats = await this.applyPagination(input)
-    return { ...cats, docs: cats.docs.map((doc: CatEntity) => new CatEntity(doc).toObject()) }
+    return this.applyPagination(input)
   }
 }

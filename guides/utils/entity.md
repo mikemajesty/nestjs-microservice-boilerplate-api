@@ -66,7 +66,7 @@ export class UserEntity extends BaseEntity<UserEntityProps>() {
 
   canDelete(): boolean {
     // Business rule: admins cannot delete themselves
-    return this.toObject().role !== 'admin'
+    return this.toData().role !== 'admin'
   }
 
   requestDeletion(): UserEntity {
@@ -100,21 +100,21 @@ const userEntitySchema = z.object({
 })
 ```
 
-## toObject() - Critical for Data Flow
+## toData() - Critical for Data Flow
 
-The `toObject()` method is **essential** for converting entities back to plain objects. This is used constantly throughout the application:
+The `toData()` method is **essential** for converting entities back to plain objects. This is used constantly throughout the application:
 
 ### Repository Layer
 ```typescript
 export class UserRepository implements IUserRepository {
   async save(user: UserEntity): Promise<void> {
     // Convert entity to plain object for database persistence
-    const userData = user.toObject()
+    const userData = user.toData()
     await this.model.create(userData)
   }
 
   async update(user: UserEntity): Promise<void> {
-    const userData = user.toObject()
+    const userData = user.toData()
     await this.model.findByIdAndUpdate(user.id, userData)
   }
 
@@ -146,7 +146,7 @@ export class GetUserUsecase implements IUsecase {
       throw new ApiNotFoundException('userNotFound')
     }
 
-    return { user: user.toObject() }
+    return { user: user.toData() }
   }
 }
 
@@ -161,7 +161,7 @@ export class UpdateUserUsecase implements IUsecase {
     // Convert back to plain object for persistence
     await this.userRepository.save(updatedUser)
     
-    return { user: updatedUser.toObject() }
+    return { user: updatedUser.toData() }
   }
 }
 ```
@@ -173,7 +173,7 @@ export class UserController {
   async getUser(@Param('id') id: string): Promise<UserResponse> {
     const result = await this.getUserUsecase.execute({ userId: id })
     
-    // toObject() already called in usecase
+    // toData() already called in usecase
     return {
       success: true,
       data: result.user  // Already plain object from usecase
@@ -207,10 +207,10 @@ export class PromoteUserUsecase implements IUsecase {
     // Publish event with plain object data
     await this.eventBus.publish('user.promoted', {
       userId: promotedUser.id,
-      userData: promotedUser.toObject()  // Plain object for event payload
+      userData: promotedUser.toData()  // Plain object for event payload
     })
 
-    return { user: promotedUser.toObject() }
+    return { user: promotedUser.toData() }
   }
 }
 ```
@@ -239,7 +239,7 @@ export class GetUserProfileUsecase implements IUsecase {
       })
     }
     
-    return { user: user.toObject() }
+    return { user: user.toData() }
   }
 }
 
@@ -252,7 +252,7 @@ export class ListActiveUsersUsecase implements IUsecase {
     const activeUsers = users.filter(user => user.isActive())
 
     return { 
-      users: activeUsers.map(user => user.toObject()) 
+      users: activeUsers.map(user => user.toData()) 
     }
   }
 }
@@ -276,7 +276,7 @@ export class DeactivateUserUsecase implements IUsecase {
       deactivatedAt: deactivatedUser.deletedAt
     })
 
-    return { user: deactivatedUser.toObject() }
+    return { user: deactivatedUser.toData() }
   }
 }
 
@@ -289,7 +289,7 @@ export class ReactivateUserUsecase implements IUsecase {
     const activatedUser = user.activate()
     await this.userRepository.save(activatedUser)
 
-    return { user: activatedUser.toObject() }
+    return { user: activatedUser.toData() }
   }
 }
 ```
@@ -366,7 +366,7 @@ export class UserService {
     })
 
     // Validate the merged result
-    updatedUser.validate(updatedUser.toObject())
+    updatedUser.validate(updatedUser.toData())
     
     return await this.userRepository.save(updatedUser)
   }
@@ -382,7 +382,7 @@ export class UserService {
 
     await this.eventBus.publish('user.promoted', {
       userId: user.id,
-      oldRole: user.toObject().role,
+      oldRole: user.toData().role,
       newRole: 'admin'
     })
 
@@ -448,7 +448,7 @@ export class OrderEntity extends BaseEntity<OrderEntityProps>() {
   }
 
   addItem(item: OrderItem): OrderEntity {
-    const currentItems = this.toObject().items || []
+    const currentItems = this.toData().items || []
     return this.merge({
       items: [...currentItems, item],
       total: this.calculateTotal([...currentItems, item]),
@@ -458,7 +458,7 @@ export class OrderEntity extends BaseEntity<OrderEntityProps>() {
 
   // Usage in repository
   toDbFormat(): DbOrderData {
-    const orderData = this.toObject()
+    const orderData = this.toData()
     return {
       ...orderData,
       _id: orderData.id  // Map to MongoDB _id if needed
@@ -476,7 +476,7 @@ export class OrderEntity extends BaseEntity<OrderEntityProps>() {
 - **Standard soft delete** behavior
 
 ### Data Flow Optimization
-- **toObject()** ensures clean serialization for APIs, databases, events
+- **toData()** ensures clean serialization for APIs, databases, events
 - **Immutable updates** with merge() prevent accidental mutations
 - **Validation** ensures data integrity at entity level
 - **Type safety** with nameOf() prevents field name typos
@@ -561,7 +561,7 @@ export class PromoteUserUsecase implements IUsecase {
     for (const event of promotedUser.releaseEvents()) {
       await this.eventBus.publish(event.name, event.payload)
     }
-    return { user: promotedUser.toObject() }
+    return { user: promotedUser.toData() }
   }
 }
 ```

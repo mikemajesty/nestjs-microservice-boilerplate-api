@@ -59,16 +59,17 @@ describe(PermissionGetByIdUsecase.name, () => {
   })
 
   const mock = new ZodMockSchema(PermissionEntitySchema)
-  const permission = mock.generate<PermissionEntity>({
+  const permission = mock.generate({
     overrides: {
       name: 'name:permission',
       roles: []
-    }
+    },
+    factory: (data) => new PermissionEntity(data)
   })
 
   test('when permission found, should expect a permission found', async () => {
-    repository.findById = TestUtils.mockResolvedValue<PermissionEntity>(permission)
+    repository.findById = TestUtils.mockResolvedValue<PermissionEntity>(permission.clone())
 
-    await expect(usecase.execute(input)).resolves.toEqual(permission)
+    await expect(usecase.execute(input)).resolves.toEqual(permission.toData())
   })
 })

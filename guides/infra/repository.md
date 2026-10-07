@@ -11,21 +11,20 @@ Without a unified repository interface, your application becomes **tightly coupl
 @Injectable()
 export class UserService {
   constructor(@InjectModel('User') private userModel: Model<UserDocument>) {}
-  
+
   async findActiveUsers() {
     // MongoDB-specific query syntax
-    return this.userModel.find({ 
-      status: 'active',
-      deletedAt: null 
-    }).select('-password')
+    return this.userModel
+      .find({
+        status: 'active',
+        deletedAt: null
+      })
+      .select('-password')
   }
-  
+
   async updateUser(id: string, data: UpdateUserDTO) {
     // MongoDB-specific update syntax
-    return this.userModel.updateOne(
-      { _id: id },
-      { $set: data }
-    )
+    return this.userModel.updateOne({ _id: id }, { $set: data })
   }
 }
 
@@ -89,18 +88,18 @@ export abstract class ICatRepository extends IRepository<CatEntity> {
 // src/core/cat/use-cases/cat-list.ts - Use case uses ONLY the interface
 export class CatListUsecase {
   constructor(private readonly catRepository: ICatRepository) {}
-  
+
   execute(input: CatListInput): Promise<CatListOutput> {
-    return this.catRepository.paginate(input)  // Database-agnostic!
+    return this.catRepository.paginate(input) // Database-agnostic!
   }
 }
 
 // src/core/cat/use-cases/cat-get-by-id.ts
 export class CatGetByIdUsecase {
   constructor(private readonly catRepository: ICatRepository) {}
-  
+
   execute(id: string): Promise<CatEntity | null> {
-    return this.catRepository.findById(id)  // Inherited from IRepository
+    return this.catRepository.findById(id) // Inherited from IRepository
   }
 }
 ```
@@ -159,23 +158,19 @@ export abstract class ICatRepository extends IRepository<CatEntity> {
 ```typescript
 // src/modules/cat/repository.ts
 @Injectable()
-export class CatRepository extends MongoRepository<CatDocument> implements ICatRepository {
+export class CatRepository extends MongoRepository<CatDocument, CatEntity> implements ICatRepository {
   constructor(@InjectModel(Cat.name) readonly entity: MongoRepositoryModelSessionType<PaginateModel<CatDocument>>) {
-    super(entity)
+    super(entity, CatEntity)
   }
 
-  @ValidateDatabaseSortAllowed<CatEntity>({ name: 'createdAt' }, { name: 'breed' })
-  @ConvertMongooseFilter<CatEntity>([
+  @TransformSort<CatEntity>({ name: 'createdAt' }, { name: 'breed' })
+  @TransformMongooseSearch<CatEntity>([
     { name: 'name', type: SearchTypeEnum.like },
     { name: 'breed', type: SearchTypeEnum.like },
     { name: 'age', type: SearchTypeEnum.equal, format: 'Number' }
   ])
-  async paginate({ limit, page, search, sort }: CatListInput): Promise<CatListOutput> {
-    const cats = await this.entity.paginate(search as FilterQuery<IEntity>, { page, limit, sort: sort as object })
-    return {
-      docs: cats.docs.map((u) => new CatEntity(u.toObject({ virtuals: true })).toObject()),
-      limit, page, total: cats.totalDocs
-    }
+  async paginate(input: CatListInput): Promise<CatListOutput> {
+    return this.applyPagination(input)
   }
 }
 ```
@@ -186,7 +181,7 @@ export class CatRepository extends MongoRepository<CatDocument> implements ICatR
   provide: ICatRepository,
   useFactory: async (connection: Connection) => {
     type Model = mongoose.PaginateModel<CatDocument>
-    const repository: MongoRepositoryModelSessionType<PaginateModel<CatDocument>> = 
+    const repository: MongoRepositoryModelSessionType<PaginateModel<CatDocument>> =
       connection.model<CatDocument, Model>(Cat.name, CatSchema as Schema)
     repository.connection = connection
     return new CatRepository(repository)
@@ -200,21 +195,15 @@ export class CatRepository extends MongoRepository<CatDocument> implements ICatR
 ```typescript
 // src/modules/role/repository.ts
 @Injectable()
-export class RoleRepository extends TypeORMRepository<Model> implements IRoleRepository {
+export class RoleRepository extends TypeORMRepository<Model, RoleEntity> implements IRoleRepository {
   constructor(readonly repository: Repository<Model>) {
-    super(repository)
+    super(repository, RoleEntity)
   }
 
-  @ConvertTypeOrmFilter<RoleEntity>([{ name: 'name', type: SearchTypeEnum.like }])
-  @ValidateDatabaseSortAllowed<RoleEntity>({ name: 'name' }, { name: 'createdAt' })
+  @TransformTypeOrmSearch<RoleEntity>([{ name: 'name', type: SearchTypeEnum.like }])
+  @TransformSort<RoleEntity>({ name: 'name' }, { name: 'createdAt' })
   async paginate(input: RoleListInput): Promise<RoleListOutput> {
-    const skip = PaginationUtils.calculateSkip(input)
-    const [docs, total] = await this.repository.findAndCount({
-      take: input.limit, skip,
-      order: input.sort as FindOptionsOrder<IEntity>,
-      where: input.search as FindOptionsWhere<unknown>
-    })
-    return { docs: docs.map((doc) => new RoleEntity(doc).toObject()), total, page: input.page, limit: input.limit }
+    return this.applyPagination(input)
   }
 }
 
@@ -238,9 +227,9 @@ type Model = RoleSchema & RoleEntity
 // src/core/cat/use-cases/cat-list.ts
 export class CatListUsecase {
   constructor(private readonly catRepository: ICatRepository) {}
-  
+
   execute(input: CatListInput): Promise<CatListOutput> {
-    return this.catRepository.paginate(input)  // Works with Mongo or Postgres!
+    return this.catRepository.paginate(input) // Works with Mongo or Postgres!
   }
 }
 ```
@@ -257,34 +246,34 @@ abstract class IRepository<T> {
   abstract create(document: T, options?): Promise<CreatedModel>
   abstract createOrUpdate(document: T, options?): Promise<CreatedOrUpdateModel>
   abstract insertMany(documents: T[], options?): Promise<void>
-  
+
   // Read - Basic
   abstract findById(id: string | number, options?): Promise<T | null>
   abstract findOne(filter, options?): Promise<T | null>
   abstract findAll(filter?, options?): Promise<T[]>
   abstract find(filter, options?): Promise<T[]>
-  
+
   // Read - Advanced
   abstract findIn(filter, options?): Promise<T[]>
   abstract findOr(propertyList, value, options?): Promise<T[]>
   abstract findByCommands(filterList, options?): Promise<T[]>
   abstract findOneByCommands(filterList, options?): Promise<T | null>
-  
+
   // Read - Field Selection
   abstract findOneWithExcludeFields(filter, excludeFields, options?): Promise<T | null>
   abstract findAllWithExcludeFields(excludeFields, filter?, options?): Promise<T[]>
   abstract findOneWithSelectFields(filter, includeFields, options?): Promise<T | null>
   abstract findAllWithSelectFields(includeFields, filter?, options?): Promise<T[]>
-  
+
   // Read - Joins/Relations
   abstract findOneWithJoin(filter, joins?): Promise<T | null>
   abstract findAllWithJoin(filter?, joins?): Promise<T[]>
-  
+
   // Update
   abstract updateOne(filter, updated, options?): Promise<UpdatedModel>
   abstract updateMany(filter, updated, options?): Promise<UpdatedModel>
   abstract findOneAndUpdate(filter, updated, options?): Promise<T | null>
-  
+
   // Delete
   abstract remove(filter, options?): Promise<RemovedModel>
 }
@@ -401,13 +390,10 @@ const users = await this.userRepository.findIn({
 Find documents where ANY of the properties matches the value.
 
 ```typescript
-const users = await this.userRepository.findOr(
-  ['email', 'username', 'phone'],
-  'john@example.com'
-)
+const users = await this.userRepository.findOr(['email', 'username', 'phone'], 'john@example.com')
 
-// Finds user where email='john@example.com' 
-// OR username='john@example.com' 
+// Finds user where email='john@example.com'
+// OR username='john@example.com'
 // OR phone='john@example.com'
 ```
 
@@ -444,10 +430,11 @@ Find one document, excluding specific fields from result.
 
 ```typescript
 // Get user without sensitive fields
-const user = await this.userRepository.findOneWithExcludeFields(
-  { id: 'user-123' },
-  ['password', 'refreshToken', 'resetPasswordToken']
-)
+const user = await this.userRepository.findOneWithExcludeFields({ id: 'user-123' }, [
+  'password',
+  'refreshToken',
+  'resetPasswordToken'
+])
 
 // user.password = undefined (not included in result)
 ```
@@ -457,10 +444,7 @@ const user = await this.userRepository.findOneWithExcludeFields(
 Find all documents, excluding specific fields.
 
 ```typescript
-const users = await this.userRepository.findAllWithExcludeFields(
-  ['password', 'internalNotes'],
-  { status: 'active' }
-)
+const users = await this.userRepository.findAllWithExcludeFields(['password', 'internalNotes'], { status: 'active' })
 ```
 
 #### `findOneWithSelectFields(filter, includeFields, options?)`
@@ -469,10 +453,7 @@ Find one document, selecting ONLY specific fields.
 
 ```typescript
 // Get only id and email
-const user = await this.userRepository.findOneWithSelectFields(
-  { id: 'user-123' },
-  ['id', 'email', 'name']
-)
+const user = await this.userRepository.findOneWithSelectFields({ id: 'user-123' }, ['id', 'email', 'name'])
 
 // user = { id: 'user-123', email: '...', name: '...' }
 ```
@@ -482,31 +463,32 @@ const user = await this.userRepository.findOneWithSelectFields(
 To ensure consistent and validated pagination across all repositories, every repository implementation must provide an `applyPagination` method. This method is responsible for handling pagination logic in a database-agnostic way, returning a standardized output regardless of the underlying database.
 
 **Usage:**
+
 - Implement `applyPagination` in every repository (MongoDB, PostgreSQL, etc.), following the interface contract and using `async`.
-- Always use the appropriate decorators (e.g., `@ConvertMongooseFilter`, `@ConvertTypeOrmFilter`, `@ValidateDatabaseSortAllowed`) on your pagination methods to ensure filters and sorting are correctly handled for each database.
-- In the output, always map each document to a new instance of the domain entity (e.g., `new CatEntity(doc).toObject()`). This guarantees validation and standardization of the returned data, regardless of the database.
+- Always use the appropriate decorators (e.g., `@TransformMongooseSearch`, `@TransformTypeOrmSearch`, `@TransformSort`) on your pagination methods to ensure filters and sorting are correctly handled for each database.
+- Pass the domain entity constructor to the generic repository. Every complete read is then hydrated automatically and returned as a domain entity instance.
 
 **Example (MongoDB):**
+
 ```typescript
-@ValidateDatabaseSortAllowed<CatEntity>({ name: 'createdAt' }, { name: 'breed' })
-@ConvertMongooseFilter<CatEntity>([
+@TransformSort<CatEntity>({ name: 'createdAt' }, { name: 'breed' })
+@TransformMongooseSearch<CatEntity>([
   { name: 'name', type: SearchTypeEnum.like },
   { name: 'breed', type: SearchTypeEnum.like },
   { name: 'age', type: SearchTypeEnum.equal, format: 'Number' }
 ])
 async paginate(input: CatListInput): Promise<CatListOutput> {
-  const cats = await this.applyPagination(input)
-  return { ...cats, docs: cats.docs.map((doc) => new CatEntity(doc).toObject()) }
+  return this.applyPagination(input)
 }
 ```
 
 **Example (PostgreSQL/TypeORM):**
+
 ```typescript
-@ConvertTypeOrmFilter<RoleEntity>([{ name: 'name', type: SearchTypeEnum.like }])
-@ValidateDatabaseSortAllowed<RoleEntity>({ name: 'name' }, { name: 'createdAt' })
+@TransformTypeOrmSearch<RoleEntity>([{ name: 'name', type: SearchTypeEnum.like }])
+@TransformSort<RoleEntity>({ name: 'name' }, { name: 'createdAt' })
 async paginate(input: RoleListInput): Promise<RoleListOutput> {
-  const docs = await this.applyPagination(input)
-  return { ...docs, docs: docs.docs.map((doc) => new RoleEntity(doc).toObject()) }
+  return this.applyPagination(input)
 }
 ```
 
@@ -522,6 +504,7 @@ Checks if any record exists matching the filter.
 Returns only `true` or `false`, never throws.
 
 **Example:**
+
 ```typescript
 const exists = await userRepository.exists({ email: 'test@email.com' })
 if (exists) {
@@ -535,6 +518,7 @@ Checks if any other record exists matching the filter, ignoring the given id.
 Useful for uniqueness validation on update (e.g., avoid duplicate emails).
 
 **Example:**
+
 ```typescript
 const exists = await userRepository.existsOnUpdate({ email: 'test@email.com' }, userId)
 if (exists) {
@@ -543,10 +527,10 @@ if (exists) {
 ```
 
 **Implementation Notes:**
+
 - Both methods are available for MongoDB and PostgreSQL repositories.
 - Always return a boolean, never throw errors.
 - `existsOnUpdate` ignores the current record by id, ideal for update scenarios.
-
 
 #### `findAllWithSelectFields(includeFields, filter?, options?)`
 
@@ -554,10 +538,7 @@ Find all documents, selecting ONLY specific fields.
 
 ```typescript
 // Lightweight list for dropdown
-const users = await this.userRepository.findAllWithSelectFields(
-  ['id', 'name'],
-  { status: 'active' }
-)
+const users = await this.userRepository.findAllWithSelectFields(['id', 'name'], { status: 'active' })
 ```
 
 ### Read Operations - Joins/Relations
@@ -568,10 +549,7 @@ Find one document with related entities populated.
 
 ```typescript
 // Define which relations to load
-const user = await this.userRepository.findOneWithJoin(
-  { id: 'user-123' },
-  { roles: true, permissions: true }
-)
+const user = await this.userRepository.findOneWithJoin({ id: 'user-123' }, { roles: true, permissions: true })
 
 // user.roles = [RoleEntity, RoleEntity, ...]
 // user.permissions = [PermissionEntity, ...]
@@ -582,10 +560,7 @@ const user = await this.userRepository.findOneWithJoin(
 Find all documents with relations.
 
 ```typescript
-const users = await this.userRepository.findAllWithJoin(
-  { status: 'active' },
-  { roles: true }
-)
+const users = await this.userRepository.findAllWithJoin({ status: 'active' }, { roles: true })
 ```
 
 ### Update Operations
@@ -595,10 +570,7 @@ const users = await this.userRepository.findAllWithJoin(
 Update single document matching filter.
 
 ```typescript
-const result = await this.userRepository.updateOne(
-  { id: 'user-123' },
-  { status: 'inactive', updatedAt: new Date() }
-)
+const result = await this.userRepository.updateOne({ id: 'user-123' }, { status: 'inactive', updatedAt: new Date() })
 
 // result: { matchedCount: 1, modifiedCount: 1, acknowledged: true, ... }
 ```
@@ -621,10 +593,7 @@ const result = await this.userRepository.updateMany(
 Update and return the updated document.
 
 ```typescript
-const user = await this.userRepository.findOneAndUpdate(
-  { id: 'user-123' },
-  { lastLoginAt: new Date() }
-)
+const user = await this.userRepository.findOneAndUpdate({ id: 'user-123' }, { lastLoginAt: new Date() })
 
 // user = updated UserEntity (with new lastLoginAt)
 ```
@@ -643,12 +612,12 @@ const result = await this.userRepository.remove({ id: 'user-123' })
 
 ## Return Types
 
-| Type | Fields | Description |
-|------|--------|-------------|
-| `CreatedModel` | `id`, `created` | Result of create operation |
-| `CreatedOrUpdateModel` | `id`, `created`, `updated` | Result of upsert operation |
-| `UpdatedModel` | `matchedCount`, `modifiedCount`, `acknowledged`, `upsertedId`, `upsertedCount` | Result of update operation |
-| `RemovedModel` | `deletedCount`, `deleted` | Result of delete operation |
+| Type                   | Fields                                                                         | Description                |
+| ---------------------- | ------------------------------------------------------------------------------ | -------------------------- |
+| `CreatedModel`         | `id`, `created`                                                                | Result of create operation |
+| `CreatedOrUpdateModel` | `id`, `created`, `updated`                                                     | Result of upsert operation |
+| `UpdatedModel`         | `matchedCount`, `modifiedCount`, `acknowledged`, `upsertedId`, `upsertedCount` | Result of update operation |
+| `RemovedModel`         | `deletedCount`, `deleted`                                                      | Result of delete operation |
 
 ## DatabaseOperationCommand
 
@@ -669,7 +638,6 @@ enum DatabaseOperationEnum {
 }
 ```
 
-
 ## Transaction Operations
 
 ### `runInTransaction(fn)`
@@ -677,34 +645,57 @@ enum DatabaseOperationEnum {
 Executes multiple operations in a single transaction. The callback receives the transaction context (session for MongoDB, manager for TypeORM).
 
 #### MongoDB Example
+
 ```typescript
 await this.userRepository.runInTransaction(async (session) => {
-  await this.userRepository.create({
-    id: IdGeneratorUtils.uuid(),
-    name: 'John Doe',
-    email: 'john@example.com'
-  }, { session });
-  await this.userRepository.updateOne(
-    { id: 'user-123' },
-    { status: 'active' },
+  await this.userRepository.create(
+    {
+      id: IdGeneratorUtils.uuid(),
+      name: 'John Doe',
+      email: 'john@example.com'
+    },
     { session }
-  );
+  )
+  await this.userRepository.updateOne({ id: 'user-123' }, { status: 'active' }, { session })
   // ...other operations
-});
+})
 ```
 
 #### TypeORM Example
+
 ```typescript
 await this.userRepository.runInTransaction(async (manager) => {
   await manager.save(UserEntity, {
     id: IdGeneratorUtils.uuid(),
     name: 'John Doe',
     email: 'john@example.com'
-  });
-  await manager.update(UserEntity, { id: 'user-123' }, { status: 'active' });
+  })
+  await manager.update(UserEntity, { id: 'user-123' }, { status: 'active' })
   // ...other operations
-});
+})
 ```
+
+### PostgreSQL query timeout example
+
+PostgreSQL timeout configuration is session-scoped, unlike MongoDB's
+per-command `maxTimeMS`. Do not add a timeout method to `IRepository` unless
+both database implementations can provide the same guarantee.
+
+[`UserRepository`](../../src/modules/user/repository.ts) contains an optional
+example that can be adapted by a PostgreSQL repository that needs a
+server-enforced timeout:
+
+```typescript
+await this.userRepository.withDeadline(800, async (repository) => {
+  return repository.findById(userId)
+})
+```
+
+It creates a short transaction on one `QueryRunner` connection, applies
+`SET LOCAL statement_timeout`, and invokes the concrete repository bound to
+that connection. The timeout applies to each SQL statement in the callback and
+does not leak to the connection pool. Keep it specific to the repository and
+operation that need the protection.
 
 ## Automatic Soft Delete Handling
 
@@ -738,7 +729,7 @@ db.users.findOne({ _id: 'user-123' })
 The MongoRepository uses decorators for automatic filter conversion:
 
 ```typescript
-@ConvertMongoFilterToBaseRepository()
+@NormalizeMongoFilter()
 async find(filter, options): Promise<T[]> {
   // Filter is automatically converted from { id: '123' } to { _id: '123' }
   // deletedAt: null is automatically added
@@ -747,7 +738,7 @@ async find(filter, options): Promise<T[]> {
 
 ## Related
 
-- [@ConvertMongoFilterToBaseRepository](../decorators/convert-mongoose-filter.md) — Auto filter conversion
-- [@ConvertTypeORMFilterToBaseRepository](../decorators/convert-typeorm-filter.md) — TypeORM filter conversion
+- [@NormalizeMongoFilter](../decorators/convert-mongoose-filter.md) — Auto filter conversion
+- [@TransformTypeOrmSearch](../decorators/convert-typeorm-filter.md) — TypeORM search conversion in module repositories
 - [Entity](../utils/entity.md) — Base entity interface
 - [Pagination](../utils/pagination.md) — Pagination utilities

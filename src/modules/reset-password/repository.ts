@@ -12,16 +12,20 @@ import { DateUtils } from '@/utils/date'
 import { ResetPasswordSchema } from '../../infra/database/postgres/schemas/reset-password'
 
 @Injectable()
-export class ResetPasswordRepository extends TypeORMRepository<Model> implements IResetPasswordRepository {
+export class ResetPasswordRepository
+  extends TypeORMRepository<Model, ResetPasswordEntity>
+  implements IResetPasswordRepository
+{
   constructor(readonly repository: Repository<Model>) {
-    super(repository)
+    super(repository, ResetPasswordEntity)
   }
 
-  async findByIdUserId(id: string): Promise<ResetPasswordEntity> {
+  async findByIdUserId(id: string): Promise<ResetPasswordEntity | null> {
     const date = DateUtils.asLuxonDate().minus(1800000).toJSDate()
-    return (await this.repository.findOne({
+    const model = await this.repository.findOne({
       where: { user: { id }, createdAt: MoreThan(date) } as FindOptionsWhere<unknown>
-    })) as Model
+    })
+    return model ? this.hydrate(model as Model) : null
   }
 }
 

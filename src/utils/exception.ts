@@ -32,10 +32,12 @@ export class BaseException extends HttpException {
       Error.captureStackTrace(this, this.constructor)
     }
 
-    if (metadata?.cause) {
-      const originalStack = metadata.cause instanceof Error ? metadata.cause.stack : String(metadata.cause)
+    if (metadata && 'cause' in metadata) {
+      if (metadata.cause) {
+        const originalStack = metadata.cause instanceof Error ? metadata.cause.stack : String(metadata.cause)
 
-      this.stack = originalStack ?? this.stack
+        this.stack = originalStack ?? this.stack
+      }
       this.cause = metadata.cause
     }
 

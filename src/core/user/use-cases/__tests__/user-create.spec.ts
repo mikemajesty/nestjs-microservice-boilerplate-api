@@ -15,7 +15,7 @@ import { MockUtils, TestUtils } from '@/utils/test'
 import { ZodExceptionIssue } from '@/utils/validator'
 
 import { UserEntity, UserEntitySchema } from '../../entity/user'
-import { UserPasswordEntitySchema } from '../../entity/user-password'
+import { UserPasswordEntity, UserPasswordEntitySchema } from '../../entity/user-password'
 import { IUserRepository } from '../../repository/user'
 import { UserCreateInput, UserCreateSchema, UserCreateUsecase } from '../user-create'
 
@@ -89,30 +89,33 @@ describe(UserCreateUsecase.name, () => {
   })
 
   const roleMock = new ZodMockSchema(RoleEntitySchema)
-  const roles = roleMock.generateMany<RoleEntity>(2, {
+  const roles = roleMock.generateMany(2, {
     overrides: {
       permissions: []
-    }
+    },
+    factory: (data) => new RoleEntity(data)
   })
 
   const userPasswordMock = new ZodMockSchema(UserPasswordEntitySchema)
   const password = userPasswordMock.generate({
     overrides: {
       password: `8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918`
-    }
+    },
+    factory: (data) => new UserPasswordEntity(data)
   })
 
   const userMock = new ZodMockSchema(UserEntitySchema)
-  const user = userMock.generate<UserEntity>({
+  const user = userMock.generate({
     overrides: {
       roles,
       password
-    }
+    },
+    factory: (data) => new UserEntity(data)
   })
 
   test('when user already exists, should expect an error', async () => {
     roleRepository.findIn = TestUtils.mockResolvedValue<RoleEntity[]>(roles)
-    repository.findOne = TestUtils.mockResolvedValue<UserEntity>(user)
+    repository.findOne = TestUtils.mockResolvedValue<UserEntity>(user.clone())
 
     await expect(usecase.execute(input, MockUtils.Tracing())).rejects.toThrow(ApiConflictException)
   })

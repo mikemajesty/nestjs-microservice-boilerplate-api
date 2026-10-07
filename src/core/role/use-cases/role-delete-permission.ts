@@ -9,7 +9,7 @@ import { Namespaces } from '@/utils/namespaces'
 import { IUsecase } from '@/utils/usecase'
 import { InputValidator, SchemaInfer } from '@/utils/validator'
 
-import { RoleEntity, RoleEntitySchema } from '../entity/role'
+import { RoleEntitySchema } from '../entity/role'
 import { IRoleRepository } from '../repository/role'
 
 export const RoleDeletePermissionSchema = RoleEntitySchema.pick({
@@ -31,8 +31,6 @@ export class RoleDeletePermissionUsecase implements IUsecase {
       throw new ApiNotFoundException('roleNotFound')
     }
 
-    const entity = new RoleEntity(role)
-
     const permissions = await this.permissionRepository.findIn({ name: input.permissions })
 
     for (const permission of input.permissions) {
@@ -40,11 +38,11 @@ export class RoleDeletePermissionUsecase implements IUsecase {
       if (!permissionExists) {
         continue
       }
-      entity.removePermissionByName(permission)
+      role.removePermissionByName(permission)
     }
 
-    await this.roleRepository.create(entity.toObject())
-    await this.cacheAside.invalidate(Namespaces.roleById(entity.id))
+    await this.roleRepository.create(role.toData())
+    await this.cacheAside.invalidate(Namespaces.roleById(role.id))
   }
 }
 

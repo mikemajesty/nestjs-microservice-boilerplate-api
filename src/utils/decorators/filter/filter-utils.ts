@@ -1,6 +1,5 @@
 import { Types } from 'mongoose'
 
-import { DateUtils } from '@/utils/date'
 import { ApiBadRequestException } from '@/utils/exception'
 import { MongoUtils } from '@/utils/mongoose'
 
@@ -11,12 +10,17 @@ export const convertFilterValue = (input: Pick<AllowedFilter<unknown>, 'format'>
     return `${input.value}`
   }
 
-  if (input.format === 'Date') {
-    return DateUtils.build<Date>({ date: `${input.value}`, type: 'js' })
-  }
+  if (input.format === 'Date' || input.format === 'DateIso') {
+    if (!(input.value instanceof Date) && (typeof input.value !== 'string' || !input.value.trim())) {
+      throw new ApiBadRequestException('invalid date filter')
+    }
 
-  if (input.format === 'DateIso') {
-    return DateUtils.build<string>({ date: `${input.value}`, type: 'iso' })
+    const date = new Date(input.value instanceof Date ? input.value.getTime() : input.value)
+    if (!Number.isFinite(date.getTime())) {
+      throw new ApiBadRequestException('invalid date filter')
+    }
+
+    return input.format === 'DateIso' ? date.toISOString() : date
   }
 
   if (input.format === 'Boolean') {
@@ -31,11 +35,18 @@ export const convertFilterValue = (input: Pick<AllowedFilter<unknown>, 'format'>
   }
 
   if (input.format === 'Number') {
-    const notNumber = Number.isNaN(input.value)
-    if (notNumber) {
+    if (
+      (typeof input.value !== 'number' && typeof input.value !== 'string') ||
+      (typeof input.value === 'string' && !input.value.trim())
+    ) {
       throw new ApiBadRequestException('invalid number filter')
     }
-    return Number(input.value)
+
+    const number = Number(input.value)
+    if (!Number.isFinite(number)) {
+      throw new ApiBadRequestException('invalid number filter')
+    }
+    return number
   }
 
   if (input.format === 'ObjectId') {
@@ -44,7 +55,7 @@ export const convertFilterValue = (input: Pick<AllowedFilter<unknown>, 'format'>
     if (!isObjectId) {
       throw new ApiBadRequestException('invalid objectId filter')
     }
-    return new Types.ObjectId(`${input.value} `)
+    return new Types.ObjectId(`${input.value}`)
   }
 
   return input.value

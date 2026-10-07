@@ -11,7 +11,7 @@ import { MockUtils } from '@/utils/test'
 import { TestUtils } from '@/utils/test/utils'
 import { ZodExceptionIssue } from '@/utils/validator'
 
-import { CatEntitySchema } from '../../entity/cat'
+import { CatEntity, CatEntitySchema } from '../../entity/cat'
 import { ICatRepository } from '../../repository/cat'
 import { CatCreateInput, CatCreateUsecase } from '../cat-create'
 
@@ -61,7 +61,7 @@ describe(CatCreateUsecase.name, () => {
   })
 
   const mock = new ZodMockSchema(CatEntitySchema)
-  const input = mock.generate()
+  const input = mock.generate({ factory: (data) => new CatEntity(data) })
 
   test('when cat created successfully, should expect a cat created', async () => {
     repository.create = TestUtils.mockResolvedValue<CreatedModel>(input)

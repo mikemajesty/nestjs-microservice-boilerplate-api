@@ -50,10 +50,11 @@ describe(RoleListUsecase.name, () => {
 
   const input = new ZodMockSchema(RoleListSchema).generate()
   const roleEntityMock = new ZodMockSchema(RoleEntitySchema)
-  const roles: RoleEntity[] = roleEntityMock.generateMany<RoleEntity>(10, {
+  const roles: RoleEntity[] = roleEntityMock.generateMany(10, {
     overrides: {
       permissions: []
-    }
+    },
+    factory: (data) => new RoleEntity(data)
   })
   test('when roles are found, should expect a role list', async () => {
     const output: RoleListOutput = { docs: roles, page: 1, limit: 1, total: 1, totalPages: 1 }

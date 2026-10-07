@@ -62,14 +62,15 @@ describe(PermissionCreateUsecase.name, () => {
   })
 
   const mock = new ZodMockSchema(PermissionEntitySchema)
-  const output = mock.generate<PermissionEntity>({
+  const output = mock.generate({
     overrides: {
       name: 'create:permission'
-    }
+    },
+    factory: (data) => new PermissionEntity(data)
   })
 
   test('when permission exists, should expect an error', async () => {
-    repository.findOne = TestUtils.mockResolvedValue<PermissionEntity>(output)
+    repository.findOne = TestUtils.mockResolvedValue<PermissionEntity>(output.clone())
 
     await expect(usecase.execute(input)).rejects.toThrow(ApiConflictException)
   })

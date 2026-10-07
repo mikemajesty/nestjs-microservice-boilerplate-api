@@ -4,7 +4,7 @@
 import { IEntity } from '@/utils/entity'
 import { FilterQuery } from '@/utils/mongoose'
 
-export function ConvertMongoFilterToBaseRepository() {
+export function NormalizeMongoFilter() {
   return (target: unknown, propertyKey: string, descriptor: PropertyDescriptor) => {
     const originalMethod = descriptor.value
 

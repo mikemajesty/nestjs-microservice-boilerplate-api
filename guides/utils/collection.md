@@ -48,13 +48,13 @@ export class SalesReportService {
   async generateSalesReport(salesData: SalesEntity[]): Promise<SalesReportOutput> {
     // Group sales by month using centralized logic
     const salesByMonth = CollectionUtil.groupBy(
-      salesData.map(sale => sale.toObject()),
+      salesData.map(sale => sale.toData()),
       'month'
     )
 
     // Calculate totals using centralized math operations
     const totalRevenue = CollectionUtil.sumBy(
-      salesData.map(sale => sale.toObject()),
+      salesData.map(sale => sale.toData()),
       'amount'
     )
 
@@ -83,7 +83,7 @@ export class SalesReportService {
 ```typescript
 export class UserAnalyticsService {
   async analyzeUserBehavior(users: UserEntity[]): Promise<UserAnalyticsOutput> {
-    const userData = users.map(user => user.toObject())
+    const userData = users.map(user => user.toData())
 
     // Group users by registration month for growth analysis
     const usersByMonth = CollectionUtil.groupBy(userData, 'registrationMonth')
@@ -171,7 +171,7 @@ export class EmailBatchService {
 ```typescript
 export class InventoryService {
   async analyzeInventoryLevels(products: ProductEntity[]): Promise<InventoryAnalysisOutput> {
-    const productData = products.map(product => product.toObject())
+    const productData = products.map(product => product.toData())
 
     // Group products by category for category-level analysis
     const productsByCategory = CollectionUtil.groupBy(productData, 'category')
@@ -223,7 +223,7 @@ export class InventoryService {
 ```typescript
 export class OrderAnalyticsService {
   async processOrderMetrics(orders: OrderEntity[]): Promise<OrderMetricsOutput> {
-    const orderData = orders.map(order => order.toObject())
+    const orderData = orders.map(order => order.toData())
 
     // Group orders by status for pipeline analysis
     const ordersByStatus = CollectionUtil.groupBy(orderData, 'status')

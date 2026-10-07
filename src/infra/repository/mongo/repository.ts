@@ -15,31 +15,39 @@ import {
 } from 'mongoose'
 
 import { DateUtils } from '@/utils/date'
-import { ConvertMongoFilterToBaseRepository } from '@/utils/decorators'
+import { NormalizeMongoFilter } from '@/utils/decorators'
 import { IEntity } from '@/utils/entity'
 import { ApiBadRequestException } from '@/utils/exception'
 import { FilterQuery, MongoRepositoryModelSessionType } from '@/utils/mongoose'
 import { PaginationInput, PaginationOutput, PaginationUtils } from '@/utils/pagination'
-import { MakePartial } from '@/utils/types'
 
 import { IRepository } from '../adapter'
 import {
   CreatedModel,
   CreatedOrUpdateModel,
   DatabaseOperationCommand,
+  EntityConstructor,
+  FilterQueryFilter,
   JoinType,
+  MakePartialFilter,
   RemovedModel,
   UpdatedModel
 } from '../types'
 import { handleDatabaseError, validateFindByCommandsFilter } from '../util'
 
-export class MongoRepository<T extends Document = Document> implements IRepository<T> {
+export class MongoRepository<
+  TModel extends Document = Document,
+  TEntity extends IEntity = TModel & IEntity
+> implements IRepository<TEntity> {
   private readonly context: string = MongoRepository.name
 
-  private paginateModel: MongoRepositoryModelSessionType<PaginateModel<T>>
+  private paginateModel: MongoRepositoryModelSessionType<PaginateModel<TModel>>
 
-  constructor(private readonly model: Model<T>) {
-    this.paginateModel = this.model as MongoRepositoryModelSessionType<PaginateModel<T>>
+  constructor(
+    private readonly model: MongoRepositoryModelSessionType<PaginateModel<TModel>>,
+    private readonly Entity: EntityConstructor<TEntity>
+  ) {
+    this.paginateModel = this.model as MongoRepositoryModelSessionType<PaginateModel<TModel>>
   }
 
   async runInTransaction<R>(fn: (session: ClientSession) => Promise<R>): Promise<R> {
@@ -58,16 +66,17 @@ export class MongoRepository<T extends Document = Document> implements IReposito
     }
   }
 
-  async applyPagination<R>(input: PaginationInput<R>, joins?: JoinType<T>): Promise<PaginationOutput<T>> {
+  async applyPagination<R>(input: PaginationInput<R>, joins?: JoinType<TEntity>): Promise<PaginationOutput<TEntity>> {
     const populatePaths = this.getPopulatePaths(joins)
     const cats = await this.paginateModel.paginate(input.search as FilterQuery<R>, {
       page: input.page,
       limit: input.limit,
       sort: input.sort as object,
-      populate: populatePaths
+      populate: populatePaths,
+      options: {}
     })
     return {
-      docs: cats.docs.map((u) => this.toObject(u)),
+      docs: this.hydrateAll(cats.docs),
       limit: input.limit,
       page: input.page,
       total: cats.totalDocs,
@@ -75,7 +84,7 @@ export class MongoRepository<T extends Document = Document> implements IReposito
     }
   }
 
-  async insertMany<TOptions>(documents: T[], saveOptions?: TOptions): Promise<void> {
+  async insertMany<TOptions>(documents: TEntity[], saveOptions?: TOptions): Promise<void> {
     try {
       await this.model.insertMany(documents, saveOptions as InsertManyOptions)
     } catch (error) {
@@ -83,11 +92,11 @@ export class MongoRepository<T extends Document = Document> implements IReposito
     }
   }
 
-  async create<TOptions>(document: T, saveOptions?: TOptions): Promise<CreatedModel> {
+  async create<TOptions>(document: TEntity, saveOptions?: TOptions): Promise<CreatedModel> {
     try {
       const createdEntity = new this.model({
         ...document,
-        _id: document._id || (document as { id?: string })?.['id']
+        _id: (document as { _id?: string })._id || document.id
       })
       const savedResult = await createdEntity.save(saveOptions as SaveOptions)
       return { id: savedResult._id.toString(), created: !!savedResult._id }
@@ -96,7 +105,7 @@ export class MongoRepository<T extends Document = Document> implements IReposito
     }
   }
 
-  async createOrUpdate<TDoc = UpdateWithAggregationPipeline | UpdateQuery<T>>(
+  async createOrUpdate<TDoc = UpdateWithAggregationPipeline | UpdateQuery<TEntity>>(
     document: TDoc,
     options?: unknown
   ): Promise<CreatedOrUpdateModel> {
@@ -116,7 +125,7 @@ export class MongoRepository<T extends Document = Document> implements IReposito
 
       await this.model.updateOne(
         { _id: doc['id'] },
-        { $set: document as unknown as T },
+        { $set: document as unknown as TModel },
         options as MongooseUpdateQueryOptions<IEntity>
       )
 
@@ -126,71 +135,94 @@ export class MongoRepository<T extends Document = Document> implements IReposito
     }
   }
 
-  @ConvertMongoFilterToBaseRepository()
-  async find<TFil = FilterQuery<T>, TOptions = FilterQuery<IEntity>>(filter: TFil, options?: TOptions): Promise<T[]> {
+  @NormalizeMongoFilter()
+  async find<TFil = FilterQueryFilter<TEntity>, TOptions = FilterQuery<IEntity>>(
+    filter: TFil,
+    options?: TOptions
+  ): Promise<TEntity[]> {
     try {
-      const defaultOptions = { ...options }
-      const results = await this.model.find(filter as FilterQuery<T>, undefined, defaultOptions as FilterQuery<IEntity>)
-      return results.map((d) => this.toObject(d))
+      const defaultOptions = options
+      const results = await this.model.find(
+        filter as FilterQuery<TModel>,
+        undefined,
+        defaultOptions as FilterQuery<IEntity>
+      )
+      return this.hydrateAll(results)
     } catch (error) {
       throw handleDatabaseError({ error, context: `${this.context}.find` })
     }
   }
 
-  async findById(id: string | number): Promise<T | null> {
+  async findById(id: string | number): Promise<TEntity | null> {
     try {
       const model = await this.model.findById(id)
-      return model ? this.toObject(model) : null
+      return model ? this.hydrate(model) : null
     } catch (error) {
       throw handleDatabaseError({ error, context: `${this.context}.findById` })
     }
   }
 
-  @ConvertMongoFilterToBaseRepository()
-  async findOne<TFil = FilterQuery<T>, TQue = FilterQuery<IEntity>>(filter: TFil, options?: TQue): Promise<T | null> {
+  @NormalizeMongoFilter()
+  async findOne<TFil = FilterQueryFilter<TEntity>, TQue = FilterQuery<IEntity>>(
+    filter: TFil,
+    options?: TQue
+  ): Promise<TEntity | null> {
     try {
-      const defaultOptions = { ...options }
-      const data = await this.model.findOne(filter as FilterQuery<T>, undefined, defaultOptions as FilterQuery<IEntity>)
-      return data ? this.toObject(data) : null
+      const defaultOptions = options
+      const data = await this.model.findOne(
+        filter as FilterQuery<TModel>,
+        undefined,
+        defaultOptions as FilterQuery<IEntity>
+      )
+      return data ? this.hydrate(data) : null
     } catch (error) {
       throw handleDatabaseError({ error, context: `${this.context}.findOne` })
     }
   }
 
-  @ConvertMongoFilterToBaseRepository()
-  async findAll<TFil = FilterQuery<T>, TOpt = FilterQuery<IEntity>>(filter?: TFil, options?: TOpt): Promise<T[]> {
+  @NormalizeMongoFilter()
+  async findAll<TFil = FilterQueryFilter<TEntity>, TOpt = FilterQuery<IEntity>>(
+    filter?: TFil,
+    options?: TOpt
+  ): Promise<TEntity[]> {
     try {
-      const defaultOptions = { ...options }
+      const defaultOptions = options
       const modelList = await this.model.find(
-        filter as FilterQuery<T>,
+        filter as FilterQuery<TModel>,
         undefined,
         defaultOptions as FilterQuery<IEntity>
       )
-      return modelList.map((d) => this.toObject(d))
+      return this.hydrateAll(modelList)
     } catch (error) {
       throw handleDatabaseError({ error, context: `${this.context}.findAll` })
     }
   }
 
-  @ConvertMongoFilterToBaseRepository()
-  async remove<TQuery = FilterQuery<T>, TOpt = unknown>(filter: TQuery, options?: TOpt): Promise<RemovedModel> {
+  @NormalizeMongoFilter()
+  async remove<TQuery = FilterQueryFilter<TEntity>, TOpt = unknown>(
+    filter: TQuery,
+    options?: TOpt
+  ): Promise<RemovedModel> {
     try {
-      const { deletedCount } = await this.model.deleteOne(filter as FilterQuery<T>, options || {})
+      const { deletedCount } = await this.model.deleteOne(
+        filter as FilterQuery<TModel>,
+        options as Parameters<Model<TModel>['deleteOne']>[1]
+      )
       return { deletedCount: deletedCount || 0, deleted: !!deletedCount }
     } catch (error) {
       throw handleDatabaseError({ error, context: `${this.context}.remove` })
     }
   }
 
-  @ConvertMongoFilterToBaseRepository()
+  @NormalizeMongoFilter()
   async updateOne<
-    TQuery = FilterQuery<T>,
-    TUpdate = UpdateWithAggregationPipeline | UpdateQuery<T>,
+    TQuery = FilterQueryFilter<TEntity>,
+    TUpdate = UpdateWithAggregationPipeline | UpdateQuery<TEntity>,
     TOptions = MongooseUpdateQueryOptions
   >(filter: TQuery, updated: TUpdate, options?: TOptions): Promise<UpdatedModel> {
     try {
       return await this.model.updateOne(
-        filter as FilterQuery<T>,
+        filter as FilterQuery<TModel>,
         { $set: Object.assign({}, updated) },
         options as MongooseUpdateQueryOptions
       )
@@ -199,37 +231,39 @@ export class MongoRepository<T extends Document = Document> implements IReposito
     }
   }
 
-  @ConvertMongoFilterToBaseRepository()
-  async findOneAndUpdate<TQuery = FilterQuery<T>, TUpdate = UpdateWithAggregationPipeline | UpdateQuery<T>>(
-    filter: TQuery,
-    updated: TUpdate,
-    options: unknown = {}
-  ): Promise<T | null> {
+  @NormalizeMongoFilter()
+  async findOneAndUpdate<
+    TQuery = FilterQueryFilter<TEntity>,
+    TUpdate = UpdateWithAggregationPipeline | UpdateQuery<TEntity>
+  >(filter: TQuery, updated: TUpdate, options: unknown = {}): Promise<TEntity | null> {
     try {
-      const updateOptions = { ...(options as FilterQuery<IEntity>), returnDocument: 'after' as const } as QueryOptions
+      const updateOptions = {
+        ...(options as FilterQuery<IEntity>),
+        returnDocument: 'after' as const
+      } as QueryOptions
 
       const model = await this.model.findOneAndUpdate(
-        filter as FilterQuery<T>,
-        { $set: updated as UpdateWithAggregationPipeline | UpdateQuery<T> },
+        filter as FilterQuery<TModel>,
+        { $set: updated as UpdateWithAggregationPipeline | UpdateQuery<TModel> },
         updateOptions
       )
 
-      return model ? this.toObject(model) : null
+      return model ? this.hydrate(model) : null
     } catch (error) {
       throw handleDatabaseError({ error, context: `${this.context}.findOneAndUpdate` })
     }
   }
 
-  @ConvertMongoFilterToBaseRepository()
+  @NormalizeMongoFilter()
   async updateMany<
-    TQuery = FilterQuery<T>,
-    TUpdate = UpdateWithAggregationPipeline | UpdateQuery<T>,
+    TQuery = FilterQueryFilter<TEntity>,
+    TUpdate = UpdateWithAggregationPipeline | UpdateQuery<TEntity>,
     TOptions = MongooseUpdateQueryOptions
   >(filter: TQuery, updated: TUpdate, options?: TOptions): Promise<UpdatedModel> {
     try {
       return await this.model.updateMany(
-        filter as FilterQuery<T>,
-        { $set: updated as UpdateWithAggregationPipeline | UpdateQuery<T> },
+        filter as FilterQuery<TModel>,
+        { $set: updated as UpdateWithAggregationPipeline | UpdateQuery<TModel> },
         options as MongooseUpdateQueryOptions
       )
     } catch (error) {
@@ -238,9 +272,9 @@ export class MongoRepository<T extends Document = Document> implements IReposito
   }
 
   async findIn<TOptions = FilterQuery<IEntity>>(
-    input: { [key in keyof T]: string[] },
+    input: { [key in keyof TEntity]: string[] },
     options?: TOptions
-  ): Promise<T[]> {
+  ): Promise<TEntity[]> {
     try {
       const where: FilterQuery<IEntity> = {
         deletedAt: null
@@ -250,150 +284,153 @@ export class MongoRepository<T extends Document = Document> implements IReposito
         where[key === 'id' ? '_id' : key] = { $in: (input as { [key: string]: unknown })[`${key}`] }
       }
 
-      const defaultOptions = { ...options }
+      const defaultOptions = options
       const data = await this.model.find(where, undefined, defaultOptions as FilterQuery<IEntity>)
-      return data.map((d) => this.toObject(d))
+      return this.hydrateAll(data)
     } catch (error) {
       throw handleDatabaseError({ error, context: `${this.context}.findIn` })
     }
   }
 
   async findOr<TOptions = FilterQuery<IEntity>>(
-    propertyList: (keyof T)[],
+    propertyList: (keyof TEntity)[],
     value: string,
     options?: TOptions
-  ): Promise<T[]> {
+  ): Promise<TEntity[]> {
     try {
       const filter = propertyList.map((key) => {
         return { [key === 'id' ? '_id' : key]: value }
       })
 
-      const defaultOptions = { ...options }
+      const defaultOptions = options
       const data = await this.model.find(
-        { $or: filter as FilterQuery<T>[], deletedAt: null } as FilterQuery<IEntity>,
+        { $or: filter as FilterQuery<TModel>[], deletedAt: null } as FilterQuery<IEntity>,
         undefined,
         defaultOptions as FilterQuery<IEntity>
       )
-      return data.map((d) => this.toObject(d))
+      return this.hydrateAll(data)
     } catch (error) {
       throw handleDatabaseError({ error, context: `${this.context}.findOr` })
     }
   }
 
   async findOneByCommands<TOptions = FilterQuery<IEntity>>(
-    filterList: DatabaseOperationCommand<T>[],
+    filterList: DatabaseOperationCommand<TEntity>[],
     options?: TOptions
-  ): Promise<T | null> {
+  ): Promise<TEntity | null> {
     try {
       const searchList = this.buildCommandFilter(filterList)
-      const defaultOptions = { ...options }
+      const defaultOptions = options
       const data = await this.model.findOne(searchList, undefined, defaultOptions as FilterQuery<IEntity>)
-      return data ? this.toObject(data) : null
+      return data ? this.hydrate(data) : null
     } catch (error) {
       throw handleDatabaseError({ error, context: `${this.context}.findOneByCommands` })
     }
   }
 
   async findByCommands<TOptions = FilterQuery<IEntity>>(
-    filterList: DatabaseOperationCommand<T>[],
+    filterList: DatabaseOperationCommand<TEntity>[],
     options?: TOptions
-  ): Promise<T[]> {
+  ): Promise<TEntity[]> {
     try {
       const searchList = this.buildCommandFilter(filterList)
-      const defaultOptions = { ...options }
+      const defaultOptions = options
       const data = await this.model.find(searchList, undefined, defaultOptions as FilterQuery<IEntity>)
-      return data.map((d) => this.toObject(d))
+      return this.hydrateAll(data)
     } catch (error) {
       throw handleDatabaseError({ error, context: `${this.context}.findByCommands` })
     }
   }
 
-  @ConvertMongoFilterToBaseRepository()
-  async findOneWithExcludeFields<TQuery = FilterQuery<T>, TOptions = FilterQuery<IEntity>>(
+  @NormalizeMongoFilter()
+  async findOneWithExcludeFields<TQuery = FilterQueryFilter<TEntity>, TOptions = FilterQuery<IEntity>>(
     filter: TQuery,
-    excludeProperties: Array<keyof T>,
+    excludeProperties: Array<keyof TEntity>,
     options?: TOptions
-  ): Promise<T | null> {
+  ): Promise<TEntity | null> {
     try {
       const exclude = excludeProperties.map((e) => `-${e.toString()}`)
-      const defaultOptions = { ...options }
+      const defaultOptions = options
 
       const data = await this.model
-        .findOne(filter as FilterQuery<T>, undefined, defaultOptions as FilterQuery<IEntity>)
+        .findOne(filter as FilterQuery<TModel>, undefined, defaultOptions as FilterQuery<IEntity>)
         .select(exclude.join(' '))
 
-      return data ? this.toObject(data) : null
+      return data ? this.hydrate(data) : null
     } catch (error) {
       throw handleDatabaseError({ error, context: `${this.context}.findOneWithExcludeFields` })
     }
   }
 
-  async findAllWithExcludeFields<TQuery = FilterQuery<T>, TOptions = FilterQuery<IEntity>>(
-    excludeProperties: Array<keyof T>,
+  async findAllWithExcludeFields<TQuery = FilterQueryFilter<TEntity>, TOptions = FilterQuery<IEntity>>(
+    excludeProperties: Array<keyof TEntity>,
     filter?: TQuery,
     options?: TOptions
-  ): Promise<T[]> {
+  ): Promise<TEntity[]> {
     try {
       const exclude = excludeProperties.map((e) => `-${e.toString()}`)
-      const processedFilter = this.applyFilterWhenFilterParameterIsNotFirstOption(filter as FilterQuery<T>)
-      const defaultOptions = { ...options }
+      const processedFilter = this.applyFilterWhenFilterParameterIsNotFirstOption(filter as FilterQuery<TModel>)
+      const defaultOptions = options
 
       const data = await this.model
         .find(processedFilter, undefined, defaultOptions as FilterQuery<IEntity>)
         .select(exclude.join(' '))
 
-      return data.map((d) => this.toObject(d))
+      return this.hydrateAll(data)
     } catch (error) {
       throw handleDatabaseError({ error, context: `${this.context}.findAllWithExcludeFields` })
     }
   }
 
-  @ConvertMongoFilterToBaseRepository()
-  async findOneWithSelectFields<TQuery = FilterQuery<T>, TOptions = FilterQuery<IEntity>>(
+  @NormalizeMongoFilter()
+  async findOneWithSelectFields<TQuery = FilterQueryFilter<TEntity>, TOptions = FilterQuery<IEntity>>(
     filter: TQuery,
-    includeProperties: Array<keyof T>,
+    includeProperties: Array<keyof TEntity>,
     options?: TOptions
-  ): Promise<T | null> {
+  ): Promise<TEntity | null> {
     try {
       const include = includeProperties.map((e) => `${e.toString()}`)
-      const defaultOptions = { ...options }
+      const defaultOptions = options
 
       const data = await this.model
-        .findOne(filter as FilterQuery<T>, undefined, defaultOptions as FilterQuery<IEntity>)
+        .findOne(filter as FilterQuery<TModel>, undefined, defaultOptions as FilterQuery<IEntity>)
         .select(include.join(' '))
 
-      return data ? this.toObject(data) : null
+      return data ? this.hydrate(data) : null
     } catch (error) {
       throw handleDatabaseError({ error, context: `${this.context}.findOneWithSelectFields` })
     }
   }
 
-  @ConvertMongoFilterToBaseRepository()
-  async findAllWithSelectFields<TQuery = FilterQuery<T>, TOptions = FilterQuery<IEntity>>(
-    includeProperties: Array<keyof T>,
+  @NormalizeMongoFilter()
+  async findAllWithSelectFields<TQuery = FilterQueryFilter<TEntity>, TOptions = FilterQuery<IEntity>>(
+    includeProperties: Array<keyof TEntity>,
     filter?: TQuery,
     options?: TOptions
-  ): Promise<T[]> {
+  ): Promise<TEntity[]> {
     try {
       const include = includeProperties.map((e) => `${e.toString()}`)
-      const processedFilter = this.applyFilterWhenFilterParameterIsNotFirstOption(filter as FilterQuery<T>)
-      const defaultOptions = { ...options }
+      const processedFilter = this.applyFilterWhenFilterParameterIsNotFirstOption(filter as FilterQuery<TModel>)
+      const defaultOptions = options
 
       const data = await this.model
         .find(processedFilter, undefined, defaultOptions as FilterQuery<IEntity>)
         .select(include.join(' '))
 
-      return data.map((d) => this.toObject(d))
+      return this.hydrateAll(data)
     } catch (error) {
       throw handleDatabaseError({ error, context: `${this.context}.findAllWithSelectFields` })
     }
   }
 
-  @ConvertMongoFilterToBaseRepository()
-  async findOneWithRelation<Filter = MakePartial<T>>(filter: Filter, joins?: JoinType<T>): Promise<T | null> {
+  @NormalizeMongoFilter()
+  async findOneWithRelation<Filter = MakePartialFilter<TEntity>>(
+    filter: Filter,
+    joins?: JoinType<TEntity>
+  ): Promise<TEntity | null> {
     const populatePaths = this.getPopulatePaths(joins)
 
-    const query = this.model.findOne(filter as FilterQuery<T>)
+    const query = this.model.findOne(filter as FilterQuery<TModel>)
 
     const finalQuery = populatePaths.reduce((queryAccumulator, path) => queryAccumulator.populate(path), query)
 
@@ -401,11 +438,14 @@ export class MongoRepository<T extends Document = Document> implements IReposito
     if (!data) {
       return null
     }
-    return data.toObject()
+    return this.hydrate(data)
   }
 
-  @ConvertMongoFilterToBaseRepository()
-  async findAllWithRelation<Filter = MakePartial<T>>(filter?: Filter, joins?: JoinType<T>): Promise<T[]> {
+  @NormalizeMongoFilter()
+  async findAllWithRelation<Filter = MakePartialFilter<TEntity>>(
+    filter?: Filter,
+    joins?: JoinType<TEntity>
+  ): Promise<TEntity[]> {
     const populatePaths = this.getPopulatePaths(joins)
 
     const query = this.model.find(filter ?? {})
@@ -418,37 +458,41 @@ export class MongoRepository<T extends Document = Document> implements IReposito
       return []
     }
 
-    return data.map((d) => d.toObject())
+    return this.hydrateAll(data)
   }
 
-  @ConvertMongoFilterToBaseRepository()
-  async exists<TQuery = MakePartial<T>>(filter: TQuery): Promise<boolean> {
-    const result = await this.model.exists(filter as FilterQuery<T>)
+  @NormalizeMongoFilter()
+  async exists<TQuery = MakePartialFilter<TEntity>>(filter: TQuery): Promise<boolean> {
+    const query = this.model.exists(filter as FilterQuery<TModel>)
+
+    const result = await query
     return !!result
   }
 
-  @ConvertMongoFilterToBaseRepository()
-  async existsOnUpdate<TQuery = MakePartial<T>>(filter: TQuery, id: string | number): Promise<boolean> {
+  @NormalizeMongoFilter()
+  async existsOnUpdate<TQuery = MakePartialFilter<TEntity>>(filter: TQuery, id: string | number): Promise<boolean> {
     const query = { ...filter, _id: { $ne: id } }
-    const result = await this.model.exists(query as FilterQuery<T>)
+    const operation = this.model.exists(query as FilterQuery<TModel>)
+
+    const result = await operation
     return !!result
   }
 
-  @ConvertMongoFilterToBaseRepository()
-  async softRemove(entity: MakePartial<T>): Promise<T> {
+  @NormalizeMongoFilter()
+  async softRemove(entity: MakePartialFilter<TEntity>): Promise<TEntity> {
     return (await this.findOneAndUpdate(
-      entity as FilterQuery<T>,
-      { deletedAt: DateUtils.now() } as UpdateQuery<T>
-    )) as T
+      entity as FilterQuery<TEntity>,
+      { deletedAt: DateUtils.now() } as UpdateQuery<TEntity>
+    )) as TEntity
   }
 
-  private getPopulatePaths(joins?: JoinType<T>): string[] {
+  private getPopulatePaths(joins?: JoinType<TEntity>): string[] {
     if (!joins) return []
 
-    return Object.keys(joins).filter((key) => joins[key as keyof JoinType<T>] === true)
+    return Object.keys(joins).filter((key) => joins[key as keyof JoinType<TEntity>] === true)
   }
 
-  private buildCommandFilter(filterList: DatabaseOperationCommand<T>[]): FilterQuery<T> {
+  private buildCommandFilter(filterList: DatabaseOperationCommand<TEntity>[]): FilterQuery<TModel> {
     const mongoSearch = {
       equal: { type: '$in', like: false },
       not_equal: { type: '$nin', like: false },
@@ -478,12 +522,12 @@ export class MongoRepository<T extends Document = Document> implements IReposito
     }
 
     Object.assign(searchList, { deletedAt: null })
-    return searchList as FilterQuery<T>
+    return searchList as FilterQuery<TModel>
   }
 
-  private applyFilterWhenFilterParameterIsNotFirstOption(filter?: FilterQuery<T>): FilterQuery<T> {
+  private applyFilterWhenFilterParameterIsNotFirstOption(filter?: FilterQuery<TModel>): FilterQuery<TModel> {
     if (!filter) {
-      return { deletedAt: null } as unknown as FilterQuery<T>
+      return { deletedAt: null } as unknown as FilterQuery<TModel>
     }
 
     const processedFilter = { ...filter } as Record<string, unknown>
@@ -497,10 +541,18 @@ export class MongoRepository<T extends Document = Document> implements IReposito
       processedFilter.deletedAt = null
     }
 
-    return processedFilter as FilterQuery<T>
+    return processedFilter as FilterQuery<TModel>
   }
 
-  private toObject(document: T, options: { virtuals?: boolean } = { virtuals: true }): T {
-    return document.toObject({ virtuals: options.virtuals })
+  protected hydrate(document: TModel): TEntity {
+    const object = document.toObject({ virtuals: true }) as TEntity
+    if (!this.Entity || object instanceof this.Entity) {
+      return object
+    }
+    return new this.Entity(object)
+  }
+
+  private hydrateAll(documents: TModel[]): TEntity[] {
+    return documents.map((document) => this.hydrate(document))
   }
 }

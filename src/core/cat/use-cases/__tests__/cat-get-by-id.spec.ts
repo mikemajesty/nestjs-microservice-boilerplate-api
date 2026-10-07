@@ -57,11 +57,11 @@ describe(CatGetByIdUsecase.name, () => {
   })
 
   const mock = new ZodMockSchema(CatEntitySchema)
-  const input = mock.generate<CatEntity>()
+  const input = mock.generate({ factory: (data) => new CatEntity(data) })
 
   test('when cat found, should expect a cat found', async () => {
-    repository.findById = TestUtils.mockResolvedValue<CatEntity>(input)
+    repository.findById = TestUtils.mockResolvedValue<CatEntity>(input.clone())
 
-    await expect(usecase.execute({ id: MockUtils.UUID() })).resolves.toEqual(input)
+    await expect(usecase.execute({ id: MockUtils.UUID() })).resolves.toEqual(input.toData())
   })
 })

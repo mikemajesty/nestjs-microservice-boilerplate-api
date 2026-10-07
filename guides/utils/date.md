@@ -242,7 +242,7 @@ export class FinancialReportService {
           type: 'iso'
         }),
         transactions: transactions.map((t) => ({
-          ...t.toObject(),
+          ...t.toData(),
           dateFormatted: DateUtils.build<string>({
             date: t.createdAt,
             format: 'dd/MM/yyyy',
@@ -264,13 +264,13 @@ export class SubscriptionService {
     const entity = new SubscriptionEntity(subscription)
 
     const now = DateUtils.now<Date>({ type: 'js' })
-    const expiresAt = entity.toObject().expiresAt
+    const expiresAt = entity.toData().expiresAt
 
     const warningDate = DateUtils.subtractDays(expiresAt, 3)
 
     if (DateUtils.isAfter(now, warningDate) && DateUtils.isBefore(now, expiresAt)) {
       await this.emailService.sendRenewalWarning({
-        userId: entity.toObject().userId,
+        userId: entity.toData().userId,
         expiresOn: DateUtils.build<string>({
           date: expiresAt,
           format: 'dd/MM/yyyy',
@@ -285,7 +285,7 @@ export class SubscriptionService {
     await this.subscriptionRepository.save(renewedSubscription)
 
     return {
-      subscription: renewedSubscription.toObject(),
+      subscription: renewedSubscription.toData(),
       nextBilling: DateUtils.build<string>({
         date: nextBillingDate,
         format: 'dd/MM/yyyy',
@@ -365,7 +365,7 @@ export class GlobalEventService {
     }))
 
     return {
-      event: event.toObject(),
+      event: event.toData(),
       participantNotifications: notificationData
     }
   }
@@ -381,7 +381,7 @@ export class NotificationService {
   async sendDateBasedNotification(userId: string, date: Date): Promise<void> {
     const user = await this.userRepository.findById(userId)
     const userEntity = new UserEntity(user)
-    const locale = userEntity.toObject().locale ?? 'pt-BR'
+    const locale = userEntity.toData().locale ?? 'pt-BR'
 
     const dateFormat =
       {
@@ -393,17 +393,17 @@ export class NotificationService {
     const formattedDate = DateUtils.build<string>({
       date,
       format: dateFormat,
-      timezone: userEntity.toObject().timezone,
+      timezone: userEntity.toData().timezone,
       type: 'iso'
     })
 
     await this.emailService.send({
-      to: userEntity.toObject().email,
+      to: userEntity.toData().email,
       template: 'date-notification',
       data: {
-        userName: userEntity.toObject().name,
+        userName: userEntity.toData().name,
         eventDate: formattedDate,
-        timezone: userEntity.toObject().timezone
+        timezone: userEntity.toData().timezone
       }
     })
   }

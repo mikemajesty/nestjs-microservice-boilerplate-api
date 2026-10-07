@@ -236,7 +236,7 @@ export class CatCreateUsecase implements IUsecase {
     // 7️⃣ Business logic
     const entity = new CatEntity({ id: IDGeneratorUtils.uuid(), ...input })
 
-    const created = await this.catRepository.create(entity.toObject())
+    const created = await this.catRepository.create(entity.toData())
 
     tracing.logEvent('cat-created', `cat created by: ${user.email}`)
 
@@ -427,7 +427,7 @@ const entity = new CatEntity(cat) // ✅ Always instantiate
 
 **Why this matters:**
 
-1. **Access to Entity Methods** — `entity.merge()`, `entity.deactivate()`, `entity.toObject()`
+1. **Access to Entity Methods** — `entity.merge()`, `entity.deactivate()`, `entity.toData()`
 2. **ID Normalization** — MongoDB uses `_id`, but Entity normalizes to `id`
 3. **Database Agnostic** — Entity has NO knowledge of database specifics
 
@@ -452,7 +452,7 @@ export class CatCreateUsecase implements IUsecase {
   @ValidateSchema(CatCreateSchema)
   async execute(input: CatCreateInput, { tracing, user }: ApiTrancingInput): Promise<CatCreateOutput> {
     const entity = new CatEntity({ id: IDGeneratorUtils.uuid(), ...input })
-    const created = await this.catRepository.create(entity.toObject())
+    const created = await this.catRepository.create(entity.toData())
     tracing.logEvent('cat-created', `cat created by: ${user.email}`)
     return created
   }
@@ -471,7 +471,7 @@ export class CatGetByIdUsecase implements IUsecase {
   async execute({ id }: CatGetByIdInput): Promise<CatGetByIdOutput> {
     const cat = await this.catRepository.findById(id)
     if (!cat) throw new ApiNotFoundException()
-    return new CatEntity(cat).toObject()
+    return new CatEntity(cat).toData()
   }
 }
 ```
@@ -493,13 +493,13 @@ export class CatUpdateUsecase implements IUsecase {
     const entity = new CatEntity(cat)
     entity.merge(input)
 
-    await this.catRepository.updateOne({ id: entity.id }, entity.toObject())
+    await this.catRepository.updateOne({ id: entity.id }, entity.toData())
     this.loggerService.info({ message: 'cat updated.', metadata: { cat: input } })
 
     const updated = await this.catRepository.findById(entity.id)
     tracing.logEvent('cat-updated', `cat updated by: ${user.email}`)
 
-    return new CatEntity(updated as CatEntity).toObject()
+    return new CatEntity(updated as CatEntity).toData()
   }
 }
 ```
@@ -518,10 +518,10 @@ export class CatDeleteUsecase implements IUsecase {
     const entity = new CatEntity(cat)
     entity.deactivate() // Sets deletedAt
 
-    await this.catRepository.updateOne({ id: entity.id }, entity.toObject())
+    await this.catRepository.updateOne({ id: entity.id }, entity.toData())
     tracing.logEvent('cat-deleted', `cat deleted by: ${user.email}`)
 
-    return entity.toObject()
+    return entity.toData()
   }
 }
 ```

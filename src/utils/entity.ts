@@ -69,18 +69,18 @@ export const BaseEntity = <T>() => {
       return this
     }
 
-    toObject(): T {
+    toData(): T {
       return this._schema.safeParse({ ...this, _schema: undefined }).data as T
     }
 
     clone(): this {
-      const obj = this.toObject()
+      const obj = this.toData()
       const Constructor = this.constructor as new (entity: T) => this
       return new Constructor(obj as T)
     }
 
     merge(partial: Partial<T>): this {
-      const current = this.toObject()
+      const current = this.toData()
       const merged = { ...current, ...partial }
       this.validate(merged)
       this.touch()

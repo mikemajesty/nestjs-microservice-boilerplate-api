@@ -9,7 +9,7 @@ import { MockUtils, TestUtils } from '@/utils/test'
 import { ZodExceptionIssue } from '@/utils/validator'
 
 import { UserEntity, UserEntitySchema } from '../../entity/user'
-import { UserPasswordEntitySchema } from '../../entity/user-password'
+import { UserPasswordEntity, UserPasswordEntitySchema } from '../../entity/user-password'
 import { IUserRepository } from '../../repository/user'
 import { LoginInput, LoginOutput, LoginSchema, LoginUsecase } from '../user-login'
 
@@ -72,33 +72,36 @@ describe(LoginUsecase.name, () => {
   const password = userPasswordMock.generate({
     overrides: {
       password: '****'
-    }
+    },
+    factory: (data) => new UserPasswordEntity(data)
   })
 
   const roleMock = new ZodMockSchema(RoleEntitySchema)
-  const roles = roleMock.generateMany<RoleEntity>(2, {
+  const roles = roleMock.generateMany(2, {
     overrides: {
       permissions: []
-    }
+    },
+    factory: (data) => new RoleEntity(data)
   })
 
   const userMock = new ZodMockSchema(UserEntitySchema)
-  const user = userMock.generate<UserEntity>({
+  const user = userMock.generate({
     overrides: {
       roles,
       password
-    }
+    },
+    factory: (data) => new UserEntity(data)
   })
 
   test('when password is incorrect, should expect an error', async () => {
-    repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(user)
+    repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(user.clone())
 
     await expect(usecase.execute(input, MockUtils.Tracing())).rejects.toThrow(ApiBadRequestException)
   })
 
   test('when user login successfully, should expect a token', async () => {
     user.password.password = '69bf0bc46f51b33377c4f3d92caf876714f6bbbe99e7544487327920873f9820'
-    repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(user)
+    repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(user.clone())
 
     await expect(usecase.execute(input, MockUtils.Tracing())).resolves.toEqual({
       accessToken: expect.any(String),

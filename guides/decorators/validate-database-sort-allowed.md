@@ -1,10 +1,10 @@
-# ValidateDatabaseSortAllowed Decorator (Repository Layer)
+# TransformSort Decorator (Repository Layer)
 
 Transforms **manual, error-prone sorting validation** into elegant, type-safe, automatic sort object generation for repository pagination methods. This decorator ensures only **whitelisted properties** can be used for sorting and automatically **maps** them to the correct database field names.
 
 ## The Problem: Manual Sorting Validation Hell
 
-### ❌ **Without ValidateDatabaseSortAllowed - Manual Nightmare**
+### ❌ **Without TransformSort - Manual Nightmare**
 
 ```typescript
 // UGLY: Manual sorting validation and mapping
@@ -64,15 +64,15 @@ export class UserRepository {
 5. **Inconsistent** - Different error messages across repositories
 6. **Verbose** - 20+ lines of boilerplate for simple validation
 
-## ✅ **The Elegant Solution: ValidateDatabaseSortAllowed**
+## ✅ **The Elegant Solution: TransformSort**
 
 ```typescript
-import { ValidateDatabaseSortAllowed } from '@/utils/decorators/database'
+import { TransformSort } from '@/utils/decorators/database'
 
 export class UserRepository {
   
   // ✅ BEAUTIFUL: Single decorator with type safety!
-  @ValidateDatabaseSortAllowed<UserEntity>(
+  @TransformSort<UserEntity>(
     { name: 'email' },                    // Simple field mapping
     { name: 'name' },                     // Direct mapping  
     { name: 'createdAt' }                 // Auto-mapped field
@@ -91,7 +91,7 @@ export class UserRepository {
     })
 
     return { 
-      docs: docs.map(doc => new UserEntity(doc).toObject()), 
+      docs: docs.map(doc => new UserEntity(doc).toData()), 
       total, 
       page: input.page, 
       limit: input.limit 
@@ -99,7 +99,7 @@ export class UserRepository {
   }
   
   // ✅ Same validation automatically applied to all methods!
-  @ValidateDatabaseSortAllowed<UserEntity>(
+  @TransformSort<UserEntity>(
     { name: 'email' },
     { name: 'name' },
     { name: 'status' },
@@ -124,7 +124,7 @@ export class UserRepository {
 ```typescript
 export class ProductRepository {
   
-  @ValidateDatabaseSortAllowed<ProductEntity>(
+  @TransformSort<ProductEntity>(
     { name: 'name' },                           // Direct: name → name
     { name: 'price' },                          // Direct: price → price  
     { name: 'category', map: 'category_name' }, // Mapped: category → category_name
@@ -148,7 +148,7 @@ export class ProductRepository {
 
 ```typescript
 // ✅ COMPILE-TIME SAFETY: Only ProductEntity properties allowed
-@ValidateDatabaseSortAllowed<ProductEntity>(
+@TransformSort<ProductEntity>(
   { name: 'name' },        // ✅ Valid: ProductEntity has 'name'
   { name: 'price' },       // ✅ Valid: ProductEntity has 'price'
   { name: 'invalidField' } // ❌ COMPILE ERROR: Property 'invalidField' doesn't exist on ProductEntity
@@ -166,12 +166,12 @@ export class ProductRepository {
 ```typescript
 export class UserRepository {
   
-  @ConvertTypeOrmFilter<UserEntity>([
+  @TransformTypeOrmSearch<UserEntity>([
     { name: 'email', type: SearchTypeEnum.equal },
     { name: 'name', type: SearchTypeEnum.like },
     { name: 'status', type: SearchTypeEnum.equal }
   ])
-  @ValidateDatabaseSortAllowed<UserEntity>(
+  @TransformSort<UserEntity>(
     { name: 'email' },
     { name: 'name' },
     { name: 'createdAt' },
@@ -185,11 +185,11 @@ export class UserRepository {
       take: input.limit,
       skip,
       order: input.sort as FindOptionsOrder<IEntity>,    // ✅ Validated & mapped
-      where: input.search as FindOptionsWhere<IEntity>   // ✅ From ConvertTypeOrmFilter
+      where: input.search as FindOptionsWhere<IEntity>   // ✅ From TransformTypeOrmSearch
     })
 
     return { 
-      docs: docs.map(doc => new UserEntity(doc).toObject()), 
+      docs: docs.map(doc => new UserEntity(doc).toData()), 
       total, 
       page: input.page, 
       limit: input.limit 
@@ -203,12 +203,12 @@ export class UserRepository {
 ```typescript
 export class CatRepository {
   
-  @ConvertMongooseFilter<CatEntity>([
+  @TransformMongooseSearch<CatEntity>([
     { name: 'breed', type: SearchTypeEnum.equal },
     { name: 'name', type: SearchTypeEnum.like },
     { name: 'age', type: SearchTypeEnum.between }
   ])
-  @ValidateDatabaseSortAllowed<CatEntity>(
+  @TransformSort<CatEntity>(
     { name: 'createdAt' },
     { name: 'breed' },
     { name: 'age' },
@@ -226,7 +226,7 @@ export class CatRepository {
     ])
 
     return { 
-      docs: docs.map(doc => new CatEntity(doc).toObject()), 
+      docs: docs.map(doc => new CatEntity(doc).toData()), 
       total, 
       page: input.page, 
       limit: input.limit 
@@ -240,12 +240,12 @@ export class CatRepository {
 ```typescript
 export class PermissionRepository {
   
-  @ConvertTypeOrmFilter<PermissionEntity>([
+  @TransformTypeOrmSearch<PermissionEntity>([
     { name: 'name', type: SearchTypeEnum.like },
     { name: 'resource', type: SearchTypeEnum.equal },
     { name: 'action', type: SearchTypeEnum.equal }
   ])
-  @ValidateDatabaseSortAllowed<PermissionEntity>(
+  @TransformSort<PermissionEntity>(
     { name: 'name' },
     { name: 'createdAt' },
     { name: 'resource' },
@@ -264,7 +264,7 @@ export class PermissionRepository {
     })
 
     return { 
-      docs: docs.map(doc => new PermissionEntity(doc).toObject()), 
+      docs: docs.map(doc => new PermissionEntity(doc).toData()), 
       total, 
       page: input.page, 
       limit: input.limit 
@@ -309,7 +309,7 @@ const input = {
   }
 }
 
-// After ValidateDatabaseSortAllowed transformation
+// After TransformSort transformation
 const transformedInput = {
   sort: {
     name: SortEnum.asc,           // Direct mapping: name → name
@@ -340,7 +340,7 @@ async paginate(input: UserListInput): Promise<UserListOutput> {
 }
 
 // 4. Repository with decorated method
-@ValidateDatabaseSortAllowed<UserEntity>(
+@TransformSort<UserEntity>(
   { name: 'name' },
   { name: 'createdAt' },
   { name: 'email' }
@@ -409,4 +409,4 @@ async paginate(input: UserListInput): Promise<UserListOutput> {
 - **Consistent API** - Same pattern across all repositories
 - **Easy Maintenance** - Change entity, decorator auto-validates
 
-**ValidateDatabaseSortAllowed transforms manual, error-prone sorting validation into elegant, type-safe, automatic sort object generation that's secure, performant, and maintainable!** 🚀
+**TransformSort transforms manual, error-prone sorting validation into elegant, type-safe, automatic sort object generation that's secure, performant, and maintainable!** 🚀

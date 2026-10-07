@@ -37,7 +37,7 @@ export class RoleFixture implements Omit<ITestFixture<RoleEntity>, 'override'> {
       for (const role of this.entity) {
         const exists = await ctx.findOne(RoleSchema, { where: { name: role.name } as FindOptionsWhere<RoleSchema> })
         if (exists) continue
-        await ctx.save(RoleSchema, role.toObject() as RoleModel)
+        await ctx.save(RoleSchema, role.toData() as RoleModel)
       }
     })
   }

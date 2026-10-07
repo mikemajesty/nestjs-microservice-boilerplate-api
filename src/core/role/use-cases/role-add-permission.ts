@@ -11,7 +11,7 @@ import { Namespaces } from '@/utils/namespaces'
 import { IUsecase } from '@/utils/usecase'
 import { InputValidator, SchemaInfer } from '@/utils/validator'
 
-import { RoleEntity, RoleEntitySchema } from '../entity/role'
+import { RoleEntitySchema } from '../entity/role'
 import { IRoleRepository } from '../repository/role'
 
 export const RoleAddPermissionSchema = RoleEntitySchema.pick({
@@ -33,22 +33,21 @@ export class RoleAddPermissionUsecase implements IUsecase {
       throw new ApiNotFoundException('roleNotFound')
     }
 
-    const entity = new RoleEntity(role)
     const permissions = await this.permissionRepository.findIn({ name: input.permissions })
 
     for (const permissionName of input.permissions) {
       const permissionAlreadyCreated = permissions.find((p) => p.name === permissionName)
       if (!permissionAlreadyCreated) {
         const newPermission = new PermissionEntity({ id: IDGeneratorUtils.uuid(), name: permissionName })
-        entity.addPermission(newPermission)
+        role.addPermission(newPermission)
         continue
       }
 
-      entity.addPermission(permissionAlreadyCreated)
+      role.addPermission(permissionAlreadyCreated)
     }
 
-    await this.roleRepository.create(entity.toObject())
-    await this.cacheAside.invalidate(Namespaces.roleById(entity.id))
+    await this.roleRepository.create(role.toData())
+    await this.cacheAside.invalidate(Namespaces.roleById(role.id))
   }
 }
 

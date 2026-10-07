@@ -29,18 +29,17 @@ export class CatUpdateUsecase implements IUsecase {
       throw new ApiNotFoundException()
     }
 
-    const entity = new CatEntity(cat)
-    entity.merge(input)
+    cat.merge(input)
 
-    await this.catRepository.updateOne({ id: entity.id }, entity.toObject())
+    await this.catRepository.updateOne({ id: cat.id }, cat.toData())
 
     this.loggerService.info({ message: 'cat updated.', metadata: { cat: input } })
 
-    const updated = await this.catRepository.findById(entity.id)
+    const updated = await this.catRepository.findById(cat.id)
 
-    tracing.logEvent('cat-updated', { action: 'updated', by: user.id, entity: entity.id })
+    tracing.logEvent('cat-updated', { action: 'updated', by: user.id, entity: cat.id })
 
-    return new CatEntity(updated as CatEntity).toObject()
+    return updated!.toData()
   }
 }
 

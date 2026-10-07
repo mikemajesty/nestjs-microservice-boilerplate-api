@@ -60,7 +60,7 @@ export class UserFixture implements ITestFixture<UserEntity> {
       const context = ctx as EntityManager
       const exists = await context.findOne(UserSchema, { where: { email: this.entity.email } })
       if (exists) return
-      await context.save(UserSchema, this.entity.toObject() as UserModel)
+      await context.save(UserSchema, this.entity.toData() as UserModel)
     })
   }
 

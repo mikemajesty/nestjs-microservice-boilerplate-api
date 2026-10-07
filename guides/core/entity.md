@@ -97,7 +97,7 @@ type Cat = Infer<typeof CatEntitySchema>
 The entity class extends `BaseEntity` which provides:
 - `validate(entity)` — Validates and assigns all properties
 - `ensureID()` — Generates ID if not provided
-- `toObject()` — Converts to plain object
+- `toData()` — Converts to plain object
 
 See [Entity Utils](../utils/entity.md) for full BaseEntity documentation.
 

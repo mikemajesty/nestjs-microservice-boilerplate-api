@@ -27,16 +27,24 @@ import {
   CreatedModel,
   CreatedOrUpdateModel,
   DatabaseOperationCommand,
+  EntityConstructor,
   JoinType,
+  MakePartialFilter,
   RemovedModel,
   UpdatedModel
 } from '../types'
 import { createRelations, handleDatabaseError } from '../util'
 
-export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEntity> implements IRepository<T> {
+export class TypeORMRepository<
+  TModel extends BaseEntity & IEntity = BaseEntity & IEntity,
+  TEntity extends IEntity = TModel
+> implements IRepository<TEntity> {
   private readonly context: string = TypeORMRepository.name
 
-  constructor(readonly repository: Repository<T>) {}
+  constructor(
+    readonly repository: Repository<TModel>,
+    private readonly Entity: EntityConstructor<TEntity>
+  ) {}
 
   async runInTransaction<R>(fn: (manager: EntityManager) => Promise<R>): Promise<R> {
     const queryRunner = this.repository.manager.dataSource.createQueryRunner()
@@ -47,14 +55,16 @@ export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEn
       await queryRunner.commitTransaction()
       return result
     } catch (err) {
-      await queryRunner.rollbackTransaction()
+      if (queryRunner.isTransactionActive) {
+        await queryRunner.rollbackTransaction()
+      }
       throw handleDatabaseError({ error: err, context: `${this.context}.runInTransaction` })
     } finally {
       await queryRunner.release()
     }
   }
 
-  async applyPagination<R>(input: PaginationInput<R>, joins?: JoinType<T>): Promise<PaginationOutput<T>> {
+  async applyPagination<R>(input: PaginationInput<R>, joins?: JoinType<TEntity>): Promise<PaginationOutput<TEntity>> {
     const skip = PaginationUtils.calculateSkip(input)
 
     const relations = createRelations(joins)
@@ -62,13 +72,13 @@ export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEn
     const [docs, total] = await this.repository.findAndCount({
       take: input.limit,
       skip,
-      order: input.sort as FindOptionsOrder<T>,
-      where: input.search as FindOptionsWhere<T>,
-      relations
+      order: input.sort as FindOptionsOrder<TModel>,
+      where: input.search as FindOptionsWhere<TModel>,
+      relations: relations as FindManyOptions<TModel>['relations']
     })
 
     return {
-      docs,
+      docs: this.hydrateAll(docs),
       total,
       page: input.page,
       limit: input.limit,
@@ -76,18 +86,21 @@ export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEn
     }
   }
 
-  async findOr(propertyList: (keyof T)[], value: string): Promise<T[]> {
+  async findOr(propertyList: (keyof TEntity)[], value: string): Promise<TEntity[]> {
     const filter = propertyList.map((property) => {
       return { [property]: value }
     })
 
     Object.assign(filter, { deletedAt: null })
-    return this.repository.find({ where: filter as FindOptionsWhere<T>[] | FindOptionsWhere<T> })
+    const models = await this.repository.find({
+      where: filter as FindOptionsWhere<TModel>[] | FindOptionsWhere<TModel>
+    })
+    return this.hydrateAll(models)
   }
 
-  async create<TOptions = SaveOptions>(document: T, saveOptions?: TOptions): Promise<CreatedModel> {
+  async create<TOptions = SaveOptions>(document: TEntity, saveOptions?: TOptions): Promise<CreatedModel> {
     try {
-      const entity = this.repository.create(document)
+      const entity = this.repository.create(document as unknown as TModel)
       const model = await entity.save(saveOptions as SaveOptions)
       return { created: model.hasId(), id: model.id }
     } catch (error) {
@@ -95,15 +108,16 @@ export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEn
     }
   }
 
-  async findById(id: string): Promise<T | null> {
-    return this.repository.findOne({ where: { id } } as FindOneOptions<T>)
+  async findById(id: string): Promise<TEntity | null> {
+    const model = await this.repository.findOne({ where: { id } } as FindOneOptions<TModel>)
+    return model ? this.hydrate(model) : null
   }
 
-  async insertMany(document: T[]): Promise<void> {
+  async insertMany(document: TEntity[]): Promise<void> {
     await this.repository.insert(document as object[])
   }
 
-  async createOrUpdate<TUpdate = MakePartial<T>>(updated: TUpdate): Promise<CreatedOrUpdateModel> {
+  async createOrUpdate<TUpdate = MakePartial<TEntity>>(updated: TUpdate): Promise<CreatedOrUpdateModel> {
     try {
       const documentEntity: IEntity = updated as IEntity
       if (!documentEntity?.id) {
@@ -113,33 +127,31 @@ export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEn
       const exists = await this.findById(documentEntity.id)
 
       if (!exists) {
-        const created = await this.create(updated as unknown as T)
+        const created = await this.create(updated as unknown as TEntity)
 
         return { id: created.id, created: true, updated: false }
       }
 
-      const row = await this.repository.update(
-        { id: exists['id'] } as FindOptionsWhere<T>,
-        { ...exists, ...updated } as object
-      )
+      const row = await this.repository.update({ id: exists.id } as FindOptionsWhere<TModel>, updated as object)
 
-      return { id: exists['id'], created: false, updated: (row.affected || 0) > 0 }
+      return { id: exists.id, created: false, updated: (row.affected || 0) > 0 }
     } catch (error) {
       throw handleDatabaseError({ error, context: `${this.context}.createOrUpdate` })
     }
   }
 
-  async findAll(): Promise<T[]> {
-    return this.repository.find()
+  async findAll(): Promise<TEntity[]> {
+    return this.hydrateAll(await this.repository.find())
   }
 
-  async find<TQuery = MakePartial<T>>(filter: TQuery): Promise<T[]> {
-    return this.repository.find({
+  async find<TQuery = MakePartialFilter<TEntity>>(filter: TQuery): Promise<TEntity[]> {
+    const models = await this.repository.find({
       where: { ...filter, deletedAt: null }
-    } as FindOneOptions<T>)
+    } as FindOneOptions<TModel>)
+    return this.hydrateAll(models)
   }
 
-  async findIn(filter: { [key in keyof MakePartial<T>]: string[] }): Promise<T[]> {
+  async findIn(filter: { [key in keyof MakePartialFilter<TEntity>]: string[] }): Promise<TEntity[]> {
     const where: { [key: string]: unknown } = {
       deletedAt: IsNull()
     }
@@ -148,12 +160,13 @@ export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEn
       where[key] = In((filter as { [key: string]: string[] })[key])
     }
 
-    return this.repository.find({
+    const models = await this.repository.find({
       where
-    } as FindOneOptions<T>)
+    } as FindOneOptions<TModel>)
+    return this.hydrateAll(models)
   }
 
-  async findOneByCommands(filterList: DatabaseOperationCommand<T>[]): Promise<T | null> {
+  async findOneByCommands(filterList: DatabaseOperationCommand<TEntity>[]): Promise<TEntity | null> {
     const searchList: { [key: string]: unknown } = {}
 
     const postgresSearch = {
@@ -185,16 +198,16 @@ export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEn
 
     const result = await this.repository.findOne({
       where: searchList
-    } as FindOneOptions<T>)
+    } as FindOneOptions<TModel>)
 
     if (!result) {
       return null
     }
 
-    return result
+    return this.hydrate(result)
   }
 
-  async findByCommands(filterList: DatabaseOperationCommand<T>[]): Promise<T[]> {
+  async findByCommands(filterList: DatabaseOperationCommand<TEntity>[]): Promise<TEntity[]> {
     const searchList: { [key: string]: unknown } = {}
 
     const postgresSearch = {
@@ -224,32 +237,34 @@ export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEn
       searchList[`${filter.property.toString()}`] = postgresSearch[filter.command].query(filter.value)
     }
 
-    return this.repository.find({
+    const models = await this.repository.find({
       where: searchList
-    } as FindOneOptions<T>)
+    } as FindOneOptions<TModel>)
+    return this.hydrateAll(models)
   }
 
-  async remove<TQuery = MakePartial<T>>(filter: TQuery): Promise<RemovedModel> {
+  async remove<TQuery = MakePartialFilter<TEntity>>(filter: TQuery): Promise<RemovedModel> {
     try {
-      const data = await this.repository.delete(filter as FindOptionsWhere<T>)
+      const data = await this.repository.delete(filter as FindOptionsWhere<TModel>)
       return { deletedCount: data.affected || 0, deleted: !!data.affected }
     } catch (error) {
       throw handleDatabaseError({ error, context: `${this.context}.remove` })
     }
   }
 
-  async findOne<TQuery = MakePartial<T>>(filter: TQuery): Promise<T | null> {
-    return this.repository.findOne({
+  async findOne<TQuery = MakePartialFilter<TEntity>>(filter: TQuery): Promise<TEntity | null> {
+    const model = await this.repository.findOne({
       where: filter
-    } as FindOneOptions<T>)
+    } as FindOneOptions<TModel>)
+    return model ? this.hydrate(model) : null
   }
 
-  async updateOne<TQuery = MakePartial<T>, TUpdate = MakePartial<T>>(
+  async updateOne<TQuery = MakePartialFilter<TEntity>, TUpdate = MakePartial<TEntity>>(
     filter: TQuery,
     updated: TUpdate
   ): Promise<UpdatedModel> {
     try {
-      const data = await this.repository.update(filter as FindOptionsWhere<T>, Object.assign({}, updated))
+      const data = await this.repository.update(filter as FindOptionsWhere<TModel>, Object.assign({}, updated))
       return {
         modifiedCount: data.affected || 0,
         upsertedCount: 0,
@@ -262,21 +277,21 @@ export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEn
     }
   }
 
-  async findOneAndUpdate<TQuery = MakePartial<T>, TUpdate = MakePartial<T>>(
+  async findOneAndUpdate<TQuery = MakePartialFilter<TEntity>, TUpdate = MakePartial<TEntity>>(
     filter: TQuery,
     updated: TUpdate
-  ): Promise<T | null> {
-    await this.repository.update(filter as FindOptionsWhere<T>, updated as object)
+  ): Promise<TEntity | null> {
+    await this.repository.update(filter as FindOptionsWhere<TModel>, updated as object)
 
     return this.findOne(filter)
   }
 
-  async updateMany<TQuery = MakePartial<T>, TUpdate = MakePartial<T>>(
+  async updateMany<TQuery = MakePartialFilter<TEntity>, TUpdate = MakePartial<TEntity>>(
     filter: TQuery,
     updated: TUpdate
   ): Promise<UpdatedModel> {
     try {
-      const data = await this.repository.update(filter as FindOptionsWhere<T>, updated as object)
+      const data = await this.repository.update(filter as FindOptionsWhere<TModel>, updated as object)
       return {
         modifiedCount: data.affected || 0,
         upsertedCount: 0,
@@ -289,95 +304,125 @@ export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEn
     }
   }
 
-  async findOneWithSelectFields<TQuery = MakePartial<T>>(
+  async findOneWithSelectFields<TQuery = MakePartialFilter<TEntity>>(
     filter: TQuery,
-    includeProperties: (keyof T)[]
-  ): Promise<T | null> {
-    const select = includeProperties.map((e) => `${e.toString()}`) as (keyof T)[]
-    return this.repository.findOne({
-      where: filter as FindOptionsWhere<T>,
+    includeProperties: (keyof TEntity)[]
+  ): Promise<TEntity | null> {
+    const select = includeProperties.map((e) => `${e.toString()}`) as (keyof TModel)[]
+    const model = await this.repository.findOne({
+      where: filter as FindOptionsWhere<TModel>,
       select: this.createSelect(select)
     })
+    return model ? this.hydrate(model) : null
   }
 
-  async findAllWithSelectFields<TQuery = MakePartial<T>>(
-    includeProperties: (keyof T)[],
+  async findAllWithSelectFields<TQuery = MakePartialFilter<TEntity>>(
+    includeProperties: (keyof TEntity)[],
     filter?: TQuery
-  ): Promise<T[]> {
-    const select = includeProperties.map((e) => `${e.toString()}`) as (keyof T)[]
-    return this.repository.find({
-      where: filter as FindOptionsWhere<T>,
+  ): Promise<TEntity[]> {
+    const select = includeProperties.map((e) => `${e.toString()}`) as (keyof TModel)[]
+    const models = await this.repository.find({
+      where: filter as FindOptionsWhere<TModel>,
       select: this.createSelect(select)
     })
+    return this.hydrateAll(models)
   }
 
-  async findOneWithExcludeFields(filter: unknown, excludeProperties: (keyof T)[]): Promise<T | null> {
+  async findOneWithExcludeFields(filter: unknown, excludeProperties: (keyof TEntity)[]): Promise<TEntity | null> {
     const select = excludeProperties.map((e) => `${e.toString()}`)
-    return this.repository.findOne({
-      where: filter as FindOptionsWhere<T>,
+    const model = await this.repository.findOne({
+      where: filter as FindOptionsWhere<TModel>,
       select: this.excludeColumns(select)
     })
+    return model ? this.hydrate(model) : null
   }
 
-  async findAllWithExcludeFields<TQuery = MakePartial<T>>(
-    excludeProperties: (keyof T)[],
+  async findAllWithExcludeFields<TQuery = MakePartialFilter<TEntity>>(
+    excludeProperties: (keyof TEntity)[],
     filter?: TQuery
-  ): Promise<T[]> {
+  ): Promise<TEntity[]> {
     const select = excludeProperties.map((e) => `${e.toString()}`)
-    return this.repository.find({
-      where: filter as FindOptionsWhere<T>,
+    const models = await this.repository.find({
+      where: filter as FindOptionsWhere<TModel>,
       select: this.excludeColumns(select)
     })
+    return this.hydrateAll(models)
   }
 
-  async findOneWithRelation<Filter = MakePartial<T>>(filter: Filter, joins?: JoinType<T>): Promise<T | null> {
+  async findOneWithRelation<Filter = MakePartialFilter<TEntity>>(
+    filter: Filter,
+    joins?: JoinType<TEntity>
+  ): Promise<TEntity | null> {
     const relations = createRelations(joins)
 
-    const options: FindOneOptions<T> = {
-      where: filter as FindOptionsWhere<T>
+    const options: FindOneOptions<TModel> = {
+      where: filter as FindOptionsWhere<TModel>
     }
 
     if (Object.keys(relations).length > 0) {
-      options.relations = relations
+      options.relations = relations as FindOneOptions<TModel>['relations']
     }
 
-    return this.repository.findOne(options)
+    const model = await this.repository.findOne(options)
+    return model ? this.hydrate(model) : null
   }
 
-  async findAllWithRelation<Filter = MakePartial<T>>(filter?: Filter, joins?: JoinType<T>): Promise<T[]> {
+  async findAllWithRelation<Filter = MakePartialFilter<TEntity>>(
+    filter?: Filter,
+    joins?: JoinType<TEntity>
+  ): Promise<TEntity[]> {
     const relations = createRelations(joins)
 
-    const where: FindOptionsWhere<T> = {
+    const where: FindOptionsWhere<TModel> = {
       deletedAt: null,
-      ...(filter as FindOptionsWhere<T>)
-    } as FindOptionsWhere<T>
+      ...(filter as FindOptionsWhere<TModel>)
+    } as FindOptionsWhere<TModel>
 
-    const options: FindManyOptions<T> = { where }
+    const options: FindManyOptions<TModel> = { where }
 
     if (Object.keys(relations).length > 0) {
-      options.relations = relations
+      options.relations = relations as FindManyOptions<TModel>['relations']
     }
 
-    return this.repository.find(options)
+    return this.hydrateAll(await this.repository.find(options))
   }
 
-  async exists<TQuery = MakePartial<T>>(filter: TQuery): Promise<boolean> {
-    const result = await this.repository.exists({ where: filter as FindOptionsWhere<T> })
+  async exists<TQuery = MakePartialFilter<TEntity>>(filter: TQuery): Promise<boolean> {
+    const result = await this.repository.exists({ where: filter as FindOptionsWhere<TModel> })
     return result
   }
 
-  async existsOnUpdate<TQuery = MakePartial<T>>(filter: TQuery, id: string | number): Promise<boolean> {
+  async existsOnUpdate<TQuery = MakePartialFilter<TEntity>>(filter: TQuery, id: string | number): Promise<boolean> {
     const result = await this.repository.exists({
-      where: { ...filter, id: Not(id) } as FindOptionsWhere<T>
+      where: { ...filter, id: Not(id) } as FindOptionsWhere<TModel>
     })
     return result
   }
 
-  async softRemove(entity: MakePartial<T>): Promise<T> {
-    return await this.repository.softRemove(entity as T)
+  async softRemove(entity: MakePartialFilter<TEntity>): Promise<TEntity> {
+    const model = await this.repository.findOne({
+      where: entity as unknown as FindOptionsWhere<TModel>
+    })
+
+    if (!model) {
+      throw new ApiInternalServerException('entity not found', { context: `${this.context}.softRemove` })
+    }
+
+    return this.hydrate(await this.repository.softRemove(model))
   }
 
-  private createSelect(includeProperties: (keyof T)[]): FindOptionsSelect<T> {
+  protected hydrate(model: TModel): TEntity {
+    if (!this.Entity || model instanceof this.Entity) {
+      return model as unknown as TEntity
+    }
+    return new this.Entity(model as unknown as TEntity)
+  }
+
+  private hydrateAll(models: TModel[]): TEntity[] {
+    return models.map((model) => this.hydrate(model))
+  }
+
+  private createSelect(includeProperties: (keyof TModel)[]): FindOptionsSelect<TModel> {
     if (includeProperties.length === 0) {
       return {}
     }
@@ -387,10 +432,10 @@ export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEn
       select[String(property)] = true
     })
 
-    return select as FindOptionsSelect<T>
+    return select as FindOptionsSelect<TModel>
   }
 
-  private excludeColumns(columnsToExclude: string[]): FindOptionsSelect<T> {
+  private excludeColumns(columnsToExclude: string[]): FindOptionsSelect<TModel> {
     const excludeSet = new Set(columnsToExclude)
     const select: Record<string, boolean> = {}
 
@@ -401,6 +446,6 @@ export class TypeORMRepository<T extends BaseEntity & IEntity = BaseEntity & IEn
       }
     })
 
-    return select as FindOptionsSelect<T>
+    return select as FindOptionsSelect<TModel>
   }
 }
