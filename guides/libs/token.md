@@ -111,7 +111,7 @@ export class LoginController {
   constructor(private readonly tokenService: ITokenAdapter) {}
 
   @Post('/login')
-  async login(@Body() input: LoginInput): Promise<LoginOutput> {
+  async login(@Req() { body }: ApiRequest): Promise<LoginOutput> {
     // ... validate credentials
     const { token } = this.tokenService.sign({
       email: user.email,

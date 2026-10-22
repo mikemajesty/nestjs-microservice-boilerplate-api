@@ -38,6 +38,12 @@ export abstract class IHttpBuilder<Response = unknown> {
    * Set the number of retries and optionally the status codes that should trigger a retry. @DEFAULT_RETRY_STATUS
    */
   abstract retry(input: HttpRetryInput): IHttpBuilder<Response>
+  /**
+   * Forwards the `authorization` header of the current inbound request to this outbound call.
+   * Opt-in only: unlike the trace id, the caller's token is never forwarded automatically,
+   * since most outbound calls (e.g. third-party integrations) must not receive it.
+   */
+  abstract propagateAuthorization(): IHttpBuilder<Response>
 
   abstract execute(): Promise<Response>
 }

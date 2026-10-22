@@ -14,4 +14,9 @@ export type HttpRetryInput = {
    * The HTTP status codes that should trigger a retry. Defaults to `DEFAULT_RETRY_STATUS`.
    */
   retryStatusCodes?: number[]
+  /**
+   * Maximum time in milliseconds for the retry operation, including backoff delays.
+   * Defaults to `DEPENDENCY_TIMEOUT_MS`.
+   */
+  retryBudgetMs?: number
 }

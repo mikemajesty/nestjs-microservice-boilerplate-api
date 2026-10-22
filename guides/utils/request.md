@@ -76,6 +76,16 @@ generalizePath('/users/550e8400-e29b-41d4-a716-446655440000/roles/507f1f77bcf86c
 // '/users/:uuid/roles/:objectid'
 ```
 
+### TRACEID_HEADER
+
+```typescript
+export const TRACEID_HEADER = 'traceid' as const
+```
+
+Single source of truth for the key used to read/write the traceid, everywhere: HTTP headers, span attributes, logger metadata and exception fields. Use it instead of the `'traceid'` string literal when the value isn't already constrained by a typed field (e.g. `span.setAttribute(TRACEID_HEADER, ...)`, `request.headers[TRACEID_HEADER]`, pino's `reqId` mapping).
+
+It must stay lowercase: Node/Fastify normalize incoming HTTP header names to lowercase, so a camelCase `traceId` header would never actually arrive as such — keeping the in-code key identical to the wire format avoids any case-conversion at the HTTP boundary. The one legitimate exception is OpenTelemetry's own API (`spanContext().traceId`), which is an external library field and keeps its own casing.
+
 ### TracingType
 
 Defines the complete tracing interface available in every request context.
@@ -84,8 +94,7 @@ Defines the complete tracing interface available in every request context.
 export type TracingType = {
   span: Span
   tracer: Tracer
-  tracerId: string
-  axios: (config?: AxiosRequestConfig) => AxiosInstance
+  traceid: string
   setStatus: (status: SpanStatus) => void
   logEvent: (name: string, attributesOrStartTime?: AttributeValue | TimeInput) => void
   addAttribute: (key: string, value: AttributeValue) => void
@@ -97,6 +106,8 @@ export type TracingType = {
 **Where Used**: Passed to use cases through `ApiTrancingInput` for distributed tracing and monitoring.
 
 **Purpose**: Provides complete tracing capabilities while abstracting OpenTelemetry implementation details from business logic.
+
+Outbound HTTP calls don't need `tracing` to propagate context: any [`IHttpBuilder`](../infra/http.md) request — built on top of the shared `IHttpAdapter` instance (same connection pool, retry and error-sanitization logic as the rest of the app) — automatically attaches the current request's `traceid` header. Forwarding the caller's `authorization` header is opt-in, via `.propagateAuthorization()`. See [Request Context](./request-context.md) for how this propagation works.
 
 ### UserRequest
 

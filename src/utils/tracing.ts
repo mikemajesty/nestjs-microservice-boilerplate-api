@@ -18,7 +18,7 @@ import { LoggerService } from '@/infra/logger'
 import { name } from '../../package.json'
 import { ApiBadRequestException } from './exception'
 import { IDGeneratorUtils } from './id-generator'
-import { generalizePath } from './request'
+import { generalizePath, TRACEID_HEADER } from './request'
 
 const logger = new LoggerService()
 diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.ERROR)
@@ -98,7 +98,7 @@ const httpInstrumentation = new HttpInstrumentation({
       if (!existingTraceId) {
         setTraceId(request)
       } else {
-        span.setAttribute('traceid', existingTraceId)
+        span.setAttribute(TRACEID_HEADER, existingTraceId)
       }
 
       span.updateName(updateSpanName(span, request))
@@ -223,20 +223,20 @@ const getHeaders = (request: IncomingMessage | ClientRequest): Record<string, st
 
 const getTraceId = (request: IncomingMessage | ClientRequest) => {
   if ('getHeader' in request) {
-    return request.getHeader('traceid') as string
+    return request.getHeader(TRACEID_HEADER) as string
   }
-  return request.headers?.['traceid'] as string
+  return request.headers?.[TRACEID_HEADER] as string
 }
 
 const setTraceId = (request: IncomingMessage | ClientRequest) => {
   const newTraceId = IDGeneratorUtils.uuid()
   if ('setHeader' in request) {
-    request.setHeader('traceid', newTraceId)
+    request.setHeader(TRACEID_HEADER, newTraceId)
     return
   }
 
   request.headers = {
     ...request.headers,
-    traceid: newTraceId
+    [TRACEID_HEADER]: newTraceId
   }
 }

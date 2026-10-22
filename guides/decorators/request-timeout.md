@@ -2,23 +2,70 @@
 
 Simple and elegant decorator that **overrides application timeout settings** on a per-route basis. Works seamlessly with [RequestTimeoutInterceptor](../middlewares/interceptors/request-timeout.interceptor.ts) to provide **granular timeout control** without complex configuration.
 
+## ⚠️ Important: HTTP timeout alone does not protect the database
+
+`@RequestTimeout` only changes **when the HTTP response gives up on the client**.
+It does **not** cancel the work still running on the server — including any
+Postgres query/transaction in progress. The [RxJS `timeout()` operator](../middlewares/interceptors/request-timeout.interceptor.md)
+just stops listening to the `Observable`; it does not abort the underlying
+Promise or close the database connection.
+
+By default, Postgres connections use a fixed, global `statement_timeout`
+derived from `DEPENDENCY_TIMEOUT_MS` (see [timeout-budget.md](../infra/timeout-budget.md)),
+which is always **lower** than the default `HTTP_REQUEST_TIMEOUT_MS`. This
+keeps the chain safe out of the box: the database always cancels a slow query
+before the HTTP timeout would even trigger.
+
+**If you raise `@RequestTimeout` above the default to allow a legitimately
+slower route** (e.g. a heavy report), the database side does **not** scale
+with it automatically — the query will still be cut off by the global,
+shorter `statement_timeout`. Using `@RequestTimeout(180000)` alone on a route
+that depends on a long-running query is misleading: the client will wait
+longer, but the query still dies early, so the longer HTTP budget does
+nothing useful.
+
+To extend a route safely, you must override **both** sides together,
+explicitly, in the use-case itself — never rely on `@RequestTimeout` alone
+when the slow part is a database call:
+
+```typescript
+import { RequestTimeout } from '@/utils/decorators'
+
+@Controller('reports')
+export class ReportController {
+  @Post('heavy-report')
+  @RequestTimeout(30000) // HTTP side: new ceiling for this route
+  async generateReport() {
+    // DB side: must be extended too, with a safety margin below 30000ms,
+    // otherwise this call keeps using the short global statement_timeout
+    return this.userRepository.withDeadline(28000, async (repository) => {
+      return repository.find(...)
+    })
+  }
+}
+```
+
+If a route only does fast, simple queries, `@RequestTimeout` has nothing to
+compensate for and the global timeout is enough — no override needed on
+either side.
+
 ## The Timeout Problem
 
 Without per-route timeout control, applications face timeout management issues:
 
 ```typescript
 // ❌ PROBLEM: One timeout for all routes
-app.useGlobalInterceptors(new RequestTimeoutInterceptor(30000)) // 30s for everything
+// (global timeout comes from HTTP_REQUEST_TIMEOUT_MS, applied via RequestTimeoutInterceptor)
 
 @Post('quick-operation')  
 async quickOp() {
-  // Fast operation limited by global 30s timeout
+  // Fast operation limited by the global timeout
   return this.service.quickProcess()
 }
 
 @Post('heavy-report')
 async generateReport() {
-  // Heavy operation that needs more than 30s - will timeout!
+  // Heavy operation that needs more time than the global timeout - will timeout!
   return this.service.generateLargeReport() // Takes 2 minutes
 }
 ```
@@ -64,47 +111,47 @@ throws during application setup.
 The [RequestTimeoutInterceptor](../middlewares/interceptors/request-timeout.interceptor.ts) follows this priority order:
 
 ```typescript
-const finalTimeout = requestTimeout ?? this.globalTimeout ?? DEFAULT_FALLBACK_TIMEOUT
+const finalTimeout = requestTimeout ?? HTTP_REQUEST_TIMEOUT_MS
 
-// 1. requestTimeout    - From @RequestTimeout decorator (highest priority)
-// 2. globalTimeout     - Global interceptor configuration  
-// 3. DEFAULT_FALLBACK  - 60 seconds (fallback safety)
+// 1. requestTimeout          - From @RequestTimeout decorator (highest priority)
+// 2. HTTP_REQUEST_TIMEOUT_MS - Global timeout budget (see timeout-budget.md)
 ```
 
 ### **Integration Example**
 
 ```typescript
-// app.module.ts - Global interceptor setup
+// interceptors/module.ts - Global interceptor setup (already wired in the project)
 @Module({
   providers: [
     {
       provide: APP_INTERCEPTOR,
-      useFactory: () => new RequestTimeoutInterceptor(undefined, 30000), // 30s global
+      useFactory: (reflector: Reflector) => new RequestTimeoutInterceptor(reflector),
+      inject: [Reflector]
     }
   ]
 })
-export class AppModule {}
+export class InterceptorsModule {}
 
 // controller.ts - Route-specific overrides
 @Controller('files')
 export class FileController {
   
   @Get('list')
-  // Uses global 30s timeout
+  // No decorator = uses the global HTTP_REQUEST_TIMEOUT_MS
   async listFiles() {
     return this.fileService.list()
   }
 
   @Post('upload')
   @RequestTimeout(120000) // Override: 2 minutes for uploads
-  async uploadFile(@Body() file: FileDto) {
-    return this.fileService.upload(file)
+  async uploadFile(@Req() { body }: ApiRequest) {
+    return this.fileService.upload(body)
   }
 
   @Post('process')
-  @RequestTimeout(300000) // Override: 5 minutes for processing  
-  async processFile(@Body() data: ProcessDto) {
-    return this.fileService.process(data)
+  @RequestTimeout(300000) // Override: 5 minutes for processing
+  async processFile(@Req() { body }: ApiRequest) {
+    return this.fileService.process(body)
   }
 }
 ```
@@ -131,8 +178,10 @@ export class ApiController {
 
   @Post('generate-report')
   @RequestTimeout(600000) // Reports can take up to 10 minutes
-  async generateReport(@Body() params: ReportParams) {
-    return this.reportService.generate(params)
+  async generateReport(@Req() { body }: ApiRequest) {
+    // ⚠️ remember to also extend the DB side (e.g. withDeadline), see the
+    // warning at the top of this document — HTTP alone does not help here
+    return this.reportService.generate(body)
   }
 }
 ```

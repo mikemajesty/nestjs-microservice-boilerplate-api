@@ -5,7 +5,7 @@ import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nes
 import { Observable } from 'rxjs'
 
 import { ILoggerAdapter } from '@/infra/logger'
-import { AppFastifyRequest, ensureTraceId } from '@/utils/request'
+import { AppFastifyRequest, ensureTraceId, TRACEID_HEADER } from '@/utils/request'
 
 @Injectable()
 export class HttpLoggerInterceptor implements NestInterceptor {
@@ -20,7 +20,7 @@ export class HttpLoggerInterceptor implements NestInterceptor {
 
     ensureTraceId(request)
 
-    this.logger.setGlobalParameters({ traceid: request.id })
+    this.logger.setGlobalParameters({ [TRACEID_HEADER]: request.id })
 
     return next.handle()
   }

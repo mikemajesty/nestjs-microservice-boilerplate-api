@@ -1,26 +1,14 @@
 import { AxiosInstance, AxiosRequestConfig } from 'axios'
 
-import {
-  ApiBadRequestException,
-  ApiConflictException,
-  ApiForbiddenException,
-  ApiInternalServerException,
-  ApiNotFoundException,
-  ApiTimeoutException,
-  ApiUnauthorizedException,
-  ApiUnprocessableEntityException,
-  BaseException
-} from '@/utils/exception'
+import { BaseException, exceptionFromStatus } from '@/utils/exception'
 import { ObjectUtils } from '@/utils/object'
+import { TRACEID_HEADER } from '@/utils/request'
+import { getCurrentRequestContext, type RequestContext } from '@/utils/request/context'
+import { getCurrentDeadline } from '@/utils/request/deadline'
+import { TimeoutBudget } from '@/utils/request/timeout-budget'
 
 import { IHttpBuilder } from './adapter'
 import { HttpData, HttpMethod, HttpRetryInput } from './types'
-
-declare module 'axios-retry' {
-  interface IAxiosRetryConfig {
-    status?: number[]
-  }
-}
 
 export class HttpBuilder<Response = unknown> implements IHttpBuilder<Response> {
   private requestConfig: HttpBuilderRequestConfig
@@ -29,18 +17,22 @@ export class HttpBuilder<Response = unknown> implements IHttpBuilder<Response> {
     private readonly axiosInstance: AxiosInstance,
     requestConfig?: HttpBuilderRequestConfig
   ) {
-    this.requestConfig = requestConfig
-      ? {
-          ...requestConfig,
-          headers: { ...requestConfig.headers },
-          axiosConfig: { ...requestConfig.axiosConfig }
-        }
-      : {
-          method: 'GET',
-          url: '',
-          headers: {},
-          axiosConfig: {}
-        }
+    if (requestConfig) {
+      this.requestConfig = {
+        ...requestConfig,
+        headers: { ...requestConfig.headers },
+        axiosConfig: { ...requestConfig.axiosConfig }
+      }
+      return
+    }
+
+    this.requestConfig = {
+      method: 'GET',
+      url: '',
+      headers: {},
+      axiosConfig: {},
+      propagateAuth: false
+    }
   }
 
   get<NextResponse = Response>(url: string, config?: AxiosRequestConfig): HttpBuilder<NextResponse> {
@@ -120,25 +112,41 @@ export class HttpBuilder<Response = unknown> implements IHttpBuilder<Response> {
     return this
   }
 
-  retry({ retries, retryStatusCodes }: HttpRetryInput): this {
-    this.requestConfig.axiosConfig['axios-retry'] = {
+  retry({ retries, retryStatusCodes, retryBudgetMs }: HttpRetryInput): this {
+    const retryConfig = {
       ...this.requestConfig.axiosConfig['axios-retry'],
-      retries,
-      ...(retryStatusCodes ? { status: retryStatusCodes } : {})
+      retries
     }
+
+    if (retryStatusCodes) retryConfig.status = retryStatusCodes
+    if (retryBudgetMs !== undefined) retryConfig.retryBudgetMs = retryBudgetMs
+
+    this.requestConfig.axiosConfig['axios-retry'] = retryConfig
+    return this
+  }
+
+  propagateAuthorization(): this {
+    this.requestConfig.propagateAuth = true
     return this
   }
 
   async execute(): Promise<Response> {
     const startTime = Date.now()
+    const requestContext = getCurrentRequestContext()
+
+    const headers = {
+      ...this.getPropagationHeaders(requestContext),
+      ...this.requestConfig.headers
+    }
 
     try {
       const response = await this.axiosInstance({
+        timeout: TimeoutBudget.getDependencyTimeoutMs(getCurrentDeadline()),
         ...this.requestConfig.axiosConfig,
         method: this.requestConfig.method,
         url: this.requestConfig.url,
         data: this.requestConfig.data,
-        headers: this.requestConfig.headers
+        headers
       })
 
       return response.data as Response
@@ -148,36 +156,35 @@ export class HttpBuilder<Response = unknown> implements IHttpBuilder<Response> {
     }
   }
 
+  private getPropagationHeaders(context: RequestContext | undefined): Record<string, string> {
+    const headers: Record<string, string> = {}
+
+    if (context?.[TRACEID_HEADER]) {
+      headers[TRACEID_HEADER] = context[TRACEID_HEADER]
+    }
+
+    if (this.requestConfig.propagateAuth && context?.authorization) {
+      headers.authorization = context.authorization
+    }
+
+    return headers
+  }
+
   private convertToApiException(error: CustomAxiosError, duration: number): BaseException {
     const status = ObjectUtils.reach(error, (e) => e.response.status, 500)
     const message = ObjectUtils.reach(error, (e) => e.response.data.message, error.message)
 
-    const parameters = {
-      context: 'HttpBuilder',
-      duration,
-      url: this.requestConfig.url,
-      method: this.requestConfig.method,
-      cause: error
-    }
-
-    switch (status) {
-      case 400:
-        return new ApiBadRequestException(message, parameters)
-      case 401:
-        return new ApiUnauthorizedException(message, parameters)
-      case 403:
-        return new ApiForbiddenException(message, parameters)
-      case 404:
-        return new ApiNotFoundException(message, parameters)
-      case 408:
-        return new ApiTimeoutException(message, parameters)
-      case 409:
-        return new ApiConflictException(message, parameters)
-      case 422:
-        return new ApiUnprocessableEntityException(message, parameters)
-      default:
-        return new ApiInternalServerException(message, parameters)
-    }
+    return exceptionFromStatus({
+      status,
+      message,
+      metadata: {
+        context: this.constructor.name,
+        duration,
+        url: this.requestConfig.url,
+        method: this.requestConfig.method,
+        cause: error
+      }
+    })
   }
 }
 
@@ -197,4 +204,12 @@ type HttpBuilderRequestConfig = {
   data?: HttpData
   headers: Record<string, string>
   axiosConfig: AxiosRequestConfig
+  propagateAuth?: boolean
+}
+
+declare module 'axios-retry' {
+  interface IAxiosRetryConfig {
+    status?: number[]
+    retryBudgetMs?: number
+  }
 }

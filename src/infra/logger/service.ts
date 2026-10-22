@@ -13,6 +13,7 @@ import { DateUtils } from '@/utils/date'
 import { ApiBadRequestException, ApiInternalServerException, BaseException } from '@/utils/exception'
 import { IDGeneratorUtils } from '@/utils/id-generator'
 import { ObjectUtils } from '@/utils/object'
+import { TRACEID_HEADER,TraceIdField } from '@/utils/request'
 import { AnyType } from '@/utils/types'
 
 import { name, version } from '../../../package.json'
@@ -128,7 +129,7 @@ export class LoggerService implements ILoggerAdapter {
         ...response,
         context: ObjectUtils.reach(error, (o) => o.context),
         type: typeError,
-        traceid: this.getTraceId(error),
+        [TRACEID_HEADER]: this.getTraceId(error),
         createdAt: DateUtils.now({ type: 'iso' }),
         application: this.app,
         stack: error.stack?.replace(/\n/g, ''),
@@ -166,7 +167,7 @@ export class LoggerService implements ILoggerAdapter {
         message: typeof messages === 'string' ? [messages] : messages,
         context: error?.context,
         type: typeError,
-        traceid: this.getTraceId(error),
+        [TRACEID_HEADER]: this.getTraceId(error),
         createdAt: DateUtils.now({ type: 'iso' }),
         application: this.app,
         stack: error.stack?.replace(/\n/g, '')
@@ -212,7 +213,7 @@ export class LoggerService implements ILoggerAdapter {
         res: 'response',
         err: 'error',
         responseTime: 'timeTaken',
-        reqId: 'traceid'
+        reqId: TRACEID_HEADER
       },
       serializers: {
         err: () => false,
@@ -227,19 +228,19 @@ export class LoggerService implements ILoggerAdapter {
       customProps: (req: AppLoggerRequest): object => {
         const context = req.context
 
-        const traceid = [req?.headers?.traceid, req.id].find(Boolean)
+        const traceid = [req?.headers?.[TRACEID_HEADER], req.id].find(Boolean)
 
         const path = `${req.protocol}://${req.headers.host}${req.url}`
 
         this.logger.logger.setBindings({
-          traceid,
+          [TRACEID_HEADER]: traceid,
           application: this.app,
           context,
           createdAt: DateUtils.now({ type: 'iso' })
         })
 
         return {
-          traceid,
+          [TRACEID_HEADER]: traceid,
           application: this.app,
           context,
           path,
@@ -286,9 +287,9 @@ export class LoggerService implements ILoggerAdapter {
     ].find((c) => c.conditional)
   }
 
-  private getTraceId(error: string | { traceid: string }): string {
+  private getTraceId(error: string | TraceIdField): string {
     if (typeof error === 'string') return IDGeneratorUtils.uuid()
-    return [error.traceid, this.logger.logger.bindings()?.traceid].find(Boolean)
+    return [error[TRACEID_HEADER], this.logger.logger.bindings()?.[TRACEID_HEADER]].find(Boolean)
   }
 
   private getLokiInterval(): number | undefined {

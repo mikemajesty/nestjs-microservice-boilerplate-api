@@ -10,7 +10,7 @@ import { DateUtils } from '@/utils/date'
 import { ApiBadRequestException, ApiErrorType, ApiInternalServerException, BaseException } from '@/utils/exception'
 import { DefaultErrorMessage } from '@/utils/http-status'
 import { ObjectUtils } from '@/utils/object'
-import { AppFastifyRequest } from '@/utils/request'
+import { AppFastifyRequest, TRACEID_HEADER } from '@/utils/request'
 import { AnyType } from '@/utils/types'
 import { ZodException } from '@/utils/validator'
 
@@ -26,7 +26,7 @@ export class ExceptionHandlerFilter implements AppExceptionFilter {
     const status = this.getStatus(exception)
 
     const requestId = request.id
-    exception.traceid = [exception.traceid, requestId].find(Boolean) as string
+    exception[TRACEID_HEADER] = [exception?.[TRACEID_HEADER], requestId].find(Boolean) as string
     const telemetryId = request.tracing?.span?.spanContext?.().traceId
 
     response.code(status)
@@ -54,7 +54,7 @@ export class ExceptionHandlerFilter implements AppExceptionFilter {
     const errorResponse: ApiErrorType = {
       error: {
         code: status,
-        traceid: exception.traceid,
+        [TRACEID_HEADER]: exception[TRACEID_HEADER],
         context: exception.context ?? ObjectUtils.reach(exception, (o) => o.parameters.context),
         details: ObjectUtils.reach(exception, (o) => o.parameters.details),
         name: exception.name || ObjectUtils.reach(exception, (o) => o.constructor.name, Error.name),

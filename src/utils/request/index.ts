@@ -4,25 +4,40 @@
 import 'fastify'
 
 import { AttributeValue, Context, Span, SpanStatus, Tracer } from '@opentelemetry/api'
-import { AxiosInstance, AxiosRequestConfig } from 'axios'
 import { FastifyRequest } from 'fastify'
 
 import { UserEntity } from '@/core/user/entity/user'
 
-import { IDGeneratorUtils } from './id-generator'
-import { AnyType } from './types'
+import { IDGeneratorUtils } from '../id-generator'
+import { AnyType } from '../types'
+
+/**
+ * Canonical key used everywhere a traceid is read/written: HTTP headers, span attributes,
+ * logger metadata and exception fields. Centralized here so the name never drifts between
+ * call sites (HTTP header names are normalized to lowercase by Node/Fastify, so this must
+ * stay lowercase — see guides/utils/request.md).
+ */
+export const TRACEID_HEADER = 'traceid' as const
+
+/**
+ * Shared shape for any type that carries a traceid field. Centralizes the computed-key
+ * declaration (`[TRACEID_HEADER]`) in one place — consumers compose it via intersection
+ * (`& TraceIdField`) instead of repeating `[TRACEID_HEADER]: string` inline. Use
+ * `Partial<TraceIdField>` when the field is optional.
+ */
+export type TraceIdField = {
+  [TRACEID_HEADER]: string
+}
 
 export type TracingType = {
   span: Span
   tracer: Tracer
-  tracerId: string
-  axios: (config?: AxiosRequestConfig) => AxiosInstance
   setStatus: (status: SpanStatus) => void
   logEvent: (name: string, metadata: { action: string } & Record<string, unknown>) => void
-  addAttribute: (key: string | `traceid`, value: AttributeValue) => void
+  addAttribute: (key: string | typeof TRACEID_HEADER, value: AttributeValue) => void
   createSpan: (name: string, parent?: Context) => Span
   finish: () => void
-}
+} & TraceIdField
 
 export type UserRequest = Pick<UserEntity, 'email' | 'name' | 'id'>
 
@@ -32,7 +47,7 @@ export interface ApiRequest {
   readonly user: UserRequest
   readonly params: { [key: string]: string | number }
   readonly query: { [key: string]: string | number }
-  readonly headers: Headers & { authorization: string }
+  readonly headers: Headers & { authorization: string } & Partial<TraceIdField>
   readonly url: string
   readonly files: {
     buffer: Buffer
@@ -46,10 +61,7 @@ export interface ApiRequest {
 
 export type ApiTracingInput = Pick<ApiRequest, 'user' | 'tracing'>
 
-export type AppRequestHeaders = FastifyRequest['headers'] & {
-  authorization?: string
-  traceid?: string
-}
+export type AppRequestHeaders = FastifyRequest['headers'] & { authorization?: string } & Partial<TraceIdField>
 
 export type AppFastifyRequest = FastifyRequest & {
   headers: AppRequestHeaders
@@ -76,15 +88,10 @@ export const generalizePath = (path: string): string => {
     .replace(NUMBER_PATH_SEGMENT, '$1:number')
 }
 
-/**
- * Ensures the request has a traceid, keeping `headers.traceid` and `request.id` in sync.
- * Must be called both in guards and interceptors, since a request can fail (and still need
- * a traceid for logging/tracing) before ever reaching an interceptor.
- */
 export const ensureTraceId = (request: AppFastifyRequest): string => {
-  const traceid = (request.headers?.traceid || request.id || IDGeneratorUtils.uuid()) as string
+  const traceid = (request.headers?.[TRACEID_HEADER] || request.id || IDGeneratorUtils.uuid()) as string
 
-  request.headers.traceid = traceid
+  request.headers[TRACEID_HEADER] = traceid
   request.id = traceid
 
   return traceid

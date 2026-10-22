@@ -15,7 +15,7 @@ import {
 } from '@/utils/exception'
 import { NETWORK_RETRY_CODES } from '@/utils/http-status'
 import { ObjectUtils } from '@/utils/object'
-import { AppFastifyRequest } from '@/utils/request'
+import { AppFastifyRequest, TRACEID_HEADER } from '@/utils/request'
 import { AnyType } from '@/utils/types'
 import { ZodException } from '@/utils/validator'
 
@@ -28,8 +28,8 @@ export class ExceptionHandlerInterceptor implements NestInterceptor {
 
         const request = executionContext.switchToHttp().getRequest<AppFastifyRequest>()
 
-        if (typeof exception === 'object' && !exception.traceid) {
-          exception.traceid = request.headers.traceid as string
+        if (typeof exception === 'object' && !exception[TRACEID_HEADER]) {
+          exception[TRACEID_HEADER] = request.headers[TRACEID_HEADER] as string
         }
 
         if (!exception?.context) {

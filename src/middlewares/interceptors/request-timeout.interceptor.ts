@@ -8,15 +8,12 @@ import { catchError, timeout } from 'rxjs/operators'
 
 import { REQUEST_TIMEOUT_METADATA_KEY } from '@/utils/decorators'
 import { ApiTimeoutException } from '@/utils/exception'
-
-const DEFAULT_FALLBACK_TIMEOUT = 1 * 60 * 1000
+import { Deadline, runWithDeadline } from '@/utils/request/deadline'
+import { TimeoutBudget } from '@/utils/request/timeout-budget'
 
 @Injectable()
 export class RequestTimeoutInterceptor implements NestInterceptor {
-  constructor(
-    private readonly reflector: Reflector,
-    private readonly globalTimeout?: number
-  ) {}
+  constructor(private readonly reflector: Reflector) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const requestTimeout = this.reflector.getAllAndOverride<number>(REQUEST_TIMEOUT_METADATA_KEY, [
@@ -24,9 +21,10 @@ export class RequestTimeoutInterceptor implements NestInterceptor {
       context.getClass()
     ])
 
-    const finalTimeout = requestTimeout ?? this.globalTimeout ?? DEFAULT_FALLBACK_TIMEOUT
+    const finalTimeout = requestTimeout ?? TimeoutBudget.HTTP_REQUEST_TIMEOUT_MS
+    const deadline = Deadline.fromTimeout(finalTimeout)
 
-    return next.handle().pipe(
+    return runWithDeadline(deadline, () => next.handle()).pipe(
       timeout(finalTimeout),
       catchError((err) => {
         if (err instanceof TimeoutError) {

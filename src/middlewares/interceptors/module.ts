@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common'
 import { APP_INTERCEPTOR, Reflector } from '@nestjs/core'
 
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger'
-import { ISecretsAdapter, SecretsModule } from '@/infra/secrets'
 
 import {
   ExceptionHandlerInterceptor,
@@ -12,14 +11,14 @@ import {
 } from './index'
 
 @Module({
-  imports: [LoggerModule, SecretsModule],
+  imports: [LoggerModule],
   providers: [
     {
       provide: APP_INTERCEPTOR,
-      useFactory(reflector: Reflector, secret: ISecretsAdapter) {
-        return new RequestTimeoutInterceptor(reflector, secret.HTTP_REQUEST_TIMEOUT_MS)
+      useFactory(reflector: Reflector) {
+        return new RequestTimeoutInterceptor(reflector)
       },
-      inject: [Reflector, ISecretsAdapter]
+      inject: [Reflector]
     },
     {
       provide: APP_INTERCEPTOR,
@@ -36,10 +35,9 @@ import {
     },
     {
       provide: APP_INTERCEPTOR,
-      useFactory(logger: ILoggerAdapter) {
-        return new TracingInterceptor(logger)
-      },
-      inject: [ILoggerAdapter]
+      useFactory() {
+        return new TracingInterceptor()
+      }
     }
   ]
 })

@@ -1,6 +1,6 @@
 # TracingInterceptor
 
-The **heart of distributed tracing** in the application. This interceptor automatically creates spans for each HTTP request and provides a complete API for instrumentation, including a **pre-configured Axios client** that automatically propagates the `traceid` between microservices.
+The **heart of distributed tracing** in the application. This interceptor automatically creates spans for each HTTP request and provides a complete API for instrumentation. The `traceid` of the current request is automatically propagated to every outbound HTTP call made through the shared [`IHttpAdapter`](../infra/http.md) — no `tracing`-specific API needed for that.
 
 ## The Distributed Tracing Problem
 
@@ -64,10 +64,9 @@ The interceptor injects the `tracing` object into each request with the followin
 type TracingType = {
   span: Span              // Current OpenTelemetry span
   tracer: Tracer          // Tracer to create child spans
-  tracerId: string        // The unique traceid of the request
+  traceid: string         // The unique traceid of the request
   
   // Methods
-  axios: (config?) => AxiosInstance  // HTTP client with automatic traceid
   setStatus: (status) => void        // Set span status
   logEvent: (name, attrs?) => void   // Add event to span
   addAttribute: (key, value) => void // Add attribute to span
@@ -76,9 +75,9 @@ type TracingType = {
 }
 ```
 
-## Axios with Automatic TraceId ⭐
+## HTTP with Automatic TraceId ⭐
 
-**This is the most powerful feature of TracingInterceptor.** When you use `request.tracing.axios()`, the `traceid` is **automatically injected** into all HTTP calls:
+**You don't need any `tracing`-specific API for this.** Any [`IHttpBuilder`](../infra/http.md) obtained from the shared `IHttpAdapter` — injected like any other provider — automatically injects the current request's `traceid` when `.execute()` runs, via [`RequestContext`](../utils/request-context.md):
 
 ```typescript
 // ❌ WITHOUT TracingInterceptor - Need to set traceid manually EVERY TIME
@@ -107,25 +106,32 @@ async createOrder(@Req() request: ApiRequest) {
 
 ```typescript
 // ✅ WITH TracingInterceptor - TraceId injected AUTOMATICALLY
-@Post('create-order')
-async createOrder(@Req() request: ApiRequest) {
-  const http = request.tracing.axios() // Create instance with automatic traceid
-  
-  // All calls already have traceid + authorization in the header!
-  const user = await http.get('http://users-service/user/123')
-  const inventory = await http.get('http://inventory-service/check')
-  const payment = await http.post('http://payment-service/charge', data)
-  
-  // 🎉 Clean, no repetition, impossible to forget!
+@Controller('orders')
+export class OrderController {
+  constructor(private readonly httpAdapter: IHttpAdapter) {}
+
+  @Post('create-order')
+  async createOrder() {
+    const http = this.httpAdapter.request() // traceid injected automatically
+
+    // Forward the caller's token explicitly where it's actually needed
+    const user = await http.get('http://users-service/user/123').propagateAuthorization().execute()
+    const inventory = await http.get('http://inventory-service/check').execute()
+    const payment = await http.post('http://payment-service/charge', data).execute()
+
+    // 🎉 Clean, no repetition, impossible to forget the traceid!
+  }
 }
 ```
 
-### Headers Injected Automatically
+### Headers Injected
 
-| Header | Value | Description |
-|--------|-------|-------------|
-| `traceid` | `request.id` | Unique UUID of the original request |
-| `authorization` | `request.headers.authorization` | User's JWT token |
+| Header | Value | When |
+|--------|-------|------|
+| `traceid` | current request's traceid | Always, automatically |
+| `authorization` | current request's `authorization` header | Only when `.propagateAuthorization()` is called explicitly |
+
+Forwarding `authorization` is opt-in by design: most outbound calls (third-party integrations, public APIs) must **not** receive the caller's token. Only call `.propagateAuthorization()` for calls to trusted internal services that are meant to act on behalf of the current user.
 
 ### TraceId Propagation Flow
 
@@ -143,13 +149,13 @@ async createOrder(@Req() request: ApiRequest) {
 │  │                                                                      │    │
 │  │  1. Generates traceid: "abc-123-def-456"                            │    │
 │  │  2. Creates OpenTelemetry span                                      │    │
-│  │  3. Injects request.tracing with configured axios                   │    │
+│  │  3. Stores traceid in RequestContext (AsyncContext)                  │    │
 │  └─────────────────────────────────────────────────────────────────────┘    │
 │         │                                                                    │
-│         │ const http = request.tracing.axios()                              │
-│         │ http.get('http://orders-service/...')                             │
+│         │ http.get('http://orders-service/...').execute()                   │
+│         │ (traceid read automatically from RequestContext)                  │
 │         │                                                                    │
-│         │ Headers: { traceid: "abc-123-def-456", authorization: "..." }     │
+│         │ Headers: { traceid: "abc-123-def-456" }                           │
 │         ↓                                                                    │
 │  ┌─────────────────────────────────────────────────────────────────────┐    │
 │  │  Orders Service (TracingInterceptor)                                 │    │
@@ -159,10 +165,9 @@ async createOrder(@Req() request: ApiRequest) {
 │  │  3. Continues propagating in subsequent calls                       │    │
 │  └─────────────────────────────────────────────────────────────────────┘    │
 │         │                                                                    │
-│         │ const http = request.tracing.axios()                              │
-│         │ http.post('http://payment-service/...')                           │
+│         │ http.post('http://payment-service/...').execute()                 │
 │         │                                                                    │
-│         │ Headers: { traceid: "abc-123-def-456", authorization: "..." }     │
+│         │ Headers: { traceid: "abc-123-def-456" }                           │
 │         ↓                                                                    │
 │  ┌─────────────────────────────────────────────────────────────────────┐    │
 │  │  Payment Service (TracingInterceptor)                                │    │
@@ -178,7 +183,7 @@ async createOrder(@Req() request: ApiRequest) {
 
 ## Exponential Retry with Jitter
 
-The axios from `request.tracing.axios()` comes pre-configured with **automatic retry** using exponential backoff:
+Every `IHttpBuilder` request is backed by the same shared Axios instance used by [`HttpService`](../infra/http.md), which comes pre-configured with **automatic retry** using exponential backoff:
 
 ```typescript
 // Internal configuration from AxiosUtils.requestRetry
@@ -309,27 +314,31 @@ curl -X POST 'https://api/login' \
 Use `createSpan` to instrument internal operations:
 
 ```typescript
-@Post('process')
-async heavyProcess(@Req() request: ApiRequest) {
-  const { tracing } = request
-  
-  // Span for database operation
-  const dbSpan = tracing.createSpan('database-query')
-  const users = await this.userRepository.findAll()
-  dbSpan.end()
-  
-  // Span for processing
-  const processSpan = tracing.createSpan('data-processing')
-  const result = this.processData(users)
-  processSpan.end()
-  
-  // Span for external call
-  const externalSpan = tracing.createSpan('external-api-call')
-  const http = tracing.axios()
-  await http.post('https://external-api.com/notify', result)
-  externalSpan.end()
-  
-  return result
+@Controller('process')
+export class ProcessController {
+  constructor(private readonly http: IHttpAdapter) {}
+
+  @Post()
+  async heavyProcess(@Req() request: ApiRequest) {
+    const { tracing } = request
+
+    // Span for database operation
+    const dbSpan = tracing.createSpan('database-query')
+    const users = await this.userRepository.findAll()
+    dbSpan.end()
+
+    // Span for processing
+    const processSpan = tracing.createSpan('data-processing')
+    const result = this.processData(users)
+    processSpan.end()
+
+    // Span for external call
+    const externalSpan = tracing.createSpan('external-api-call')
+    await this.http.request().post('https://external-api.com/notify', result).execute()
+    externalSpan.end()
+
+    return result
+  }
 }
 ```
 
@@ -350,26 +359,30 @@ async heavyProcess(@Req() request: ApiRequest) {
 ## Adding Events and Attributes
 
 ```typescript
-@Post('order')
-async createOrder(@Req() request: ApiRequest, @Body() body: CreateOrderDTO) {
-  const { tracing } = request
-  
-  // Attributes - span metadata
-  tracing.addAttribute('order.items_count', body.items.length)
-  tracing.addAttribute('order.total_value', body.totalValue)
-  tracing.addAttribute('user.id', request.user.id)
-  
-  // Events - timestamps
-  tracing.logEvent('order.validated')
-  
-  const order = await this.orderService.create(body)
-  tracing.logEvent('order.created', { orderId: order.id })
-  
-  const http = tracing.axios()
-  await http.post('http://notification-service/send', { orderId: order.id })
-  tracing.logEvent('notification.sent')
-  
-  return order
+@Controller('order')
+export class OrderController {
+  constructor(private readonly http: IHttpAdapter) {}
+
+  @Post()
+  async createOrder(@Req() request: ApiRequest) {
+    const { tracing, body } = request
+
+    // Attributes - span metadata
+    tracing.addAttribute('order.items_count', body.items.length)
+    tracing.addAttribute('order.total_value', body.totalValue)
+    tracing.addAttribute('user.id', request.user.id)
+
+    // Events - timestamps
+    tracing.logEvent('order.validated')
+
+    const order = await this.orderService.create(body)
+    tracing.logEvent('order.created', { orderId: order.id })
+
+    await this.http.request().post('http://notification-service/send', { orderId: order.id }).execute()
+    tracing.logEvent('notification.sent')
+
+    return order
+  }
 }
 ```
 
@@ -379,19 +392,23 @@ async createOrder(@Req() request: ApiRequest, @Body() body: CreateOrderDTO) {
 // orders-service/order.controller.ts
 @Controller('orders')
 export class OrderController {
-  
+  constructor(private readonly http: IHttpAdapter) {}
+
   @Post()
-  async create(@Req() request: ApiRequest, @Body() body: CreateOrderDTO) {
-    const { tracing } = request
-    const http = tracing.axios() // automatic traceid!
-    
+  async create(@Req() request: ApiRequest) {
+    const { tracing, body } = request
+
     tracing.addAttribute('order.value', body.totalValue)
     
     // 1. Validate user in user-service
     tracing.logEvent('validating-user')
     const userSpan = tracing.createSpan('user-service.validate')
     try {
-      const { data: user } = await http.get(`http://user-service/users/${body.userId}`)
+      const user = await this.http
+        .request()
+        .get<User>(`http://user-service/users/${body.userId}`)
+        .propagateAuthorization()
+        .execute()
       userSpan.setStatus({ code: SpanStatusCode.OK })
       tracing.addAttribute('user.email', user.email)
     } finally {
@@ -402,7 +419,7 @@ export class OrderController {
     tracing.logEvent('checking-inventory')
     const inventorySpan = tracing.createSpan('inventory-service.check')
     try {
-      await http.post('http://inventory-service/check', { items: body.items })
+      await this.http.request().post('http://inventory-service/check', { items: body.items }).execute()
       inventorySpan.setStatus({ code: SpanStatusCode.OK })
     } finally {
       inventorySpan.end()
@@ -412,10 +429,13 @@ export class OrderController {
     tracing.logEvent('processing-payment')
     const paymentSpan = tracing.createSpan('payment-service.charge')
     try {
-      const { data: payment } = await http.post('http://payment-service/charge', {
-        amount: body.totalValue,
-        userId: body.userId
-      })
+      const payment = await this.http
+        .request()
+        .post<Payment>('http://payment-service/charge', {
+          amount: body.totalValue,
+          userId: body.userId
+        })
+        .execute()
       paymentSpan.setStatus({ code: SpanStatusCode.OK })
       tracing.addAttribute('payment.id', payment.id)
     } finally {
@@ -427,10 +447,14 @@ export class OrderController {
     tracing.logEvent('order.created', { orderId: order.id })
     
     // 5. Notify (fire and forget with same traceid)
-    http.post('http://notification-service/send', { 
-      type: 'order_created', 
-      orderId: order.id 
-    }).catch(() => {}) // Best effort
+    this.http
+      .request()
+      .post('http://notification-service/send', { 
+        type: 'order_created', 
+        orderId: order.id 
+      })
+      .execute()
+      .catch(() => {}) // Best effort
     
     return order
   }

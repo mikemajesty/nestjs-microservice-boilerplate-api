@@ -7,6 +7,7 @@ import https from 'https'
 
 import { AxiosUtils } from '@/utils/axios'
 import { ObjectUtils } from '@/utils/object'
+import { TimeoutBudget } from '@/utils/request/timeout-budget'
 
 import { ILoggerAdapter } from '../logger'
 import { IHttpAdapter, IHttpBuilder } from './adapter'
@@ -26,7 +27,7 @@ export class HttpService implements IHttpAdapter {
     const defaults: CreateAxiosDefaults = {
       proxy: false,
       httpsAgent,
-      timeout: 30000
+      timeout: TimeoutBudget.DEPENDENCY_TIMEOUT_MS
     }
 
     const mergedOptions = ObjectUtils.mergeShallow(defaults, options)

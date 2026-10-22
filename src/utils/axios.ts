@@ -10,6 +10,8 @@ import { ILoggerAdapter } from '@/infra/logger'
 import { ApiInternalServerException } from './exception'
 import { DEFAULT_RETRY_STATUS, DefaultErrorMessage, NETWORK_RETRY_CODES } from './http-status'
 import { ObjectUtils } from './object'
+import { getCurrentDeadline } from './request/deadline'
+import { TimeoutBudget } from './request/timeout-budget'
 
 export class AxiosUtils {
   static interceptAxiosResponseError = (error: CustomAxiosError): void => {
@@ -33,11 +35,11 @@ export class AxiosUtils {
 
   private static extractErrorStatus(error: CustomAxiosError): number {
     const statusCandidates = [
-      ObjectUtils.reach(error, (e) => e.response.data.code),
-      ObjectUtils.reach(error, (e) => e.response.data.error.code),
       ObjectUtils.reach(error, (e) => e.response.status),
       ObjectUtils.reach(error, (e) => e.status),
-      500
+      ObjectUtils.reach(error, (e) => e.response.data.code),
+      ObjectUtils.reach(error, (e) => e.response.data.error.code),
+      ApiInternalServerException.STATUS
     ]
 
     const status = statusCandidates
@@ -63,7 +65,8 @@ export class AxiosUtils {
   static requestRetry = ({ axios, logger, status: statusRetry = DEFAULT_RETRY_STATUS }: RequestRetry): void => {
     axiosRetry(axios, {
       shouldResetTimeout: true,
-      retries: 3,
+      retries: 0,
+      retryBudgetMs: TimeoutBudget.DEPENDENCY_TIMEOUT_MS,
 
       retryDelay: (retryCount: number, error: AxiosError | CustomAxiosError) => {
         const axiosError = error as CustomAxiosError
@@ -81,19 +84,22 @@ export class AxiosUtils {
           }
         })
 
-        const baseDelay = Math.pow(2, retryCount) * 1000
-        const jitter = Math.random() * 1000
-        return baseDelay + jitter
+        return this.getRetryDelay(retryCount)
       },
 
       retryCondition: (error: AxiosError | CustomAxiosError) => {
         const status = this.extractErrorStatus(error as CustomAxiosError)
-        const requestRetryStatus = error.config?.['axios-retry']?.status
+        const retryConfig = error.config?.['axios-retry']
+        const requestRetryStatus = retryConfig?.status
 
         const isNetworkError = NETWORK_RETRY_CODES.includes(error.code as string)
         const isRetryableStatus = (requestRetryStatus ?? statusRetry).includes(status)
 
-        return isNetworkError || isRetryableStatus
+        if (!isNetworkError && !isRetryableStatus) {
+          return false
+        }
+
+        return this.canScheduleRetry(error, logger)
       },
 
       onRetry: (retryCount, error, requestConfig) => {
@@ -119,6 +125,62 @@ export class AxiosUtils {
       }
     })
   }
+
+  private static getRetryDelay = (retryCount: number): number => {
+    return Math.random() * this.getRetryDelayMaximum(retryCount)
+  }
+
+  private static getRetryDelayMaximum = (retryCount: number): number => {
+    return 2 ** retryCount * 1000
+  }
+
+  private static canScheduleRetry = (error: AxiosError | CustomAxiosError, logger: ILoggerAdapter): boolean => {
+    const retryConfig = error.config?.['axios-retry']
+    const deadlineAwareBudget = TimeoutBudget.getDependencyTimeoutMs(getCurrentDeadline())
+
+    const getRetryBudget = () => {
+      if (retryConfig?.retryBudgetMs !== undefined) {
+        return Math.min(retryConfig.retryBudgetMs, deadlineAwareBudget)
+      }
+      return deadlineAwareBudget
+    }
+
+    const retryBudget = getRetryBudget()
+    const elapsed = retryConfig?.lastRequestTime ? Date.now() - retryConfig.lastRequestTime : undefined
+
+    if (elapsed === undefined) {
+      return true
+    }
+
+    const retryCount = retryConfig?.retryCount ?? 0
+    const maximumNextDelay = this.getRetryDelayMaximum(retryCount + 1)
+
+    const hasSufficientRetryBudget = elapsed + maximumNextDelay < retryBudget
+
+    if (hasSufficientRetryBudget) {
+      return true
+    }
+
+    logger.warn({
+      message: 'Retry budget exhausted',
+      metadata: {
+        elapsed,
+        maximumNextDelay,
+        retryBudget,
+        url: error.config?.url,
+        method: error.config?.method
+      }
+    })
+
+    return false
+  }
+}
+
+export class CustomAxiosError extends AxiosError<AdditionalAxiosErrorData> {
+  data!: {
+    message?: string
+    code?: number | string
+  }
 }
 
 type RequestRetry = {
@@ -136,11 +198,4 @@ type AdditionalAxiosErrorData = {
   code?: number | string
   message?: string
   status?: number
-}
-
-export class CustomAxiosError extends AxiosError<AdditionalAxiosErrorData> {
-  data!: {
-    message?: string
-    code?: number | string
-  }
 }

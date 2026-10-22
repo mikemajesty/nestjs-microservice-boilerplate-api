@@ -8,7 +8,7 @@ const { compilerOptions } = tsconfig
 const config: Config.InitialOptions = {
   moduleFileExtensions: ['js', 'json', 'ts'],
   rootDir: '..',
-  roots: ['src/core', 'src/infra/cache/aside', 'src/modules'],
+  roots: ['src'],
   testRegex: '.*\\.spec\\.ts$',
   transformIgnorePatterns: ['node_modules/(?!(@nestjs)|uuid|babel-jest|@faker-js/faker|@mikemajesty/zod-mock-schema/)'],
   transform: {

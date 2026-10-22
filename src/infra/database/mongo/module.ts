@@ -6,6 +6,7 @@ import { Connection } from 'mongoose'
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger'
 import { ISecretsAdapter, SecretsModule } from '@/infra/secrets'
 import { ApiInternalServerException } from '@/utils/exception'
+import { TimeoutBudget } from '@/utils/request/timeout-budget'
 
 import { name } from '../../../../package.json'
 import { MongoConnectionName } from '../enum'
@@ -49,7 +50,7 @@ import { MongoService } from './service'
           maxPoolSize: 25,
           maxIdleTimeMS: 300000,
           serverSelectionTimeoutMS: 5000,
-          socketTimeoutMS: 30000,
+          socketTimeoutMS: TimeoutBudget.DEPENDENCY_TIMEOUT_MS,
           connectTimeoutMS: 10000,
           heartbeatFrequencyMS: 10000,
           maxConnecting: 5,
