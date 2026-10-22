@@ -1,7 +1,8 @@
 /**
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/infra/database.md
  */
-import { config } from 'dotenv'
+import 'dotenv/config'
+
 import path from 'path'
 import { DataSource, DataSourceOptions } from 'typeorm'
 
@@ -9,7 +10,6 @@ import { name } from '../../../../package.json'
 import { SnakeNamingStrategy } from '../../repository/util'
 import { SecretsService } from '../../secrets/service'
 import { POSTGRES_POOL_OPTIONS } from './pool-options'
-config()
 
 const entities = [path.join(__dirname, 'schemas/*.{ts,js}')]
 const migrations = [path.join(__dirname, 'migrations/*.{ts,js}')]

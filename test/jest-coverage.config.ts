@@ -11,7 +11,7 @@ export default {
   transform: {
     '^.+\\.(t|j)s$': 'ts-jest'
   },
-  setupFilesAfterEnv: ['../../test/initialization.ts'],
+  setupFilesAfterEnv: ['<rootDir>/test/initialization.ts'],
   testEnvironment: 'node',
   collectCoverage: true,
   coverageThreshold: {

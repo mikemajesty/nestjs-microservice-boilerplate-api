@@ -1,29 +1,28 @@
 /**
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/infra/timeout-budget.md
  */
-import { config } from 'dotenv'
 
 import { ApiInternalServerException } from '@/utils/exception'
 import { RequestDeadline } from '@/utils/request/deadline'
 
 import { SecretsSchema } from '../../infra/secrets/schema'
 
-config()
-
 export class TimeoutBudget {
   private static readonly DEPENDENCY_SAFETY_MARGIN_MS = 1000
 
-  static readonly HTTP_REQUEST_TIMEOUT_MS = TimeoutBudget.resolveHttpRequestTimeoutMs()
+  static readonly HTTP_REQUEST_TIMEOUT_MS = TimeoutBudget.resolveHttpRequestTimeoutMs(
+    process.env.HTTP_REQUEST_TIMEOUT_MS
+  )
 
   static readonly DEPENDENCY_TIMEOUT_MS = TimeoutBudget.resolveDependencyTimeoutMs()
 
-  private static resolveHttpRequestTimeoutMs(): number {
+  private static resolveHttpRequestTimeoutMs(httpRequestTimeoutMs: string | undefined): number {
     const schema = SecretsSchema().pick({
       HTTP_REQUEST_TIMEOUT_MS: true
     })
 
     const { HTTP_REQUEST_TIMEOUT_MS } = schema.parse({
-      HTTP_REQUEST_TIMEOUT_MS: process.env.HTTP_REQUEST_TIMEOUT_MS
+      HTTP_REQUEST_TIMEOUT_MS: httpRequestTimeoutMs
     })
 
     return HTTP_REQUEST_TIMEOUT_MS
