@@ -3,7 +3,7 @@
     "scope": "javascript,typescript",
     "prefix": "usecase",
     "body": [
-      "import { Infer } from '@/utils/validator';",
+      "import { SchemaInfer } from '@/utils/validator';",
       "$1",
       "import { ValidateSchema } from '@/utils/decorators';",
       "import { IUsecase } from '@/utils/usecase';",
@@ -19,10 +19,21 @@
       "  }",
       "}",
       "$5",
-      "export type ${TM_FILENAME_BASE/([a-zA-Z]+)-?([a-zA-Z]*)-?([a-zA-Z]*)-?([a-zA-Z]*)?-?([a-zA-Z]*)?-?([a-zA-Z]*)?/${1:/capitalize}${2:/capitalize}${3:/capitalize}${4:/capitalize}${5:/capitalize}${6:/capitalize}/}Input = Infer<typeof ${TM_FILENAME_BASE/([a-zA-Z]+)-?([a-zA-Z]*)-?([a-zA-Z]*)-?([a-zA-Z]*)?-?([a-zA-Z]*)?-?([a-zA-Z]*)?/${1:/capitalize}${2:/capitalize}${3:/capitalize}${4:/capitalize}${5:/capitalize}${6:/capitalize}/}InputSchema>;",
+      "export type ${TM_FILENAME_BASE/([a-zA-Z]+)-?([a-zA-Z]*)-?([a-zA-Z]*)-?([a-zA-Z]*)?-?([a-zA-Z]*)?-?([a-zA-Z]*)?/${1:/capitalize}${2:/capitalize}${3:/capitalize}${4:/capitalize}${5:/capitalize}${6:/capitalize}/}Input = SchemaInfer<typeof ${TM_FILENAME_BASE/([a-zA-Z]+)-?([a-zA-Z]*)-?([a-zA-Z]*)-?([a-zA-Z]*)?-?([a-zA-Z]*)?-?([a-zA-Z]*)?/${1:/capitalize}${2:/capitalize}${3:/capitalize}${4:/capitalize}${5:/capitalize}${6:/capitalize}/}InputSchema>;",
       "export type ${TM_FILENAME_BASE/([a-zA-Z]+)-?([a-zA-Z]*)-?([a-zA-Z]*)-?([a-zA-Z]*)?-?([a-zA-Z]*)?-?([a-zA-Z]*)?/${1:/capitalize}${2:/capitalize}${3:/capitalize}${4:/capitalize}${5:/capitalize}${6:/capitalize}/}Output = ${TM_FILENAME_BASE/([a-zA-Z]+)-?([a-zA-Z]*)-?([a-zA-Z]*)-?([a-zA-Z]*)?-?([a-zA-Z]*)?-?([a-zA-Z]*)?/${1:/capitalize}${2:/capitalize}${3:/capitalize}${4:/capitalize}${5:/capitalize}${6:/capitalize}/}Input;",
       "$4"
     ],
     "description": "Create usecase"
+  },
+  "Create Usecase Interface": {
+    "scope": "typescript",
+    "prefix": "iusecase",
+    "body": [
+      "export abstract class I${1:${TM_DIRECTORY/^.*\\/(.)([^\\/]*)$/${1:/upcase}$2/}} implements IUsecase {",
+      "  abstract execute(input: ${1}Input${2:, trace: ApiTracingInput}): Promise<${1}Output>",
+      "}",
+      "$0"
+    ],
+    "description": "Create usecase abstract interface with Input/Output (imports are added on save)"
   }
 }

@@ -76,7 +76,7 @@ export class AuthenticationGuard implements CanActivate {
 
     const key = Namespaces.blacklist(userId)
 
-    const blackListToken: unknown = await this.getBlackListToken(key, request)
+    const blackListToken = await this.getBlackListToken(key, request)
 
     if (blackListToken) {
       finishTracing(request, ApiUnauthorizedException.STATUS, 'you have been logged out')
