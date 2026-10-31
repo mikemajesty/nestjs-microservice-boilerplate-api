@@ -20,6 +20,7 @@ import path from 'path'
 import { ILoggerAdapter } from '@/infra/logger/adapter'
 import { ISecretsAdapter } from '@/infra/secrets'
 import { ExceptionHandlerFilter } from '@/middlewares/filters'
+import { ByteSize } from '@/utils/byte-size'
 
 import { name, version } from '../package.json'
 import { AppModule } from './app.module'
@@ -44,7 +45,7 @@ async function bootstrap() {
   const app = await NestFactory.create(
     AppModule,
     new FastifyAdapter({
-      bodyLimit: 10 * 1024 * 1024 // 10MB
+      bodyLimit: ByteSize.fromMegabytes(10)
     }),
     {
       bufferLogs: true,
@@ -156,7 +157,7 @@ async function bootstrap() {
 
   await fastify.register(fastifyCompress, {
     encodings: ['gzip', 'deflate'],
-    threshold: 1024
+    threshold: ByteSize.fromKilobytes(1)
   })
 
   const {

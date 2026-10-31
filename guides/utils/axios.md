@@ -38,9 +38,9 @@ The status is resolved from the first valid HTTP status candidate, in this order
 
 ```typescript
 const statusCandidates = [
-  error.response?.status,       // HTTP protocol truth, always wins when present
+  error.response?.status, // HTTP protocol truth, always wins when present
   error.status,
-  error.response?.data?.code,       // fallback: business code in the body
+  error.response?.data?.code, // fallback: business code in the body
   error.response?.data?.error?.code, // fallback: business code in the body
   500
 ]
@@ -81,19 +81,25 @@ const messageCandidates = [
 
 When an Axios request fails, the error receives a `curl` property that can be copied and executed to reproduce the request.
 
-Sensitive fields are masked:
+Sensitive data is masked (`SENSITIVE_CURL_DATA` in `src/utils/axios.ts`):
 
-```typescript
-['password', 'cpf', 'authorization', 'token']
-```
+| Where                   | Masked keys                                                   |
+| ----------------------- | ------------------------------------------------------------- |
+| Body fields             | `password`, `cpf`, `authorization`, `token`                   |
+| Headers (any case)      | `authorization`, `proxy-authorization`, `cookie`, `x-api-key` |
+| Query params (any case) | `token`, `access_token`, `api_key`                            |
+
+A password in the URL (`https://user:password@host`) is always masked, and
+values are shell-escaped, so the command is safe to paste into a terminal.
 
 Example:
 
 ```bash
-curl -X POST 'https://api.example.com/orders' \
-  -H 'Authorization: ******' \
-  -d '{"amount":2500,"currency":"BRL"}'
+curl --location -g --request POST 'https://api.example.com/orders?api_key=******' --header 'Authorization: ******' --data-raw '{"amount":2500,"password":"******"}'
 ```
+
+Add new keys to `SENSITIVE_CURL_DATA` when an integration sends credentials
+under another name.
 
 ## Retry behavior
 
@@ -124,14 +130,18 @@ const result = await this.http
 Default retry statuses (used when `.retry()` doesn't pass `retryStatusCodes`):
 
 ```typescript
-[408, 429, 500, 502, 503, 504]
+;[408, 429, 500, 502, 503, 504]
 ```
 
 Default retry network error codes:
 
 ```typescript
-['ECONNABORTED', 'ECONNRESET', 'ETIMEDOUT']
+;['ECONNABORTED', 'ETIMEDOUT', 'ECONNRESET', 'ECONNREFUSED']
 ```
+
+`ECONNREFUSED` (nothing listening, e.g. a dependency restarting during a
+deploy) is the safest one to retry: the connection never opened, so the
+request never reached the server, even for `POST`.
 
 ## Idempotency is the caller's responsibility
 
@@ -139,8 +149,46 @@ Retrying `POST`/`PATCH` requests can duplicate side effects (e.g. creating the
 same order twice or charging a card twice) if the original request reached the
 server but the response was lost (e.g. `ECONNRESET`, `ETIMEDOUT`, or a `503`
 after partial processing). Because retry is opt-in, **the caller decides**
-whether enabling `.retry()` on a non-idempotent endpoint is safe — for example,
-only do it when the endpoint is protected by an idempotency key.
+whether enabling `.retry()` on a non-idempotent endpoint is safe.
+
+`GET`, `PUT` and `DELETE` are idempotent by definition and safe to retry.
+
+### Idempotency key
+
+When the dependency supports it (common in payment APIs such as Stripe, Adyen
+and PayPal), send an `Idempotency-Key` header. The server stores the result of
+the first request with that key and returns it for any repetition, without
+running the operation again:
+
+```typescript
+await this.http
+  .request()
+  .post('https://payments.example.com/charges', { orderId: order.id, amount: order.total })
+  .header('Idempotency-Key', `charge-${order.id}`)
+  .retry({ retries: 2 })
+  .execute()
+```
+
+No extra API is needed: headers are resent unchanged on every retry, so all
+attempts of the operation carry the same key.
+
+- **Derive the key from a business ID** (`charge-${order.id}`), not a random
+  UUID. A business key also protects against duplicates outside the retry: a
+  job reprocessing a message, a user double-clicking, or a restart in the
+  middle of the operation. A UUID generated per call only covers the retries of
+  that call.
+- **One key per operation.** Different operations on the same entity need
+  different keys (`charge-${order.id}` and `refund-${order.id}`); reusing a key
+  for a different payload is usually rejected by the server.
+- **It only works if the dependency supports it.** A server that ignores the
+  header will still duplicate the operation. Check the dependency docs before
+  enabling `.retry()` on a non-idempotent endpoint; if it has no idempotency
+  support, don't retry it.
+- **Header name and key lifetime vary by API.** `Idempotency-Key` is the most
+  common name, but some APIs use another one, and most keep keys only for a
+  limited time (e.g. 24 hours).
+
+## Backoff
 
 The retry delay uses exponential backoff with full jitter. The delay is a
 random value between zero and the maximum exponential backoff for that
@@ -160,7 +208,13 @@ With 3 retries, the maximum delay for each retry is:
 Full jitter avoids synchronizing clients that retry at the same exponential
 backoff intervals, reducing contention when many requests fail together.
 
-### Retry budget
+When the response has a `Retry-After` header (seconds or HTTP-date, usually
+on `429`/`503`), its value replaces the backoff. It is still bound by the
+retry budget: if the requested wait doesn't fit, the request fails right away
+instead of retrying early and hitting the rate limit again. An invalid value
+falls back to the backoff.
+
+## Retry budget
 
 Each request has a retry budget for scheduling retries, including elapsed time
 and backoff delays. It defaults to `DEPENDENCY_TIMEOUT_MS`, but can be
@@ -170,14 +224,15 @@ overridden for a specific request:
 .retry({ retries: 3, retryBudgetMs: 4000 })
 ```
 
-Before scheduling each retry, the client checks the elapsed operation time
-plus the maximum possible next backoff. If that would reach or exceed the
-remaining budget, the retry is skipped and the current error is propagated.
-The actual scheduled delay still uses full jitter. This conservative check
-avoids scheduling a retry that could exceed the budget. This is a static
-per-call budget; it does not yet represent the remaining time of the inbound
-request, and it does not abort an attempt that is already running. Dynamic
-deadline propagation is planned for a later phase.
+The budget is measured from the start of the first attempt, so it covers every
+attempt plus every backoff delay. It is capped at `DEPENDENCY_TIMEOUT_MS` and
+by the remaining time of the inbound `Deadline`, when there is one.
+
+Before scheduling each retry, the client draws the jittered delay and only
+schedules the retry if that delay is lower than the remaining budget;
+otherwise the current error is propagated. The same drawn delay is the one
+actually waited. Each retry attempt has its timeout capped to the remaining
+budget, so the whole operation stays within it.
 
 ## Custom retry statuses per Axios instance
 

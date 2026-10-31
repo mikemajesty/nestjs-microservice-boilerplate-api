@@ -4,7 +4,7 @@ import "@typespec/http";
 namespace api.Health;
 
 @doc("health output")
-model HealthOuput {
+model HealthOutput {
   @doc("application status: **UP** | **DOWN** ")
   server: string;
 
@@ -12,10 +12,31 @@ model HealthOuput {
   version: string;
 
   @doc("mongo information")
-  mongo: DatabaseStatus;
+  mongo: {
+    @doc("MongoDB status: **UP** | **DOWN**")
+    status: string;
+
+    @doc("MongoDB connection pool metrics; null when unavailable")
+    connection: MongoConnectionOutput | null;
+
+    @doc("MongoDB WiredTiger cache metrics; values may be null when unsupported or unavailable")
+    memory: {
+      used: string | null;
+      limit: string | null;
+    };
+  };
 
   @doc("postgres information")
-  postgres: DatabaseStatus;
+  postgres: {
+    @doc("PostgreSQL status: **UP** | **DOWN**")
+    status: string;
+
+    @doc("PostgreSQL connection metrics; null when unavailable")
+    connection: PostgresConnectionOutput | null;
+
+    @doc("Total PostgreSQL database size in bytes; null when unavailable")
+    databaseSizeBytes: string | null;
+  };
 
   @doc("redis status: **UP** | **DOWN** ")
   redisState: string;
@@ -32,7 +53,7 @@ model HealthOuput {
     latency: string;
 
     @doc("representing the active connections count")
-    connections: int32;
+    connections: int32 | null;
   };
 
   @doc("memory usage")
@@ -76,13 +97,13 @@ model HealthOuput {
     @doc("cpu load average")
     globalAvarage: {
       @doc("cpu load average on last minute")
-      lastMinute: HealthOuputLoad;
+      lastMinute: HealthOutputLoad;
 
       @doc("cpu load average on five minute")
-      lastFiveMinutes: HealthOuputLoad;
+      lastFiveMinutes: HealthOutputLoad;
 
       @doc("cpu load average on fifteen minute")
-      lastFifteenMinutes: HealthOuputLoad;
+      lastFifteenMinutes: HealthOutputLoad;
     };
 
     @doc("cpu cores")
@@ -97,7 +118,7 @@ model HealthOuput {
 }
 
 @doc("load avererage")
-model HealthOuputLoad {
+model HealthOutputLoad {
   @doc("load avererage")
   load: decimal;
 
@@ -105,34 +126,32 @@ model HealthOuputLoad {
   status: string;
 }
 
-@doc("db information")
-model DatabaseStatus {
-  @doc("db status: **UP** | **DOWN** ")
-  status: string;
+@doc("MongoDB connection pool metrics")
+model MongoConnectionOutput {
+  active: int64;
+  available: int64;
+  current: int64;
+  totalCreated: int64;
 
-  @doc("The set of numbers you provided represents connection metrics for the db server.")
-  connection: {
-    @doc("Refers to the number of active connections that are currently in use, typically handling ongoing operations or queries.")
-    active: int64;
-
-    @doc("Indicates the number of available connections that can be established with the db server, based on its configuration and resources.")
-    available: int64;
-
-    @doc("Represents the current number of active connections to the db server")
-    current: int64;
-
-    @doc("The total number of connections created since the server started.")
-    totalCreated: int64;
+  @doc("Additional metrics reported by MongoDB versions that expose them")
+  rejected?: int64;
+  queuedForEstablishment?: int64;
+  establishmentRateLimit?: {
+    rejected: int64;
+    exempted: int64;
+    interruptedDueToClientDisconnect: int64;
   };
+  threaded?: int64;
+  exhaustIsMaster?: int64;
+  exhaustHello?: int64;
+  awaitingTopologyChanges?: int64;
+}
 
-  @doc("Memory usage statistics for the database instance.")
-  memory: {
-    @doc("The amount of RAM currently used by database in megabytes (MB).")
-    ramUsed: string;
-
-    @doc("The total amount of virtual memory reserved by database in megabytes (MB).")
-    reservedMemory: string;
-  };
+@doc("PostgreSQL connection metrics")
+model PostgresConnectionOutput {
+  active: int64;
+  available: int64;
+  current: int64;
 }
 
 @doc("Liveness probe response model")

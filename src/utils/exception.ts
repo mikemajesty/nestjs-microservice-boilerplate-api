@@ -114,6 +114,13 @@ export class ApiServiceUnavailableException extends BaseException {
   }
 }
 
+export class ApiBadGatewayException extends BaseException {
+  static STATUS = HttpStatus.BAD_GATEWAY
+  constructor(message?: MessageType, metadata?: ParametersType) {
+    super(message ?? ApiBadGatewayException.name, ApiBadGatewayException.STATUS, metadata)
+  }
+}
+
 /**
  * Wraps an error coming from an external HTTP call (e.g. axios) so it can be handled
  * polymorphically alongside native `HttpException`s (`getResponse()`/`getStatus()`),
@@ -198,5 +205,6 @@ const HTTP_STATUS_EXCEPTION_MAP: Record<
   [ApiConflictException.STATUS]: ApiConflictException,
   [ApiUnprocessableEntityException.STATUS]: ApiUnprocessableEntityException,
   [ApiServiceUnavailableException.STATUS]: ApiServiceUnavailableException,
+  [ApiBadGatewayException.STATUS]: ApiBadGatewayException,
   [ApiInternalServerException.STATUS]: ApiInternalServerException
 }

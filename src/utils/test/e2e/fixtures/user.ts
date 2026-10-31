@@ -1,11 +1,11 @@
-import { DataSource, EntityManager } from 'typeorm'
+import { EntityManager } from 'typeorm'
 
 import { RoleEntity } from '@/core/role/entity/role'
 import { UserEntity } from '@/core/user/entity/user'
 import { UserPasswordEntity } from '@/core/user/entity/user-password'
 import { IUserRepository } from '@/core/user/repository/user'
 import { UserSchema } from '@/infra/database/postgres/schemas/user'
-import { RunInTransactionType } from '@/infra/repository'
+import { IRepository, RunInTransactionType } from '@/infra/repository'
 import { createRelations } from '@/infra/repository/util'
 import { UserModel } from '@/modules/user/repository'
 import { CryptoUtils } from '@/utils/crypto'
@@ -13,8 +13,9 @@ import { IDGeneratorUtils } from '@/utils/id-generator'
 
 import { MockUtils } from '../../mock'
 import { ITestFixture } from './adpater'
+import { DatabaseFixture } from './database-fixture'
 
-export class UserFixture implements ITestFixture<UserEntity> {
+export class UserFixture extends DatabaseFixture<UserSchema> implements ITestFixture<UserEntity> {
   private password = new UserPasswordEntity({
     id: IDGeneratorUtils.uuid(),
     password: CryptoUtils.createHash('admin')
@@ -28,17 +29,12 @@ export class UserFixture implements ITestFixture<UserEntity> {
     roles: []
   })
 
-  async clear(manager: DataSource): Promise<void> {
-    const dataSource = await manager.initialize()
-    const entities = dataSource.entityMetadatas.filter((e) => UserEntity.name === e.name)
-    for (const entity of entities) {
-      const repository = dataSource.getRepository(entity.name)
-      await repository.query(`TRUNCATE TABLE ${entity.tableName} RESTART IDENTITY CASCADE;`)
-    }
+  constructor() {
+    super(UserSchema)
   }
 
-  override(entity: UserEntity): UserEntity {
-    return { ...this.entity, ...entity } as UserEntity
+  override(overrides: Partial<UserEntity>): UserEntity {
+    return new UserEntity({ ...this.entity.toData(), ...overrides })
   }
 
   async removeRoles(userRepository: IUserRepository, role: RoleEntity): Promise<void> {
@@ -56,18 +52,14 @@ export class UserFixture implements ITestFixture<UserEntity> {
   }
 
   async up(userRepository: IUserRepository): Promise<void> {
-    await userRepository.runInTransaction(async (ctx: RunInTransactionType) => {
-      const context = ctx as EntityManager
-      const exists = await context.findOne(UserSchema, { where: { email: this.entity.email } })
-      if (exists) return
-      await context.save(UserSchema, this.entity.toData() as UserModel)
+    await this.insertIfNotExists({
+      repository: userRepository,
+      entities: [this.entity],
+      where: (entity) => ({ email: entity.email })
     })
   }
 
-  async down(userRepository: IUserRepository): Promise<void> {
-    await userRepository.runInTransaction(async (ctx: RunInTransactionType) => {
-      const context = ctx as EntityManager
-      await context.deleteAll(UserSchema)
-    })
+  async down(repository: IRepository<UserEntity>): Promise<void> {
+    await this.deleteAllRows(repository)
   }
 }

@@ -11,9 +11,11 @@ These decorators solve **real-world problems** by eliminating boilerplate code, 
 ### **🛡️ Validation & Security**
 
 #### **[ValidateSchema](validate-schema.md)** | **[📄 Code](../../src/utils/decorators/validate-schema.decorator.ts)**
+
 **Mandatory Zod validation for all use cases.** Transforms manual parameter validation into automatic, type-safe schema validation with multi-parameter support and consistent error handling.
 
 #### **[Permission](permission.md)** | **[📄 Code](../../src/utils/decorators/role.decorator.ts)**
+
 **Role-based authorization system.** Elegant authorization decorator that enforces resource:action permissions through User→Role→Permission flow with database integration.
 
 ---
@@ -21,22 +23,23 @@ These decorators solve **real-world problems** by eliminating boilerplate code, 
 ### **⚡ Performance & Resilience**
 
 #### **[RequestTimeout](request-timeout.md)** | **[📄 Code](../../src/utils/decorators/request-timeout.decorator.ts)**
+
 **Method-level timeout control.** Simple decorator that overrides default timeouts for specific operations, integrating seamlessly with RequestTimeoutInterceptor.
 
 #### **[LogExecutionTime](log-execution-time.md)** | **[📄 Code](../../src/utils/decorators/log-execution-time.decorator.ts)**
-**High-precision performance monitoring.** Automatic execution time logging with colorized output and millisecond precision for performance analysis.
 
-#### **[CircuitBreaker](circuit-breaker.md)** | **[📄 Code](../../src/utils/decorators/circuit-breaker.decorator.ts)**
-**Elegant circuit breaker wrapper.** Transforms complex Opossum circuit breaker setup into simple decorator annotations with circuit groups, metrics, and event handling.
+**High-precision performance monitoring.** Automatic execution time logging with colorized output and millisecond precision for performance analysis.
 
 ---
 
 ### **🔄 Parallel Processing**
 
 #### **[Thread Decorator](thread.md)** | **[📄 Code](../../src/utils/decorators/workers/thread.decorator.ts)**
+
 **CPU-intensive operations in worker threads.** Non-blocking execution for mathematical computations, data analysis, image processing, and text analysis with true parallelism.
 
 #### **[Process Decorator](process.md)** | **[📄 Code](../../src/utils/decorators/process/process.decorator.ts)**
+
 **Memory-intensive operations in child processes.** Complete memory isolation for document processing, large file operations, ML training, and memory-heavy tasks.
 
 ---
@@ -44,34 +47,40 @@ These decorators solve **real-world problems** by eliminating boilerplate code, 
 ### **🗄️ Database Optimization**
 
 #### **[TransformSort](validate-database-sort-allowed.md)** | **[📄 Code](../../src/utils/decorators/sort/transform-sort.decorator.ts)**
+
 **Type-safe sorting validation for repositories.** Automatic sort object generation with field whitelisting, custom mapping, and type-safe validation for pagination methods.
 
 #### **[TransformTypeOrmSearch](convert-typeorm-filter.md)** | **[📄 Code](../../src/utils/decorators/filter/typeorm/transform-type-orm-search.decorator.ts)**
+
 **Automatic TypeORM WHERE clause generation.** Transforms manual filter construction into elegant, type-safe PostgreSQL queries with unaccent support and automatic type conversion.
 
 #### **[TransformMongooseSearch](validate-mongoose-filter.md)** | **[📄 Code](../../src/utils/decorators/filter/mongoose/transform-mongoose-search.decorator.ts)**
+
 **MongoDB query builder automation (Repository layer).** Automatic MongoDB filter generation with regex optimization, type conversion, and $or/$and structure for complex queries.
 
 #### **[NormalizeMongoFilter](convert-mongoose-filter.md)** | **[📄 Code](../../src/utils/decorators/filter/mongoose/normalize-mongo-filter.decorator.ts)**
-**MongoDB filter normalization (Base Repository / Infra layer).** Flattens nested filter objects, handles id→_id conversion, and prepares queries for base repository operations.
 
+**MongoDB filter normalization (Base Repository / Infra layer).** Flattens nested filter objects, handles id→_id conversion, and prepares queries for base repository operations.
 
 ---
 
 ## 🎯 **Decorator Categories**
 
 ### **Application Layer**
+
 - **ValidateSchema** - Input validation and sanitization
 - **Permission** - Authorization and access control
 - **RequestTimeout** - Request lifecycle management
 - **LogExecutionTime** - Performance monitoring
 
-### **Infrastructure Layer** 
+### **Infrastructure Layer**
+
 - **CircuitBreaker** - External service reliability
 - **RunInNewThread** - CPU-intensive task isolation
 - **RunInNewProcess** - Memory-intensive task isolation
 
 ### **Data Access Layer**
+
 - **TransformSort** - Sort validation and mapping
 - **TransformTypeOrmSearch** - PostgreSQL query automation
 - **TransformMongooseSearch** - MongoDB query automation
@@ -81,14 +90,14 @@ These decorators solve **real-world problems** by eliminating boilerplate code, 
 
 ## 🔥 **Impact Summary**
 
-| **Problem Solved** | **Lines Saved** | **Decorators** |
-|---------------------|------------------|----------------|
-| Manual validation hell | 50+ lines → 1 line | ValidateSchema, Permission |
+| **Problem Solved**         | **Lines Saved**      | **Decorators**                        |
+| -------------------------- | -------------------- | ------------------------------------- |
+| Manual validation hell     | 50+ lines → 1 line   | ValidateSchema, Permission            |
 | TypeORM query construction | 100+ lines → 2 lines | TransformTypeOrmSearch, TransformSort |
-| MongoDB filter building | 70+ lines → 2 lines | TransformMongooseSearch |
-| Worker/Process management | 150+ lines → 1 line | RunInNewThread, RunInNewProcess |
-| Circuit breaker setup | 80+ lines → 1 line | CircuitBreaker |
-| Performance monitoring | 20+ lines → 1 line | LogExecutionTime |
+| MongoDB filter building    | 70+ lines → 2 lines  | TransformMongooseSearch               |
+| Worker/Process management  | 150+ lines → 1 line  | RunInNewThread, RunInNewProcess       |
+| Circuit breaker setup      | 80+ lines → 1 line   | CircuitBreaker                        |
+| Performance monitoring     | 20+ lines → 1 line   | LogExecutionTime                      |
 
 **Total Impact: ~470+ lines of boilerplate → 8 decorators** 🚀
 
@@ -99,7 +108,7 @@ These decorators solve **real-world problems** by eliminating boilerplate code, 
 Each decorator documentation follows a consistent structure:
 
 1. **The Problem** - Manual implementation showing complexity
-2. **The Solution** - Elegant decorator approach  
+2. **The Solution** - Elegant decorator approach
 3. **Features** - Advanced capabilities and options
 4. **Real Examples** - Production-ready use cases
 5. **Performance** - Benchmarks and optimizations
@@ -112,7 +121,7 @@ Each decorator documentation follows a consistent structure:
 These decorators follow key design principles:
 
 - **🎯 Single Responsibility** - Each decorator solves one specific problem
-- **🔒 Type Safety** - Full TypeScript support with compile-time validation  
+- **🔒 Type Safety** - Full TypeScript support with compile-time validation
 - **⚡ Performance** - Zero overhead abstractions with optimal implementations
 - **🛡️ Security** - Built-in protection against common vulnerabilities
 - **📦 Composability** - Decorators work together seamlessly

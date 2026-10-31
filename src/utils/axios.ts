@@ -1,8 +1,8 @@
 /**
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/utils/axios.md
  */
-import { AxiosError, AxiosInstance } from 'axios'
-import axiosRetry from 'axios-retry'
+import { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios'
+import axiosRetry, { IAxiosRetryConfigExtended } from 'axios-retry'
 import { AxiosConverter } from 'nestjs-convert-to-curl'
 
 import { ILoggerAdapter } from '@/infra/logger'
@@ -12,6 +12,18 @@ import { DEFAULT_RETRY_STATUS, DefaultErrorMessage, NETWORK_RETRY_CODES } from '
 import { ObjectUtils } from './object'
 import { getCurrentDeadline } from './request/deadline'
 import { TimeoutBudget } from './request/timeout-budget'
+
+const RESPONSE_SIZE_EXCEEDED_REGEX = /maxContentLength size of -?\d+ exceeded/
+
+const REQUEST_SIZE_EXCEEDED_REGEX = /Request body larger than maxBodyLength limit/
+
+export type PayloadLimit = 'request' | 'response'
+
+const SENSITIVE_CURL_DATA = {
+  body: ['password', 'cpf', 'authorization', 'token'],
+  headers: ['authorization', 'proxy-authorization', 'cookie', 'x-api-key'],
+  query: ['token', 'access_token', 'api_key']
+}
 
 export class AxiosUtils {
   static interceptAxiosResponseError = (error: CustomAxiosError): void => {
@@ -29,8 +41,19 @@ export class AxiosUtils {
     Object.assign(error, {
       message,
       status,
-      curl: AxiosConverter.getCurl(error, ['password', 'cpf', 'authorization', 'token'])
+      curl: AxiosConverter.getCurl(error, SENSITIVE_CURL_DATA)
     })
+  }
+
+  // Axios reuses ERR_BAD_RESPONSE/ERR_BAD_REQUEST (also used for real 5xx/4xx) for size
+  // limits, so the message is the only reliable discriminator.
+  static getPayloadLimitExceeded = (error: { message: string; response?: unknown }): PayloadLimit | undefined => {
+    if (error.response) return undefined
+
+    if (RESPONSE_SIZE_EXCEEDED_REGEX.test(error.message)) return 'response'
+    if (REQUEST_SIZE_EXCEEDED_REGEX.test(error.message)) return 'request'
+
+    return undefined
   }
 
   private static extractErrorStatus(error: CustomAxiosError): number {
@@ -84,10 +107,18 @@ export class AxiosUtils {
           }
         })
 
-        return this.getRetryDelay(retryCount)
+        // Same delay already validated against the budget in `canScheduleRetry`.
+        const scheduledDelay = axiosError.config?.['axios-retry']?.nextRetryDelayMs
+
+        return scheduledDelay ?? this.getRetryDelay(retryCount)
       },
 
       retryCondition: (error: AxiosError | CustomAxiosError) => {
+        // The payload would be just as big on the next attempt.
+        if (this.getPayloadLimitExceeded(error)) {
+          return false
+        }
+
         const status = this.extractErrorStatus(error as CustomAxiosError)
         const retryConfig = error.config?.['axios-retry']
         const requestRetryStatus = retryConfig?.status
@@ -124,6 +155,37 @@ export class AxiosUtils {
         })
       }
     })
+
+    // Must be registered after axios-retry: Axios runs request interceptors in reverse order,
+    // so this runs first and axios-retry keeps the extra fields when it rebuilds its state.
+    axios.interceptors.request.use((config) => this.trackRetryOperation(config))
+  }
+
+  private static trackRetryOperation = (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
+    const retryConfig = config['axios-retry']
+
+    if (!retryConfig?.retryCount) {
+      config['axios-retry'] = { ...retryConfig, operationStartedAt: Date.now() }
+      return config
+    }
+
+    const remainingBudget = Math.max(1, this.getRemainingRetryBudgetMs(retryConfig))
+    config.timeout = config.timeout ? Math.min(config.timeout, remainingBudget) : remainingBudget
+
+    return config
+  }
+
+  private static getRemainingRetryBudgetMs = (retryConfig: IAxiosRetryConfigExtended | undefined): number => {
+    const now = Date.now()
+    const configuredBudget = Math.min(
+      retryConfig?.retryBudgetMs ?? TimeoutBudget.DEPENDENCY_TIMEOUT_MS,
+      TimeoutBudget.DEPENDENCY_TIMEOUT_MS
+    )
+    const elapsed = now - (retryConfig?.operationStartedAt ?? now)
+    const remainingBudget = configuredBudget - elapsed
+    const deadline = getCurrentDeadline()
+
+    return deadline ? Math.min(remainingBudget, deadline.remainingMs()) : remainingBudget
   }
 
   private static getRetryDelay = (retryCount: number): number => {
@@ -136,37 +198,21 @@ export class AxiosUtils {
 
   private static canScheduleRetry = (error: AxiosError | CustomAxiosError, logger: ILoggerAdapter): boolean => {
     const retryConfig = error.config?.['axios-retry']
-    const deadlineAwareBudget = TimeoutBudget.getDependencyTimeoutMs(getCurrentDeadline())
+    const remainingBudget = this.getRemainingRetryBudgetMs(retryConfig)
+    const retryAfter = this.parseRetryAfterMs(error.response?.headers?.['retry-after'])
+    const nextRetryDelay = retryAfter ?? this.getRetryDelay((retryConfig?.retryCount ?? 0) + 1)
 
-    const getRetryBudget = () => {
-      if (retryConfig?.retryBudgetMs !== undefined) {
-        return Math.min(retryConfig.retryBudgetMs, deadlineAwareBudget)
-      }
-      return deadlineAwareBudget
-    }
-
-    const retryBudget = getRetryBudget()
-    const elapsed = retryConfig?.lastRequestTime ? Date.now() - retryConfig.lastRequestTime : undefined
-
-    if (elapsed === undefined) {
-      return true
-    }
-
-    const retryCount = retryConfig?.retryCount ?? 0
-    const maximumNextDelay = this.getRetryDelayMaximum(retryCount + 1)
-
-    const hasSufficientRetryBudget = elapsed + maximumNextDelay < retryBudget
-
-    if (hasSufficientRetryBudget) {
+    if (nextRetryDelay < remainingBudget) {
+      if (retryConfig) retryConfig.nextRetryDelayMs = nextRetryDelay
       return true
     }
 
     logger.warn({
       message: 'Retry budget exhausted',
       metadata: {
-        elapsed,
-        maximumNextDelay,
-        retryBudget,
+        remainingBudget,
+        nextRetryDelay,
+        retryAfter,
         url: error.config?.url,
         method: error.config?.method
       }
@@ -174,12 +220,30 @@ export class AxiosUtils {
 
     return false
   }
+
+  // RFC 9110: delay in seconds or an HTTP-date.
+  private static parseRetryAfterMs = (header: unknown): number | undefined => {
+    if (typeof header !== 'string' || !header.trim()) return undefined
+
+    if (/^\d+$/.test(header.trim())) return Number(header) * 1000
+
+    const date = Date.parse(header)
+
+    return Number.isNaN(date) ? undefined : Math.max(0, date - Date.now())
+  }
 }
 
 export class CustomAxiosError extends AxiosError<AdditionalAxiosErrorData> {
   data!: {
     message?: string
     code?: number | string
+  }
+}
+
+declare module 'axios-retry' {
+  interface IAxiosRetryConfig {
+    operationStartedAt?: number
+    nextRetryDelayMs?: number
   }
 }
 

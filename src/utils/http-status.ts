@@ -33,7 +33,12 @@ export const DefaultErrorMessage: { [key: string | number]: string } = {
  */
 export const DEFAULT_RETRY_STATUS = [408, 429, 500, 502, 503, 504]
 
+/** `ETIMEDOUT` only when Axios `transitional.clarifyTimeoutError` is enabled. */
+export const CLIENT_TIMEOUT_CODES = ['ECONNABORTED', 'ETIMEDOUT']
+
+export const CONNECTION_REFUSED_CODE = 'ECONNREFUSED'
+
 /**
  * Transport error codes retried without receiving an HTTP response.
  */
-export const NETWORK_RETRY_CODES = ['ECONNABORTED', 'ECONNRESET', 'ETIMEDOUT']
+export const NETWORK_RETRY_CODES = [...CLIENT_TIMEOUT_CODES, 'ECONNRESET', CONNECTION_REFUSED_CODE]
