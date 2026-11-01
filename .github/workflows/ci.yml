@@ -59,7 +59,7 @@ jobs:
         run: npm run test:cov
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v7.1.1
         with:
           files: ./coverage/lcov.info
           flags: unittests
