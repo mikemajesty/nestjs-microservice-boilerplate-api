@@ -27,7 +27,7 @@ concurrency:
 jobs:
   release:
     name: Deploy to ${{ github.event.inputs.environment }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     environment: ${{ github.event.inputs.environment }}
     steps:
       - name: Validate tag format
