@@ -4,13 +4,10 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common'
 import { Observable } from 'rxjs'
 
-import { ILoggerAdapter } from '@/infra/logger'
-import { AppFastifyRequest, ensureTraceId, TRACEID_HEADER } from '@/utils/request'
+import { AppFastifyRequest, ensureTraceId } from '@/utils/request'
 
 @Injectable()
 export class HttpLoggerInterceptor implements NestInterceptor {
-  constructor(private readonly logger: ILoggerAdapter) {}
-
   intercept(executionContext: ExecutionContext, next: CallHandler): Observable<unknown> {
     const context = `${executionContext.getClass().name}.${executionContext.getHandler().name}`
 
@@ -19,8 +16,6 @@ export class HttpLoggerInterceptor implements NestInterceptor {
     request.context = context
 
     ensureTraceId(request)
-
-    this.logger.setGlobalParameters({ [TRACEID_HEADER]: request.id })
 
     return next.handle()
   }

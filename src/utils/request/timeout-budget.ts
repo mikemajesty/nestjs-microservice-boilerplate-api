@@ -3,6 +3,7 @@
  */
 
 import { ApiInternalServerException } from '@/utils/exception'
+import { ObjectUtils } from '@/utils/object'
 import { RequestDeadline } from '@/utils/request/deadline'
 
 import { SecretsSchema } from '../../infra/secrets/schema'
@@ -35,9 +36,12 @@ export class TimeoutBudget {
     )
 
     if (dependencyTimeoutMs >= TimeoutBudget.HTTP_REQUEST_TIMEOUT_MS) {
+      const dependencyTimeoutName = ObjectUtils.nameOf<typeof TimeoutBudget>('DEPENDENCY_TIMEOUT_MS')
+      const requestTimeoutName = ObjectUtils.nameOf<typeof TimeoutBudget>('HTTP_REQUEST_TIMEOUT_MS')
+
       throw new ApiInternalServerException(
-        `timeout-budget: DEPENDENCY_TIMEOUT_MS (${dependencyTimeoutMs}) must be lower than HTTP_REQUEST_TIMEOUT_MS (${TimeoutBudget.HTTP_REQUEST_TIMEOUT_MS}). ` +
-          'adjust HTTP_REQUEST_TIMEOUT_MS or DEPENDENCY_SAFETY_MARGIN_MS.'
+        `timeout-budget: ${dependencyTimeoutName} (${dependencyTimeoutMs}) must be lower than ${requestTimeoutName} (${TimeoutBudget[requestTimeoutName]}). ` +
+          `adjust ${requestTimeoutName} or the dependency safety margin.`
       )
     }
 

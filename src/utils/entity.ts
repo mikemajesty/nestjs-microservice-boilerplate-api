@@ -127,6 +127,7 @@ export interface IEntity {
   createdAt?: Date | null
   updatedAt?: Date | null
   deletedAt?: Date | null
+  toData(): unknown
 }
 
 export interface IDomainEventPublisher {

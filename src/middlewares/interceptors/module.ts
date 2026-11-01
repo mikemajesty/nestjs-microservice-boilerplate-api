@@ -1,8 +1,6 @@
 import { Module } from '@nestjs/common'
 import { APP_INTERCEPTOR, Reflector } from '@nestjs/core'
 
-import { ILoggerAdapter, LoggerModule } from '@/infra/logger'
-
 import {
   ExceptionHandlerInterceptor,
   HttpLoggerInterceptor,
@@ -11,7 +9,6 @@ import {
 } from './index'
 
 @Module({
-  imports: [LoggerModule],
   providers: [
     {
       provide: APP_INTERCEPTOR,
@@ -28,10 +25,9 @@ import {
     },
     {
       provide: APP_INTERCEPTOR,
-      useFactory(logger: ILoggerAdapter) {
-        return new HttpLoggerInterceptor(logger)
-      },
-      inject: [ILoggerAdapter]
+      useFactory() {
+        return new HttpLoggerInterceptor()
+      }
     },
     {
       provide: APP_INTERCEPTOR,

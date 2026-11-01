@@ -13,5 +13,4 @@ export abstract class ILoggerAdapter<T extends AppHttpLogger = AppHttpLogger> {
   abstract warn({ message, metadata }: MessageInputType): void
   abstract error(error: ErrorType, message?: string | string[]): void
   abstract fatal(error: ErrorType, message?: string | string[]): void
-  abstract setGlobalParameters(input: object): void
 }

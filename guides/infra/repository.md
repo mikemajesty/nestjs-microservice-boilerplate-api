@@ -466,7 +466,8 @@ To ensure consistent and validated pagination across all repositories, every rep
 
 - Implement `applyPagination` in every repository (MongoDB, PostgreSQL, etc.), following the interface contract and using `async`.
 - Always use the appropriate decorators (e.g., `@TransformMongooseSearch`, `@TransformTypeOrmSearch`, `@TransformSort`) on your pagination methods to ensure filters and sorting are correctly handled for each database.
-- Pass the domain entity constructor to the generic repository. Every complete read is then hydrated automatically and returned as a domain entity instance.
+- Pass the domain entity constructor to the generic repository. Non-paginated reads are hydrated and returned as domain entity instances, so use cases can call entity behavior such as `merge()` and `toData()`.
+- Paginated `docs` are converted with `toData()` and returned as plain data objects, keeping response collections free of entity methods.
 
 **Example (MongoDB):**
 

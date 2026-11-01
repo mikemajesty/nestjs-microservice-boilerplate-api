@@ -1,49 +1,25 @@
 # RequestTimeoutInterceptor
 
-Global interceptor that **limits HTTP request execution time**, throwing `ApiTimeoutException` when the limit is exceeded. Works together with the [@RequestTimeout](../decorators/request-timeout.md) decorator to allow granular per-route configuration.
+The global interceptor applies the effective request deadline to the Nest handler
+chain and raises `ApiTimeoutException` (`408`) when that deadline expires.
 
-## Timeout Hierarchy
+## How the effective deadline is chosen
 
-```
-@RequestTimeout(5000)  →  globalTimeout  →  DEFAULT_FALLBACK (60s)
-     (decorator)           (constructor)        (safety net)
-```
+1. `@RequestTimeout(ms)` sets the local route limit when present.
+2. Otherwise, `HTTP_REQUEST_TIMEOUT_MS` is the local limit.
+3. An earlier inbound `X-Request-Deadline` takes precedence by shortening that limit.
+   The header can never extend the receiving service's local maximum.
 
-| Priority | Source | Description |
-|:--------:|--------|-------------|
-| 1️⃣ | `@RequestTimeout` | Value defined on handler or controller |
-| 2️⃣ | `globalTimeout` | Value passed to interceptor constructor |
-| 3️⃣ | `DEFAULT_FALLBACK` | 60 seconds (safety fallback) |
+`X-Request-Deadline` is an absolute Unix timestamp in milliseconds. Malformed values
+return `400`; deadlines already expired return `408`. Since clients can send this
+header, treat it as untrusted input and keep service clocks synchronized.
 
-## Execution Flow
-
-```
-Request → Interceptor → Set timeout → Handler executes
-                                              │
-                        ┌─────────────────────┴─────────────────────┐
-                        │                                           │
-                   Responds OK                              Exceeds timeout
-                   (within limit)                                 │
-                                                                  ↓
-                                                    ApiTimeoutException (408)
-```
-
-The generated exception includes `RequestTimeoutInterceptor` as its context
-and a `timeoutMs` detail, so structured logs and error responses identify the
-limit that was exceeded.
-
-## Global Configuration
-
-```typescript
-// app.module.ts
-{
-  provide: APP_INTERCEPTOR,
-  useFactory: (reflector: Reflector) => new RequestTimeoutInterceptor(reflector, 30000), // 30s default
-  inject: [Reflector]
-}
-```
+The interceptor runs after guards, so its RxJS timeout does not cancel work performed
+by guards. The deadline is available to downstream calls made within the handler chain.
+See [Deadline](../utils/deadline.md) for outbound propagation and dependency behavior.
 
 ## Related
 
-- [@RequestTimeout Decorator](../decorators/request-timeout.md) — for per-route override
+- [@RequestTimeout Decorator](../decorators/request-timeout.md) — route-level timeout limit
+- [Deadline](../utils/deadline.md) — deadline propagation and consumption
 - [ApiTimeoutException](../utils/exception.md) — HTTP 408 exception

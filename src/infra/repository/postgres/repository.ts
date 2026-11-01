@@ -78,7 +78,7 @@ export class TypeORMRepository<
     })
 
     return {
-      docs: this.hydrateAll(docs),
+      docs: this.hydrateAll(docs).map((entity) => entity.toData() as TEntity),
       total,
       page: input.page,
       limit: input.limit,

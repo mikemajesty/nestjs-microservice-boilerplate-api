@@ -145,11 +145,11 @@ Forwarding `authorization` is opt-in by design: most outbound calls (third-party
 │         │ POST /orders  (no traceid)                                         │
 │         ↓                                                                    │
 │  ┌─────────────────────────────────────────────────────────────────────┐    │
-│  │  API Gateway (TracingInterceptor)                                    │    │
+│  │  API Gateway (Fastify onRequest + TracingInterceptor)                 │    │
 │  │                                                                      │    │
-│  │  1. Generates traceid: "abc-123-def-456"                            │    │
-│  │  2. Creates OpenTelemetry span                                      │    │
-│  │  3. Stores traceid in RequestContext (AsyncContext)                  │    │
+│  │  1. Fastify onRequest generates traceid: "abc-123-def-456"          │    │
+│  │  2. Stores traceid in RequestContext before guards run               │    │
+│  │  3. TracingInterceptor creates the OpenTelemetry span                │    │
 │  └─────────────────────────────────────────────────────────────────────┘    │
 │         │                                                                    │
 │         │ http.get('http://orders-service/...').execute()                   │

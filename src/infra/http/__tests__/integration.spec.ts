@@ -1,3 +1,8 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/infra/http.md
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/tests/standards.md
+ */
+
 import http, { createServer, IncomingHttpHeaders, IncomingMessage, Server, ServerResponse } from 'node:http'
 import { AddressInfo } from 'node:net'
 import { gzipSync } from 'node:zlib'
@@ -20,6 +25,7 @@ import { TRACEID_HEADER } from '@/utils/request'
 import { runWithRequestContext } from '@/utils/request/context'
 import { Deadline, runWithDeadline } from '@/utils/request/deadline'
 import { TimeoutBudget } from '@/utils/request/timeout-budget'
+import { TestUtils } from '@/utils/test/utils'
 import { InputValidator } from '@/utils/validator'
 
 import { HttpService } from '../service'
@@ -146,13 +152,13 @@ const measure = async <T>(callback: () => Promise<T>): Promise<{ result: T; elap
 // Network/timer scheduling noise allowed on top of time assertions.
 const TIMING_TOLERANCE_MS = 250
 
-describe('HttpService integration (retry, timeout and budget)', () => {
+describe(HttpService.name, () => {
   const server = new ScriptedHttpServer()
   const logger = {
-    warn: jest.fn(),
-    info: jest.fn(),
-    error: jest.fn(),
-    debug: jest.fn()
+    warn: TestUtils.mock(),
+    info: TestUtils.mock(),
+    error: TestUtils.mock(),
+    debug: TestUtils.mock()
   } as Partial<ILoggerAdapter> as ILoggerAdapter
 
   let http: HttpService
@@ -162,14 +168,14 @@ describe('HttpService integration (retry, timeout and budget)', () => {
   })
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    TestUtils.clearMocks()
     http = new HttpService(logger)
     // Full jitter delay = random * 2^retry * 1000. Zero keeps retry tests fast by default.
-    jest.spyOn(Math, 'random').mockReturnValue(0)
+    TestUtils.spyOn(Math, 'random').mockReturnValue(0)
   })
 
   afterEach(() => {
-    jest.restoreAllMocks()
+    TestUtils.restoreMocks()
     server.reset()
   })
 
@@ -309,7 +315,7 @@ describe('HttpService integration (retry, timeout and budget)', () => {
     }
 
     it('should retry ECONNREFUSED and succeed once the dependency is back up', async () => {
-      jest.spyOn(Math, 'random').mockReturnValue(0.5)
+      TestUtils.spyOn(Math, 'random').mockReturnValue(0.5)
       const port = await getFreePort()
       const restarted = createServer((_req, res) => {
         res.writeHead(200, { 'content-type': 'application/json' })
@@ -399,7 +405,7 @@ describe('HttpService integration (retry, timeout and budget)', () => {
   describe('retry budget', () => {
     it('should keep the whole operation (attempts + backoff) within retryBudgetMs', async () => {
       // Worst-case jitter: the first retry waits the full 2000ms.
-      jest.spyOn(Math, 'random').mockReturnValue(1)
+      TestUtils.spyOn(Math, 'random').mockReturnValue(1)
       server.alwaysReply({ status: 503, delayMs: 600 })
       const retryBudgetMs = 3000
 
@@ -414,7 +420,7 @@ describe('HttpService integration (retry, timeout and budget)', () => {
 
     it('should account for the elapsed time of every attempt, not only the last one', async () => {
       // Delays: 200ms, 400ms, 800ms. Fast failures should fit several retries in the budget.
-      jest.spyOn(Math, 'random').mockReturnValue(0.1)
+      TestUtils.spyOn(Math, 'random').mockReturnValue(0.1)
       server.alwaysReply({ status: 503, delayMs: 100 })
       const retryBudgetMs = 1200
 
@@ -429,7 +435,7 @@ describe('HttpService integration (retry, timeout and budget)', () => {
 
     it('should schedule retries based on the actual jittered delay, not only the maximum one', async () => {
       // Delays: 200ms, 400ms, 800ms. With the default 4000ms budget all three retries fit.
-      jest.spyOn(Math, 'random').mockReturnValue(0.1)
+      TestUtils.spyOn(Math, 'random').mockReturnValue(0.1)
       server.alwaysReply({ status: 503, delayMs: 100 })
 
       await captureError(http.request().get(server.url).retry({ retries: 3 }).execute())
@@ -440,7 +446,7 @@ describe('HttpService integration (retry, timeout and budget)', () => {
     it('should abort a retry attempt that would run past the budget', async () => {
       // 600ms failure + 2000ms backoff = 2600ms; only ~400ms of the 3000ms budget is left for
       // the retry, while the server would only answer it after 2000ms.
-      jest.spyOn(Math, 'random').mockReturnValue(1)
+      TestUtils.spyOn(Math, 'random').mockReturnValue(1)
       server.replyWith({ status: 503, delayMs: 600 }).alwaysReply({ status: 200, delayMs: 2000 })
       const retryBudgetMs = 3000
 
@@ -455,7 +461,7 @@ describe('HttpService integration (retry, timeout and budget)', () => {
 
     it('should cap retryBudgetMs to DEPENDENCY_TIMEOUT_MS', async () => {
       // HTTP_REQUEST_TIMEOUT_MS=5000 in tests -> DEPENDENCY_TIMEOUT_MS=4000.
-      jest.spyOn(Math, 'random').mockReturnValue(1)
+      TestUtils.spyOn(Math, 'random').mockReturnValue(1)
       server.alwaysReply({ status: 503, delayMs: 1500 })
       const dependencyTimeoutMs = TimeoutBudget.DEPENDENCY_TIMEOUT_MS
 
@@ -471,7 +477,7 @@ describe('HttpService integration (retry, timeout and budget)', () => {
     it('should stop retrying when the inbound deadline runs out in the middle of the retries', async () => {
       // Delays: 200ms, 400ms, 800ms. Without a deadline all 3 retries fit in the 4000ms budget;
       // with 1000ms left the third backoff no longer fits.
-      jest.spyOn(Math, 'random').mockReturnValue(0.1)
+      TestUtils.spyOn(Math, 'random').mockReturnValue(0.1)
       server.alwaysReply({ status: 503, delayMs: 100 })
       const deadlineMs = 1000
 
@@ -486,7 +492,7 @@ describe('HttpService integration (retry, timeout and budget)', () => {
     })
 
     it('should not retry beyond the remaining inbound deadline', async () => {
-      jest.spyOn(Math, 'random').mockReturnValue(1)
+      TestUtils.spyOn(Math, 'random').mockReturnValue(1)
       server.alwaysReply({ status: 503, delayMs: 300 })
       const deadlineMs = 1500
 
@@ -551,12 +557,21 @@ describe('HttpService integration (retry, timeout and budget)', () => {
     it('should propagate traceid always and authorization only when requested', async () => {
       const context = { [TRACEID_HEADER]: 'trace-123', authorization: 'Bearer token' }
 
-      await runWithRequestContext(context, async () => {
-        await http.request().get(server.url).execute()
-        await http.request().get(server.url).propagateAuthorization().execute()
-      })
+      const deadline = new Deadline(Date.now() + 10_000)
+
+      await runWithDeadline(deadline, () =>
+        runWithRequestContext(context, async () => {
+          await http
+            .request()
+            .get(server.url)
+            .header('X-Request-Deadline', String(deadline.expiresAt + 60_000))
+            .execute()
+          await http.request().get(server.url).propagateAuthorization().execute()
+        })
+      )
 
       expect(server.attempts[0].headers[TRACEID_HEADER]).toBe('trace-123')
+      expect(server.attempts[0].headers['x-request-deadline']).toBe(String(deadline.expiresAt))
       expect(server.attempts[0].headers.authorization).toBeUndefined()
       expect(server.attempts[1].headers.authorization).toBe('Bearer token')
     })

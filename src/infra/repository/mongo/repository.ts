@@ -76,7 +76,7 @@ export class MongoRepository<
       options: {}
     })
     return {
-      docs: this.hydrateAll(cats.docs),
+      docs: this.hydrateAll(cats.docs).map((entity) => entity.toData() as TEntity),
       limit: input.limit,
       page: input.page,
       total: cats.totalDocs,

@@ -14,7 +14,6 @@ import opentelemetry, {
 import { Observable, tap } from 'rxjs'
 
 import { AppFastifyRequest, generalizePath, TRACEID_HEADER, TracingType } from '@/utils/request'
-import { runWithRequestContext } from '@/utils/request/context'
 
 import { name, version } from '../../../package.json'
 
@@ -70,9 +69,7 @@ export class TracingInterceptor implements NestInterceptor {
       request.tracing.addAttribute(TRACEID_HEADER, requestId)
     }
 
-    const requestContext = { [TRACEID_HEADER]: requestId, authorization: request.headers.authorization }
-
-    return runWithRequestContext(requestContext, () => next.handle()).pipe(
+    return next.handle().pipe(
       tap(() => {
         if (request?.tracing) {
           request.tracing.setStatus({ code: SpanStatusCode.OK })

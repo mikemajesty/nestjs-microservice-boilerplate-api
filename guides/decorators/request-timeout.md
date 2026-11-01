@@ -1,6 +1,8 @@
 # RequestTimeout Decorator
 
-Simple and elegant decorator that **overrides application timeout settings** on a per-route basis. Works seamlessly with [RequestTimeoutInterceptor](../middlewares/interceptors/request-timeout.interceptor.ts) to provide **granular timeout control** without complex configuration.
+Simple decorator that sets a route's local timeout limit. The
+[RequestTimeoutInterceptor](../middlewares/interceptors/request-timeout.interceptor.ts)
+applies that limit while honoring an earlier upstream `X-Request-Deadline`, if present.
 
 ## ⚠️ Important: HTTP timeout alone does not protect the database
 
@@ -106,16 +108,25 @@ throws during application setup.
 
 ## How It Works with RequestTimeoutInterceptor
 
-### **Timeout Resolution Hierarchy**
+### **Timeout Resolution**
 
-The [RequestTimeoutInterceptor](../middlewares/interceptors/request-timeout.interceptor.ts) follows this priority order:
+The [RequestTimeoutInterceptor](../middlewares/interceptors/request-timeout.interceptor.ts)
+uses the earliest deadline. `X-Request-Deadline` is an absolute Unix timestamp in
+milliseconds and can shorten the route's local timeout, but can never extend it:
 
 ```typescript
-const finalTimeout = requestTimeout ?? HTTP_REQUEST_TIMEOUT_MS
+const localTimeout = requestTimeout ?? HTTP_REQUEST_TIMEOUT_MS
+const finalDeadline = resolveEffectiveDeadline(upstreamDeadline, localTimeout)
 
-// 1. requestTimeout          - From @RequestTimeout decorator (highest priority)
-// 2. HTTP_REQUEST_TIMEOUT_MS - Global timeout budget (see timeout-budget.md)
+// @RequestTimeout (when present) defines the route's local maximum.
+// Otherwise HTTP_REQUEST_TIMEOUT_MS is the local maximum.
+// X-Request-Deadline can only make the effective deadline earlier.
 ```
+
+Malformed deadline headers return `400`; already-expired deadlines return `408`.
+Because this header is caller-controlled, the local timeout remains the hard upper
+bound. Keep clocks synchronized between services because the header carries an
+absolute timestamp.
 
 ### **Integration Example**
 

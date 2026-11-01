@@ -90,6 +90,11 @@ tracing stays connected across services without repeating boilerplate on every
 outbound call. See [`RequestContext`](../utils/request-context.md) for how the
 current request's data is made available here.
 
+When a request deadline is active, `IHttpBuilder` also forwards it as
+`X-Request-Deadline` (Unix epoch milliseconds). The receiving API combines it with
+its own route/global timeout and only honors it if it shortens that local limit.
+See [Deadline](../utils/deadline.md) for validation, clock-skew, and timeout behavior.
+
 Forwarding the caller's `authorization` header, however, is **opt-in**, via
 `.propagateAuthorization()`:
 

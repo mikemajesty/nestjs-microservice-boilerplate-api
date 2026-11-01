@@ -14,7 +14,11 @@ import { CLIENT_TIMEOUT_CODES, CONNECTION_REFUSED_CODE } from '@/utils/http-stat
 import { ObjectUtils } from '@/utils/object'
 import { TRACEID_HEADER } from '@/utils/request'
 import { getCurrentRequestContext, type RequestContext } from '@/utils/request/context'
-import { getCurrentDeadline, type RequestDeadline } from '@/utils/request/deadline'
+import {
+  getCurrentDeadline,
+  REQUEST_DEADLINE_HEADER,
+  type RequestDeadline
+} from '@/utils/request/deadline'
 import { TimeoutBudget } from '@/utils/request/timeout-budget'
 import { BaseZodType, SchemaInfer } from '@/utils/validator'
 
@@ -166,13 +170,22 @@ export class HttpBuilder<Response = unknown> implements IHttpBuilder<Response> {
   async execute(): Promise<Response> {
     const startTime = Date.now()
     const requestContext = getCurrentRequestContext()
+    const deadline = getCurrentDeadline()
 
     const headers = {
-      ...this.getPropagationHeaders(requestContext),
+      ...this.getPropagationHeaders(requestContext, deadline),
       ...this.requestConfig.headers
     }
 
-    const deadline = getCurrentDeadline()
+    if (deadline) {
+      for (const headerName of Object.keys(headers)) {
+        if (headerName.toLowerCase() === REQUEST_DEADLINE_HEADER) {
+          delete headers[headerName]
+        }
+      }
+
+      headers[REQUEST_DEADLINE_HEADER] = String(deadline.expiresAt)
+    }
 
     if (deadline?.hasExpired()) {
       throw new ApiTimeoutException('Request deadline exceeded before calling the dependency', {
@@ -241,11 +254,18 @@ export class HttpBuilder<Response = unknown> implements IHttpBuilder<Response> {
     return ApiInternalServerException.STATUS
   }
 
-  private getPropagationHeaders(context: RequestContext | undefined): Record<string, string> {
+  private getPropagationHeaders(
+    context: RequestContext | undefined,
+    deadline: RequestDeadline | undefined
+  ): Record<string, string> {
     const headers: Record<string, string> = {}
 
     if (context?.[TRACEID_HEADER]) {
       headers[TRACEID_HEADER] = context[TRACEID_HEADER]
+    }
+
+    if (deadline) {
+      headers[REQUEST_DEADLINE_HEADER] = String(deadline.expiresAt)
     }
 
     if (this.requestConfig.propagateAuth && context?.authorization) {

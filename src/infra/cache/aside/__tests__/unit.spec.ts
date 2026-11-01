@@ -1,3 +1,8 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/infra/cache-aside.md
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/tests/standards.md
+ */
+
 import { ICacheAdapter } from '@/infra/cache'
 import { ILoggerAdapter } from '@/infra/logger'
 import { JitterUtils } from '@/utils/jitter'

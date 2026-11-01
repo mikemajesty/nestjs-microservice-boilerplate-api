@@ -1,24 +1,35 @@
 # Deadline
 
-`Deadline` represents how much time is left for the current inbound HTTP request before its timeout — set either by the route's `@RequestTimeout` decorator or by the fixed fallback `TimeoutBudget.HTTP_REQUEST_TIMEOUT_MS` — is reached. Outbound dependencies (HTTP calls, retries) consult it instead of always applying a static per-dependency budget, so a slow dependency can never be given more time than the inbound request actually has left.
+`Deadline` represents how much time is left for the current inbound HTTP request. The local limit comes from the route's `@RequestTimeout` decorator or `TimeoutBudget.HTTP_REQUEST_TIMEOUT_MS`; an earlier upstream `X-Request-Deadline` can shorten it, but never extend the local limit. Outbound dependencies (HTTP calls, retries) consult it so they cannot be given more time than the inbound request has left.
 
 It's propagated through the request's async call chain using [`AsyncContext`](./async-context.md), so any code reached from the request handler can read the current deadline without it being passed down as a parameter.
 
 ## Where it's created
 
-[`RequestTimeoutInterceptor`](../../src/middlewares/interceptors/request-timeout.interceptor.ts) creates the `Deadline` for every request, from the same `finalTimeout` value it uses to abort the request with `rxjs`'s `timeout()`:
+[`RequestTimeoutInterceptor`](../../src/middlewares/interceptors/request-timeout.interceptor.ts) creates the deadline used by the handler and the RxJS `timeout()` operator:
 
 ```ts
-const finalTimeout = requestTimeout ?? TimeoutBudget.HTTP_REQUEST_TIMEOUT_MS
-const deadline = Deadline.fromTimeout(finalTimeout)
+const localTimeout = requestTimeout ?? TimeoutBudget.HTTP_REQUEST_TIMEOUT_MS
+const upstreamDeadline = Deadline.fromHeader(request.headers['x-request-deadline'])
+const deadline = resolveEffectiveDeadline(upstreamDeadline, localTimeout)
 
-return runWithDeadline(deadline, () => next.handle()).pipe(
-  timeout(finalTimeout),
-  // ...
-)
+// The upstream deadline can shorten, but never extend, the local maximum.
 ```
 
-Because `next.handle()` runs inside `runWithDeadline`, the deadline is available to everything the handler calls — controller, use case, repository, outbound HTTP client — for the lifetime of that request.
+The deadline is available through the async handler chain — controller, use case,
+repository, and outbound HTTP client. This interceptor runs after guards, so its
+timeout does not cancel or bound work performed by guards.
+
+## Distributed propagation
+
+`X-Request-Deadline` carries the deadline as Unix epoch milliseconds. `HttpBuilder`
+automatically forwards the active deadline on outbound requests, alongside `traceid`.
+The receiving service validates the header and takes the earlier of it and its own
+route/global timeout. An invalid value returns `400`; an expired deadline returns `408`.
+
+Because this is an absolute timestamp, services should have synchronized clocks.
+Treat it as untrusted input: it can reduce the caller's own budget, but cannot raise
+the receiving service's configured maximum.
 
 ## Where it's read
 

@@ -21,6 +21,8 @@ import { ILoggerAdapter } from '@/infra/logger/adapter'
 import { ISecretsAdapter } from '@/infra/secrets'
 import { ExceptionHandlerFilter } from '@/middlewares/filters'
 import { ByteSize } from '@/utils/byte-size'
+import { AppFastifyRequest, ensureTraceId, TRACEID_HEADER } from '@/utils/request'
+import { runWithRequestContext } from '@/utils/request/context'
 
 import { name, version } from '../package.json'
 import { AppModule } from './app.module'
@@ -98,7 +100,10 @@ async function bootstrap() {
         return
       }
 
-      runWithRequestLocale(getPreferredLocale(request), done)
+      const traceId = ensureTraceId(request as AppFastifyRequest)
+      const requestContext = { [TRACEID_HEADER]: traceId, authorization: request.headers.authorization }
+
+      runWithRequestLocale(getPreferredLocale(request), () => runWithRequestContext(requestContext, done))
     }
   )
 
