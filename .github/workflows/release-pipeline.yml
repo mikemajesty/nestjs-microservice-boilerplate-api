@@ -1,0 +1,93 @@
+name: Release Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch_from:
+        description: Branch to release
+        required: true
+        default: master
+        type: string
+      merge_from_master:
+        description: Merge latest master before validation
+        required: true
+        default: true
+        type: boolean
+      increment_type:
+        description: Version increment
+        required: true
+        default: patch
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+          - none
+      dev:
+        description: Promote to dev
+        required: true
+        default: false
+        type: boolean
+      preprod:
+        description: Promote to preprod
+        required: true
+        default: false
+        type: boolean
+      prod:
+        description: Promote to prod
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: release-pipeline-${{ inputs.branch_from }}
+  cancel-in-progress: false
+
+jobs:
+  validate-pipeline-inputs:
+    name: Validate pipeline inputs
+    runs-on: ubuntu-26.04
+    steps:
+      - name: Require at least one deployment environment
+        env:
+          DEPLOY_DEV: ${{ inputs.dev }}
+          DEPLOY_PREPROD: ${{ inputs.preprod }}
+          DEPLOY_PROD: ${{ inputs.prod }}
+        run: |
+          if [[ "$DEPLOY_DEV" != "true" && "$DEPLOY_PREPROD" != "true" && "$DEPLOY_PROD" != "true" ]]; then
+            echo "Error: Select at least one deployment environment."
+            exit 1
+          fi
+
+  create-release-tag:
+    name: Create and validate release tag
+    needs: validate-pipeline-inputs
+    uses: ./.github/workflows/create-release-tag.yml
+    with:
+      branch_from: ${{ inputs.branch_from }}
+      merge_from_master: ${{ inputs.merge_from_master }}
+      increment_type: ${{ inputs.increment_type }}
+    secrets: inherit
+
+  publish-release:
+    name: Publish image and GitHub Release
+    needs: create-release-tag
+    uses: ./.github/workflows/release.yml
+    with:
+      tag: ${{ needs.create-release-tag.outputs.tag_name }}
+    secrets: inherit
+
+  promote-release:
+    name: Promote to selected environments
+    needs: [create-release-tag, publish-release]
+    uses: ./.github/workflows/promote-release.yml
+    with:
+      tag: ${{ needs.create-release-tag.outputs.tag_name }}
+      dev: ${{ inputs.dev }}
+      preprod: ${{ inputs.preprod }}
+      prod: ${{ inputs.prod }}
+    secrets: inherit

@@ -13,7 +13,9 @@ This guide explains the CI/CD pipeline, release workflow, and best practices for
   - [CI Workflow](#ci-workflow-ciyml)
   - [Validate PR Workflow](#validate-pr-workflow-validate-pryml)
   - [Create Release Tag Workflow](#create-release-tag-workflow-create-release-tagyml)
-  - [Release Workflow](#release-workflow-releaseyml)
+  - [Publish Release Workflow](#publish-release-workflow-releaseyml)
+  - [Promote Release Workflow](#promote-release-workflow-promote-releaseyml)
+  - [Release Pipeline](#release-pipeline-release-pipelineyml)
 - [Secrets Configuration](#secrets-configuration)
 - [Troubleshooting](#troubleshooting)
 
@@ -21,14 +23,16 @@ This guide explains the CI/CD pipeline, release workflow, and best practices for
 
 ## Workflow Overview
 
-The project uses **4 GitHub Actions workflows** that work together:
+The project uses **6 GitHub Actions workflows** that work together:
 
-| Workflow           | File                     | Trigger           | Purpose                                |
-| ------------------ | ------------------------ | ----------------- | -------------------------------------- |
-| CI                 | `ci.yml`                 | Push/PR to master | Lint, test, security audit             |
-| Validate PR        | `validate-pr.yml`        | PR opened/edited  | Enforce conventional commits           |
-| Create Release Tag | `create-release-tag.yml` | Manual            | Create version tag with optional merge |
-| Release            | `release.yml`            | Manual            | Deploy to environment + Docker build   |
+| Workflow           | File                      | Trigger           | Purpose                                                 |
+| ------------------ | ------------------------- | ----------------- | ------------------------------------------------------- |
+| CI                 | `ci.yml`                  | Push/PR to master | Security audit and post-merge checks                    |
+| Validate PR        | `validate-pr.yml`         | PR opened/edited  | Lint, test, title, and commit validation                |
+| Create Release Tag | `create-release-tag.yml`  | Manual or reusable | Validate candidate, bump version, and create tag        |
+| Publish Release    | `release.yml`             | Manual or reusable | Publish immutable image and create GitHub Release       |
+| Promote Release    | `promote-release.yml`     | Manual or reusable | Promote one published image to selected environments    |
+| Release Pipeline   | `release-pipeline.yml`    | Manual             | Orchestrate tag, publish, and environment promotion     |
 
 ### Execution Sequence
 
@@ -42,13 +46,16 @@ The project uses **4 GitHub Actions workflows** that work together:
 3. PR merged to master
          │
          ▼
-4. Developer triggers "Create Release Tag"
+4. Developer starts "Release Pipeline" (or runs workflows individually)
          │
          ▼
-5. Developer triggers "Release" with tag + environment
+5. Pipeline validates inputs, optionally merges master, runs lint/test/build, and creates the tag
          │
          ▼
-6. Auto-PR created to merge back to master
+6. Pipeline publishes the image, GitHub Release, and changelog PR
+         │
+         ▼
+7. Pipeline promotes the immutable image through selected environments, pausing for configured approvals
 ```
 
 ---
@@ -56,26 +63,31 @@ The project uses **4 GitHub Actions workflows** that work together:
 ## Release Flow Diagram
 
 ```
-┌──────────────┐     ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
-│   CREATE PR  │────►│   CI CHECKS  │────►│  MERGE TO    │────►│ CREATE TAG   │
-│              │     │              │     │   MASTER     │     │              │
-│  feature/*   │     │ • lint       │     │              │     │ • patch      │
-│  hotfix/*    │     │ • test       │     │              │     │ • minor      │
-│              │     │ • security   │     │              │     │ • major      │
-└──────────────┘     └──────────────┘     └──────────────┘     └──────┬───────┘
-                                                                      │
-     ┌────────────────────────────────────────────────────────────────┘
-     │
-     ▼
-┌──────────────┐     ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
-│   RELEASE    │────►│    BUILD     │────►│    DOCKER    │────►│  AUTO PR TO  │
-│   WORKFLOW   │     │              │     │              │     │    MASTER    │
-│              │     │ • npm ci     │     │ • build      │     │              │
-│ • env (dev/  │     │ • npm build  │     │ • push       │     │ 🚀 DEPLOYED! │
-│   prod)      │     │              │     │ • tag        │     │              │
-│ • tag        │     │              │     │              │     │              │
-└──────────────┘     └──────────────┘     └──────────────┘     └──────────────┘
+PR + CHECKS
+  lint/test
+      │
+      ▼
+MERGE TO MASTER
+      │
+      ▼
+CREATE RELEASE TAG
+  lint/test/build
+      │
+      ▼
+PUBLISH RELEASE
+  build image once
+  record image digest
+      │
+      ▼
+PROMOTE RELEASE
+  choose dev/preprod/prod
+  promote aliases in order
 ```
+
+The individual **Create Release Tag**, **Publish Release**, and **Promote
+Release** workflows remain manually runnable. **Release Pipeline** composes
+those same workflows and passes the generated tag forward automatically.
+GitHub Environment protection rules pause the pipeline for approvals.
 
 ---
 
@@ -120,7 +132,7 @@ BREAKING CHANGE: remove legacy API   # major bump
 - [ ] PR merged and validated
 - [ ] Appropriate version increment selected
 - [ ] Tag created successfully
-- [ ] Correct environment selected for deploy
+- [ ] Correct environments selected for promotion
 - [ ] Docker image pushed to registry
 - [ ] PR to master created (if from feature branch)
 
@@ -138,7 +150,7 @@ BREAKING CHANGE: remove legacy API   # major bump
 
 ```yaml
 - name: Run linter
-  run: npm run lint
+  run: npm run lint:check
 ```
 
 **Purpose:** Ensures code follows ESLint rules and coding standards.
@@ -201,6 +213,10 @@ BREAKING CHANGE: remove legacy API   # major bump
 
 **Purpose:** Enforces conventional commit format in PR titles for consistent changelog generation.
 
+The workflow also runs `npm run lint:check` and `npm test` against the PR head.
+Linting in CI is non-mutating; `npm run lint` remains available for local
+autofixes.
+
 ---
 
 ### Create Release Tag Workflow (`create-release-tag.yml`)
@@ -209,29 +225,20 @@ BREAKING CHANGE: remove legacy API   # major bump
 
 **Inputs:**
 
-| Input               | Description      | Options                      |
-| ------------------- | ---------------- | ---------------------------- |
-| `branch_from`       | Source branch    | Any branch (default: master) |
-| `increment_type`    | Version bump     | patch, minor, major, none    |
-| `merge_from_master` | Sync with master | true/false                   |
+| Input               | Description                                      | Options / default          |
+| ------------------- | ------------------------------------------------ | -------------------------- |
+| `branch_from`       | Branch to create the release tag from            | Branch name; `master`      |
+| `merge_from_master` | Merge latest `master` into that branch first     | Boolean; `true`            |
+| `increment_type`    | Version bump                                      | patch, minor, major, none  |
 
-#### Step 1: Smart Merge from Master
+The workflow uses the selected branch as the release source. By default, it
+merges the latest `master` into that branch before validation, preserving the
+selected branch's package version. If Git reports conflicts, the workflow stops
+and requires resolving them on the source branch; it never chooses a side
+automatically. Lint, tests, and build run against the merged candidate before
+the version commit and annotated tag are pushed atomically to the branch.
 
-```yaml
-- name: Smart Merge from Master
-  if: ${{ github.event.inputs.merge_from_master == 'true' }}
-  run: |
-    CURRENT_VERSION=$(node -p "require('./package.json').version")
-    git merge origin/master --no-edit
-    # Restore version after merge
-    node -e "pkg.version = '$CURRENT_VERSION'; ..."
-```
-
-**Purpose:** Merges latest master changes while preserving branch version number.
-
----
-
-#### Step 2: Increment Version
+#### Step 1: Increment Version
 
 ```yaml
 - name: Increment Version
@@ -243,130 +250,84 @@ BREAKING CHANGE: remove legacy API   # major bump
 
 ---
 
-#### Step 3: Create Tag
+#### Step 2: Validate Release Candidate
 
 ```yaml
-- name: Create Tag
+- name: Validate release candidate
   run: |
-    VERSION=$(node -p "require('./package.json').version")
-    TAG_NAME="v${VERSION}"
-    git tag -a "$TAG_NAME" -m "Release ${TAG_NAME}"
+    npm ci
+    npm run lint:check
+    npm test
+    npm run build
 ```
 
-**Purpose:** Creates annotated git tag with version number.
+**Purpose:** Runs checks against the version-bumped source before creating or pushing a tag.
 
 ---
 
-#### Step 4: Push Changes
+#### Step 3: Create and Push Tag
 
 ```yaml
 - name: Push Changes
   run: |
-    git push origin HEAD:${{ github.event.inputs.branch_from }}
-    git push origin ${{ steps.create_tag.outputs.tag_name }}
+    git push --atomic origin "HEAD:${BRANCH_NAME}" "refs/tags/${TAG_NAME}"
 ```
 
-**Purpose:** Pushes version commit and tag to remote.
+**Purpose:** Pushes the validated branch update and release tag together. The
+publish workflow verifies that the tag commit is reachable from a remote branch.
 
 ---
 
-#### Step 5: Create Draft Release
+### Publish Release Workflow (`release.yml`)
 
-```yaml
-- name: Create GitHub Release
-  uses: softprops/action-gh-release@v1
-  with:
-    tag_name: ${{ steps.create_tag.outputs.tag_name }}
-    draft: true
-    generate_release_notes: true
-```
+**Trigger:** Manual (`workflow_dispatch`) after the tag workflow succeeds.
 
-**Purpose:** Creates draft GitHub Release with auto-generated notes from commits.
+**Input:** A release tag, such as `v1.2.3`.
 
----
+The workflow confirms the tag commit is reachable from a remote branch, builds
+and pushes one versioned multi-platform Docker image, and creates a GitHub Release. Lint and
+tests run earlier in PR validation and again in `create-release-tag.yml`; they
+are intentionally not repeated here. The full image digest is attached to the
+GitHub Release as `image-ref.txt`, so later promotions use the exact published
+artifact rather than rebuilding from a mutable tag.
 
-### Release Workflow (`release.yml`)
-
-**Trigger:** Manual (`workflow_dispatch`)
-
-**Inputs:**
-
-| Input         | Description        | Options            |
-| ------------- | ------------------ | ------------------ |
-| `environment` | Target environment | dev, preprod, prod |
-| `tag`         | Version tag        | e.g., v1.2.3       |
-
-#### Step 1: Validate Tag Format
-
-```yaml
-- name: Validate tag format
-  run: |
-    TAG="${{ github.event.inputs.tag }}"
-    if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-      echo "❌ Error: Tag must be in format v1.0.0"
-      exit 1
-    fi
-```
-
-**Purpose:** Ensures tag follows semantic versioning format (v1.0.0).
+The workflow also generates a changelog and opens a PR to `master`.
 
 ---
 
-#### Step 2: Build Application
+### Promote Release Workflow (`promote-release.yml`)
 
-```yaml
-- name: Install dependencies
-  run: npm ci
+**Trigger:** Manual (`workflow_dispatch`).
 
-- name: Install SWC
-  run: npm install @swc/cli @swc/core
+**Inputs:** A published release tag and checkboxes for `dev`, `preprod`, and
+`prod`. Select any one or more environments. The workflow rejects a request
+with no environment selected.
 
-- name: Build application
-  run: npm run build
-```
+Selected environments are promoted sequentially in the order `dev` → `preprod`
+→ `prod`. A failed earlier selected stage blocks later stages. Configure GitHub
+Environments under repository settings; use required reviewers for `prod` to
+gate production promotion.
 
-**Purpose:**
+Promotion retags the image digest recorded in the GitHub Release; it does not
+rebuild the image. The environment tags (`dev`, `preprod`, `prod`) remain
+mutable pointers for existing consumers.
 
-- Clean install dependencies
-- Install SWC compiler (required for build)
-- Compile TypeScript to JavaScript
-
----
-
-#### Step 3: Build & Push Docker Image
-
-```yaml
-- name: Build and Push Docker Image
-  uses: docker/build-push-action@v5
-  with:
-    push: true
-    tags: |
-      mikelima1989/nestjs-microservice:${{ steps.version.outputs.version }}
-      mikelima1989/nestjs-microservice:${{ github.event.inputs.environment }}
-    platforms: linux/amd64,linux/arm64
-```
-
-**Purpose:**
-
-- Builds multi-platform Docker image
-- Tags with version number AND environment name
-- Pushes to DockerHub
+> This workflow updates DockerHub environment tags. It does not directly apply
+> Kubernetes manifests; a deployment system must consume these tags for
+> cluster rollout.
 
 ---
 
-#### Step 4: Create PR to Master
+### Release Pipeline (`release-pipeline.yml`)
 
-```yaml
-- name: Create PR to master
-  if: steps.branch.outputs.branch != 'master'
-  run: |
-    gh pr create \
-      --base master \
-      --head "$BRANCH" \
-      --title "🚀 Release $TAG to $ENV"
-```
+**Trigger:** Manual (`workflow_dispatch`).
 
-**Purpose:** Automatically creates PR to merge release changes back to master.
+Select the source branch, whether to merge the latest `master` (enabled by
+default), version increment, and one or more target environments. The pipeline
+calls the same reusable workflows available for independent manual runs:
+create/validate tag → publish image and GitHub Release → promote selected
+environments. It rejects a run with no environments selected before creating
+the release tag. Approvals configured on GitHub Environments remain in effect.
 
 ---
 
@@ -463,21 +424,18 @@ gh pr create --base master --head feature-branch
 
 ```bash
 # Local Development
-npm run lint          # Run linter
+npm run lint          # Run linter with autofix
+npm run lint:check    # Check lint without modifying files
 npm run test:cov      # Run tests with coverage
 npm run build         # Build application
 
 # Release Process
 1. Create/merge PR to master
-2. Run "Create Release Tag" workflow
-   - Select branch
-   - Select increment type
-   - Enable merge from master if needed
-3. Run "Release" workflow
-   - Select environment (dev → preprod → prod)
-   - Enter tag (v1.2.3)
-4. Verify deployment
-5. Merge auto-created PR to master
+2. Run "Release Pipeline" to perform the full flow, or run the individual workflows
+   - Select source branch and increment type
+   - Keep "Merge latest master" enabled (default)
+3. Select one or more environments; approve protected environments when prompted
+4. Merge the auto-created changelog PR
 ```
 
 ---

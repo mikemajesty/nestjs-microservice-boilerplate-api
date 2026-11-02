@@ -3,7 +3,7 @@
 # =============================================================================
 # STAGE 1: Build (using full Node image to compile the app)
 # =============================================================================
-ARG NODE_VERSION=24.17.0
+ARG NODE_VERSION=24.21.0
 
 FROM node:${NODE_VERSION} AS build
 
@@ -13,7 +13,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install ALL dependencies (needed for build)
-RUN npm ci && npm install @swc/cli @swc/core --save-dev
+RUN npm ci
 
 # Copy source code
 COPY . .

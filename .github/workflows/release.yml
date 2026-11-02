@@ -1,18 +1,16 @@
-name: Release
+name: Publish Release
 
 on:
   workflow_dispatch:
     inputs:
-      environment:
-        description: 'Deploy environment'
-        required: true
-        type: choice
-        options:
-          - dev
-          - preprod
-          - prod
       tag:
-        description: 'Tag to deploy (e.g., v1.0.0)'
+        description: 'Validated tag to publish (e.g., v1.0.0)'
+        required: true
+        type: string
+  workflow_call:
+    inputs:
+      tag:
+        description: 'Validated tag to publish (e.g., v1.0.0)'
         required: true
         type: string
 
@@ -21,7 +19,7 @@ permissions:
   pull-requests: write
 
 concurrency:
-  group: release-${{ github.event.inputs.environment }}
+  group: publish-${{ inputs.tag }}
   cancel-in-progress: false
 
 jobs:
@@ -30,6 +28,7 @@ jobs:
     runs-on: ubuntu-26.04
     outputs:
       commit_sha: ${{ steps.source.outputs.commit_sha }}
+      version: ${{ steps.source.outputs.version }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
@@ -39,83 +38,46 @@ jobs:
       - name: Validate tag and source branch
         id: source
         env:
-          TAG: ${{ github.event.inputs.tag }}
+          TAG: ${{ inputs.tag }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "❌ Error: Tag must be in format v1.0.0 (e.g., v1.2.3)"
-            echo "   Received: $TAG"
+            echo "Error: Tag must be in format v1.0.0. Received: $TAG"
             exit 1
           fi
 
-          git fetch origin master --tags
-          COMMIT_SHA="$(git rev-parse "refs/tags/${TAG}^{commit}")"
+          git fetch origin --tags '+refs/heads/*:refs/remotes/origin/*'
 
-          if ! git merge-base --is-ancestor "$COMMIT_SHA" origin/master; then
-            echo "❌ Error: Tag $TAG does not point to a commit on master."
+          if ! COMMIT_SHA="$(git rev-parse --verify "refs/tags/${TAG}^{commit}" 2>/dev/null)"; then
+            echo "Error: Tag $TAG does not exist in this repository."
+            exit 1
+          fi
+
+          REMOTE_BRANCHES="$(git for-each-ref --contains="$COMMIT_SHA" --format='%(refname)' refs/remotes/origin)"
+          if [[ -z "$REMOTE_BRANCHES" ]]; then
+            echo "Error: Tag $TAG does not point to a commit on a branch in this repository."
+            exit 1
+          fi
+
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Error: Release $TAG already exists; published releases are immutable."
             exit 1
           fi
 
           echo "commit_sha=$COMMIT_SHA" >> "$GITHUB_OUTPUT"
-          echo "✅ Tag $TAG points to validated source commit $COMMIT_SHA on master."
+          echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+          echo "Tag $TAG points to $COMMIT_SHA on a remote branch."
 
-  validate-code:
-    name: Validate Code
+  publish-release:
+    name: Build and Publish Release
     needs: validate-release-source
     runs-on: ubuntu-26.04
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v5
-        with:
-          ref: ${{ needs.validate-release-source.outputs.commit_sha }}
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v5
-        with:
-          node-version-file: '.nvmrc'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Lint
-        run: npm run lint
-
-      - name: Test
-        run: npm test
-
-  release:
-    name: Deploy to ${{ github.event.inputs.environment }}
-    needs: [validate-release-source, validate-code]
-    runs-on: ubuntu-26.04
-    environment: ${{ github.event.inputs.environment }}
-    steps:
-      - name: Checkout code
+      - name: Checkout validated source
         uses: actions/checkout@v5
         with:
           ref: ${{ needs.validate-release-source.outputs.commit_sha }}
           fetch-depth: 0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v5
-        with:
-          node-version-file: '.nvmrc'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install SWC
-        run: npm install @swc/cli @swc/core
-
-      - name: Build application
-        run: npm run build
-
-      - name: Deploy info
-        run: |
-          echo "🚀 Deploying to ${{ github.event.inputs.environment }}"
-          echo "📦 Tag: ${{ github.event.inputs.tag }}"
-          echo "👤 Triggered by: ${{ github.actor }}"
-          echo "🕐 Timestamp: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -126,97 +88,107 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Extract version
-        id: version
+      - name: Ensure the versioned image tag is unused
+        env:
+          VERSION: ${{ needs.validate-release-source.outputs.version }}
         run: |
-          TAG="${{ github.event.inputs.tag }}"
-          VERSION="${TAG#v}"
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "📦 Docker tag: $VERSION"
+          if docker buildx imagetools inspect "mikelima1989/nestjs-microservice:$VERSION" >/dev/null 2>&1; then
+            echo "Error: Docker image tag $VERSION already exists and will not be overwritten."
+            exit 1
+          fi
 
-      - name: Build and Push Docker Image
+      - name: Read build metadata
+        id: metadata
+        run: echo "node_version=$(cat .nvmrc)" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push versioned Docker image
+        id: image
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./Dockerfile
           push: true
-          tags: |
-            mikelima1989/nestjs-microservice:${{ steps.version.outputs.version }}
-            mikelima1989/nestjs-microservice:${{ github.event.inputs.environment }}
+          platforms: linux/amd64,linux/arm64
+          tags: mikelima1989/nestjs-microservice:${{ needs.validate-release-source.outputs.version }}
+          build-args: NODE_VERSION=${{ steps.metadata.outputs.node_version }}
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ needs.validate-release-source.outputs.commit_sha }}
+            org.opencontainers.image.version=${{ needs.validate-release-source.outputs.version }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Generate Changelog
+      - name: Create immutable image reference
+        env:
+          IMAGE_DIGEST: ${{ steps.image.outputs.digest }}
         run: |
-          npm install -g conventional-changelog-cli
+          if [[ ! "$IMAGE_DIGEST" =~ ^sha256:[a-f0-9]{64}$ ]]; then
+            echo "Error: Docker build did not return a valid image digest."
+            exit 1
+          fi
+
+          printf 'mikelima1989/nestjs-microservice@%s\n' "$IMAGE_DIGEST" > image-ref.txt
+
+      - name: Generate changelog
+        run: |
+          npm install --global conventional-changelog-cli
           conventional-changelog -p conventionalcommits -i CHANGELOG.md -s -r 0
-          # Save changelog to temp file
-          cp CHANGELOG.md /tmp/CHANGELOG.md
-          echo "✅ Changelog generated"
+          cp CHANGELOG.md "$RUNNER_TEMP/CHANGELOG.md"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.event.inputs.tag }}
-          name: Release ${{ github.event.inputs.tag }}
+          tag_name: ${{ inputs.tag }}
+          name: Release ${{ inputs.tag }}
           generate_release_notes: true
           draft: false
           prerelease: false
+          files: image-ref.txt
+          fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create PR to master with changelog
+      - name: Create changelog pull request
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ inputs.tag }}
         run: |
-          TAG="${{ github.event.inputs.tag }}"
-          VERSION="${{ steps.version.outputs.version }}"
-          BRANCH="changelog/${TAG}"
-
-          # Configure git
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          # Create a new branch from master for the changelog
           git fetch origin master
-          git checkout -b "$BRANCH" origin/master
+          git checkout -B "changelog/${TAG}" origin/master
+          cp "$RUNNER_TEMP/CHANGELOG.md" CHANGELOG.md
 
-          # Copy the generated changelog from temp
-          cp /tmp/CHANGELOG.md CHANGELOG.md
+          if git diff --quiet -- CHANGELOG.md; then
+            echo "Changelog is already up to date; no pull request is needed."
+            exit 0
+          fi
 
-          # Commit and push
           git add CHANGELOG.md
           git commit -m "docs(changelog): update changelog for ${TAG}"
-          git push origin "$BRANCH"
-
-          # Create PR
-          BODY="## Changelog Update
-
-          This PR adds the changelog for release \`${TAG}\`.
-
-          **Generated automatically by the Release workflow.**"
+          git push origin "HEAD:changelog/${TAG}"
 
           gh pr create \
             --base master \
-            --head "$BRANCH" \
+            --head "changelog/${TAG}" \
             --title "📝 Changelog for ${TAG}" \
-            --body "$BODY"
+            --body "This PR adds the changelog for release \`${TAG}\`."
 
-          echo "✅ PR created successfully"
-
-      - name: Summary
+      - name: Workflow summary
+        env:
+          TAG: ${{ inputs.tag }}
+          VERSION: ${{ needs.validate-release-source.outputs.version }}
+          IMAGE_DIGEST: ${{ steps.image.outputs.digest }}
         run: |
-          cat >> $GITHUB_STEP_SUMMARY << EOF
-          ## 🚀 Deploy Complete!
+          cat >> "$GITHUB_STEP_SUMMARY" << EOF
+          ## Release published
 
-          | Info | Value |
-          |------|-------|
-          | Environment | \`${{ github.event.inputs.environment }}\` |
-          | Tag | \`${{ github.event.inputs.tag }}\` |
-          | Docker Tag | \`${{ steps.version.outputs.version }}\` |
-          | Triggered by | @${{ github.actor }} |
+          | Property | Value |
+          |----------|-------|
+          | Tag | \`$TAG\` |
+          | Docker image | \`mikelima1989/nestjs-microservice:$VERSION\` |
+          | Image digest | \`$IMAGE_DIGEST\` |
 
-          ### 📝 Changelog
-
-          A PR was created to merge the changelog to master.
+          The changelog pull request is ready for review.
           EOF

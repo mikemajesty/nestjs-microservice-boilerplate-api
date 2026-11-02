@@ -5,10 +5,15 @@ on:
   workflow_dispatch:
     inputs:
       branch_from:
-        description: 'Source branch for the tag'
+        description: 'Branch to create the release tag from'
         type: string
         required: true
         default: 'master'
+      merge_from_master:
+        description: 'Merge the latest master into the selected branch before validation'
+        type: boolean
+        required: true
+        default: true
       increment_type:
         description: 'Version increment type'
         type: choice
@@ -19,15 +24,34 @@ on:
           - none
         default: patch
         required: true
+  workflow_call:
+    inputs:
+      branch_from:
+        description: 'Branch to create the release tag from'
+        type: string
+        required: true
       merge_from_master:
-        description: 'Merge from master before creating tag? (preserves package.json version)'
+        description: 'Merge the latest master into the selected branch before validation'
         type: boolean
         required: true
-        default: false
+      increment_type:
+        description: 'Version increment type'
+        type: string
+        required: true
+    outputs:
+      tag_name:
+        description: 'Created release tag'
+        value: ${{ jobs.create-release-tag.outputs.tag_name }}
+      version:
+        description: 'Created release version'
+        value: ${{ jobs.create-release-tag.outputs.version }}
 
 permissions:
   contents: write
-  pull-requests: write
+
+concurrency:
+  group: create-release-tag
+  cancel-in-progress: false
 
 jobs:
   create-release-tag:
@@ -41,7 +65,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v5
         with:
-          ref: ${{ github.event.inputs.branch_from }}
+          ref: ${{ inputs.branch_from }}
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -55,75 +79,123 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - name: Smart Merge from Master
-        if: ${{ github.event.inputs.merge_from_master == 'true' && github.event.inputs.branch_from != 'master' }}
+      - name: Validate source branch
+        env:
+          BRANCH_NAME: ${{ inputs.branch_from }}
         run: |
-          echo "📦 Saving current version..."
-          CURRENT_VERSION=$(node -p "require('./package.json').version")
-          echo "Current version: $CURRENT_VERSION"
-
-          echo "🔄 Fetching and merging master..."
-          git fetch origin master
-
-          if git merge origin/master --no-edit; then
-            echo "✅ Auto-merge successful"
-          else
-            echo "⚠️ Merge conflicts detected, resolving..."
-            git checkout --theirs .
-            git add .
-            git commit -m "chore: resolve merge conflicts from master"
+          if ! git check-ref-format --branch "$BRANCH_NAME"; then
+            echo "Error: Invalid source branch: $BRANCH_NAME"
+            exit 1
           fi
 
-          echo "🔧 Restoring version in package.json..."
-          node -e "
-            const pkg = require('./package.json');
-            pkg.version = '$CURRENT_VERSION';
-            require('fs').writeFileSync('./package.json', JSON.stringify(pkg, null, 2) + '\n');
-          "
+          if ! git ls-remote --exit-code --heads origin "refs/heads/${BRANCH_NAME}" >/dev/null; then
+            echo "Error: Source branch $BRANCH_NAME does not exist on origin."
+            exit 1
+          fi
 
-          git add package.json
-          echo "✅ Smart merge completed"
+      - name: Merge latest master
+        if: ${{ inputs.merge_from_master && inputs.branch_from != 'master' }}
+        env:
+          BRANCH_NAME: ${{ inputs.branch_from }}
+        run: |
+          CURRENT_VERSION="$(node -p "require('./package.json').version")"
+          git fetch origin master
+
+          if ! git merge --no-edit origin/master; then
+            echo "Error: master has conflicts with $BRANCH_NAME. Resolve them on the branch and retry."
+            exit 1
+          fi
+
+          CURRENT_VERSION="$CURRENT_VERSION" node <<'NODE'
+          const fs = require('node:fs')
+          const version = process.env.CURRENT_VERSION
+          const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'))
+          const lock = JSON.parse(fs.readFileSync('package-lock.json', 'utf8'))
+
+          pkg.version = version
+          lock.version = version
+          lock.packages[''].version = version
+
+          fs.writeFileSync('package.json', `${JSON.stringify(pkg, null, 2)}\n`)
+          fs.writeFileSync('package-lock.json', `${JSON.stringify(lock, null, 2)}\n`)
+          NODE
+
+          git add package.json package-lock.json
+          echo "Merged master into $BRANCH_NAME while preserving its release version ($CURRENT_VERSION)."
 
       - name: Increment Version
-        if: ${{ github.event.inputs.increment_type != 'none' }}
+        if: ${{ inputs.increment_type != 'none' }}
+        env:
+          INCREMENT_TYPE: ${{ inputs.increment_type }}
         run: |
-          npm version ${{ github.event.inputs.increment_type }} --no-git-tag-version
-          echo "✅ Version incremented (${{ github.event.inputs.increment_type }})"
+          npm version "$INCREMENT_TYPE" --no-git-tag-version
+          echo "Version incremented ($INCREMENT_TYPE)"
+
+      - name: Check release tag availability
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          TAG_NAME="v${VERSION}"
+
+          if ! REMOTE_TAG="$(git ls-remote origin "refs/tags/${TAG_NAME}")"; then
+            echo "Error: Could not verify whether tag $TAG_NAME already exists."
+            exit 1
+          fi
+
+          if [[ -n "$REMOTE_TAG" ]]; then
+            echo "Error: Tag $TAG_NAME already exists."
+            exit 1
+          fi
+
+      - name: Validate release candidate
+        run: |
+          npm ci
+          npm run lint:check
+          npm test
+          npm run build
 
       - name: Create Tag
         id: create_tag
+        env:
+          BRANCH_NAME: ${{ inputs.branch_from }}
         run: |
           VERSION=$(node -p "require('./package.json').version")
           TAG_NAME="v${VERSION}"
 
-          echo "📋 Version: $VERSION"
-          echo "🏷️ Tag: $TAG_NAME"
+          if ! REMOTE_TAG="$(git ls-remote origin "refs/tags/${TAG_NAME}")"; then
+            echo "Error: Could not verify whether tag $TAG_NAME already exists."
+            exit 1
+          fi
 
-          # Commit version changes
+          if [[ -n "$REMOTE_TAG" ]]; then
+            echo "Error: Tag $TAG_NAME already exists."
+            exit 1
+          fi
+
           if [ -n "$(git status --porcelain)" ]; then
-            git add package.json package-lock.json 2>/dev/null || git add package.json
+            git add package.json package-lock.json
             git commit -m "chore(release): bump version to ${VERSION}"
           fi
 
-          # Create annotated tag
           git tag -a "$TAG_NAME" -m "Release ${TAG_NAME}"
 
-          # Set outputs
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
+          echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
 
       - name: Push Changes
+        env:
+          BRANCH_NAME: ${{ inputs.branch_from }}
+          TAG_NAME: ${{ steps.create_tag.outputs.tag_name }}
         run: |
-          git push origin HEAD:${{ github.event.inputs.branch_from }}
-          git push origin ${{ steps.create_tag.outputs.tag_name }}
+          git push --atomic origin "HEAD:${BRANCH_NAME}" "refs/tags/${TAG_NAME}"
 
       - name: Workflow Summary
         run: |
           TAG_NAME="${{ steps.create_tag.outputs.tag_name }}"
           VERSION="${{ steps.create_tag.outputs.version }}"
-          BRANCH="${{ github.event.inputs.branch_from }}"
-          INCREMENT="${{ github.event.inputs.increment_type }}"
-          MERGED="${{ github.event.inputs.merge_from_master }}"
+          BRANCH_NAME="${{ inputs.branch_from }}"
+          INCREMENT="${{ inputs.increment_type }}"
+          MERGED="${{ inputs.merge_from_master }}"
 
           cat >> $GITHUB_STEP_SUMMARY << EOF
           ## 🏷️ Tag Created Successfully!
@@ -134,9 +206,9 @@ jobs:
           |----------|-------|
           | **Tag** | \`$TAG_NAME\` |
           | **Version** | \`$VERSION\` |
-          | **Branch** | \`$BRANCH\` |
+          | **Branch** | \`$BRANCH_NAME\` |
+          | **Merged latest master** | \`$MERGED\` |
           | **Increment** | \`$INCREMENT\` |
-          | **Merged from master** | \`$MERGED\` |
 
           ### 🔗 Links
 
@@ -145,5 +217,6 @@ jobs:
           ### 📝 Next Steps
 
           1. ✅ Tag \`$TAG_NAME\` created successfully
-          2. 🚀 [Run Release workflow](https://github.com/${{ github.repository }}/actions/workflows/release.yml) to deploy, generate changelog, and create the GitHub Release
+          2. 📦 Run the [Publish Release workflow](https://github.com/${{ github.repository }}/actions/workflows/release.yml) with tag \`$TAG_NAME\`
+          3. 🚀 Run the [Promote Release workflow](https://github.com/${{ github.repository }}/actions/workflows/promote-release.yml) and select one or more environments
           EOF

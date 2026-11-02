@@ -184,7 +184,7 @@ export class HealthService implements IHealthAdapter {
 
   async getLatency(host = '8.8.8.8') {
     try {
-      const res = await ping.promise.probe(host, { timeout: 200 })
+      const res = await ping.promise.probe(host, { timeout: 1 })
       if (!res.alive || !res.time) {
         return 'N/A'
       }

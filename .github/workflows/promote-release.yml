@@ -1,0 +1,155 @@
+name: Promote Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Published release tag to promote (e.g., v1.0.0)'
+        required: true
+        type: string
+      dev:
+        description: Deploy to dev
+        required: true
+        default: false
+        type: boolean
+      preprod:
+        description: Deploy to preprod
+        required: true
+        default: false
+        type: boolean
+      prod:
+        description: Deploy to prod
+        required: true
+        default: false
+        type: boolean
+  workflow_call:
+    inputs:
+      tag:
+        description: 'Published release tag to promote (e.g., v1.0.0)'
+        required: true
+        type: string
+      dev:
+        description: Deploy to dev
+        required: true
+        type: boolean
+      preprod:
+        description: Deploy to preprod
+        required: true
+        type: boolean
+      prod:
+        description: Deploy to prod
+        required: true
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: promote-release
+  cancel-in-progress: false
+
+jobs:
+  validate-promotion:
+    name: Validate Promotion
+    runs-on: ubuntu-26.04
+    outputs:
+      image_ref: ${{ steps.release.outputs.image_ref }}
+    steps:
+      - name: Validate tag and selected environments
+        id: release
+        env:
+          TAG: ${{ inputs.tag }}
+          DEPLOY_DEV: ${{ inputs.dev }}
+          DEPLOY_PREPROD: ${{ inputs.preprod }}
+          DEPLOY_PROD: ${{ inputs.prod }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Error: Tag must be in format v1.0.0. Received: $TAG"
+            exit 1
+          fi
+
+          if [[ "$DEPLOY_DEV" != "true" && "$DEPLOY_PREPROD" != "true" && "$DEPLOY_PROD" != "true" ]]; then
+            echo "Error: Select at least one environment."
+            exit 1
+          fi
+
+          gh release download "$TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --pattern image-ref.txt \
+            --dir "$RUNNER_TEMP"
+
+          IMAGE_REF="$(cat "$RUNNER_TEMP/image-ref.txt")"
+          if [[ ! "$IMAGE_REF" =~ ^mikelima1989/nestjs-microservice@sha256:[a-f0-9]{64}$ ]]; then
+            echo "Error: Release $TAG does not contain a valid immutable image reference."
+            exit 1
+          fi
+
+          echo "image_ref=$IMAGE_REF" >> "$GITHUB_OUTPUT"
+          echo "Validated $TAG for selected environments."
+
+  deploy-dev:
+    name: Promote to dev
+    needs: validate-promotion
+    if: ${{ inputs.dev }}
+    runs-on: ubuntu-26.04
+    environment:
+      name: dev
+    steps:
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Promote immutable image to dev
+        env:
+          IMAGE_REF: ${{ needs.validate-promotion.outputs.image_ref }}
+        run: docker buildx imagetools create --tag mikelima1989/nestjs-microservice:dev "$IMAGE_REF"
+
+  deploy-preprod:
+    name: Promote to preprod
+    needs: [validate-promotion, deploy-dev]
+    if: ${{ !cancelled() && needs.validate-promotion.result == 'success' && inputs.preprod && (needs.deploy-dev.result == 'success' || needs.deploy-dev.result == 'skipped') }}
+    runs-on: ubuntu-26.04
+    environment:
+      name: preprod
+    steps:
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Promote immutable image to preprod
+        env:
+          IMAGE_REF: ${{ needs.validate-promotion.outputs.image_ref }}
+        run: docker buildx imagetools create --tag mikelima1989/nestjs-microservice:preprod "$IMAGE_REF"
+
+  deploy-prod:
+    name: Promote to prod
+    needs: [validate-promotion, deploy-dev, deploy-preprod]
+    if: ${{ !cancelled() && needs.validate-promotion.result == 'success' && inputs.prod && (needs.deploy-dev.result == 'success' || needs.deploy-dev.result == 'skipped') && (needs.deploy-preprod.result == 'success' || needs.deploy-preprod.result == 'skipped') }}
+    runs-on: ubuntu-26.04
+    environment:
+      name: prod
+    steps:
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Promote immutable image to prod
+        env:
+          IMAGE_REF: ${{ needs.validate-promotion.outputs.image_ref }}
+        run: docker buildx imagetools create --tag mikelima1989/nestjs-microservice:prod "$IMAGE_REF"
