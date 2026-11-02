@@ -1232,7 +1232,6 @@ Shared libraries and utilities.
 | [Token](guides/libs/token.md)     | JWT management       |
 | [Event](guides/libs/event.md)     | Event emitter system |
 | [i18n](guides/libs/i18n.md)       | Internationalization |
-| [Metrics](guides/libs/metrics.md) | Prometheus metrics   |
 
 ### 📂 [Decorators](guides/decorators/)
 

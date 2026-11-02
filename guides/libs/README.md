@@ -5,7 +5,6 @@ Shared libraries for cross-cutting concerns. Each lib provides centralized, reus
 | Lib | Purpose | Docs | Code |
 |-----|---------|------|------|
 | **Token** | JWT sign/verify for authentication | [token.md](./token.md) | [service.ts](../../src/libs/token/service.ts) |
-| **Metrics** | OpenTelemetry metrics with Prometheus/Grafana | [metrics.md](./metrics.md) | [service.ts](../../src/libs/metrics/service.ts) |
 | **i18n** | Multi-language internationalization | [i18n.md](./i18n.md) | [service.ts](../../src/libs/i18n/service.ts) |
 | **Event** | Pub/sub event system | [event.md](./event.md) | [service.ts](../../src/libs/event/service.ts) |
 
@@ -16,18 +15,13 @@ Shared libraries for cross-cutting concerns. Each lib provides centralized, reus
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                         LIBS LAYER                              │
-│  Cross-cutting concerns: auth, metrics, events, i18n           │
+│  Cross-cutting concerns: auth, events, i18n                    │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
-│   ┌─────────────┐  ┌─────────────┐  ┌─────────────┐           │
-│   │   Token     │  │   Metrics   │  │   Event     │           │
-│   │   (JWT)     │  │ (OTel+Prom) │  │  (Pub/Sub)  │           │
+│   ┌─────────────┐  ┌─────────────┐  ┌─────────────┐            │
+│   │   Token     │  │   Event     │  │    i18n     │            │
+│   │   (JWT)     │  │  (Pub/Sub)  │  │  (Locales)  │            │
 │   └─────────────┘  └─────────────┘  └─────────────┘           │
-│                                                                 │
-│   ┌─────────────┐                                              │
-│   │    i18n     │                                              │
-│   │  (Locales)  │                                              │
-│   └─────────────┘                                              │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
                               │

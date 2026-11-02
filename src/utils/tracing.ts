@@ -162,7 +162,7 @@ const pgInstrumentation = new PgInstrumentation({
 
 const sdkConfig: Partial<NodeSDKConfiguration> = {
   traceExporter: tracerExporter,
-  metricReader,
+  metricReaders: [metricReader],
   instrumentations: [httpInstrumentation, redisInstrumentation, mongodbInstrumentation, pgInstrumentation],
   serviceName: name
 }
