@@ -25,25 +25,74 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  release:
-    name: Deploy to ${{ github.event.inputs.environment }}
+  validate-release-source:
+    name: Validate Release Source
     runs-on: ubuntu-26.04
-    environment: ${{ github.event.inputs.environment }}
+    outputs:
+      commit_sha: ${{ steps.source.outputs.commit_sha }}
     steps:
-      - name: Validate tag format
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Validate tag and source branch
+        id: source
+        env:
+          TAG: ${{ github.event.inputs.tag }}
         run: |
-          TAG="${{ github.event.inputs.tag }}"
           if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             echo "❌ Error: Tag must be in format v1.0.0 (e.g., v1.2.3)"
             echo "   Received: $TAG"
             exit 1
           fi
-          echo "✅ Tag format valid: $TAG"
 
+          git fetch origin master --tags
+          COMMIT_SHA="$(git rev-parse "refs/tags/${TAG}^{commit}")"
+
+          if ! git merge-base --is-ancestor "$COMMIT_SHA" origin/master; then
+            echo "❌ Error: Tag $TAG does not point to a commit on master."
+            exit 1
+          fi
+
+          echo "commit_sha=$COMMIT_SHA" >> "$GITHUB_OUTPUT"
+          echo "✅ Tag $TAG points to validated source commit $COMMIT_SHA on master."
+
+  validate-code:
+    name: Validate Code
+    needs: validate-release-source
+    runs-on: ubuntu-26.04
+    steps:
       - name: Checkout code
         uses: actions/checkout@v5
         with:
-          ref: ${{ github.event.inputs.tag }}
+          ref: ${{ needs.validate-release-source.outputs.commit_sha }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm test
+
+  release:
+    name: Deploy to ${{ github.event.inputs.environment }}
+    needs: [validate-release-source, validate-code]
+    runs-on: ubuntu-26.04
+    environment: ${{ github.event.inputs.environment }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.validate-release-source.outputs.commit_sha }}
           fetch-depth: 0
 
       - name: Setup Node.js

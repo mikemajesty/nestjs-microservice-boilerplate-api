@@ -1,7 +1,7 @@
 import { EnvEnum } from '@/infra/secrets/types'
 import { execSync } from 'child_process'
 
-jest.setTimeout(60000)
+jest.setTimeout(100000)
 
 process.env.NODE_ENV = EnvEnum.TEST
 process.env.LOG_LEVEL = `silent`

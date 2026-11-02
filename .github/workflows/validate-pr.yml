@@ -5,6 +5,30 @@ on:
     types: [opened, edited, synchronize, reopened]
 
 jobs:
+  validate-code:
+    name: Validate Code
+    runs-on: ubuntu-26.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm test
+
   validate-title:
     name: Validate PR Title
     runs-on: ubuntu-26.04
