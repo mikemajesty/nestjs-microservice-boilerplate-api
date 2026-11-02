@@ -958,7 +958,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Health.HealthOuput'
+                $ref: '#/components/schemas/Health.HealthOutput'
       tags:
         - Health
   /health/startup:
@@ -1599,56 +1599,7 @@ components:
               description: default error model
           description: When input is invalid.
       description: When input is invalid
-    Health.DatabaseStatus:
-      type: object
-      required:
-        - status
-        - connection
-        - memory
-      properties:
-        status:
-          type: string
-          description: 'db status: **UP** | **DOWN** '
-        connection:
-          type: object
-          properties:
-            active:
-              type: integer
-              format: int64
-              description: Refers to the number of active connections that are currently in use, typically handling ongoing operations or queries.
-            available:
-              type: integer
-              format: int64
-              description: Indicates the number of available connections that can be established with the db server, based on its configuration and resources.
-            current:
-              type: integer
-              format: int64
-              description: Represents the current number of active connections to the db server
-            totalCreated:
-              type: integer
-              format: int64
-              description: The total number of connections created since the server started.
-          required:
-            - active
-            - available
-            - current
-            - totalCreated
-          description: The set of numbers you provided represents connection metrics for the db server.
-        memory:
-          type: object
-          properties:
-            ramUsed:
-              type: string
-              description: The amount of RAM currently used by database in megabytes (MB).
-            reservedMemory:
-              type: string
-              description: The total amount of virtual memory reserved by database in megabytes (MB).
-          required:
-            - ramUsed
-            - reservedMemory
-          description: Memory usage statistics for the database instance.
-      description: db information
-    Health.HealthOuput:
+    Health.HealthOutput:
       type: object
       required:
         - server
@@ -1667,12 +1618,55 @@ components:
           type: string
           description: application version
         mongo:
-          allOf:
-            - $ref: '#/components/schemas/Health.DatabaseStatus'
+          type: object
+          properties:
+            status:
+              type: string
+              description: 'MongoDB status: **UP** | **DOWN**'
+            connection:
+              type: object
+              allOf:
+                - $ref: '#/components/schemas/Health.MongoConnectionOutput'
+              nullable: true
+              description: MongoDB connection pool metrics; null when unavailable
+            memory:
+              type: object
+              properties:
+                used:
+                  type: string
+                  nullable: true
+                limit:
+                  type: string
+                  nullable: true
+              required:
+                - used
+                - limit
+              description: MongoDB WiredTiger cache metrics; values may be null when unsupported or unavailable
+          required:
+            - status
+            - connection
+            - memory
           description: mongo information
         postgres:
-          allOf:
-            - $ref: '#/components/schemas/Health.DatabaseStatus'
+          type: object
+          properties:
+            status:
+              type: string
+              description: 'PostgreSQL status: **UP** | **DOWN**'
+            connection:
+              type: object
+              allOf:
+                - $ref: '#/components/schemas/Health.PostgresConnectionOutput'
+              nullable: true
+              description: PostgreSQL connection metrics; null when unavailable
+            databaseSizeBytes:
+              type: string
+              nullable: true
+              description: Total PostgreSQL database size in bytes; null when unavailable
+          required:
+            - status
+            - connection
+            - databaseSizeBytes
           description: postgres information
         redisState:
           type: string
@@ -1694,6 +1688,7 @@ components:
             connections:
               type: integer
               format: int32
+              nullable: true
               description: representing the active connections count
           required:
             - latency
@@ -1760,15 +1755,15 @@ components:
               properties:
                 lastMinute:
                   allOf:
-                    - $ref: '#/components/schemas/Health.HealthOuputLoad'
+                    - $ref: '#/components/schemas/Health.HealthOutputLoad'
                   description: cpu load average on last minute
                 lastFiveMinutes:
                   allOf:
-                    - $ref: '#/components/schemas/Health.HealthOuputLoad'
+                    - $ref: '#/components/schemas/Health.HealthOutputLoad'
                   description: cpu load average on five minute
                 lastFifteenMinutes:
                   allOf:
-                    - $ref: '#/components/schemas/Health.HealthOuputLoad'
+                    - $ref: '#/components/schemas/Health.HealthOutputLoad'
                   description: cpu load average on fifteen minute
               required:
                 - lastMinute
@@ -1797,7 +1792,7 @@ components:
             - cores
           description: cpu usage
       description: health output
-    Health.HealthOuputLoad:
+    Health.HealthOutputLoad:
       type: object
       required:
         - load
@@ -1829,6 +1824,79 @@ components:
           format: decimal
           description: Application uptime in seconds
       description: Liveness probe response model
+    Health.MongoConnectionOutput:
+      type: object
+      required:
+        - active
+        - available
+        - current
+        - totalCreated
+      properties:
+        active:
+          type: integer
+          format: int64
+        available:
+          type: integer
+          format: int64
+        current:
+          type: integer
+          format: int64
+        totalCreated:
+          type: integer
+          format: int64
+        rejected:
+          type: integer
+          format: int64
+          description: Additional metrics reported by MongoDB versions that expose them
+        queuedForEstablishment:
+          type: integer
+          format: int64
+        establishmentRateLimit:
+          type: object
+          properties:
+            rejected:
+              type: integer
+              format: int64
+            exempted:
+              type: integer
+              format: int64
+            interruptedDueToClientDisconnect:
+              type: integer
+              format: int64
+          required:
+            - rejected
+            - exempted
+            - interruptedDueToClientDisconnect
+        threaded:
+          type: integer
+          format: int64
+        exhaustIsMaster:
+          type: integer
+          format: int64
+        exhaustHello:
+          type: integer
+          format: int64
+        awaitingTopologyChanges:
+          type: integer
+          format: int64
+      description: MongoDB connection pool metrics
+    Health.PostgresConnectionOutput:
+      type: object
+      required:
+        - active
+        - available
+        - current
+      properties:
+        active:
+          type: integer
+          format: int64
+        available:
+          type: integer
+          format: int64
+        current:
+          type: integer
+          format: int64
+      description: PostgreSQL connection metrics
     Health.StartupOutput:
       type: object
       required:

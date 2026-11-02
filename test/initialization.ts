@@ -1,5 +1,6 @@
 import { EnvEnum } from '@/infra/secrets/types'
 import { execSync } from 'child_process'
+
 jest.setTimeout(60000)
 
 process.env.NODE_ENV = EnvEnum.TEST
@@ -8,6 +9,8 @@ process.env.JWT_SECRET = 'test-secret'
 process.env.TOKEN_EXPIRATION = String(300)
 process.env.JWT_REFRESH_SECRET_KEY = 'test-refresh-secret'
 process.env.NODE_OPTIONS = '--experimental-vm-modules'
+process.env.HTTP_REQUEST_TIMEOUT_MS = String(5000)
+
 try {
   execSync('docker info', { stdio: 'ignore' })
 } catch {

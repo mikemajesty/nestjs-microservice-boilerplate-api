@@ -1,6 +1,6 @@
 import { SpanStatusCode, trace } from '@opentelemetry/api'
 
-import { AppFastifyRequest, generalizePath, UserRequest } from '@/utils/request'
+import { AppFastifyRequest, generalizePath, TRACEID_HEADER, UserRequest } from '@/utils/request'
 
 import { name, version } from '../../../package.json'
 
@@ -16,8 +16,8 @@ export const finishTracing = (request: FastifyRequest | AppFastifyRequest, statu
   const span = trace.getTracer(name, version).startSpan(generalizePath(request.url?.split('?')[0] || '/'))
 
   span.setAttribute('http.status_code', status)
-  if (request.headers.traceid) {
-    span.setAttribute('traceid', request.headers.traceid)
+  if (request.headers[TRACEID_HEADER]) {
+    span.setAttribute(TRACEID_HEADER, request.headers[TRACEID_HEADER])
   }
   span.setAttribute('error.message', message)
   span.setStatus({ message, code: SpanStatusCode.ERROR })

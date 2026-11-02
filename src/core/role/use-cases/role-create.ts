@@ -25,7 +25,7 @@ export class RoleCreateUsecase implements IUsecase {
   async execute(input: RoleCreateInput): Promise<RoleCreateOutput> {
     const entity = new RoleEntity({ id: IDGeneratorUtils.uuid(), ...input })
 
-    const role = await this.roleRepository.create(entity.toObject())
+    const role = await this.roleRepository.create(entity.toData())
 
     this.loggerService.info({ message: 'role created.', metadata: { role } })
 

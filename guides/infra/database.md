@@ -463,7 +463,7 @@ export class insertPermissions1727654555722 implements MigrationInterface {
       })
       
       permissionsPromises.push(
-        queryRunner.manager.insert(PermissionSchema, entity.toObject())
+        queryRunner.manager.insert(PermissionSchema, entity.toData())
       )
     }
     

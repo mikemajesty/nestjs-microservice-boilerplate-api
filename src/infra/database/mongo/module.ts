@@ -6,6 +6,7 @@ import { Connection } from 'mongoose'
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger'
 import { ISecretsAdapter, SecretsModule } from '@/infra/secrets'
 import { ApiInternalServerException } from '@/utils/exception'
+import { TimeoutBudget } from '@/utils/request/timeout-budget'
 
 import { name } from '../../../../package.json'
 import { MongoConnectionName } from '../enum'
@@ -18,6 +19,17 @@ import { MongoService } from './service'
       useFactory: ({ MONGO: { MONGO_URL }, IS_DOCUMENTDB, IS_PRODUCTION }: ISecretsAdapter, logger: ILoggerAdapter) => {
         const connection = new MongoService().getConnection({ URI: MONGO_URL })
         return {
+          retryAttempts: 1,
+          retryDelay: 0,
+          connectionErrorFactory: (error) => {
+            logger.error(
+              new ApiInternalServerException(error?.message ?? 'MongoDB connection failed', {
+                context: 'MongoConnection',
+                cause: error?.cause
+              })
+            )
+            return error
+          },
           connectionFactory: async (connection: Connection) => {
             if (connection.readyState === 1) {
               if (connection.db && !IS_PRODUCTION && !IS_DOCUMENTDB) {
@@ -49,7 +61,7 @@ import { MongoService } from './service'
           maxPoolSize: 25,
           maxIdleTimeMS: 300000,
           serverSelectionTimeoutMS: 5000,
-          socketTimeoutMS: 30000,
+          socketTimeoutMS: TimeoutBudget.DEPENDENCY_TIMEOUT_MS,
           connectTimeoutMS: 10000,
           heartbeatFrequencyMS: 10000,
           maxConnecting: 5,

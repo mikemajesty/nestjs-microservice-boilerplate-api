@@ -51,17 +51,19 @@ describe(UserListUsecase.name, () => {
   })
 
   const roleMock = new ZodMockSchema(RoleEntitySchema)
-  const roles = roleMock.generateMany<RoleEntity>(2, {
+  const roles = roleMock.generateMany(2, {
     overrides: {
       permissions: []
-    }
+    },
+    factory: (data) => new RoleEntity(data)
   })
 
   const userMock = new ZodMockSchema(UserEntitySchema)
-  const users = userMock.generateMany<UserEntity>(4, {
+  const users = userMock.generateMany(4, {
     overrides: {
       roles
-    }
+    },
+    factory: (data) => new UserEntity(data)
   })
 
   const input = new ZodMockSchema(UserListSchema).generate()

@@ -17,7 +17,7 @@ interface HealthController {
   @route("/ready")
   @doc("Readiness probe - checks if application can handle requests")
   @returnsDoc("Complete system health status with dependencies and metrics")
-  readiness(): HealthOuput;
+  readiness(): HealthOutput;
 
   @get
   @route("/live")

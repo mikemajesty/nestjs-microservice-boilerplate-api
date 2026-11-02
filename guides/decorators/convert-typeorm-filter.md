@@ -1,10 +1,28 @@
-# ConvertTypeOrmFilter Decorator (Repository Layer)
+# TransformTypeOrmSearch Decorator (Repository Layer)
 
 Transforms **manual, complex TypeORM WHERE clause construction** into elegant, type-safe, automatic filter object generation for **Repository layer** with built-in type conversion, PostgreSQL optimizations, and security validations.
 
+## Shared filter conversion
+
+Numeric equality inputs, including `0`, are converted just like numeric strings.
+Equality arrays match any listed value; an empty array matches no rows.
+Empty `like` arrays retain their existing behavior of adding no condition.
+
+Both `TransformTypeOrmSearch` and `TransformMongooseSearch` use `convertFilterValue`.
+`Number` accepts finite numbers and nonblank numeric strings; invalid values
+produce HTTP 400. `Date` returns a JavaScript `Date`, while `DateIso` returns a
+complete UTC ISO timestamp, preserving time and milliseconds independently of
+`DATE_FORMAT`. This replaces the previous configured date-only formatting for
+`DateIso`. Invalid or blank date values produce HTTP 400 rather than an internal
+server error. `Boolean` accepts the strings `'true'` and `'false'`; `ObjectId`
+validates the value before constructing a MongoDB ObjectId.
+
+`like` parameter names are generated per configured field and array position,
+independently of search text, to avoid collisions between conditions.
+
 ## The Problem: Manual TypeORM Filter Hell
 
-### ❌ **Without ConvertTypeOrmFilter - Manual Nightmare**
+### ❌ **Without TransformTypeOrmSearch - Manual Nightmare**
 
 ```typescript
 // UGLY: Manual TypeORM WHERE clause construction
@@ -117,15 +135,15 @@ export class UserRepository {
 7. **Performance Issues** - Inefficient LIKE queries without proper escaping
 8. **Maintenance Nightmare** - Change entity? Update filters in 10+ places
 
-## ✅ **The Elegant Solution: ConvertTypeOrmFilter**
+## ✅ **The Elegant Solution: TransformTypeOrmSearch**
 
 ```typescript
-import { ConvertTypeOrmFilter, SearchTypeEnum } from '@/utils/decorators/database'
+import { TransformTypeOrmSearch, SearchTypeEnum } from '@/utils/decorators/database'
 
 export class UserRepository {
   
   // ✅ BEAUTIFUL: Single decorator with complete automation!
-  @ConvertTypeOrmFilter<UserEntity>([
+  @TransformTypeOrmSearch<UserEntity>([
     { name: 'email', type: SearchTypeEnum.equal },                    // Auto: In() or exact match
     { name: 'name', type: SearchTypeEnum.like },                      // Auto: Raw() with unaccent
     { name: 'status', type: SearchTypeEnum.equal, format: 'String' }, // Auto: type conversion
@@ -145,7 +163,7 @@ export class UserRepository {
     })
 
     return { 
-      docs: docs.map(doc => new UserEntity(doc).toObject()), 
+      docs: docs.map(doc => new UserEntity(doc).toData()), 
       total, 
       page: input.page, 
       limit: input.limit 
@@ -153,7 +171,7 @@ export class UserRepository {
   }
   
   // ✅ Same validation automatically applied to all methods!
-  @ConvertTypeOrmFilter<UserEntity>([
+  @TransformTypeOrmSearch<UserEntity>([
     { name: 'email', type: SearchTypeEnum.equal },
     { name: 'name', type: SearchTypeEnum.like },
     { name: 'department', type: SearchTypeEnum.equal, map: 'department_name' } // ✅ Custom mapping
@@ -177,7 +195,7 @@ export class UserRepository {
 ```typescript
 export class ProductRepository {
   
-  @ConvertTypeOrmFilter<ProductEntity>([
+  @TransformTypeOrmSearch<ProductEntity>([
     { name: 'name', type: SearchTypeEnum.like },                          // String (no conversion)
     { name: 'price', type: SearchTypeEnum.equal, format: 'Number' },      // String → Number
     { name: 'inStock', type: SearchTypeEnum.equal, format: 'Boolean' },   // String → Boolean  
@@ -203,7 +221,7 @@ export class ProductRepository {
 ```typescript
 export class BlogRepository {
   
-  @ConvertTypeOrmFilter<BlogPostEntity>([
+  @TransformTypeOrmSearch<BlogPostEntity>([
     // EQUAL: Exact match or IN() for arrays
     { name: 'status', type: SearchTypeEnum.equal },
     { name: 'authorId', type: SearchTypeEnum.equal },
@@ -238,7 +256,7 @@ export class BlogRepository {
 ```typescript
 export class OrderRepository {
   
-  @ConvertTypeOrmFilter<OrderEntity>([
+  @TransformTypeOrmSearch<OrderEntity>([
     { name: 'customerEmail', type: SearchTypeEnum.equal, map: 'customer_email' },    // Frontend → DB mapping
     { name: 'status', type: SearchTypeEnum.equal },                                  // Direct mapping
     { name: 'totalAmount', type: SearchTypeEnum.equal, map: 'total_price', format: 'Number' }, // Map + convert
@@ -265,7 +283,7 @@ export class OrderRepository {
 ```typescript
 export class UserRepository {
   
-  @ConvertTypeOrmFilter<UserEntity>([
+  @TransformTypeOrmSearch<UserEntity>([
     { name: 'email', type: SearchTypeEnum.equal },
     { name: 'name', type: SearchTypeEnum.like },
     { name: 'status', type: SearchTypeEnum.equal, format: 'String' },
@@ -275,7 +293,7 @@ export class UserRepository {
     { name: 'joinDate', type: SearchTypeEnum.equal, format: 'Date' },
     { name: 'salary', type: SearchTypeEnum.equal, format: 'Number' }
   ])
-  @ValidateDatabaseSortAllowed<UserEntity>(
+  @TransformSort<UserEntity>(
     { name: 'email' }, { name: 'name' }, { name: 'createdAt' }
   )
   async paginate(input: UserListInput): Promise<UserListOutput> {
@@ -290,7 +308,7 @@ export class UserRepository {
     })
 
     return { 
-      docs: docs.map(doc => new UserEntity(doc).toObject()), 
+      docs: docs.map(doc => new UserEntity(doc).toData()), 
       total, 
       page: input.page, 
       limit: input.limit 
@@ -304,7 +322,7 @@ export class UserRepository {
 ```typescript
 export class ProductRepository {
   
-  @ConvertTypeOrmFilter<ProductEntity>([
+  @TransformTypeOrmSearch<ProductEntity>([
     { name: 'name', type: SearchTypeEnum.like },
     { name: 'description', type: SearchTypeEnum.like },
     { name: 'category', type: SearchTypeEnum.equal },
@@ -317,7 +335,7 @@ export class ProductRepository {
     { name: 'weight', type: SearchTypeEnum.equal, format: 'Number' },
     { name: 'isActive', type: SearchTypeEnum.equal, format: 'Boolean' }
   ])
-  @ValidateDatabaseSortAllowed<ProductEntity>(
+  @TransformSort<ProductEntity>(
     { name: 'price' }, { name: 'rating' }, { name: 'createdAt' }, { name: 'name' }
   )
   async search(input: ProductSearchInput): Promise<ProductSearchOutput> {
@@ -332,7 +350,7 @@ export class ProductRepository {
     })
 
     return { 
-      docs: docs.map(doc => new ProductEntity(doc).toObject()), 
+      docs: docs.map(doc => new ProductEntity(doc).toData()), 
       total, 
       page: input.page, 
       limit: input.limit 
@@ -346,7 +364,7 @@ export class ProductRepository {
 ```typescript
 export class AnalyticsRepository {
   
-  @ConvertTypeOrmFilter<AnalyticsEntity>([
+  @TransformTypeOrmSearch<AnalyticsEntity>([
     { name: 'userId', type: SearchTypeEnum.equal, format: 'Number' },
     { name: 'eventType', type: SearchTypeEnum.equal },
     { name: 'platform', type: SearchTypeEnum.equal },
@@ -419,7 +437,7 @@ const input = {
   }
 }
 
-// After ConvertTypeOrmFilter transformation
+// After TransformTypeOrmSearch transformation
 const transformedInput = {
   search: {
     name: Raw((alias) => `unaccent(${alias}) ilike unaccent(:value)`, { value: '%john%' }),
@@ -494,7 +512,7 @@ SELECT * FROM users
 WHERE unaccent(name) ILIKE unaccent('%john''s%')  -- SQL injection safe
 ```
 
-## Why ConvertTypeOrmFilter is Revolutionary
+## Why TransformTypeOrmSearch is Revolutionary
 
 ### **🎯 Zero Boilerplate**
 - **Single decorator** replaces 50+ lines of manual filter construction
@@ -520,4 +538,4 @@ WHERE unaccent(name) ILIKE unaccent('%john''s%')  -- SQL injection safe
 - **Auto-complete** for allowed filter fields
 - **Easy maintenance** - change entity, decorator validates automatically
 
-**ConvertTypeOrmFilter transforms complex, error-prone TypeORM WHERE clause construction into elegant, type-safe, automatic filter generation that's secure, performant, and PostgreSQL-optimized!** 🚀
+**TransformTypeOrmSearch transforms complex, error-prone TypeORM WHERE clause construction into elegant, type-safe, automatic filter generation that's secure, performant, and PostgreSQL-optimized!** 🚀

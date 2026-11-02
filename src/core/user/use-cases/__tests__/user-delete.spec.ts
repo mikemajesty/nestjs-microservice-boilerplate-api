@@ -57,21 +57,23 @@ describe(UserDeleteUsecase.name, () => {
   })
 
   const roleMock = new ZodMockSchema(RoleEntitySchema)
-  const roles = roleMock.generateMany<RoleEntity>(2, {
+  const roles = roleMock.generateMany(2, {
     overrides: {
       permissions: []
-    }
+    },
+    factory: (data) => new RoleEntity(data)
   })
 
   const userMock = new ZodMockSchema(UserEntitySchema)
-  const user = userMock.generate<UserEntity>({
+  const user = userMock.generate({
     overrides: {
       roles
-    }
+    },
+    factory: (data) => new UserEntity(data)
   })
 
   test('when user deleted successfully, should expect an user deleted', async () => {
-    repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(user)
+    repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(user.clone())
     repository.softRemove = TestUtils.mockResolvedValue<UserEntity>()
 
     await expect(usecase.execute({ id: MockUtils.UUID() }, MockUtils.Tracing())).resolves.toEqual(expect.any(Object))

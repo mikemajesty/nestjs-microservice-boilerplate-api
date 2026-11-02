@@ -1,12 +1,12 @@
-# ConvertMongoFilterToBaseRepository Decorator (Base Repository / Infra Layer)
+# NormalizeMongoFilter Decorator (Base Repository / Infra Layer)
 
 Transforms **nested filter objects** into **flattened MongoDB-compatible queries** for base repository operations, with automatic `id` → `_id` conversion and soft delete handling.
 
-> **Note:** This decorator is different from `ConvertMongooseFilter` (see [validate-mongoose-filter.md](validate-mongoose-filter.md)). Use **ConvertMongooseFilter** in Module Repositories (builds $or/$and queries) and **ConvertMongoFilterToBaseRepository** in Base Repository/Infra (flattens nested objects).
+> **Note:** This decorator is different from `TransformMongooseSearch` (see [validate-mongoose-filter.md](validate-mongoose-filter.md)). Use **TransformMongooseSearch** in Module Repositories (builds $or/$and queries) and **NormalizeMongoFilter** in Base Repository/Infra (flattens nested objects).
 
 ## The Problem: Nested Filter Objects in Repositories
 
-### ❌ **Without ConvertMongoFilterToBaseRepository**
+### ❌ **Without NormalizeMongoFilter**
 
 ```typescript
 export class CatRepository {
@@ -53,15 +53,15 @@ export class CatRepository {
 
 ---
 
-## The Solution: ConvertMongoFilterToBaseRepository Decorator
+## The Solution: NormalizeMongoFilter Decorator
 
-### ✅ **With ConvertMongoFilterToBaseRepository - Clean & Automatic**
+### ✅ **With NormalizeMongoFilter - Clean & Automatic**
 
 ```typescript
-import { ConvertMongoFilterToBaseRepository } from '@/utils/decorators'
+import { NormalizeMongoFilter } from '@/utils/decorators'
 
 export class CatRepository {
-  @ConvertMongoFilterToBaseRepository()
+  @NormalizeMongoFilter()
   async findOne(filter: FilterQuery<CatEntity>): Promise<CatEntity | null> {
     // ✅ Filters already flattened and normalized!
     return this.entity.findOne(filter)
@@ -91,7 +91,7 @@ const input = {
   status: 'active'
 }
 
-// After ConvertMongoFilterToBaseRepository
+// After NormalizeMongoFilter
 const output = {
   _id: '507f1f77bcf86cd799439011',  // id → _id
   'owner.name': 'John',              // Flattened
@@ -109,7 +109,7 @@ const output = {
 
 ```typescript
 export class UserRepository {
-  @ConvertMongoFilterToBaseRepository()
+  @NormalizeMongoFilter()
   async findByEmail(email: string): Promise<UserEntity | null> {
     return this.entity.findOne({ email })
   }
@@ -120,7 +120,7 @@ export class UserRepository {
 
 ```typescript
 export class OrderRepository {
-  @ConvertMongoFilterToBaseRepository()
+  @NormalizeMongoFilter()
   async findByCustomer(filter: OrderFilter): Promise<OrderEntity[]> {
     // Input: { customer: { city: 'NYC', country: 'USA' } }
     // Transformed: { 'customer.city': 'NYC', 'customer.country': 'USA', deletedAt: null }
@@ -129,12 +129,12 @@ export class OrderRepository {
 }
 ```
 
-### Example 3: Combined with ConvertMongooseFilter
+### Example 3: Combined with TransformMongooseSearch
 
 ```typescript
 // Use Case - validates and builds $or/$and query
 export class CatListUsecase {
-  @ConvertMongooseFilter<CatEntity>([
+  @TransformMongooseSearch<CatEntity>([
     { name: 'name', type: SearchTypeEnum.like },
     { name: 'breed', type: SearchTypeEnum.equal }
   ])
@@ -145,9 +145,9 @@ export class CatListUsecase {
 
 // Repository - normalizes for MongoDB base operations
 export class CatRepository {
-  @ConvertMongoFilterToBaseRepository()
+  @NormalizeMongoFilter()
   async paginate(input: CatListInput): Promise<CatListOutput> {
-    // Receives already processed query from ConvertMongooseFilter
+    // Receives already processed query from TransformMongooseSearch
     return this.entity.paginate(input.search)
   }
 }
@@ -155,9 +155,9 @@ export class CatRepository {
 
 ---
 
-## Comparison with ConvertMongooseFilter
+## Comparison with TransformMongooseSearch
 
-| Feature | ConvertMongooseFilter | ConvertMongoFilterToBaseRepository |
+| Feature | TransformMongooseSearch | NormalizeMongoFilter |
 |---------|----------------------|-----------------------------------|
 | **Layer** | Use Case | Repository |
 | **Purpose** | Build $or/$and queries | Flatten nested objects |
@@ -171,7 +171,7 @@ export class CatRepository {
 **Use both together for complete MongoDB query handling:**
 
 ```
-Request → Use Case (ConvertMongooseFilter) → Repository (ConvertMongoFilterToBaseRepository) → MongoDB
+Request → Use Case (TransformMongooseSearch) → Repository (NormalizeMongoFilter) → MongoDB
 ```
 
 ---
@@ -185,4 +185,4 @@ Request → Use Case (ConvertMongooseFilter) → Repository (ConvertMongoFilterT
 | Soft Delete | Often forgotten | Automatic |
 | Code per method | ~20 lines | 1 decorator |
 
-**ConvertMongoFilterToBaseRepository** - *Simple, automatic filter normalization for MongoDB repositories.*
+**NormalizeMongoFilter** - *Simple, automatic filter normalization for MongoDB repositories.*

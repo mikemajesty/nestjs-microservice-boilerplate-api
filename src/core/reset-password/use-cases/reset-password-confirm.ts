@@ -1,7 +1,6 @@
 /**
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/core/usecase.md
  */
-import { UserEntity } from '@/core/user/entity/user'
 import { UserPasswordEntity } from '@/core/user/entity/user-password'
 import { IUserRepository } from '@/core/user/repository/user'
 import { SendEmailInput } from '@/infra/email'
@@ -45,27 +44,26 @@ export class ResetPasswordConfirmUsecase implements IUsecase {
       throw new ApiNotFoundException('user not found')
     }
 
-    const userEntity = new UserEntity(user)
-    const resetPasswordToken = await this.resetPasswordTokenRepository.findByIdUserId(userEntity.id)
+    const resetPasswordToken = await this.resetPasswordTokenRepository.findByIdUserId(user.id)
 
     if (!resetPasswordToken) {
       throw new ApiUnauthorizedException('token was expired')
     }
 
-    const passwordEntity = new UserPasswordEntity(userEntity.password)
+    const passwordEntity = new UserPasswordEntity(user.password)
 
     passwordEntity.createPassword()
 
-    await this.userRepository.create(userEntity.toObject())
+    await this.userRepository.create(user.toData())
 
     this.event.emit<SendEmailInput>(EventNameEnum.SEND_EMAIL, {
-      email: userEntity.email,
+      email: user.email,
       subject: 'Password has been changed successfully',
       template: 'reset-password',
-      payload: { name: userEntity.name }
+      payload: { name: user.name }
     })
 
-    await this.resetPasswordTokenRepository.remove({ userId: userEntity.id })
+    await this.resetPasswordTokenRepository.remove({ userId: user.id })
   }
 }
 

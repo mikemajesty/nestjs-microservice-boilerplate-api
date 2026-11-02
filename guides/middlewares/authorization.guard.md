@@ -62,8 +62,8 @@ import { Permission } from '@/utils/decorators'
 export class UserController {
   @Post()
   @Permission('user:create') // Only users with this permission
-  async createUser(@Body() input: CreateUserInput) {
-    return this.userService.create(input)
+  async createUser(@Req() { body }: ApiRequest) {
+    return this.userService.create(body)
   }
 
   @Delete(':id')

@@ -72,12 +72,12 @@ cat-list.ts       → Lists cats with pagination
 
 ## Components
 
-| Component | Purpose | Guide |
-|-----------|---------|-------|
-| **Entity** | Domain object with business rules and Zod schema | [entity.md](./entity.md) |
-| **Repository** | Data access abstraction (interface only) | [repository.md](./repository.md) |
-| **Use Case** | Single business operation | [usecase.md](./usecase.md) |
-| **Tests** | Unit tests for use cases | [test.md](./test.md) |
+| Component      | Purpose                                          | Guide                            |
+| -------------- | ------------------------------------------------ | -------------------------------- |
+| **Entity**     | Domain object with business rules and Zod schema | [entity.md](./entity.md)         |
+| **Repository** | Data access abstraction (interface only)         | [repository.md](./repository.md) |
+| **Use Case**   | Single business operation                        | [usecase.md](./usecase.md)       |
+| **Tests**      | Unit tests for use cases                         | [test.md](./test.md)             |
 
 ---
 
@@ -113,6 +113,7 @@ cat-list.ts       → Lists cats with pagination
 ## Creating a New Domain
 
 1. **Create the folder structure:**
+
    ```
    src/core/product/
    ├── entity/
@@ -127,7 +128,7 @@ cat-list.ts       → Lists cats with pagination
 
 4. **Create Use Cases** — Use the `usecase` snippet. See [usecase.md](./usecase.md)
 
-5. **Create Tests** — Use the `apitest` snippet. See [test.md](./test.md)
+5. **Create Tests** — Use the `usecasetest` snippet. See [test.md](./test.md)
 
 ---
 

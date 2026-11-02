@@ -23,18 +23,18 @@ export type HealthOutput = {
   version: string
   mongo: {
     status: string
-    connection: DatabaseConnectionOutput
-    memory: DatabaseMemoryOutput
+    connection: MongoConnectionOutput | null
+    memory: CacheMemoryOutput
   }
   postgres: {
     status: string
-    connection: DatabaseConnectionOutput
-    memory: DatabaseMemoryOutput
+    connection: PostgresConnectionOutput | null
+    databaseSizeBytes: string | null
   }
   redisState: string
   network: {
     latency: string
-    connections: number
+    connections: number | null
   }
   memory: MemoryOutput
   cpu: {
@@ -53,14 +53,20 @@ export type Load = {
   status: string
 }
 
-export type DatabaseConnectionOutput = {
+export type MongoConnectionOutput = {
   active: number
   available: number
   current: number
   totalCreated: number
 }
 
-export type DatabaseMemoryOutput = {
-  ramUsed: number | string
-  reservedMemory: number | string
+export type PostgresConnectionOutput = {
+  active: number
+  available: number
+  current: number
+}
+
+export type CacheMemoryOutput = {
+  used: string | null
+  limit: string | null
 }

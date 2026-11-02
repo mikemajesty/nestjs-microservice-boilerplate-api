@@ -11,7 +11,7 @@ export const ListSchema = InputValidator.intersection(PaginationSchema, SortSche
 
 type AllowedSort<T> = { name: keyof T; map?: string }
 
-export function ValidateDatabaseSortAllowed<T>(...allowedSortList: AllowedSort<T>[]) {
+export function TransformSort<T>(...allowedSortList: AllowedSort<T>[]) {
   return (target: unknown, propertyKey: string, descriptor: PropertyDescriptor) => {
     const originalMethod = descriptor.value
     descriptor.value = function (...args: SchemaInfer<typeof ListSchema>[]) {

@@ -80,21 +80,23 @@ describe(RoleAddPermissionUsecase.name, () => {
   })
 
   const permissionMock = new ZodMockSchema(PermissionEntitySchema)
-  const permissions = permissionMock.generateMany<PermissionEntity>(10, {
+  const permissions = permissionMock.generateMany(10, {
     overrides: {
       name: permissionMock.faker.helpers.arrayElement(['user:create', 'user:update', 'user:delete', 'user:view'])
-    }
+    },
+    factory: (data) => new PermissionEntity(data)
   })
 
   const roleMock = new ZodMockSchema(RoleEntitySchema)
-  const role = roleMock.generate<RoleEntity>({
+  const role = roleMock.generate({
     overrides: {
       permissions: roleMock.faker.helpers.arrayElements(permissions)
-    }
+    },
+    factory: (data) => new RoleEntity(data)
   })
 
   test('when adding permission with associated permission successfully, should expect an updated permission', async () => {
-    repository.findOne = TestUtils.mockResolvedValue<RoleEntity>(role)
+    repository.findOne = TestUtils.mockResolvedValue<RoleEntity>(role.clone())
     permissionRepository.findIn = TestUtils.mockResolvedValue<PermissionEntity[]>(permissions)
     repository.create = TestUtils.mockResolvedValue<CreatedModel>()
 
@@ -103,13 +105,16 @@ describe(RoleAddPermissionUsecase.name, () => {
   })
 
   test('when adding permission without associated permission successfully, should expect an updated permission', async () => {
-    const permissionInDb = permissionMock.generate<PermissionEntity>({
-      overrides: { name: 'user:create' }
+    const permissionInDb = permissionMock.generate({
+      overrides: { name: 'user:create' },
+      factory: (data) => new PermissionEntity(data)
     })
-    repository.findOne = TestUtils.mockResolvedValue<RoleEntity>({
-      ...role,
-      permissions: []
-    })
+    repository.findOne = TestUtils.mockResolvedValue<RoleEntity>(
+      new RoleEntity({
+        ...role,
+        permissions: []
+      })
+    )
     permissionRepository.findIn = TestUtils.mockResolvedValue<PermissionEntity[]>([permissionInDb])
     repository.create = TestUtils.mockResolvedValue<CreatedModel>()
 
@@ -118,10 +123,12 @@ describe(RoleAddPermissionUsecase.name, () => {
   })
 
   test('when permission does not exist in database, should create new permission', async () => {
-    repository.findOne = TestUtils.mockResolvedValue<RoleEntity>({
-      ...role,
-      permissions: []
-    })
+    repository.findOne = TestUtils.mockResolvedValue<RoleEntity>(
+      new RoleEntity({
+        ...role,
+        permissions: []
+      })
+    )
     permissionRepository.findIn = TestUtils.mockResolvedValue<PermissionEntity[]>([])
     repository.create = TestUtils.mockResolvedValue<CreatedModel>()
 
@@ -130,13 +137,16 @@ describe(RoleAddPermissionUsecase.name, () => {
   })
 
   test('when permission exists and is already associated with role, should skip it', async () => {
-    const existingPermission = permissionMock.generate<PermissionEntity>({
-      overrides: { name: 'user:create' }
+    const existingPermission = permissionMock.generate({
+      overrides: { name: 'user:create' },
+      factory: (data) => new PermissionEntity(data)
     })
-    repository.findOne = TestUtils.mockResolvedValue<RoleEntity>({
-      ...role,
-      permissions: [existingPermission]
-    })
+    repository.findOne = TestUtils.mockResolvedValue<RoleEntity>(
+      new RoleEntity({
+        ...role,
+        permissions: [existingPermission]
+      })
+    )
     permissionRepository.findIn = TestUtils.mockResolvedValue<PermissionEntity[]>([existingPermission])
     repository.create = TestUtils.mockResolvedValue<CreatedModel>()
 

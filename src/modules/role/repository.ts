@@ -9,19 +9,18 @@ import { IRoleRepository } from '@/core/role/repository/role'
 import { RoleListInput, RoleListOutput } from '@/core/role/use-cases/role-list'
 import { RoleSchema } from '@/infra/database/postgres/schemas/role'
 import { TypeORMRepository } from '@/infra/repository/postgres/repository'
-import { ConvertTypeOrmFilter, SearchTypeEnum, ValidateDatabaseSortAllowed } from '@/utils/decorators'
+import { SearchTypeEnum, TransformSort,TransformTypeOrmSearch } from '@/utils/decorators'
 
 @Injectable()
-export class RoleRepository extends TypeORMRepository<RoleModel> implements IRoleRepository {
+export class RoleRepository extends TypeORMRepository<RoleModel, RoleEntity> implements IRoleRepository {
   constructor(readonly repository: Repository<RoleModel>) {
-    super(repository)
+    super(repository, RoleEntity)
   }
 
-  @ConvertTypeOrmFilter<RoleEntity>([{ name: 'name', type: SearchTypeEnum.like }])
-  @ValidateDatabaseSortAllowed<RoleEntity>({ name: 'name' }, { name: 'createdAt' })
+  @TransformTypeOrmSearch<RoleEntity>([{ name: 'name', type: SearchTypeEnum.like }])
+  @TransformSort<RoleEntity>({ name: 'name' }, { name: 'createdAt' })
   async paginate(input: RoleListInput): Promise<RoleListOutput> {
-    const docs = await this.applyPagination(input)
-    return { ...docs, docs: docs.docs.map((doc: RoleEntity) => new RoleEntity(doc).toObject()) }
+    return this.applyPagination(input)
   }
 }
 

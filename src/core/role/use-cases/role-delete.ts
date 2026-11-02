@@ -34,14 +34,12 @@ export class RoleDeleteUsecase implements IUsecase {
       throw new ApiConflictException(`roleHasAssociationWithPermission: ${role.permissions.map((p) => p.name)}`)
     }
 
-    const entity = new RoleEntity(role)
+    role.deactivate()
 
-    entity.deactivate()
-
-    await this.roleRepository.create(entity.toObject())
+    await this.roleRepository.create(role.toData())
     await this.cacheAside.invalidate(Namespaces.roleById(id))
 
-    return entity.toObject()
+    return role.toData()
   }
 }
 

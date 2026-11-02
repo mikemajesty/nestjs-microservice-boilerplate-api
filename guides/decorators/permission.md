@@ -9,17 +9,17 @@ Without proper permission control, applications face serious security vulnerabil
 ```typescript
 // ❌ DANGEROUS: No permission control
 @Post('cats')
-async createCat(@Body() catData: CreateCatDto) {
+async createCat(@Req() { body }: ApiRequest) {
   // ANY authenticated user can create cats
-  return this.catService.create(catData)
+  return this.catService.create(body)
 }
 
 // ❌ RISKY: Role-only authorization (too broad)
 @Roles('admin', 'user') 
 @Post('cats')
-async createCat(@Body() catData: CreateCatDto) {
+async createCat(@Req() { body }: ApiRequest) {
   // All users can create cats - no granular control
-  return this.catService.create(catData)
+  return this.catService.create(body)
 }
 ```
 
@@ -31,9 +31,9 @@ The `@Permission` decorator provides **fine-grained access control** with standa
 // ✅ SECURE: Granular permission control
 @Post('cats')
 @Permission('cat:create')
-async createCat(@Body() catData: CreateCatDto) {
+async createCat(@Req() { body }: ApiRequest) {
   // Only users with 'cat:create' permission can access
-  return this.catService.create(catData)
+  return this.catService.create(body)
 }
 ```
 
@@ -112,8 +112,8 @@ const backofficePermissions = [
 export class CatController {
   @Post()
   @Permission('cat:create')
-  async create(@Body() catData: CreateCatDto) {
-    return this.catService.create(catData)
+  async create(@Req() { body }: ApiRequest) {
+    return this.catService.create(body)
   }
 
   @Get(':id')
@@ -130,8 +130,8 @@ export class CatController {
 
   @Put(':id')
   @Permission('cat:update')
-  async update(@Param('id') id: string, @Body() catData: UpdateCatDto) {
-    return this.catService.update(id, catData)
+  async update(@Param('id') id: string, @Req() { body }: ApiRequest) {
+    return this.catService.update(id, body)
   }
 
   @Delete(':id')

@@ -8,12 +8,13 @@ There's a **snippet** that generates the entire test structure automatically:
 
 ```
 1. Create a new file: cat-create.spec.ts
-2. Type: apitest
+2. Type: usecasetest
 3. Press Tab
 4. Done! ✨
 ```
 
 The snippet is located at `.vscode/usecase-test.code-snippets` and generates:
+
 - NestJS test module setup
 - `describe` block with `Usecase.name`
 - Adapter injection pattern
@@ -28,7 +29,8 @@ We follow the **NestJS testing pattern** with `@nestjs/testing`:
 ```typescript
 import { Test } from '@nestjs/testing'
 
-describe(CatCreateUsecase.name, () => {  // ✅ Always use ClassName.name
+describe(CatCreateUsecase.name, () => {
+  // ✅ Always use ClassName.name
   let usecase: ICatCreateAdapter
   let repository: ICatRepository
 
@@ -137,6 +139,7 @@ repository.create = jest.fn().mockResolvedValue(input)
 ```
 
 This is **mandatory** because:
+
 - Forces you to declare the expected return type
 - Compiler catches type mismatches immediately
 - Prevents tests from passing with wrong data shapes
@@ -181,6 +184,7 @@ See [Mock Utils](../tests/mock.md) for more details.
 **Target: 100% coverage on use cases.**
 
 Use cases are the core business logic — they must be fully tested:
+
 - ✅ Input validation (empty input)
 - ✅ Success scenarios
 - ✅ Error scenarios (not found, transaction errors)

@@ -60,7 +60,7 @@ export const handleDatabaseError = ({
   context
 }: {
   error: ErrorType | unknown
-  context: string
+  context?: string
 }): ApiDatabaseException => {
   return new ApiDatabaseException((error as Error)?.message ?? String(error), {
     cause: error,

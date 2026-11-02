@@ -22,11 +22,11 @@ The Module then binds them together:
 
 ## Location & Naming Conventions
 
-| Convention | Pattern | Example |
-|------------|---------|---------|
+| Convention | Pattern                 | Example            |
+| ---------- | ----------------------- | ------------------ |
 | **Folder** | `src/modules/{domain}/` | `src/modules/cat/` |
-| **File** | `repository.ts` | `repository.ts` |
-| **Class** | `{Domain}Repository` | `CatRepository` |
+| **File**   | `repository.ts`         | `repository.ts`    |
+| **Class**  | `{Domain}Repository`    | `CatRepository`    |
 
 ---
 
@@ -43,6 +43,7 @@ export class UserRepository extends TypeORMRepository<Model> implements IUserRep
 ```
 
 This is **mandatory** because:
+
 - Generic repositories provide all CRUD operations
 - Consistent API across all repositories
 - Only override what you need to customize
@@ -60,41 +61,31 @@ import { ICatRepository } from '@/core/cat/repository/cat'
 import { CatListInput, CatListOutput } from '@/core/cat/use-cases/cat-list'
 import { Cat, CatDocument } from '@/infra/database/mongo/schemas/cat'
 import { MongoRepository } from '@/infra/repository'
-import { ConvertMongooseFilter, SearchTypeEnum, ValidateDatabaseSortAllowed } from '@/utils/decorators'
+import { TransformMongooseSearch, SearchTypeEnum, TransformSort } from '@/utils/decorators'
 import { IEntity } from '@/utils/entity'
 import { FilterQuery, MongoRepositoryModelSessionType } from '@/utils/mongoose'
 
 @Injectable()
-export class CatRepository extends MongoRepository<CatDocument> implements ICatRepository {
+export class CatRepository extends MongoRepository<CatDocument, CatEntity> implements ICatRepository {
   constructor(readonly entity: MongoRepositoryModelSessionType<PaginateModel<CatDocument>>) {
-    super(entity)
+    super(entity, CatEntity)
   }
 
-  @ValidateDatabaseSortAllowed<CatEntity>({ name: 'createdAt' }, { name: 'breed' })
-  @ConvertMongooseFilter<CatEntity>([
+  @TransformSort<CatEntity>({ name: 'createdAt' }, { name: 'breed' })
+  @TransformMongooseSearch<CatEntity>([
     { name: 'name', type: SearchTypeEnum.like },
     { name: 'breed', type: SearchTypeEnum.like },
     { name: 'age', type: SearchTypeEnum.equal, format: 'Number' }
   ])
-  async paginate({ limit, page, search, sort }: CatListInput): Promise<CatListOutput> {
-    const cats = await this.entity.paginate(search as FilterQuery<IEntity>, {
-      page,
-      limit,
-      sort: sort as object
-    })
-
-    return {
-      docs: cats.docs.map((u) => new CatEntity(u.toObject({ virtuals: true })).toObject()),
-      limit,
-      page,
-      total: cats.totalDocs
-    }
+  async paginate(input: CatListInput): Promise<CatListOutput> {
+    return this.applyPagination(input)
   }
 }
 ```
 
 **Key elements:**
-- `extends MongoRepository<CatDocument>` — Generic Mongo operations
+
+- `extends MongoRepository<CatDocument, CatEntity>` — Generic Mongo operations with domain entity hydration
 - `implements ICatRepository` — Core abstraction contract
 - `MongoRepositoryModelSessionType` — Type with transaction support
 - Constructor receives the Mongoose model
@@ -112,7 +103,7 @@ import { IUserRepository } from '@/core/user/repository/user'
 import { UserListInput, UserListOutput } from '@/core/user/use-cases/user-list'
 import { UserSchema } from '@/infra/database/postgres/schemas/user'
 import { TypeORMRepository } from '@/infra/repository/postgres/repository'
-import { ConvertTypeOrmFilter, SearchTypeEnum, ValidateDatabaseSortAllowed } from '@/utils/decorators'
+import { TransformTypeOrmSearch, SearchTypeEnum, TransformSort } from '@/utils/decorators'
 import { PaginationUtils } from '@/utils/pagination'
 
 @Injectable()
@@ -121,11 +112,11 @@ export class UserRepository extends TypeORMRepository<Model> implements IUserRep
     super(repository)
   }
 
-  @ConvertTypeOrmFilter<UserEntity>([
+  @TransformTypeOrmSearch<UserEntity>([
     { name: 'email', type: SearchTypeEnum.equal },
     { name: 'name', type: SearchTypeEnum.like }
   ])
-  @ValidateDatabaseSortAllowed<UserEntity>({ name: 'email' }, { name: 'name' }, { name: 'createdAt' })
+  @TransformSort<UserEntity>({ name: 'email' }, { name: 'name' }, { name: 'createdAt' })
   async paginate(input: UserListInput): Promise<UserListOutput> {
     const skip = PaginationUtils.calculateSkip(input)
 
@@ -142,6 +133,7 @@ export class UserRepository extends TypeORMRepository<Model> implements IUserRep
 ```
 
 **Key elements:**
+
 - `extends TypeORMRepository<Model>` — Generic TypeORM operations
 - `implements IUserRepository` — Core abstraction contract
 - Constructor receives the TypeORM `Repository`
@@ -150,52 +142,52 @@ export class UserRepository extends TypeORMRepository<Model> implements IUserRep
 
 ## Constructor Differences
 
-| Database | Constructor Parameter | Type |
-|----------|----------------------|------|
-| **MongoDB** | `entity` | `MongoRepositoryModelSessionType<PaginateModel<Document>>` |
-| **PostgreSQL** | `repository` | `Repository<Schema>` |
+| Database       | Constructor Parameter | Type                                                       |
+| -------------- | --------------------- | ---------------------------------------------------------- |
+| **MongoDB**    | `entity`              | `MongoRepositoryModelSessionType<PaginateModel<Document>>` |
+| **PostgreSQL** | `repository`          | `Repository<Schema>`                                       |
 
 ---
 
 ## Decorators for Pagination
 
-### `@ValidateDatabaseSortAllowed`
+### `@TransformSort`
 
 Validates that only allowed fields can be used for sorting:
 
 ```typescript
-@ValidateDatabaseSortAllowed<CatEntity>({ name: 'createdAt' }, { name: 'breed' })
+@TransformSort<CatEntity>({ name: 'createdAt' }, { name: 'breed' })
 async paginate(input: CatListInput): Promise<CatListOutput>
 ```
 
-See [ValidateDatabaseSortAllowed](../decorators/validate-database-sort-allowed.md).
+See [TransformSort](../decorators/validate-database-sort-allowed.md).
 
-### `@ConvertMongooseFilter`
+### `@TransformMongooseSearch`
 
 Converts search input to Mongoose query format:
 
 ```typescript
-@ConvertMongooseFilter<CatEntity>([
+@TransformMongooseSearch<CatEntity>([
   { name: 'name', type: SearchTypeEnum.like },
   { name: 'breed', type: SearchTypeEnum.like },
   { name: 'age', type: SearchTypeEnum.equal, format: 'Number' }
 ])
 ```
 
-See [ConvertMongooseFilter](../decorators/convert-mongoose-filter.md).
+See [TransformMongooseSearch](../decorators/validate-mongoose-filter.md).
 
-### `@ConvertTypeOrmFilter`
+### `@TransformTypeOrmSearch`
 
 Converts search input to TypeORM query format:
 
 ```typescript
-@ConvertTypeOrmFilter<UserEntity>([
+@TransformTypeOrmSearch<UserEntity>([
   { name: 'email', type: SearchTypeEnum.equal },
   { name: 'name', type: SearchTypeEnum.like }
 ])
 ```
 
-See [ConvertTypeOrmFilter](../decorators/convert-typeorm-filter.md).
+See [TransformTypeOrmSearch](../decorators/convert-typeorm-filter.md).
 
 ---
 
@@ -235,6 +227,6 @@ See [Module](./module.md) for full details.
 - [Module](./module.md) — Where binding happens
 - [MongoRepository](../infra/repository.md) — Generic MongoDB repository
 - [TypeORMRepository](../infra/repository.md) — Generic PostgreSQL repository
-- [ValidateDatabaseSortAllowed](../decorators/validate-database-sort-allowed.md) — Sort validation
-- [ConvertMongooseFilter](../decorators/convert-mongoose-filter.md) — Mongoose filter conversion
-- [ConvertTypeOrmFilter](../decorators/convert-typeorm-filter.md) — TypeORM filter conversion
+- [TransformSort](../decorators/validate-database-sort-allowed.md) — Sort validation
+- [TransformMongooseSearch](../decorators/validate-mongoose-filter.md) — Mongoose filter conversion
+- [TransformTypeOrmSearch](../decorators/convert-typeorm-filter.md) — TypeORM filter conversion

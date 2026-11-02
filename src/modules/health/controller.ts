@@ -1,7 +1,8 @@
 /**
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/modules/controller.md
  */
-import { Controller, Get } from '@nestjs/common'
+import { Controller, Get, Res } from '@nestjs/common'
+import type { FastifyReply } from 'fastify'
 import os from 'os'
 
 import { Public } from '@/utils/decorators'
@@ -16,7 +17,7 @@ export class HealthController {
   constructor(private readonly service: IHealthAdapter) {}
 
   @Get('ready')
-  async getReadiness(): Promise<HealthOutput> {
+  async getReadiness(@Res({ passthrough: true }) reply: FastifyReply): Promise<HealthOutput> {
     const memory = this.service.getMemoryUsageInMB()
 
     const numCpus = os.cpus().length
@@ -29,7 +30,7 @@ export class HealthController {
       cpuList,
       mongoConnections,
       mongoMemory,
-      postgresMemory,
+      postgresDatabaseSizeBytes,
       postgresConnections,
       latency,
       connections
@@ -40,10 +41,10 @@ export class HealthController {
       this.service.getCPUCore(),
       this.service.getMongoConnections(),
       this.service.getMongoMemory(),
-      this.service.getPostgresMemory(),
+      this.service.getPostgresDatabaseSize(),
       this.service.getPostgresConnections(),
       this.service.getLatency(),
-      this.service.getActiveConnections()
+      this.service.getHttpConnections(reply.server.server)
     ])
 
     const cpuStatus = []
@@ -61,8 +62,15 @@ export class HealthController {
       cores: cpuStatus
     }
 
+    const isReady =
+      mongoState === HealthStatus.UP && postgresState === HealthStatus.UP && redisState === HealthStatus.UP
+
+    if (!isReady) {
+      reply.code(503)
+    }
+
     const output = {
-      server: HealthStatus.UP,
+      server: isReady ? HealthStatus.UP : HealthStatus.DOWN,
       version,
       mongo: {
         status: mongoState,
@@ -72,12 +80,12 @@ export class HealthController {
       postgres: {
         status: postgresState,
         connection: postgresConnections,
-        memory: postgresMemory
+        databaseSizeBytes: postgresDatabaseSizeBytes
       },
       redisState,
       network: {
         latency: String(latency),
-        connections: Number(connections)
+        connections
       },
       memory,
       cpu
@@ -96,28 +104,35 @@ export class HealthController {
   }
 
   @Get('startup')
-  async getStartup() {
+  async getStartup(@Res({ passthrough: true }) reply: FastifyReply) {
     try {
-      const isMongoConnected = this.service.mongo.readyState === 1
+      const [mongoState, postgresState, redisState] = await Promise.all([
+        this.service.getMongoStatus(),
+        this.service.getPostgresStatus(),
+        this.service.getRedisStatus()
+      ])
+      const basicSystemsConnected =
+        mongoState === HealthStatus.UP && postgresState === HealthStatus.UP && redisState === HealthStatus.UP
 
-      const isPostgresInitialized = this.service.postgres.isInitialized
+      if (!basicSystemsConnected) {
+        reply.code(503)
+      }
 
-      const isRedisClientReady = !!this.service.redis
-
-      const basicSystemsConnected = isMongoConnected && isPostgresInitialized && isRedisClientReady
-
-      return {
+      const output = {
         status: basicSystemsConnected ? HealthStatus.UP : HealthStatus.DOWN,
         timestamp: new Date().toISOString(),
         phase: 'startup',
         connections: {
-          mongo: isMongoConnected ? 'connected' : 'disconnected',
-          postgres: isPostgresInitialized ? 'initialized' : 'not-initialized',
-          redis: isRedisClientReady ? 'client-ready' : 'no-client'
+          mongo: mongoState === HealthStatus.UP ? 'connected' : 'disconnected',
+          postgres: postgresState === HealthStatus.UP ? 'connected' : 'disconnected',
+          redis: redisState === HealthStatus.UP ? 'connected' : 'disconnected'
         },
         message: basicSystemsConnected ? 'All basic connections established' : 'Missing basic connections'
       }
+
+      return output
     } catch {
+      reply.code(503)
       return {
         status: HealthStatus.DOWN,
         timestamp: new Date().toISOString(),

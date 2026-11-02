@@ -4,6 +4,19 @@ HTTP client abstraction built on Axios with retry, better stack traces, error no
 
 Application code should depend on `IHttpAdapter`, not on Axios directly.
 
+The Axios client uses `DEPENDENCY_TIMEOUT_MS` as its default timeout. This keeps
+outbound HTTP calls below the global `HTTP_REQUEST_TIMEOUT_MS` budget. The
+default can be changed per instance (`new HttpService(logger, { timeout })`) or
+per request with `.timeout(ms)` / the Axios config passed to an HTTP verb. When
+there is an inbound `Deadline`, the resolved timeout is always capped to its
+remaining time, and if the deadline already expired the request is not sent and
+an `ApiTimeoutException` (408) is thrown.
+
+Every request automatically carries the current inbound request's `traceid` and
+respects its remaining [`Deadline`](../utils/deadline.md) for both the request
+timeout and the retry budget — see [Automatic traceid and opt-in authorization
+propagation](#automatic-traceid-and-opt-in-authorization-propagation) below.
+
 ## Public API
 
 ```typescript
@@ -33,7 +46,8 @@ export abstract class IHttpBuilder<Response = unknown> {
   abstract headers(headers: Record<string, string>): IHttpBuilder<Response>
   abstract header(key: string, value: string): IHttpBuilder<Response>
   abstract timeout(ms: number): IHttpBuilder<Response>
-  abstract retry(retries: number, status?: number[]): IHttpBuilder<Response>
+  abstract retry(input: HttpRetryInput): IHttpBuilder<Response>
+  abstract propagateAuthorization(): IHttpBuilder<Response>
 
   abstract execute(): Promise<Response>
 }
@@ -68,6 +82,40 @@ const order = await this.http
   .execute()
 ```
 
+## Automatic traceid and opt-in authorization propagation
+
+Every request executed through `IHttpBuilder` automatically attaches the current
+inbound request's `traceid` header — no explicit call needed. This is how distributed
+tracing stays connected across services without repeating boilerplate on every
+outbound call. See [`RequestContext`](../utils/request-context.md) for how the
+current request's data is made available here.
+
+When a request deadline is active, `IHttpBuilder` also forwards it as
+`X-Request-Deadline` (Unix epoch milliseconds). The receiving API combines it with
+its own route/global timeout and only honors it if it shortens that local limit.
+See [Deadline](../utils/deadline.md) for validation, clock-skew, and timeout behavior.
+
+Forwarding the caller's `authorization` header, however, is **opt-in**, via
+`.propagateAuthorization()`:
+
+```typescript
+const user = await this.http
+  .request()
+  .get<User>(`https://internal-user-service/users/${id}`)
+  .propagateAuthorization()
+  .execute()
+```
+
+This is opt-in by design: most outbound calls (third-party integrations, public
+APIs, webhooks) must **not** receive the caller's token — forwarding it
+automatically everywhere would be a credential-leak risk. Only call
+`.propagateAuthorization()` when the target is a trusted internal service meant
+to act on behalf of the current user.
+
+Headers set explicitly via `.header()`/`.headers()` always win over the
+automatic `traceid` and the opt-in `authorization` — so you can still override
+either one per call if needed.
+
 ## Axios config
 
 Each HTTP verb accepts an optional `AxiosRequestConfig` for advanced options:
@@ -83,30 +131,129 @@ const users = await this.http
 
 ## Retry per request
 
-The Axios instance has a default retry policy, but each request can override retry attempts and retryable statuses:
+Retry is **opt-in and disabled by default** — enabling it requires an explicit
+`.retry()` call on the request:
 
 ```typescript
 const result = await this.http
   .request()
   .post<Result>('https://api.example.com/process', payload)
-  .retry(3, [408, 429, 503])
+  .retry({ retries: 3, retryStatusCodes: [408, 429, 503], retryBudgetMs: 4000 })
   .execute()
 ```
+
+`retryBudgetMs` bounds the whole operation — first attempt, backoff delays and
+retries — measured from the start of the first attempt. It defaults to (and is
+capped at) `DEPENDENCY_TIMEOUT_MS`, and is further limited by the inbound
+`Deadline` when there is one. Before each retry, the jittered backoff is drawn
+and the retry is only scheduled if that wait fits in the remaining budget;
+otherwise the current error is propagated. Each retry attempt also has its
+timeout capped to the remaining budget, so a retry never runs past it.
+
+## Response schema
+
+`.schema()` validates the successful response body with zod and types the
+result from the schema, so the contract with the dependency is checked at the
+boundary instead of in the use case:
+
+```typescript
+const UserSchema = InputValidator.object({ id: InputValidator.number(), name: InputValidator.string() })
+
+const user = await this.http.request().get('https://api.example.com/users/1').schema(UserSchema).execute()
+// user: { id: number; name: string }
+```
+
+- Call it after the verb; changing the verb resets it.
+- The parsed value is returned: transforms and defaults apply, unknown keys are
+  stripped. Avoid `.strict()` on external data so new fields don't break the
+  integration.
+- A mismatch throws `ApiBadGatewayException` (502), not 400: the dependency
+  broke the contract, not the caller. The client gets `Bad Gateway`; the zod
+  issues go to `parameters.upstreamIssues`, which is logged but never returned
+  (unlike `details`).
+- Mismatches are never retried. Error responses (4xx/5xx) are not validated.
+
+Retrying `POST`/`PATCH` can run the operation twice if the first attempt
+reached the server but the response was lost. Only retry them when the
+dependency supports an idempotency key, and send one derived from a business
+ID:
+
+```typescript
+await this.http
+  .request()
+  .post('https://payments.example.com/charges', payload)
+  .header('Idempotency-Key', `charge-${order.id}`)
+  .retry({ retries: 2 })
+  .execute()
+```
+
+See [Axios](../utils/axios.md#idempotency-key) for the details, plus retry
+defaults and backoff behavior.
 
 ## Error conversion
 
 `execute()` throws project exceptions instead of leaking raw Axios errors:
 
-| HTTP status | Exception |
-| --- | --- |
-| 400 | `ApiBadRequestException` |
-| 401 | `ApiUnauthorizedException` |
-| 403 | `ApiForbiddenException` |
-| 404 | `ApiNotFoundException` |
-| 408 | `ApiTimeoutException` |
-| 409 | `ApiConflictException` |
-| 422 | `ApiUnprocessableEntityException` |
-| Other | `ApiInternalServerException` |
+| HTTP status | Exception                         |
+| ----------- | --------------------------------- |
+| 400         | `ApiBadRequestException`          |
+| 401         | `ApiUnauthorizedException`        |
+| 403         | `ApiForbiddenException`           |
+| 404         | `ApiNotFoundException`            |
+| 408         | `ApiTimeoutException`             |
+| 409         | `ApiConflictException`            |
+| 422         | `ApiUnprocessableEntityException` |
+| 502         | `ApiBadGatewayException`          |
+| 503         | `ApiServiceUnavailableException`  |
+| Other       | `ApiInternalServerException`      |
+
+Errors without an HTTP response fall back to `ApiInternalServerException`,
+except client-side timeouts (`CLIENT_TIMEOUT_CODES`: `ECONNABORTED`,
+`ETIMEDOUT`), which become `ApiTimeoutException` (408), `ECONNREFUSED`, which
+becomes `ApiServiceUnavailableException` (503), and responses over the size
+limit, which become `ApiBadGatewayException` (502).
+
+An upstream `429` becomes `ApiServiceUnavailableException` (503): the
+dependency rate-limiting us means this service is unavailable, not that our
+client is being limited. The original status is kept in
+`parameters.upstreamStatus` for every converted error. Retry decisions still
+use the original `429`.
+
+## Payload size limits
+
+Axios has no size limit by default, so a huge response would be fully loaded
+into memory. `HttpService` sets defaults that can be overridden per instance or
+per request (the request wins):
+
+| Limit         | Default                                               | Per request               | Axios option       |
+| ------------- | ----------------------------------------------------- | ------------------------- | ------------------ |
+| Response body | `HttpService.DEFAULT_MAX_RESPONSE_SIZE_BYTES` (10 MB) | `.maxResponseSize(bytes)` | `maxContentLength` |
+| Request body  | `HttpService.DEFAULT_MAX_REQUEST_SIZE_BYTES` (10 MB)  | `.maxRequestSize(bytes)`  | `maxBodyLength`    |
+
+```typescript
+import { ByteSize } from '@/utils/byte-size'
+
+const report = await this.http
+  .request()
+  .get<Report>('https://api.example.com/reports/2026')
+  .maxResponseSize(ByteSize.fromMegabytes(50))
+  .execute()
+```
+
+`ByteSize` conversions use 1024-based units, so one megabyte is `1024 * 1024`
+bytes.
+
+- The response limit applies to the **decompressed** body (protects against gzip bombs).
+- Response over the limit → `ApiBadGatewayException` (502). Request over the
+  limit → `ApiInternalServerException` (500), and the body is never sent.
+- Size errors are **never retried**, even with `.retry()`: the payload would be
+  just as big on the next attempt.
+- `.maxResponseSize(Infinity)` / `.maxResponseSize(-1)` (same for
+  `.maxRequestSize`) disables the limit. It is allowed on purpose (e.g. large
+  downloads) but every such request logs `HTTP request without payload size
+limit`, so it stays visible.
+- Invalid values (`0`, negatives other than `-1`, fractions, `NaN`) throw
+  `ApiInternalServerException`.
 
 The original Axios error is preserved as `cause` in the exception metadata.
 
@@ -145,3 +292,5 @@ const profile = await this.http
 
 - [AxiosUtils](../utils/axios.md)
 - [TracingInterceptor](../middlewares/tracing.interceptor.md)
+- [RequestContext](../utils/request-context.md)
+- [Deadline](../utils/deadline.md)

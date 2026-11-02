@@ -86,16 +86,17 @@ describe(RoleDeletePermissionUsecase.name, () => {
   })
 
   const permissiontMock = new ZodMockSchema(PermissionEntitySchema)
-  const permissions = permissiontMock.generateMany<PermissionEntity>(10, {
+  const permissions = permissiontMock.generateMany(10, {
     overrides: {
       name: 'user:create'
-    }
+    },
+    factory: (data) => new PermissionEntity(data)
   })
 
   const role = new RoleEntity({ id: IDGeneratorUtils.uuid(), name: RoleEnum.USER, permissions })
 
   test('when some permission does not exist, should expect an error', async () => {
-    repository.findOne = TestUtils.mockResolvedValue<RoleEntity>(role)
+    repository.findOne = TestUtils.mockResolvedValue<RoleEntity>(role.clone())
     permissionRepository.findIn = TestUtils.mockResolvedValue<PermissionEntity[]>(permissions)
     repository.create = TestUtils.mockResolvedValue<CreatedModel>(null)
 
@@ -106,17 +107,21 @@ describe(RoleDeletePermissionUsecase.name, () => {
   })
 
   test('when permission exists but is not associated with role, should not remove it', async () => {
-    const otherPermission = permissiontMock.generate<PermissionEntity>({
-      overrides: { name: 'other:permission' }
+    const otherPermission = permissiontMock.generate({
+      overrides: { name: 'other:permission' },
+      factory: (data) => new PermissionEntity(data)
     })
-    const permissionInDb = permissiontMock.generate<PermissionEntity>({
-      overrides: { name: 'user:create' }
+    const permissionInDb = permissiontMock.generate({
+      overrides: { name: 'user:create' },
+      factory: (data) => new PermissionEntity(data)
     })
 
-    repository.findOne = TestUtils.mockResolvedValue<RoleEntity>({
-      ...role,
-      permissions: [otherPermission]
-    })
+    repository.findOne = TestUtils.mockResolvedValue<RoleEntity>(
+      new RoleEntity({
+        ...role,
+        permissions: [otherPermission]
+      })
+    )
     permissionRepository.findIn = TestUtils.mockResolvedValue<PermissionEntity[]>([permissionInDb])
     repository.create = TestUtils.mockResolvedValue<CreatedModel>(null)
 

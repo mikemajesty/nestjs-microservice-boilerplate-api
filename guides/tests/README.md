@@ -8,6 +8,7 @@ Comprehensive testing tools that ensure **quality, reliability, and efficiency**
 - **[TestUtils](util.md)** | [📄 Code](../../src/utils/test/util.ts) - Type-safe utilities for mocking and validations
 - **[ZodMockSchema](mock.md)** | [📄 Code](../../src/utils/test/mock.ts) - Automatic mock generation from Zod schemas
 - **[Testcontainers](containers.md)** | [📄 Code](../../src/utils/test/containers.ts) - Real infrastructure testing with Docker containers
+- **[Test Standards](standards.md)** - Shared conventions for tests outside `core` and `modules`
 
 ## 🎯 **Philosophy**
 

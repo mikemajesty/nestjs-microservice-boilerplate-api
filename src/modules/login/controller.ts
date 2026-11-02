@@ -1,6 +1,7 @@
 /**
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/modules/controller.md
  */
+import { HttpCircuitBreaker } from '@mikemajesty/axios-circuit-breaker'
 import { Controller, Get, Post, Req, Res, Version } from '@nestjs/common'
 import { FastifyReply, FastifyRequest } from 'fastify'
 
@@ -11,6 +12,7 @@ import { IHttpAdapter } from '@/infra/http'
 import { ISecretsAdapter } from '@/infra/secrets'
 import { ITokenAdapter } from '@/libs/token'
 import { Public } from '@/utils/decorators'
+import { BaseException } from '@/utils/exception'
 import { ApiRequest } from '@/utils/request'
 
 import { ILogin, IRefreshToken } from './interfaces'
@@ -56,17 +58,7 @@ export class LoginController {
       return
     }
 
-    const tokenResponse = await this.http
-      .request()
-      .post<GoogleTokenResponse>('https://oauth2.googleapis.com/token', {
-        client_id: this.secret.AUTH.GOOGLE.CLIENT_ID,
-        client_secret: this.secret.AUTH.GOOGLE.CLIENT_SECRET,
-        code,
-        redirect_uri: this.secret.AUTH.GOOGLE.REDIRECT_URL,
-        grant_type: 'authorization_code'
-      })
-      .retry({ retries: 3 })
-      .execute()
+    const tokenResponse = await this.getToken(code)
 
     const { access_token } = tokenResponse
 
@@ -104,6 +96,24 @@ export class LoginController {
     })
 
     reply.redirect(`/home?token=${tokenAuthorization.token}`)
+  }
+
+  @HttpCircuitBreaker({
+    circuitGroup: 'google-oauth',
+    getErrorCause: (error) => (error instanceof BaseException ? error.getCause<unknown>() : error)
+  })
+  private async getToken(code: string | undefined) {
+    return await this.http
+      .request()
+      .post<GoogleTokenResponse>('https://oauth2.googleapis.com/token', {
+        client_id: this.secret.AUTH.GOOGLE.CLIENT_ID,
+        client_secret: this.secret.AUTH.GOOGLE.CLIENT_SECRET,
+        code,
+        redirect_uri: this.secret.AUTH.GOOGLE.REDIRECT_URL,
+        grant_type: 'authorization_code'
+      })
+      .retry({ retries: 3 })
+      .execute()
   }
 }
 

@@ -9,25 +9,21 @@ import { IPermissionRepository } from '@/core/permission/repository/permission'
 import { PermissionListInput, PermissionListOutput } from '@/core/permission/use-cases/permission-list'
 import { PermissionSchema } from '@/infra/database/postgres/schemas/permission'
 import { TypeORMRepository } from '@/infra/repository/postgres/repository'
-import { ConvertTypeOrmFilter, SearchTypeEnum, ValidateDatabaseSortAllowed } from '@/utils/decorators'
+import { SearchTypeEnum, TransformSort,TransformTypeOrmSearch } from '@/utils/decorators'
 
 @Injectable()
-export class PermissionRepository extends TypeORMRepository<PermissionModel> implements IPermissionRepository {
+export class PermissionRepository
+  extends TypeORMRepository<PermissionModel, PermissionEntity>
+  implements IPermissionRepository
+{
   constructor(readonly repository: Repository<PermissionModel>) {
-    super(repository)
+    super(repository, PermissionEntity)
   }
 
-  @ConvertTypeOrmFilter<PermissionEntity>([{ name: 'name', type: SearchTypeEnum.like }])
-  @ValidateDatabaseSortAllowed<PermissionEntity>({ name: 'name' }, { name: 'createdAt' })
+  @TransformTypeOrmSearch<PermissionEntity>([{ name: 'name', type: SearchTypeEnum.like }])
+  @TransformSort<PermissionEntity>({ name: 'name' }, { name: 'createdAt' })
   async paginate(input: PermissionListInput): Promise<PermissionListOutput> {
-    const permissions = await this.applyPagination(input)
-
-    return {
-      ...permissions,
-      docs: permissions.docs.map((d) => {
-        return new PermissionEntity(d).toObject()
-      })
-    }
+    return this.applyPagination(input)
   }
 }
 

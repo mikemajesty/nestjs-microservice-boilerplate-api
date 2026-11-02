@@ -23,7 +23,7 @@ export class SecretsService {
         MONGO_EXPRESS_URL: this.get('MONGO_EXPRESS_URL')
       },
       POSTGRES: {
-        POSTGRES_URL: this.getPostgresUrl(),
+        POSTGRES_URL: SecretsService.buildPostgresUrl(),
         POSTGRES_PGADMIN_URL: this.get('PGADMIN_URL')
       },
       EMAIL: {
@@ -58,12 +58,10 @@ export class SecretsService {
     return this.config.get<T>(key) as T
   }
 
-  private getPostgresUrl(): string {
+  static buildPostgresUrl(): string {
     return (
-      this.get('POSTGRES_URL') ||
-      `postgresql://${this.get('POSTGRES_USER')}:${this.get('POSTGRES_PASSWORD')}@${this.get(
-        'POSTGRES_HOST'
-      )}:${this.get('POSTGRES_PORT')}/${this.get('POSTGRES_DATABASE')}`
+      process.env.POSTGRES_URL ||
+      `postgresql://${process.env.POSTGRES_USER}:${process.env.POSTGRES_PASSWORD}@${process.env.POSTGRES_HOST}:${process.env.POSTGRES_PORT}/${process.env.POSTGRES_DATABASE}`
     )
   }
 }

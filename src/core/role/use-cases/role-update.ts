@@ -28,16 +28,15 @@ export class RoleUpdateUsecase implements IUsecase {
       throw new ApiNotFoundException('roleNotFound')
     }
 
-    const entity = new RoleEntity(role)
-    entity.merge(input)
+    role.merge(input)
 
-    await this.roleRepository.create(entity.toObject())
+    await this.roleRepository.create(role.toData())
 
     this.loggerService.info({ message: 'role updated.', metadata: { roles: input } })
 
-    const updated = await this.roleRepository.findById(entity.id)
+    const updated = await this.roleRepository.findById(role.id)
 
-    return new RoleEntity(updated as RoleEntity).toObject()
+    return updated!.toData()
   }
 }
 

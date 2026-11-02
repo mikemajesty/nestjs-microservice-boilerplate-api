@@ -1,19 +1,20 @@
 /**
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/infra/database.md
  */
-import { config } from 'dotenv'
+import 'dotenv/config'
+
 import path from 'path'
 import { DataSource, DataSourceOptions } from 'typeorm'
 
+import { name } from '../../../../package.json'
 import { SnakeNamingStrategy } from '../../repository/util'
-
-config()
+import { SecretsService } from '../../secrets/service'
+import { POSTGRES_POOL_OPTIONS } from './pool-options'
 
 const entities = [path.join(__dirname, 'schemas/*.{ts,js}')]
 const migrations = [path.join(__dirname, 'migrations/*.{ts,js}')]
-const postgresUrl =
-  process.env.POSTGRES_URL ||
-  `postgresql://${process.env.POSTGRES_USER}:${process.env.POSTGRES_PASSWORD}@${process.env.POSTGRES_HOST}:${process.env.POSTGRES_PORT}/${process.env.POSTGRES_DATABASE}`
+const postgresUrl = SecretsService.buildPostgresUrl()
+
 const parsedPostgresUrl = new URL(postgresUrl)
 const requireSsl = parsedPostgresUrl.searchParams.get('sslmode') === 'require'
 
@@ -33,20 +34,9 @@ const dataSource = new DataSource({
           rejectUnauthorized: false
         }
       : false,
+  applicationName: name,
   extra: {
-    max: 20,
-    min: 2,
-    connectionTimeoutMillis: 10000,
-    idleTimeoutMillis: 300000,
-    query_timeout: 5000,
-    statement_timeout: 30000,
-    application_name: 'nestjs-api',
-    acquireTimeoutMillis: 10000,
-    createTimeoutMillis: 10000,
-    reapIntervalMillis: 1000,
-    createRetryIntervalMillis: 500,
-    keepAlive: true,
-    keepAliveInitialDelayMillis: 10000
+    ...POSTGRES_POOL_OPTIONS
   },
   migrationsTableName: 'migrations',
   migrations,

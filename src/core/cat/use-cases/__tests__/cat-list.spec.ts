@@ -50,10 +50,11 @@ describe(CatListUsecase.name, () => {
   })
 
   const mock = new ZodMockSchema(CatEntitySchema)
-  const docs = mock.generateMany<CatEntity>(2, {
+  const docs = mock.generateMany(2, {
     overrides: {
       deletedAt: null
-    }
+    },
+    factory: (data) => new CatEntity(data)
   })
 
   const input = new ZodMockSchema(CatListSchema).generate()

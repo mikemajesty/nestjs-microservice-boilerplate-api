@@ -24,7 +24,7 @@ export class CatCreateUsecase implements IUsecase {
   async execute(input: CatCreateInput, { tracing, user }: ApiTracingInput): Promise<CatCreateOutput> {
     const entity = new CatEntity({ id: IDGeneratorUtils.uuid(), ...input })
 
-    const created = await this.catRepository.create(entity.toObject())
+    const created = await this.catRepository.create(entity.toData())
 
     tracing.logEvent('cat-created', { action: 'created', by: user.id, entity: created.id })
 

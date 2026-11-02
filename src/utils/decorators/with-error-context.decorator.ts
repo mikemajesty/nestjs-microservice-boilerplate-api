@@ -1,7 +1,9 @@
 import { ApiInternalServerException, BaseException } from '../exception'
 
 /**
- * Decorator that automatically adds error context based on the class and method name.
+ * Adds the declaring class and method as context to rejected async operations.
+ * Preserves existing contexts and BaseException identity, even when immutable.
+ * Other values that cannot receive a context are wrapped with the original cause.
  *
  * @example
  * @WithErrorContext()
@@ -22,24 +24,32 @@ export function WithErrorContext() {
       try {
         return await originalMethod.apply(this, args)
       } catch (error) {
-        if (error instanceof BaseException) {
-          error.context = error.context ?? context
-          throw error
-        }
-        if (typeof error === 'string') {
-          throw new ApiInternalServerException(error, {
-            context
-          })
+        if ((typeof error === 'object' && error !== null) || typeof error === 'function') {
+          if ('context' in error && error.context != null) {
+            throw error
+          }
+
+          const descriptor = Object.getOwnPropertyDescriptor(error, 'context')
+          const added = Reflect.defineProperty(
+            error,
+            'context',
+            descriptor
+              ? { value: context }
+              : { value: context, enumerable: error instanceof BaseException, configurable: true, writable: true }
+          )
+
+          if (added || error instanceof BaseException) throw error
         }
 
-        Object.defineProperty(error, 'context', {
-          value: context,
-          enumerable: false,
-          configurable: true,
-          writable: true
-        })
+        const message =
+          error !== null &&
+          (typeof error === 'object' || typeof error === 'function') &&
+          'message' in error &&
+          typeof error.message === 'string'
+            ? error.message
+            : String(error)
 
-        throw error
+        throw new ApiInternalServerException(message, { context, cause: error })
       }
     }
 

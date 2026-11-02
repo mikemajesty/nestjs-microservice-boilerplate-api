@@ -32,7 +32,7 @@ permissions:
 jobs:
   create-release-tag:
     name: Create Release Tag
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     outputs:
       tag_name: ${{ steps.create_tag.outputs.tag_name }}
       version: ${{ steps.create_tag.outputs.version }}

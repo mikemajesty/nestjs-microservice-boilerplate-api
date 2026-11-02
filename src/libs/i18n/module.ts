@@ -9,6 +9,7 @@ import { I18nService } from './service'
   imports: [
     I18nModule.forRoot({
       fallbackLanguage: 'en',
+      disableMiddleware: true,
       loaderOptions: {
         path: path.join(__dirname, '/languages'),
         watch: false

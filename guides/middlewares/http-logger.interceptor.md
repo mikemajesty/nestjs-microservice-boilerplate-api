@@ -5,7 +5,7 @@ Interceptor that ensures every request has a **traceId** for end-to-end observab
 ## What It Does
 
 1. **Reuses or generates traceId** - uses existing header or creates UUID
-2. **Sets global logger parameter** - all logs include traceId
+2. **Ensures a traceId is available** - the tracing interceptor stores it in async request context
 3. **Adds context** - `ClassName/methodName` to request
 
 ## TraceId Propagation
@@ -112,7 +112,7 @@ POST /api/users
 | Feature | Description |
 |---------|-------------|
 | **Generates** | UUID if no traceId in headers |
-| **Sets** | Global logger parameter |
+| **Sets** | Request traceId and controller/method context |
 | **Appears in** | Logs, Traces, Error responses |
 | **Filter in** | Loki, Zipkin by traceId |
 

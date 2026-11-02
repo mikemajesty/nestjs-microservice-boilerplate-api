@@ -4,11 +4,12 @@
 import { HttpException, HttpStatus } from '@nestjs/common'
 
 import { ObjectUtils } from './object'
+import { TRACEID_HEADER, TraceIdField } from './request'
 import { AnyType } from './types'
 import { ZodExceptionIssue } from './validator'
 
 export class BaseException extends HttpException {
-  traceid!: string
+  [TRACEID_HEADER]!: string
   context!: string
   readonly statusCode: number
   readonly code?: string
@@ -32,10 +33,12 @@ export class BaseException extends HttpException {
       Error.captureStackTrace(this, this.constructor)
     }
 
-    if (metadata?.cause) {
-      const originalStack = metadata.cause instanceof Error ? metadata.cause.stack : String(metadata.cause)
+    if (metadata && 'cause' in metadata) {
+      if (metadata.cause) {
+        const originalStack = metadata.cause instanceof Error ? metadata.cause.stack : String(metadata.cause)
 
-      this.stack = originalStack ?? this.stack
+        this.stack = originalStack ?? this.stack
+      }
       this.cause = metadata.cause
     }
 
@@ -104,6 +107,20 @@ export class ApiTimeoutException extends BaseException {
   }
 }
 
+export class ApiServiceUnavailableException extends BaseException {
+  static STATUS = HttpStatus.SERVICE_UNAVAILABLE
+  constructor(message?: MessageType, metadata?: ParametersType) {
+    super(message ?? ApiServiceUnavailableException.name, ApiServiceUnavailableException.STATUS, metadata)
+  }
+}
+
+export class ApiBadGatewayException extends BaseException {
+  static STATUS = HttpStatus.BAD_GATEWAY
+  constructor(message?: MessageType, metadata?: ParametersType) {
+    super(message ?? ApiBadGatewayException.name, ApiBadGatewayException.STATUS, metadata)
+  }
+}
+
 /**
  * Wraps an error coming from an external HTTP call (e.g. axios) so it can be handled
  * polymorphically alongside native `HttpException`s (`getResponse()`/`getStatus()`),
@@ -125,14 +142,13 @@ export class ApiExternalRequestException extends BaseException {
 export type ApiErrorType = {
   error: {
     code: string | number
-    traceid: string
     context: string
     message: string[]
     details?: ParametersType[`details`]
     name: string
     timestamp: string
     path: string
-  }
+  } & TraceIdField
 }
 
 export type ParametersType = {
@@ -188,5 +204,7 @@ const HTTP_STATUS_EXCEPTION_MAP: Record<
   [ApiTimeoutException.STATUS]: ApiTimeoutException,
   [ApiConflictException.STATUS]: ApiConflictException,
   [ApiUnprocessableEntityException.STATUS]: ApiUnprocessableEntityException,
+  [ApiServiceUnavailableException.STATUS]: ApiServiceUnavailableException,
+  [ApiBadGatewayException.STATUS]: ApiBadGatewayException,
   [ApiInternalServerException.STATUS]: ApiInternalServerException
 }

@@ -11,13 +11,14 @@ Collection of utility functions and helpers that enhance development experience 
 - [**Text**](./text.md) | [📄 Code](../../src/utils/text.ts) - String processing and text transformation helpers
 - [**Sort**](./sort.md) | [📄 Code](../../src/utils/sort.ts) - Sorting algorithms and standardized list operations
 - [**Search**](./search.md) | [📄 Code](../../src/utils/search.ts) - Search and filtering functionality across data sources
-- [**Request**](./request.md) | [📄 Code](../../src/utils/request.ts) - HTTP request/response types and pagination utilities
+- [**Request**](./request.md) | [📄 Code](../../src/utils/request/) - HTTP request/response types and request lifecycle utilities
 - [**Pagination**](./pagination.md) | [📄 Code](../../src/utils/pagination.ts) - Pagination logic and response formatting
 - [**Mongoose**](./mongoose.md) | [📄 Code](../../src/utils/mongoose.ts) - MongoDB text search utilities with diacritic handling
 - [**ID Generator**](./id-generator.md) | [📄 Code](../../src/utils/id-generator.ts) - Centralized ID generation with multiple algorithm support
 - [**Jitter**](./jitter.md) | [📄 Code](../../src/utils/jitter.ts) - Controlled random variation for TTLs, retries, and scheduled work
 - [**Http Status**](./http-status.md) | [📄 Code](../../src/utils/http-status.ts) - HTTP status codes and user-friendly error messages
 - [**Namespaces**](./namespaces.md) | [📄 Code](../../src/utils/namespaces.ts) - Stable structured identifiers for cache and external boundaries
+- [**Object**](./object.md) | [📄 Code](../../src/utils/object.ts) - Typed property names, safe nested access, and object helpers
 - [**Exception**](./exception.md) | [📄 Code](../../src/utils/exception.ts) - Centralized exception handling and error management
 - [**Excel**](./excel.md) | [📄 Code](../../src/utils/excel.ts) - Excel file generation with customizable formatting
 - [**Entity**](./entity.md) | [📄 Code](../../src/utils/entity.ts) - Base entity foundation for domain-driven design

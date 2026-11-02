@@ -58,22 +58,24 @@ describe(UserGetByIdUsecase.name, () => {
   })
 
   const roleMock = new ZodMockSchema(RoleEntitySchema)
-  const roles = roleMock.generateMany<RoleEntity>(2, {
+  const roles = roleMock.generateMany(2, {
     overrides: {
       permissions: []
-    }
+    },
+    factory: (data) => new RoleEntity(data)
   })
 
   const userMock = new ZodMockSchema(UserEntitySchema)
-  const user = userMock.generate<UserEntity>({
+  const user = userMock.generate({
     overrides: {
       roles
-    }
+    },
+    factory: (data) => new UserEntity(data)
   })
 
   test('when user getById successfully, should expect a user', async () => {
-    repository.findOne = TestUtils.mockResolvedValue<UserEntity>(user)
+    repository.findOne = TestUtils.mockResolvedValue<UserEntity>(user.clone())
 
-    await expect(usecase.execute({ id: MockUtils.UUID() })).resolves.toEqual(user)
+    await expect(usecase.execute({ id: MockUtils.UUID() })).resolves.toEqual(user.toData())
   })
 })

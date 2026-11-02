@@ -78,21 +78,22 @@ describe(PermissionUpdateUsecase.name, () => {
   })
 
   const mock = new ZodMockSchema(PermissionEntitySchema)
-  const permission = mock.generate<PermissionEntity>({
+  const permission = mock.generate({
     overrides: {
       name: 'name:permission',
       roles: [new RoleEntity({ id: IDGeneratorUtils.generate(), name: 'role:name' })]
-    }
+    },
+    factory: (data) => new PermissionEntity(data)
   })
   test('when permission exists, should expect an error', async () => {
-    repository.findOneWithRelation = TestUtils.mockResolvedValue<PermissionEntity>(permission)
+    repository.findOneWithRelation = TestUtils.mockResolvedValue<PermissionEntity>(permission.clone())
     repository.existsOnUpdate = TestUtils.mockResolvedValue<boolean>(true)
 
     await expect(usecase.execute({ ...input, name: 'permission:create' })).rejects.toThrow(ApiConflictException)
   })
 
   test('when permission updated successfully, should expect a permission updated', async () => {
-    repository.findOneWithRelation = TestUtils.mockResolvedValue<PermissionEntity>(permission)
+    repository.findOneWithRelation = TestUtils.mockResolvedValue<PermissionEntity>(permission.clone())
     repository.updateOne = TestUtils.mockResolvedValue<UpdatedModel>(null)
     repository.existsOnUpdate = TestUtils.mockResolvedValue<boolean>(false)
 
@@ -105,7 +106,7 @@ describe(PermissionUpdateUsecase.name, () => {
         name: undefined
       }
     })
-    repository.findOneWithRelation = TestUtils.mockResolvedValue<PermissionEntity>(permission)
+    repository.findOneWithRelation = TestUtils.mockResolvedValue<PermissionEntity>(permission.clone())
     repository.updateOne = TestUtils.mockResolvedValue<UpdatedModel>(null)
 
     await expect(usecase.execute(inputWithoutName)).resolves.toBeDefined()

@@ -30,16 +30,14 @@ export class UserDeleteUsecase implements IUsecase {
       throw new ApiNotFoundException('userNotFound')
     }
 
-    const entity = new UserEntity(user)
+    user.deactivate()
 
-    entity.deactivate()
-
-    await this.userRepository.softRemove({ id: entity.id })
-    await this.cacheAside.invalidate(Namespaces.userById(entity.id))
+    await this.userRepository.softRemove({ id: user.id })
+    await this.cacheAside.invalidate(Namespaces.userById(user.id))
 
     tracing.logEvent('user-deleted', { action: 'deleted', by: userData.id, entity: user.id })
 
-    return entity.toObject()
+    return user.toData()
   }
 }
 

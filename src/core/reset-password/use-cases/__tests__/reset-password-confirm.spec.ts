@@ -4,7 +4,7 @@
 import { ZodMockSchema } from '@mikemajesty/zod-mock-schema'
 import { Test } from '@nestjs/testing'
 
-import { RoleEntitySchema } from '@/core/role/entity/role'
+import { RoleEntity, RoleEntitySchema } from '@/core/role/entity/role'
 import { UserEntity, UserEntitySchema } from '@/core/user/entity/user'
 import { IUserRepository } from '@/core/user/repository/user'
 import { CreatedModel, RemovedModel } from '@/infra/repository'
@@ -94,16 +94,18 @@ describe(ResetPasswordConfirmUsecase.name, () => {
 
   const resetPasswordMock = new ZodMockSchema(UserEntitySchema)
   const roleMock = new ZodMockSchema(RoleEntitySchema)
-  const user = resetPasswordMock.generate<UserEntity>({
+  const user = resetPasswordMock.generate({
     overrides: {
       roles: [
         roleMock.generate({
           overrides: {
             permissions: []
-          }
+          },
+          factory: (data) => new RoleEntity(data)
         })
       ]
-    }
+    },
+    factory: (data) => new UserEntity(data)
   })
 
   test('when user not found, should expect an error', async () => {
@@ -113,7 +115,7 @@ describe(ResetPasswordConfirmUsecase.name, () => {
   })
 
   test('when token was expired, should expect an error', async () => {
-    userRepository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(user)
+    userRepository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(user.clone())
     repository.findByIdUserId = TestUtils.mockResolvedValue<ResetPasswordEntity>(null)
 
     await expect(usecase.execute(input)).rejects.toThrow(ApiUnauthorizedException)
@@ -121,9 +123,9 @@ describe(ResetPasswordConfirmUsecase.name, () => {
 
   const defaultResetPassword = new ResetPasswordEntity({ id: MockUtils.UUID(), token: 'token', user })
   test('when confirm successfully, should expect a void', async () => {
-    userRepository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(user)
+    userRepository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(user.clone())
     userRepository.create = TestUtils.mockResolvedValue<CreatedModel>()
-    repository.findByIdUserId = TestUtils.mockResolvedValue<ResetPasswordEntity>(defaultResetPassword)
+    repository.findByIdUserId = TestUtils.mockResolvedValue<ResetPasswordEntity>(defaultResetPassword.clone())
     repository.remove = TestUtils.mockResolvedValue<RemovedModel>()
 
     await expect(usecase.execute(input)).resolves.toBeUndefined()

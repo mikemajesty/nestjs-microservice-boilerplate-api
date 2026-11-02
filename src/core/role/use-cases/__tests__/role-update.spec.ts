@@ -67,13 +67,14 @@ describe(RoleUpdateUsecase.name, () => {
   const role: RoleEntity = roleEntityMock.generate({
     overrides: {
       permissions: []
-    }
+    },
+    factory: (data) => new RoleEntity(data)
   })
 
   test('when role updated successfully, should expect a role updated', async () => {
-    repository.findById = TestUtils.mockResolvedValue<RoleEntity>(role)
+    repository.findById = TestUtils.mockResolvedValueOnce<RoleEntity>(role.clone()).mockResolvedValue(role.clone())
     repository.create = TestUtils.mockResolvedValue<CreatedModel>(null)
 
-    await expect(usecase.execute(input)).resolves.toEqual(role)
+    await expect(usecase.execute(input)).resolves.toEqual(role.toData())
   })
 })

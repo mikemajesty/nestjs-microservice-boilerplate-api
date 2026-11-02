@@ -73,31 +73,33 @@ describe(RoleDeleteUsecase.name, () => {
   })
 
   const roleEntityMock = new ZodMockSchema(RoleEntitySchema)
-  const role: RoleDeleteInput = roleEntityMock.generate({
+  const role: RoleEntity = roleEntityMock.generate({
     overrides: {
       deletedAt: null,
       permissions: []
-    }
+    },
+    factory: (data) => new RoleEntity(data)
   })
 
   test('when role has no permissions property, should delete successfully', async () => {
     const roleWithoutPermissions = { ...role, permissions: undefined }
-    repository.findById = TestUtils.mockResolvedValue<RoleEntity>(roleWithoutPermissions)
+    const roleEntityWithoutPermissions = new RoleEntity(roleWithoutPermissions)
+    repository.findById = TestUtils.mockResolvedValue<RoleEntity>(roleEntityWithoutPermissions)
     repository.create = TestUtils.mockResolvedValue<CreatedModel>()
 
     await expect(usecase.execute(input)).resolves.toEqual({
-      ...roleWithoutPermissions,
+      ...roleEntityWithoutPermissions.toData(),
       deletedAt: expect.any(Date),
       updatedAt: expect.any(Date)
     })
   })
 
   test('when role deleted successfully, should expect a role deleted', async () => {
-    repository.findById = TestUtils.mockResolvedValue<RoleEntity>(role)
+    repository.findById = TestUtils.mockResolvedValue<RoleEntity>(role.clone())
     repository.create = TestUtils.mockResolvedValue<CreatedModel>()
 
     await expect(usecase.execute(input)).resolves.toEqual({
-      ...role,
+      ...role.toData(),
       deletedAt: expect.any(Date),
       updatedAt: expect.any(Date)
     })

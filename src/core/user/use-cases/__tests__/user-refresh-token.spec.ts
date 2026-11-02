@@ -12,7 +12,7 @@ import { MockUtils, TestUtils } from '@/utils/test'
 import { ZodExceptionIssue } from '@/utils/validator'
 
 import { UserEntity, UserEntitySchema } from '../../entity/user'
-import { UserPasswordEntitySchema } from '../../entity/user-password'
+import { UserPasswordEntity, UserPasswordEntitySchema } from '../../entity/user-password'
 import { IUserRepository } from '../../repository/user'
 import {
   RefreshTokenInput,
@@ -88,22 +88,25 @@ describe(RefreshTokenUsecase.name, () => {
   const password = passwordMock.generate({
     overrides: {
       password: '***'
-    }
+    },
+    factory: (data) => new UserPasswordEntity(data)
   })
   const roleMock = new ZodMockSchema(RoleEntitySchema)
 
   const userMock = new ZodMockSchema(UserEntitySchema)
 
   test('when user role not found, should expect an error', async () => {
-    const user = userMock.generate<UserEntity>({
+    const user = userMock.generate({
       overrides: {
         password,
-        roles: roleMock.generateMany<RoleEntity>(2, {
+        roles: roleMock.generateMany(2, {
           overrides: {
             permissions: []
-          }
+          },
+          factory: (data) => new RoleEntity(data)
         })
-      }
+      },
+      factory: (data) => new UserEntity(data)
     })
     token.verify = TestUtils.mockImplementation<UserRefreshTokenVerifyInput>(() => {
       return {
@@ -120,17 +123,19 @@ describe(RefreshTokenUsecase.name, () => {
       userId: MockUtils.UUID()
     }))
     token.sign = TestUtils.mockReturnValue<TokenSignOutput>({ token: '<token>' })
-    const user = userMock.generate<UserEntity>({
+    const user = userMock.generate({
       overrides: {
         password: { ...password, password: '69bf0bc46f51b33377c4f3d92caf876714f6bbbe99e7544487327920873f9820' },
-        roles: roleMock.generateMany<RoleEntity>(2, {
+        roles: roleMock.generateMany(2, {
           overrides: {
             permissions: []
-          }
+          },
+          factory: (data) => new RoleEntity(data)
         })
-      }
+      },
+      factory: (data) => new UserEntity(data)
     })
-    repository.findOne = TestUtils.mockResolvedValue<UserEntity>(user)
+    repository.findOne = TestUtils.mockResolvedValue<UserEntity>(user.clone())
 
     await expect(usecase.execute(input)).resolves.toEqual({
       accessToken: expect.any(String),

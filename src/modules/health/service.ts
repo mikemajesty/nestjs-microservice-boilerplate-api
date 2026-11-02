@@ -1,4 +1,5 @@
-import { exec } from 'child_process'
+import type { Server } from 'node:net'
+
 import { Redis } from 'ioredis'
 import { Connection } from 'mongoose'
 import ping from 'ping'
@@ -7,11 +8,19 @@ import { DataSource } from 'typeorm'
 import v8 from 'v8'
 
 import { ICacheAdapter } from '@/infra/cache'
-import { ErrorType, ILoggerAdapter } from '@/infra/logger'
+import { ILoggerAdapter } from '@/infra/logger'
 import { ISecretsAdapter } from '@/infra/secrets'
+import { ByteSize } from '@/utils/byte-size'
 
 import { ApiInternalServerException } from './../../utils/exception'
-import { DatabaseConnectionOutput, DatabaseMemoryOutput, HealthStatus, Load, MemoryOutput } from './types'
+import {
+  CacheMemoryOutput,
+  HealthStatus,
+  Load,
+  MemoryOutput,
+  MongoConnectionOutput,
+  PostgresConnectionOutput
+} from './types'
 
 export class HealthService implements IHealthAdapter {
   postgres!: DataSource
@@ -23,30 +32,24 @@ export class HealthService implements IHealthAdapter {
     private readonly secrets: ISecretsAdapter
   ) {}
 
-  async getPostgresMemory(): Promise<DatabaseMemoryOutput> {
+  async getPostgresDatabaseSize(): Promise<string | null> {
     try {
       const result = await this.postgres.query(`
-        SELECT 
-          sum(pg_database_size(datname)) AS "ramUsed",
-          sum(pg_stat_get_db_blocks_fetched(d.oid) * 8192) AS "reservedMemory"
-        FROM pg_database d;
+        SELECT COALESCE(SUM(pg_database_size(datname)), 0)::text AS "databaseSizeBytes"
+        FROM pg_database;
       `)
 
-      return {
-        ramUsed: `${(result[0].ramUsed / 1024 / 1024).toFixed(2)} MB`,
-        reservedMemory: `${(result[0].reservedMemory / 1024 / 1024).toFixed(2)} MB`
-      }
+      return String(result[0].databaseSizeBytes)
     } catch (error) {
-      this.buildError(error, `${HealthService.name}.getPostgresMemory`)
-      this.logger.error(error as ErrorType)
-      return { ramUsed: 0, reservedMemory: 0 }
+      this.logError(error, `${HealthService.name}.getPostgresDatabaseSize`)
+      return null
     }
   }
 
-  async getMongoMemory(): Promise<DatabaseMemoryOutput> {
+  async getMongoMemory(): Promise<CacheMemoryOutput> {
     try {
       if (this.mongo.readyState !== 1 || !this.mongo.db) {
-        return { ramUsed: 'N/A', reservedMemory: 'N/A' }
+        return { used: null, limit: null }
       }
 
       const status = await this.mongo.db.command({ serverStatus: 1 })
@@ -54,74 +57,69 @@ export class HealthService implements IHealthAdapter {
       const cache = status.wiredTiger?.cache
       if (!cache) {
         if (this.secrets.IS_DOCUMENTDB) {
-          return { ramUsed: 'N/A', reservedMemory: 'N/A' }
+          return { used: null, limit: null }
         }
 
         throw new ApiInternalServerException('WiredTiger cache not available - check MongoDB version/config')
       }
 
-      const memory = {
-        used: cache['bytes currently in the cache'] || 0,
-        max: cache['maximum bytes configured'] || 0
-      }
+      const formatMemory = (bytes: unknown): string | null =>
+        typeof bytes === 'number' && Number.isFinite(bytes) ? `${ByteSize.toMegabytes(bytes).toFixed(2)} MB` : null
 
       return {
-        ramUsed: `${(memory.used / 1024 / 1024).toFixed(2)} MB`,
-        reservedMemory: `${(memory.max / 1024 / 1024).toFixed(2)} MB`
+        used: formatMemory(cache['bytes currently in the cache']),
+        limit: formatMemory(cache['maximum bytes configured'])
       }
     } catch (error) {
-      this.buildError(error, `${HealthService.name}.getMongoMemory`)
-      this.logger.error(error as ErrorType)
-      return { ramUsed: 0, reservedMemory: 0 }
+      this.logError(error, `${HealthService.name}.getMongoMemory`)
+      return { used: null, limit: null }
     }
   }
-  async getMongoConnections(): Promise<DatabaseConnectionOutput> {
+
+  async getMongoConnections(): Promise<MongoConnectionOutput | null> {
     try {
       if (this.mongo.readyState !== 1) {
-        throw new ApiInternalServerException('mongo down')
+        return null
       }
 
       if (this.mongo.db) {
         const status = await this.mongo.db.command({ serverStatus: 1 })
 
-        return status.connections
+        return status.connections ?? null
       }
-      return { active: 0, available: 0, current: 0, totalCreated: 0 }
+      return null
     } catch (error) {
-      this.buildError(error, `${HealthService.name}.getMongoConnections`)
-      this.logger.error(error as ErrorType)
-      return { active: 0, available: 0, current: 0, totalCreated: 0 }
+      this.logError(error, `${HealthService.name}.getMongoConnections`)
+      return null
     }
   }
 
-  async getPostgresConnections(): Promise<DatabaseConnectionOutput> {
+  async getPostgresConnections(): Promise<PostgresConnectionOutput | null> {
     try {
       const manager = this.postgres.manager
-      const currentQuery = `SELECT COUNT(*) FROM pg_stat_activity WHERE state = 'active'`
-
-      const availableQuery = `SHOW max_connections`
-
-      const totalCreatedQuery = `SELECT COUNT(*) FROM pg_stat_activity`
-
-      const current = await manager.query(currentQuery)
-      const available = await manager.query(availableQuery)
-      const totalCreated = await manager.query(totalCreatedQuery)
+      const [connections] = await manager.query(`
+        SELECT
+          COUNT(*) FILTER (WHERE backend_type = 'client backend')::int AS current,
+          COUNT(*) FILTER (
+            WHERE backend_type = 'client backend' AND state = 'active'
+          )::int AS active,
+          GREATEST(
+            current_setting('max_connections')::int -
+            current_setting('superuser_reserved_connections')::int -
+            COUNT(*) FILTER (WHERE backend_type = 'client backend'),
+            0
+          )::int AS available
+        FROM pg_stat_activity;
+      `)
 
       return {
-        current: Number(current[0].count),
-        available: Number(available[0].max_connections) - Number(current[0].count),
-        totalCreated: Number(totalCreated[0].count),
-        active: Number(current[0].count)
+        current: Number(connections.current),
+        available: Number(connections.available),
+        active: Number(connections.active)
       }
     } catch (error) {
-      this.buildError(error, `${HealthService.name}/getPostgresConnections`)
-      this.logger.error(error as ErrorType)
-      return {
-        current: 0,
-        available: 0,
-        totalCreated: 0,
-        active: 0
-      }
+      this.logError(error, `${HealthService.name}.getPostgresConnections`)
+      return null
     }
   }
 
@@ -130,16 +128,16 @@ export class HealthService implements IHealthAdapter {
     const heapStats = v8.getHeapStatistics()
     return {
       process: {
-        usedRam: `${this.bytesToMB(processMemory.rss)} MB`,
-        heapTotal: `${this.bytesToMB(processMemory.heapTotal)} MB`,
-        heapUsed: `${this.bytesToMB(processMemory.heapUsed)} MB`,
-        external: `${this.bytesToMB(processMemory.external)} MB`
+        usedRam: `${ByteSize.toMegabytes(processMemory.rss).toFixed(2)} MB`,
+        heapTotal: `${ByteSize.toMegabytes(processMemory.heapTotal).toFixed(2)} MB`,
+        heapUsed: `${ByteSize.toMegabytes(processMemory.heapUsed).toFixed(2)} MB`,
+        external: `${ByteSize.toMegabytes(processMemory.external).toFixed(2)} MB`
       },
       v8: {
-        totalHeapSize: `${this.bytesToMB(heapStats.total_heap_size)} MB`,
-        usedHeapSize: `${this.bytesToMB(heapStats.used_heap_size)} MB`,
-        executableHeapSize: `${this.bytesToMB(heapStats.total_heap_size_executable)} MB`,
-        heapSizeLimit: `${this.bytesToMB(heapStats.heap_size_limit)} MB`
+        totalHeapSize: `${ByteSize.toMegabytes(heapStats.total_heap_size).toFixed(2)} MB`,
+        usedHeapSize: `${ByteSize.toMegabytes(heapStats.used_heap_size).toFixed(2)} MB`,
+        executableHeapSize: `${ByteSize.toMegabytes(heapStats.total_heap_size_executable).toFixed(2)} MB`,
+        heapSizeLimit: `${ByteSize.toMegabytes(heapStats.heap_size_limit).toFixed(2)} MB`
       }
     }
   }
@@ -167,13 +165,19 @@ export class HealthService implements IHealthAdapter {
     return { load: time, status }
   }
 
-  getActiveConnections() {
-    return new Promise((resolve, reject) => {
-      exec(`lsof -i -n -p ${process.pid} | grep ESTABLISHED | wc -l`, (error, stdout, stderr) => {
+  getHttpConnections(server: Server): Promise<number | null> {
+    return new Promise((resolve) => {
+      server.getConnections((error, count) => {
         if (error) {
-          reject(`Error getting connection: ${stderr}`)
+          this.logger.warn({
+            message: 'Unable to collect HTTP connection count',
+            metadata: { context: HealthService.name, error: error.message }
+          })
+          resolve(null)
+          return
         }
-        resolve(parseInt(stdout.trim(), 10))
+
+        resolve(count)
       })
     })
   }
@@ -181,8 +185,8 @@ export class HealthService implements IHealthAdapter {
   async getLatency(host = '8.8.8.8') {
     try {
       const res = await ping.promise.probe(host, { timeout: 200 })
-      if (!res.time) {
-        return '0ms'
+      if (!res.alive || !res.time) {
+        return 'N/A'
       }
       const latency = [
         { latency: 20, status: 'Excellent' },
@@ -191,8 +195,7 @@ export class HealthService implements IHealthAdapter {
       ].find((l) => Number(res.time) < l.latency)
       return `${res.time}ms ${latency?.status ?? 'Critical'}`
     } catch (error) {
-      this.buildError(error, `${HealthService.name}.getLatency`)
-      this.logger.error(error as ErrorType)
+      this.logError(error, `${HealthService.name}.getLatency`)
       return 'Critical'
     }
   }
@@ -201,8 +204,7 @@ export class HealthService implements IHealthAdapter {
     try {
       return await systeminformation.currentLoad()
     } catch (error) {
-      this.buildError(error, `${HealthService.name}.getCPUCore`)
-      this.logger.error(error as ErrorType)
+      this.logError(error, `${HealthService.name}.getCPUCore`)
       return { cpus: [] }
     }
   }
@@ -211,20 +213,23 @@ export class HealthService implements IHealthAdapter {
     try {
       const result = await this.postgres.query('SELECT 1')
 
-      return result ? HealthStatus.UP : HealthStatus.DOWN
+      return result.length > 0 ? HealthStatus.UP : HealthStatus.DOWN
     } catch (error) {
-      this.buildError(error, `${HealthService.name}.getPostgresStatus`)
-      this.logger.error(error as ErrorType)
+      this.logError(error, `${HealthService.name}.getPostgresStatus`)
       return HealthStatus.DOWN
     }
   }
 
-  getMongoStatus() {
+  async getMongoStatus(): Promise<HealthStatus> {
     try {
-      return this.mongo.readyState === 1 ? HealthStatus.UP : HealthStatus.DOWN
+      if (this.mongo.readyState !== 1 || !this.mongo.db) {
+        return HealthStatus.DOWN
+      }
+
+      await this.mongo.db.command({ ping: 1 })
+      return HealthStatus.UP
     } catch (error) {
-      this.buildError(error, `${HealthService.name}.getMongoStatus`)
-      this.logger.error(error as ErrorType)
+      this.logError(error, `${HealthService.name}.getMongoStatus`)
       return HealthStatus.DOWN
     }
   }
@@ -234,21 +239,18 @@ export class HealthService implements IHealthAdapter {
       const status = await this.redis.ping()
       return status === 'PONG' ? HealthStatus.UP : HealthStatus.DOWN
     } catch (error) {
-      this.buildError(error, `${HealthService.name}.getRedisStatus`)
-      this.logger.error(error as ErrorType)
+      this.logError(error, `${HealthService.name}.getRedisStatus`)
       return HealthStatus.DOWN
     }
   }
 
-  private buildError(error: unknown, context: string) {
-    if (typeof error === 'string') {
-      Object.assign(error, new ApiInternalServerException(error))
-    }
-    Object.assign(error as object, { context })
-  }
-
-  private bytesToMB = (bytes: number) => {
-    return (bytes / 1024 / 1024).toFixed(2)
+  private logError(error: unknown, context: string): void {
+    this.logger.error(
+      new ApiInternalServerException('Health check failed', {
+        context,
+        cause: error
+      })
+    )
   }
 }
 
@@ -260,16 +262,16 @@ export abstract class IHealthAdapter {
   abstract mongo: Connection
   abstract postgres: DataSource
   abstract redis: ICacheAdapter<Redis>
-  abstract getMongoStatus(): HealthStatus
+  abstract getMongoStatus(): Promise<HealthStatus>
   abstract getRedisStatus(): Promise<HealthStatus>
   abstract getPostgresStatus(): Promise<HealthStatus>
   abstract getMemoryUsageInMB(): MemoryOutput
   abstract getLoadAvarage(time: number, numCpus: number): Load
-  abstract getActiveConnections(): Promise<unknown>
-  abstract getLatency(host?: string): Promise<unknown>
-  abstract getMongoConnections(): Promise<DatabaseConnectionOutput>
-  abstract getPostgresConnections(): Promise<DatabaseConnectionOutput>
-  abstract getPostgresMemory(): Promise<DatabaseMemoryOutput>
-  abstract getMongoMemory(): Promise<DatabaseMemoryOutput>
+  abstract getHttpConnections(server: Server): Promise<number | null>
+  abstract getLatency(host?: string): Promise<string>
+  abstract getMongoConnections(): Promise<MongoConnectionOutput | null>
+  abstract getPostgresConnections(): Promise<PostgresConnectionOutput | null>
+  abstract getPostgresDatabaseSize(): Promise<string | null>
+  abstract getMongoMemory(): Promise<CacheMemoryOutput>
   abstract getCPUCore(): Promise<{ cpus: { load: number }[] }>
 }

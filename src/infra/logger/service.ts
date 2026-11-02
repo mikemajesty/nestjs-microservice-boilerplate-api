@@ -1,7 +1,7 @@
 /**
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/infra/logger.md
  */
-import { Injectable, InternalServerErrorException, Scope } from '@nestjs/common'
+import { Injectable, InternalServerErrorException } from '@nestjs/common'
 import { blue, gray, green, isColorSupported } from 'colorette'
 import { PinoRequestConverter } from 'convert-pino-request-to-curl'
 import pino, { LevelWithSilent, LogDescriptor, Logger, multistream } from 'pino'
@@ -11,8 +11,9 @@ import pinoPretty, { PrettyOptions } from 'pino-pretty'
 
 import { DateUtils } from '@/utils/date'
 import { ApiBadRequestException, ApiInternalServerException, BaseException } from '@/utils/exception'
-import { IDGeneratorUtils } from '@/utils/id-generator'
 import { ObjectUtils } from '@/utils/object'
+import { TRACEID_HEADER, TraceIdField } from '@/utils/request'
+import { getCurrentRequestContext } from '@/utils/request/context'
 import { AnyType } from '@/utils/types'
 
 import { name, version } from '../../../package.json'
@@ -29,13 +30,15 @@ import {
 
 const DATE_FORMAT = 'yyyy-MM-dd HH:mm:ss'
 
-@Injectable({ scope: Scope.REQUEST })
+@Injectable()
 export class LoggerService implements ILoggerAdapter {
   static log(message: string) {
     if (process.env.NODE_ENV === EnvEnum.TEST) return
     const timestamp = DateUtils.build({ format: DATE_FORMAT, type: 'iso' })
+    const traceId = getCurrentRequestContext()?.[TRACEID_HEADER]
+    const requestIdentifier = traceId ? ` [${traceId}]` : ''
     // eslint-disable-next-line no-console
-    console.log(`${gray('TRACE')} [${timestamp}]: [${blue(name)}] ${green(message)}`)
+    console.log(`${gray('TRACE')} [${timestamp}]: [${blue(name)}]${requestIdentifier} ${green(message)}`)
   }
 
   private app!: string
@@ -69,32 +72,25 @@ export class LoggerService implements ILoggerAdapter {
     this.app = app
   }
 
-  setGlobalParameters(input: object): void {
-    this.logger.logger.setBindings(input)
-  }
-
   log(message: string): void {
     LoggerService.log(message)
   }
 
   debug({ message, metadata = {} }: MessageInputType): void {
-    Object.assign(metadata, { createdAt: DateUtils.now({ type: 'iso' }) })
-    this.logger.logger.debug([metadata, gray(message)].find(Boolean), gray(message))
+    const logMetadata = this.getLogMetadata(metadata)
+    this.logger.logger.debug([logMetadata, gray(message)].find(Boolean), gray(message))
   }
 
   info({ message, metadata = {} }: MessageInputType): void {
-    Object.assign(metadata, { createdAt: DateUtils.now({ type: 'iso' }) })
-    this.logger.logger.info([metadata, message].find(Boolean), message)
+    const logMetadata = this.getLogMetadata(metadata)
+    this.logger.logger.info([logMetadata, message].find(Boolean), message)
   }
 
   warn(input: MessageInputType): void {
     const { message, metadata = {} } = input
-    Object.assign(metadata, {
-      context: metadata?.context,
-      createdAt: DateUtils.now({ type: 'iso' })
-    })
+    const logMetadata = this.getLogMetadata(metadata)
     const finalMessage = typeof input === 'string' ? input : message
-    this.logger.logger.warn([metadata, finalMessage].find(Boolean), finalMessage)
+    this.logger.logger.warn([logMetadata, finalMessage].find(Boolean), finalMessage)
   }
 
   error(error: ErrorType, message?: string): void {
@@ -128,7 +124,7 @@ export class LoggerService implements ILoggerAdapter {
         ...response,
         context: ObjectUtils.reach(error, (o) => o.context),
         type: typeError,
-        traceid: this.getTraceId(error),
+        [TRACEID_HEADER]: this.getTraceId(error),
         createdAt: DateUtils.now({ type: 'iso' }),
         application: this.app,
         stack: error.stack?.replace(/\n/g, ''),
@@ -166,7 +162,7 @@ export class LoggerService implements ILoggerAdapter {
         message: typeof messages === 'string' ? [messages] : messages,
         context: error?.context,
         type: typeError,
-        traceid: this.getTraceId(error),
+        [TRACEID_HEADER]: this.getTraceId(error),
         createdAt: DateUtils.now({ type: 'iso' }),
         application: this.app,
         stack: error.stack?.replace(/\n/g, '')
@@ -212,14 +208,17 @@ export class LoggerService implements ILoggerAdapter {
         res: 'response',
         err: 'error',
         responseTime: 'timeTaken',
-        reqId: 'traceid'
+        reqId: TRACEID_HEADER
       },
       serializers: {
         err: () => false,
         req: (request) => {
           return {
             method: request.method,
-            curl: PinoRequestConverter.getCurl(request, ['password', 'cpf'])
+            curl: PinoRequestConverter.getCurl(request, {
+              anonymizedFields: ['password', 'cpf'],
+              excludeHeaders: ['authorization']
+            })
           }
         },
         res: pino.stdSerializers.res
@@ -227,19 +226,12 @@ export class LoggerService implements ILoggerAdapter {
       customProps: (req: AppLoggerRequest): object => {
         const context = req.context
 
-        const traceid = [req?.headers?.traceid, req.id].find(Boolean)
+        const traceid = [req?.headers?.[TRACEID_HEADER], req.id].find(Boolean)
 
         const path = `${req.protocol}://${req.headers.host}${req.url}`
 
-        this.logger.logger.setBindings({
-          traceid,
-          application: this.app,
-          context,
-          createdAt: DateUtils.now({ type: 'iso' })
-        })
-
         return {
-          traceid,
+          [TRACEID_HEADER]: traceid,
           application: this.app,
           context,
           path,
@@ -286,9 +278,24 @@ export class LoggerService implements ILoggerAdapter {
     ].find((c) => c.conditional)
   }
 
-  private getTraceId(error: string | { traceid: string }): string {
-    if (typeof error === 'string') return IDGeneratorUtils.uuid()
-    return [error.traceid, this.logger.logger.bindings()?.traceid].find(Boolean)
+  private getTraceId(error: string | TraceIdField): string | undefined {
+    const requestTraceId = getCurrentRequestContext()?.[TRACEID_HEADER]
+
+    if (typeof error === 'string') {
+      return requestTraceId
+    }
+
+    return requestTraceId ?? error[TRACEID_HEADER]
+  }
+
+  private getLogMetadata(metadata: MessageInputType['metadata'] = {}): NonNullable<MessageInputType['metadata']> {
+    const traceId = getCurrentRequestContext()?.[TRACEID_HEADER]
+
+    return {
+      ...metadata,
+      ...(traceId ? { [TRACEID_HEADER]: traceId } : {}),
+      createdAt: DateUtils.now({ type: 'iso' })
+    }
   }
 
   private getLokiInterval(): number | undefined {

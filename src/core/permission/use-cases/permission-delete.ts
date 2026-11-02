@@ -31,13 +31,11 @@ export class PermissionDeleteUsecase implements IUsecase {
       )
     }
 
-    const entity = new PermissionEntity(permission)
+    permission.deactivate()
 
-    entity.deactivate()
+    await this.permissionRepository.create(permission.toData())
 
-    await this.permissionRepository.create(entity.toObject())
-
-    return entity.toObject()
+    return permission.toData()
   }
 }
 

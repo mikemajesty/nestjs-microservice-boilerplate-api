@@ -25,7 +25,7 @@ export class PermissionGetByIdUsecase implements IUsecase {
       throw new ApiNotFoundException('permissionNotFound')
     }
 
-    return new PermissionEntity(permission).toObject()
+    return permission.toData()
   }
 }
 

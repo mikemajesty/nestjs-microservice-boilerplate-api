@@ -73,37 +73,39 @@ describe(PermissionDeleteUsecase.name, () => {
   })
 
   test('when permission has no roles property, should delete successfully', async () => {
-    const permissionWithoutRoles = new ZodMockSchema(PermissionEntitySchema).generate<PermissionEntity>({
+    const permissionWithoutRoles = new ZodMockSchema(PermissionEntitySchema).generate({
       overrides: {
         name: 'name:permission',
         roles: undefined
-      }
+      },
+      factory: (data) => new PermissionEntity(data)
     })
 
-    repository.findOneWithRelation = TestUtils.mockResolvedValue<PermissionEntity>(permissionWithoutRoles)
+    repository.findOneWithRelation = TestUtils.mockResolvedValue<PermissionEntity>(permissionWithoutRoles.clone())
     repository.create = TestUtils.mockResolvedValue<CreatedModel>()
 
     await expect(usecase.execute(input)).resolves.toEqual({
-      ...permissionWithoutRoles,
+      ...permissionWithoutRoles.toData(),
       deletedAt: expect.any(Date),
       updatedAt: expect.any(Date)
     })
   })
 
   const mock = new ZodMockSchema(PermissionEntitySchema)
-  const permission = mock.generate<PermissionEntity>({
+  const permission = mock.generate({
     overrides: {
       name: 'name:permission',
       roles: []
-    }
+    },
+    factory: (data) => new PermissionEntity(data)
   })
 
   test('when permission deleted successfully, should expect a permission deleted', async () => {
-    repository.findOneWithRelation = TestUtils.mockResolvedValue<PermissionEntity>(permission)
+    repository.findOneWithRelation = TestUtils.mockResolvedValue<PermissionEntity>(permission.clone())
     repository.create = TestUtils.mockResolvedValue<CreatedModel>()
 
     await expect(usecase.execute(input)).resolves.toEqual({
-      ...permission,
+      ...permission.toData(),
       deletedAt: expect.any(Date),
       updatedAt: expect.any(Date)
     })

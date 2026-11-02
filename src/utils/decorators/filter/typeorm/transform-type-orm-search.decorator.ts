@@ -9,18 +9,18 @@ import { ApiBadRequestException } from '@/utils/exception'
 import { AllowedFilter, SearchTypeEnum } from '../../types'
 import { convertFilterValue } from '../filter-utils'
 
-type ConvertTypeOrmFilterInput = {
+type TransformTypeOrmSearchInput = {
   [key: string]: FindOperator<IEntity> | string | string[] | unknown
 }
 
-export function ConvertTypeOrmFilter<T>(allowedFilterList: AllowedFilter<T>[] = []) {
+export function TransformTypeOrmSearch<T>(allowedFilterList: AllowedFilter<T>[] = []) {
   return (target: unknown, propertyKey: string, descriptor: PropertyDescriptor) => {
     const originalMethod = descriptor.value
 
-    descriptor.value = function (...args: { search: ConvertTypeOrmFilterInput }[]) {
+    descriptor.value = function (...args: { search: TransformTypeOrmSearchInput }[]) {
       const input = args[0]
 
-      const where: ConvertTypeOrmFilterInput = {}
+      const where: TransformTypeOrmSearchInput = {}
 
       const filterNameList = allowedFilterList.map((f) => f.name as string)
 
@@ -33,12 +33,12 @@ export function ConvertTypeOrmFilter<T>(allowedFilterList: AllowedFilter<T>[] = 
       const IS_ARRAY_FILTER = 'object'
       const IS_SINGLE_FILTER = 'string'
 
-      for (const allowedFilter of allowedFilterList) {
+      for (const [filterIndex, allowedFilter] of allowedFilterList.entries()) {
         if (!input.search) continue
 
         const filters = input.search[allowedFilter.name.toString()]
 
-        if (!filters) continue
+        if (!filters && filters !== 0) continue
 
         const field = `${allowedFilter?.map ?? allowedFilter.name.toString()}`
 
@@ -54,7 +54,7 @@ export function ConvertTypeOrmFilter<T>(allowedFilterList: AllowedFilter<T>[] = 
             where[`${field}`] = In<unknown>(filterList)
           }
 
-          if (typeof filters === IS_SINGLE_FILTER) {
+          if (typeof filters === IS_SINGLE_FILTER || typeof filters === 'number') {
             where[`${field}`] = convertFilterValue({
               value: filters,
               format: allowedFilter.format
@@ -66,24 +66,27 @@ export function ConvertTypeOrmFilter<T>(allowedFilterList: AllowedFilter<T>[] = 
           if (typeof filters === IS_ARRAY_FILTER) {
             const valueFilter: { [key: string]: unknown } = {}
 
-            for (const filter of filters as string[]) {
-              valueFilter[`${filter}`] = filter
+            for (const [valueIndex, filter] of (filters as string[]).entries()) {
+              valueFilter[`search_${filterIndex}_${valueIndex}`] = filter
             }
 
             const createManyLike = (alias: string) => {
-              return (filters as string[])
-                .map((value) => {
-                  return `unaccent(${alias}) ilike unaccent(:${value})`
+              const condition = (filters as string[])
+                .map((_, valueIndex) => {
+                  return `unaccent(${alias}) ilike unaccent(:search_${filterIndex}_${valueIndex})`
                 })
                 .join(' or ')
+
+              return condition ? `(${condition})` : condition
             }
 
             where[`${field}`] = Raw((alias: string) => createManyLike(alias), valueFilter)
           }
 
           if (typeof filters === IS_SINGLE_FILTER) {
-            where[`${field}`] = Raw((alias: string) => `unaccent(${alias}) ilike unaccent(:value)`, {
-              value: filters
+            const parameterName = `search_${filterIndex}_0`
+            where[`${field}`] = Raw((alias: string) => `unaccent(${alias}) ilike unaccent(:${parameterName})`, {
+              [parameterName]: filters
             })
           }
         }

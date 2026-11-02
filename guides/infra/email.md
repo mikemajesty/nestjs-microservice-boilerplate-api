@@ -12,7 +12,7 @@ Sending emails in applications requires:
 // ❌ Without centralization
 export class UserCreateUsecase {
   async execute(input: UserCreateInput) {
-    const user = await this.userRepository.create(entity.toObject())
+    const user = await this.userRepository.create(entity.toData())
     
     // 😱 Inline template, manual SMTP, blocking the response
     const transporter = nodemailer.createTransport({
@@ -118,7 +118,7 @@ export class UserCreateUsecase implements IUsecase {
   ) {}
 
   async execute(input: UserCreateInput) {
-    const user = await this.userRepository.create(entity.toObject())
+    const user = await this.userRepository.create(entity.toData())
 
     // ✅ Fires event and returns immediately
     this.event.emit<SendEmailInput>(EventNameEnum.SEND_EMAIL, {

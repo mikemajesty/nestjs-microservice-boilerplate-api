@@ -9,6 +9,7 @@ import {
   CreatedOrUpdateModel,
   DatabaseOperationCommand,
   JoinType,
+  MakePartialFilter,
   RemovedModel,
   RunInTransactionType,
   UpdatedModel
@@ -88,7 +89,7 @@ export abstract class IRepository<T> {
    * @example
    *   const docs = await repo.findAll({ active: true })
    */
-  abstract findAll<TQuery = MakePartial<T>, TOpt = unknown>(filter?: TQuery, opt?: TOpt): Promise<T[]>
+  abstract findAll<TQuery = MakePartialFilter<T>, TOpt = unknown>(filter?: TQuery, opt?: TOpt): Promise<T[]>
 
   /**
    * Finds documents by filter.
@@ -100,7 +101,7 @@ export abstract class IRepository<T> {
    *   // Find with multiple fields
    *   const docs2 = await repo.find({ name: 'foo', active: true })
    */
-  abstract find<TQuery = MakePartial<T>, TOptions = unknown>(filter: TQuery, options?: TOptions | null): Promise<T[]>
+  abstract find<TQuery = MakePartialFilter<T>, TOptions = unknown>(filter: TQuery, options?: TOptions | null): Promise<T[]>
 
   /**
    * Finds documents where the specified fields are in a list of values.
@@ -112,7 +113,7 @@ export abstract class IRepository<T> {
    *   await repo.findIn({ status: ['active', 'pending'] })
    */
   abstract findIn<TOptions = unknown>(
-    filter: { [key in keyof MakePartial<T>]: string[] },
+    filter: { [key in keyof MakePartialFilter<T>]: string[] },
     options?: TOptions | null
   ): Promise<T[]>
 
@@ -127,7 +128,7 @@ export abstract class IRepository<T> {
    *   await repo.findOr(['cpf', 'cnpj'], '12345678900')
    */
   abstract findOr<TOptions = unknown>(
-    propertyList: Array<keyof MakePartial<T>>,
+    propertyList: Array<keyof MakePartialFilter<T>>,
     value: string,
     options?: TOptions
   ): Promise<T[]>
@@ -171,7 +172,7 @@ export abstract class IRepository<T> {
    * @example
    *   await repo.remove({ id: '123' })
    */
-  abstract remove<TQuery = MakePartial<T>, TOpt = unknown>(filter: TQuery, opt?: TOpt): Promise<RemovedModel>
+  abstract remove<TQuery = MakePartialFilter<T>, TOpt = unknown>(filter: TQuery, opt?: TOpt): Promise<RemovedModel>
 
   /**
    * Finds a document matching the filter.
@@ -182,7 +183,7 @@ export abstract class IRepository<T> {
    *   await repo.findOne({ email: 'foo@bar.com' })
    *   await repo.findOne({ id: '123', active: true })
    */
-  abstract findOne<TQuery = MakePartial<T>, TOptions = unknown>(filter: TQuery, options?: TOptions): Promise<T | null>
+  abstract findOne<TQuery = MakePartialFilter<T>, TOptions = unknown>(filter: TQuery, options?: TOptions): Promise<T | null>
 
   /**
    * Updates a document matching the filter.
@@ -193,7 +194,7 @@ export abstract class IRepository<T> {
    * @example
    *   await repo.updateOne({ id: '1' }, { name: 'novo' })
    */
-  abstract updateOne<TQuery = MakePartial<T>, TUpdate = MakePartial<T>, TOptions = unknown>(
+  abstract updateOne<TQuery = MakePartialFilter<T>, TUpdate = MakePartial<T>, TOptions = unknown>(
     filter: TQuery,
     updated: TUpdate,
     options?: TOptions
@@ -208,7 +209,7 @@ export abstract class IRepository<T> {
    * @example
    *   await repo.findOneAndUpdate({ id: '1' }, { name: 'novo' })
    */
-  abstract findOneAndUpdate<TQuery = MakePartial<T>, TUpdate = MakePartial<T>, TOptions = unknown>(
+  abstract findOneAndUpdate<TQuery = MakePartialFilter<T>, TUpdate = MakePartial<T>, TOptions = unknown>(
     filter: TQuery,
     updated: TUpdate,
     options?: TOptions
@@ -223,7 +224,7 @@ export abstract class IRepository<T> {
    * @example
    *   await repo.updateMany({ active: true }, { active: false })
    */
-  abstract updateMany<TQuery = MakePartial<T>, TUpdate = MakePartial<T>, TOptions = unknown>(
+  abstract updateMany<TQuery = MakePartialFilter<T>, TUpdate = MakePartial<T>, TOptions = unknown>(
     filter: TQuery,
     updated: TUpdate,
     options?: TOptions
@@ -238,7 +239,7 @@ export abstract class IRepository<T> {
    * @example
    *   await repo.findOneWithExcludeFields({ id: '123' }, ['password', 'token'])
    */
-  abstract findOneWithExcludeFields<TQuery = MakePartial<T>, TOptions = unknown>(
+  abstract findOneWithExcludeFields<TQuery = MakePartialFilter<T>, TOptions = unknown>(
     filter: TQuery,
     excludeProperties: Array<keyof T>,
     options?: TOptions
@@ -253,7 +254,7 @@ export abstract class IRepository<T> {
    * @example
    *   await repo.findAllWithExcludeFields(['password'], { active: true })
    */
-  abstract findAllWithExcludeFields<TQuery = MakePartial<T>, TOptions = unknown>(
+  abstract findAllWithExcludeFields<TQuery = MakePartialFilter<T>, TOptions = unknown>(
     excludeProperties: Array<keyof T>,
     filter?: TQuery | null,
     options?: TOptions
@@ -268,7 +269,7 @@ export abstract class IRepository<T> {
    * @example
    *   await repo.findOneWithSelectFields({ id: '123' }, ['name', 'email'])
    */
-  abstract findOneWithSelectFields<TQuery = MakePartial<T>, TOptions = unknown>(
+  abstract findOneWithSelectFields<TQuery = MakePartialFilter<T>, TOptions = unknown>(
     filter: TQuery,
     includeProperties: Array<keyof T>,
     options?: TOptions
@@ -283,7 +284,7 @@ export abstract class IRepository<T> {
    * @example
    *   await repo.findAllWithSelectFields(['name', 'email'], { active: true })
    */
-  abstract findAllWithSelectFields<TQuery = MakePartial<T>, TOptions = unknown>(
+  abstract findAllWithSelectFields<TQuery = MakePartialFilter<T>, TOptions = unknown>(
     includeProperties: Array<keyof T>,
     filter?: TQuery | null,
     options?: TOptions
@@ -297,7 +298,7 @@ export abstract class IRepository<T> {
    * @example
    *   await repo.findOneWithRelation({ id: '123' }, { profile: true })
    */
-  abstract findOneWithRelation<Filter = MakePartial<T>>(filter: Filter, joins?: JoinType<T>): Promise<T | null>
+  abstract findOneWithRelation<Filter = MakePartialFilter<T>>(filter: Filter, joins?: JoinType<T>): Promise<T | null>
 
   /**
    * Finds all documents with join on other entities.
@@ -305,9 +306,9 @@ export abstract class IRepository<T> {
    * @param joins Join configuration.
    * @returns List of documents.
    * @example
-   *   await repo.findAllWithRelation({ active: true }, { profile: true, roles: ['name'] })
+   *   await repo.findAllWithRelation({ active: true }, { profile: true, roles: true })
    */
-  abstract findAllWithRelation<Filter = MakePartial<T>>(filter?: Filter, joins?: JoinType<T>): Promise<T[]>
+  abstract findAllWithRelation<Filter = MakePartialFilter<T>>(filter?: Filter, joins?: JoinType<T>): Promise<T[]>
 
   /**
    * Checks if a document exists matching the filter.
@@ -316,7 +317,7 @@ export abstract class IRepository<T> {
    * @example
    *   const exists = await repo.exists({ email: 'foo@bar.com' })
    */
-  abstract exists<TQuery = MakePartial<T>>(filter: TQuery): Promise<boolean>
+  abstract exists<TQuery = MakePartialFilter<T>>(filter: TQuery): Promise<boolean>
 
   /**
    * Checks if a document exists (except the given id) matching the filter.
@@ -324,7 +325,7 @@ export abstract class IRepository<T> {
    * @param id ID to ignore.
    * @returns true if exists, false otherwise.
    */
-  abstract existsOnUpdate<TQuery = MakePartial<T>>(filter: TQuery, id: string | number): Promise<boolean>
+  abstract existsOnUpdate<TQuery = MakePartialFilter<T>>(filter: TQuery, id: string | number): Promise<boolean>
 
   /**
    * Performs a logical (soft) delete of the document.
@@ -333,5 +334,5 @@ export abstract class IRepository<T> {
    * @example
    *   await repo.softRemove({ id: '123' })
    */
-  abstract softRemove(entity: MakePartial<T>): Promise<T>
+  abstract softRemove(entity: MakePartialFilter<T>): Promise<T>
 }

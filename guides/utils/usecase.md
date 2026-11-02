@@ -110,7 +110,7 @@ export class ProductController {
   ) {}
 
   @Post()
-  async create(@Body() body: ProductCreateInput) {
+  async create(@Req() { body }: ApiRequest) {
     return this.productCreateAdapter.execute(body)
   }
 }

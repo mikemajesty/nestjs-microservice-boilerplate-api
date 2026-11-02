@@ -20,9 +20,13 @@ import path from 'path'
 import { ILoggerAdapter } from '@/infra/logger/adapter'
 import { ISecretsAdapter } from '@/infra/secrets'
 import { ExceptionHandlerFilter } from '@/middlewares/filters'
+import { ByteSize } from '@/utils/byte-size'
+import { AppFastifyRequest, ensureTraceId, TRACEID_HEADER } from '@/utils/request'
+import { runWithRequestContext } from '@/utils/request/context'
 
 import { name, version } from '../package.json'
 import { AppModule } from './app.module'
+import { IUserRepository } from './core/user/repository/user'
 import { ErrorType } from './infra/logger'
 import { initI18n, normalizeLocale, runWithRequestLocale } from './utils/validator'
 
@@ -43,7 +47,7 @@ async function bootstrap() {
   const app = await NestFactory.create(
     AppModule,
     new FastifyAdapter({
-      bodyLimit: 10 * 1024 * 1024 // 10MB
+      bodyLimit: ByteSize.fromMegabytes(10)
     }),
     {
       bufferLogs: true,
@@ -96,9 +100,16 @@ async function bootstrap() {
         return
       }
 
-      runWithRequestLocale(getPreferredLocale(request), done)
+      const traceId = ensureTraceId(request as AppFastifyRequest)
+      const requestContext = { [TRACEID_HEADER]: traceId, authorization: request.headers.authorization }
+
+      runWithRequestLocale(getPreferredLocale(request), () => runWithRequestContext(requestContext, done))
     }
   )
+
+  const userRepository = app.get(IUserRepository)
+
+  userRepository.findOneWithRelation({ id: '475ab54e-5753-455d-89e0-b10c57ec6db6' }, { password: true })
 
   fastify.addHook('onRequest', (request: FastifyRequest, _reply: FastifyReply, done: HookHandlerDoneFunction) => {
     requestStartTimes.set(request, process.hrtime.bigint())
@@ -151,7 +162,7 @@ async function bootstrap() {
 
   await fastify.register(fastifyCompress, {
     encodings: ['gzip', 'deflate'],
-    threshold: 1024
+    threshold: ByteSize.fromKilobytes(1)
   })
 
   const {

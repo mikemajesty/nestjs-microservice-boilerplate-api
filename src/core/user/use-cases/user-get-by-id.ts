@@ -24,9 +24,7 @@ export class UserGetByIdUsecase implements IUsecase {
       throw new ApiNotFoundException('userNotFound')
     }
 
-    const entity = new UserEntity(user)
-
-    return entity.toObject()
+    return user.toData()
   }
 }
 

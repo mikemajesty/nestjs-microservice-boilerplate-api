@@ -64,7 +64,6 @@ abstract class ILoggerAdapter {
   abstract logger: HttpLogger
   abstract connect(logLevel?: LogLevelEnum): void
   abstract setApplication(app: string): void
-  abstract setGlobalParameters(input: object): void
   abstract log(message: string): void
   abstract debug({ message, context, obj }): void
   abstract info({ message, context, obj }): void
@@ -218,15 +217,10 @@ async connectDatabase() {
 
 ## TraceId Propagation
 
-The logger automatically includes `traceid` in **every single log**, enabling **distributed tracing** across microservices.
-
-The [HttpLoggerInterceptor](../middlewares/http-logger.interceptor.md) sets the traceid globally via `setGlobalParameters()`, so you **never need to manually add it** — all your logs will automatically carry the same traceid.
+The logger automatically adds the current request's `traceid` to each log call. The Fastify `onRequest` hook stores request context in `AsyncLocalStorage` before guards run, so logs from guards, interceptors, and handlers all receive the traceid without changing shared logger bindings. The `pino-http` request log gets its traceid from the request itself.
 
 ```typescript
-// HttpLoggerInterceptor does this automatically:
-this.logger.setGlobalParameters({ traceid: request.id })
-
-// Now ALL your logs include traceid without you doing anything:
+// The logger reads the traceid from the current async request context:
 this.logger.info({ message: 'Processing order' })
 // Output: { traceid: "abc-123", message: "Processing order", ... }
 
@@ -239,6 +233,19 @@ this.logger.error(error)
 
 This means you can search for a single traceid in Grafana Loki and see **ALL logs** from that request, across all services.
 
+For background jobs, establish a traceId context around the job instead of setting a global logger binding:
+
+```typescript
+import { runWithTraceId } from '@/utils/request/context'
+
+await runWithTraceId(job.id, async () => {
+  this.logger.info({ message: 'Processing job' })
+  await this.processJob(job)
+})
+```
+
+The traceId is scoped to the asynchronous job execution and does not leak into other concurrent jobs. If no request or job context exists, the logger does not invent a traceId.
+
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                       TRACEID IN LOGS                                       │
@@ -248,9 +255,9 @@ This means you can search for a single traceid in Grafana Loki and see **ALL log
 │      │                                                                      │
 │      │ traceid: "abc-123" (from header or generated)                        │
 │      ▼                                                                      │
-│  HttpLoggerInterceptor                                                      │
+│  TracingInterceptor                                                         │
 │      │                                                                      │
-│      │ logger.setGlobalParameters({ traceid: "abc-123" })                   │
+│      │ AsyncLocalStorage.run({ traceid: "abc-123" }, ...)                    │
 │      ▼                                                                      │
 │  All subsequent logs automatically include traceid                          │
 │                                                                             │
@@ -362,17 +369,6 @@ lokiTransport({
 
 # Logs from specific context
 {job="nestjs"} | json | context="OrderService.createOrder"
-```
-
-## Request Scoped
-
-The logger is **request-scoped** (`Scope.REQUEST`), meaning each request gets its own logger instance with isolated bindings (traceid, context, etc).
-
-```typescript
-@Injectable({ scope: Scope.REQUEST })
-export class LoggerService implements ILoggerAdapter {
-  // Each request has isolated logger state
-}
 ```
 
 ## Related

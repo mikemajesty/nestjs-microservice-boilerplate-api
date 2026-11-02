@@ -25,14 +25,12 @@ export class CatDeleteUsecase implements IUsecase {
       throw new ApiNotFoundException()
     }
 
-    const entity = new CatEntity(cat)
+    cat.deactivate()
 
-    entity.deactivate()
-
-    await this.catRepository.softRemove({ id: entity.id })
+    await this.catRepository.softRemove({ id: cat.id })
     tracing.logEvent('cat-deleted', { action: 'deleted', by: user.id, entity: id })
 
-    return entity.toObject()
+    return cat.toData()
   }
 }
 

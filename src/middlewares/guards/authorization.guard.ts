@@ -52,7 +52,7 @@ export class AuthorizationGuard implements CanActivate {
     const hasPermission = permissions.has(requiredPermission)
 
     if (!hasPermission) {
-      const appContext = `${context.getClass().name}/${context.getHandler().name}`
+      const appContext = `${context.getClass().name}.${context.getHandler().name}`
       const permission = this.reflector.get(PERMISSION_GUARD, context.getHandler())
       finishTracing(request, ApiForbiddenException.STATUS, ApiForbiddenException.name)
       throw new ApiForbiddenException(DefaultErrorMessage[ApiForbiddenException.STATUS], {

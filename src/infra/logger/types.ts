@@ -3,6 +3,7 @@ import { IncomingHttpHeaders, IncomingMessage, ServerResponse } from 'node:http'
 import { HttpLogger, Options, ReqId } from 'pino-http'
 
 import { BaseException } from '@/utils/exception'
+import { TraceIdField } from '@/utils/request'
 import { AnyType } from '@/utils/types'
 
 export type MessageInputType = {
@@ -21,7 +22,7 @@ export type AppLoggerRequest = IncomingMessage & {
   id: ReqId
   context?: string
   protocol?: string
-  headers: IncomingHttpHeaders & { traceid?: string | string[] }
+  headers: IncomingHttpHeaders & Partial<TraceIdField>
 }
 
 export type AppLoggerResponse = ServerResponse<IncomingMessage>

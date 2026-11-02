@@ -1,12 +1,19 @@
-# ConvertMongooseFilter Decorator (Repository Layer)
+# TransformMongooseSearch Decorator (Repository Layer)
 
 Transforms **manual, complex MongoDB query construction** into elegant, type-safe, automatic filter validation and query generation for **Repository layer** with built-in regex optimization, case-insensitive search, and MongoDB-specific operators.
 
-> **Note:** This decorator is different from `ConvertMongoFilterToBaseRepository` (see [convert-mongoose-filter.md](convert-mongoose-filter.md)). Use **ConvertMongooseFilter** in Module Repositories (builds $or/$and queries) and **ConvertMongoFilterToBaseRepository** in Base Repository/Infra (flattens nested objects).
+> **Note:** This decorator is different from `NormalizeMongoFilter` (see [convert-mongoose-filter.md](convert-mongoose-filter.md)). Use **TransformMongooseSearch** in Module Repositories (builds $or/$and queries) and **NormalizeMongoFilter** in Base Repository/Infra (flattens nested objects).
 
 ## The Problem: Manual MongoDB Filter Construction in Repositories
 
-### ❌ **Without ConvertMongooseFilter - Manual Nightmare**
+Current search composition uses AND between fields and OR between alternatives
+of the same field. Equality arrays use `$in`; an empty equality array matches
+no documents. Numeric equality values, including `0`, are processed without
+regex conversion. Regex conversion is limited to `like` filters.
+Empty `like` arrays continue to be ignored. Existing regex syntax, accent
+handling, formats, and special `id` mapping are unchanged.
+
+### ❌ **Without TransformMongooseSearch - Manual Nightmare**
 
 ```typescript
 // UGLY: Manual MongoDB query construction at repository level
@@ -75,15 +82,15 @@ export class CatRepository {
 
 ---
 
-## The Solution: ConvertMongooseFilter Decorator
+## The Solution: TransformMongooseSearch Decorator
 
-### ✅ **With ConvertMongooseFilter - Clean & Type-Safe**
+### ✅ **With TransformMongooseSearch - Clean & Type-Safe**
 
 ```typescript
-import { ConvertMongooseFilter, SearchTypeEnum } from '@/utils/decorators'
+import { TransformMongooseSearch, SearchTypeEnum } from '@/utils/decorators'
 
 export class CatRepository {
-  @ConvertMongooseFilter<CatEntity>([
+  @TransformMongooseSearch<CatEntity>([
     { name: 'name', type: SearchTypeEnum.like },
     { name: 'breed', type: SearchTypeEnum.like },
     { name: 'age', type: SearchTypeEnum.equal, format: 'number' }
@@ -131,7 +138,7 @@ interface AllowedFilter<T> {
 
 ```typescript
 export class UserRepository {
-  @ConvertMongooseFilter<UserEntity>([
+  @TransformMongooseSearch<UserEntity>([
     { name: 'name', type: SearchTypeEnum.like },
     { name: 'email', type: SearchTypeEnum.like },
     { name: 'status', type: SearchTypeEnum.equal },
@@ -168,7 +175,7 @@ export class UserRepository {
 
 ```typescript
 export class ProductRepository {
-  @ConvertMongooseFilter<ProductEntity>([
+  @TransformMongooseSearch<ProductEntity>([
     { name: 'category', type: SearchTypeEnum.equal },
     { name: 'brand', type: SearchTypeEnum.like }
   ])
@@ -206,7 +213,7 @@ export class ProductRepository {
 
 ```typescript
 export class OrderRepository {
-  @ConvertMongooseFilter<OrderEntity>([
+  @TransformMongooseSearch<OrderEntity>([
     { name: 'customer', type: SearchTypeEnum.like, map: 'customer.name' },
     { name: 'total', type: SearchTypeEnum.equal, format: 'number' }
   ])
@@ -218,25 +225,25 @@ export class OrderRepository {
 
 ---
 
-## Difference from ConvertMongoFilterToBaseRepository
+## Difference from NormalizeMongoFilter
 
 | Decorator | Layer | Purpose |
 |-----------|-------|---------|
-| **ConvertMongooseFilter** | Module Repository | Validates filters, builds $or/$and, applies regex |
-| **ConvertMongoFilterToBaseRepository** | Base Repository (Infra) | Flattens nested objects, handles id→_id |
+| **TransformMongooseSearch** | Module Repository | Validates filters, builds $or/$and, applies regex |
+| **NormalizeMongoFilter** | Base Repository (Infra) | Flattens nested objects, handles id→_id |
 
 **Use both together:**
 
 ```typescript
 // Module Repository - validates and builds query
 export class CatRepository {
-  @ConvertMongooseFilter<CatEntity>([...])
+  @TransformMongooseSearch<CatEntity>([...])
   async paginate(input) { ... }
 }
 
 // Base Repository (Infra) - normalizes for MongoDB
 export class MongoRepository {
-  @ConvertMongoFilterToBaseRepository()
+  @NormalizeMongoFilter()
   async find(filter) { ... }
 }
 
@@ -266,4 +273,4 @@ When an invalid filter is provided:
 | $or/$and Handling | Manual push/cleanup | Automatic |
 | ID Conversion | Often forgotten | Automatic |
 
-**ConvertMongooseFilter** - *MongoDB query construction that just works.*
+**TransformMongooseSearch** - *MongoDB query construction that just works.*

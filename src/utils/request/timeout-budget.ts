@@ -1,0 +1,63 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/infra/timeout-budget.md
+ */
+
+import { ApiInternalServerException } from '@/utils/exception'
+import { ObjectUtils } from '@/utils/object'
+import { RequestDeadline } from '@/utils/request/deadline'
+
+import { SecretsSchema } from '../../infra/secrets/schema'
+
+export class TimeoutBudget {
+  private static readonly DEPENDENCY_SAFETY_MARGIN_MS = 1000
+
+  static readonly HTTP_REQUEST_TIMEOUT_MS = TimeoutBudget.resolveHttpRequestTimeoutMs(
+    process.env.HTTP_REQUEST_TIMEOUT_MS
+  )
+
+  static readonly DEPENDENCY_TIMEOUT_MS = TimeoutBudget.resolveDependencyTimeoutMs()
+
+  private static resolveHttpRequestTimeoutMs(httpRequestTimeoutMs: string | undefined): number {
+    const schema = SecretsSchema().pick({
+      HTTP_REQUEST_TIMEOUT_MS: true
+    })
+
+    const { HTTP_REQUEST_TIMEOUT_MS } = schema.parse({
+      HTTP_REQUEST_TIMEOUT_MS: httpRequestTimeoutMs
+    })
+
+    return HTTP_REQUEST_TIMEOUT_MS
+  }
+
+  private static resolveDependencyTimeoutMs(): number {
+    const dependencyTimeoutMs = Math.max(
+      TimeoutBudget.HTTP_REQUEST_TIMEOUT_MS - TimeoutBudget.DEPENDENCY_SAFETY_MARGIN_MS,
+      1000
+    )
+
+    if (dependencyTimeoutMs >= TimeoutBudget.HTTP_REQUEST_TIMEOUT_MS) {
+      const dependencyTimeoutName = ObjectUtils.nameOf<typeof TimeoutBudget>('DEPENDENCY_TIMEOUT_MS')
+      const requestTimeoutName = ObjectUtils.nameOf<typeof TimeoutBudget>('HTTP_REQUEST_TIMEOUT_MS')
+
+      throw new ApiInternalServerException(
+        `timeout-budget: ${dependencyTimeoutName} (${dependencyTimeoutMs}) must be lower than ${requestTimeoutName} (${TimeoutBudget[requestTimeoutName]}). ` +
+          `adjust ${requestTimeoutName} or the dependency safety margin.`
+      )
+    }
+
+    return dependencyTimeoutMs
+  }
+
+  /**
+   * Resolves the effective timeout for an outbound dependency (HTTP retry/timeout, etc).
+   * When a `RequestDeadline` is provided (there is an inbound HTTP request in progress),
+   * returns the lower value between its remaining time and `DEPENDENCY_TIMEOUT_MS` — a
+   * dependency can only ever get less time than the ceiling, never more. Falls back to
+   * `DEPENDENCY_TIMEOUT_MS` when there's no deadline in context (e.g. jobs/cron/scripts).
+   */
+  static getDependencyTimeoutMs(deadline?: RequestDeadline): number {
+    if (!deadline) return TimeoutBudget.DEPENDENCY_TIMEOUT_MS
+
+    return deadline.getTimeoutMs(TimeoutBudget.DEPENDENCY_TIMEOUT_MS)
+  }
+}

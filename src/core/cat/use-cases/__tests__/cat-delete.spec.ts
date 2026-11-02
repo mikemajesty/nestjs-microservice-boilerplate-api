@@ -58,14 +58,14 @@ describe(CatDeleteUsecase.name, () => {
   })
 
   const mock = new ZodMockSchema(CatEntitySchema)
-  const input = mock.generate<CatEntity>()
+  const input = mock.generate({ factory: (data) => new CatEntity(data) })
 
   test('when cat deleted successfully, should expect a cat deleted', async () => {
-    repository.findById = TestUtils.mockResolvedValue<CatEntity>(input)
+    repository.findById = TestUtils.mockResolvedValue<CatEntity>(input.clone())
     repository.softRemove = TestUtils.mockResolvedValue<CatEntity>()
 
     await expect(usecase.execute({ id: MockUtils.UUID() }, MockUtils.Tracing())).resolves.toEqual({
-      ...input,
+      ...input.toData(),
       deletedAt: expect.any(Date),
       updatedAt: expect.any(Date)
     })

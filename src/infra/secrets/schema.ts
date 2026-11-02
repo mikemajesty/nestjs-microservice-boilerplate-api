@@ -13,7 +13,8 @@ export const SecretsSchema = () =>
       .transform((p) => Number(p))
       .refine((timeout) => Number.isInteger(timeout) && timeout > 0, {
         message: 'timeoutMustBePositiveInteger'
-      }),
+      })
+      .default(5000),
     HOST: InputValidator.string(),
     IS_LOCAL: InputValidator.boolean(),
     IS_DOCUMENTDB: InputValidator.boolean().optional(),

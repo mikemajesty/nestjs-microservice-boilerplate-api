@@ -9,6 +9,7 @@ import { ISecretsAdapter, SecretsModule } from '@/infra/secrets'
 
 import { name } from '../../../../package.json'
 import { PostgresConnectionName } from '../enum'
+import { POSTGRES_POOL_OPTIONS } from './pool-options'
 import { PostgresService } from './service'
 
 const logger = new LoggerService()
@@ -24,8 +25,7 @@ const logger = new LoggerService()
         )
         return {
           ...conn,
-          timeout: 5000,
-          connectTimeout: 5000,
+          connectTimeoutMS: 10000,
           logging: false,
           autoLoadEntities: true,
           namingStrategy: new SnakeNamingStrategy(),
@@ -35,10 +35,7 @@ const logger = new LoggerService()
           entities: [path.join(__dirname, '/schemas/*.{ts,js}')],
           applicationName: name,
           extra: {
-            connectionTimeoutMillis: 10000,
-            idleTimeoutMillis: 30000,
-            max: 90,
-            min: 10
+            ...POSTGRES_POOL_OPTIONS
           }
         }
       },

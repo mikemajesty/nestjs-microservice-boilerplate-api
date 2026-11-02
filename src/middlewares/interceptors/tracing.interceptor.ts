@@ -11,13 +11,9 @@ import opentelemetry, {
   TimeInput,
   Tracer
 } from '@opentelemetry/api'
-import axios, { AxiosInstance, AxiosRequestConfig } from 'axios'
-import axiosBetterStacktrace from 'axios-better-stacktrace'
 import { Observable, tap } from 'rxjs'
 
-import { ILoggerAdapter } from '@/infra/logger'
-import { AxiosUtils } from '@/utils/axios'
-import { AppFastifyRequest, generalizePath, TracingType } from '@/utils/request'
+import { AppFastifyRequest, generalizePath, TRACEID_HEADER, TracingType } from '@/utils/request'
 
 import { name, version } from '../../../package.json'
 
@@ -25,7 +21,7 @@ import { name, version } from '../../../package.json'
 export class TracingInterceptor implements NestInterceptor {
   private tracer: Tracer
 
-  constructor(private readonly logger: ILoggerAdapter) {
+  constructor() {
     this.tracer = opentelemetry.trace.getTracer(name, version)
   }
 
@@ -33,7 +29,7 @@ export class TracingInterceptor implements NestInterceptor {
     const request = executionContext.switchToHttp().getRequest<AppFastifyRequest>()
     const res = executionContext.switchToHttp().getResponse()
 
-    const requestId = request.headers.traceid ?? request.id
+    const requestId = request.headers[TRACEID_HEADER] ?? request.id
 
     const controller = `${executionContext.getClass().name}.${executionContext.getHandler().name}`
     const requestPath = request.url.split('?')[0]
@@ -44,29 +40,7 @@ export class TracingInterceptor implements NestInterceptor {
       return {
         span,
         tracer: this.tracer,
-        tracerId: requestId,
-        axios: (options?: Omit<AxiosRequestConfig, 'headers'>): AxiosInstance => {
-          request.headers.traceid = requestId
-
-          const http = axios.create({
-            ...options,
-            headers: { traceid: requestId, authorization: request.headers.authorization }
-          })
-
-          axiosBetterStacktrace(http)
-
-          AxiosUtils.requestRetry({ axios: http, logger: this.logger })
-
-          http.interceptors.response.use(
-            (response) => response,
-            (error) => {
-              AxiosUtils.interceptAxiosResponseError(error)
-              return Promise.reject(error)
-            }
-          )
-
-          return http
-        },
+        [TRACEID_HEADER]: requestId,
         setStatus: (status: SpanStatus) => {
           span.setStatus(status)
         },
@@ -92,7 +66,7 @@ export class TracingInterceptor implements NestInterceptor {
     request.tracing.addAttribute('context', controller)
 
     if (requestId) {
-      request.tracing.addAttribute('traceid', requestId)
+      request.tracing.addAttribute(TRACEID_HEADER, requestId)
     }
 
     return next.handle().pipe(

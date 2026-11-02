@@ -68,16 +68,18 @@ describe(UserUpdateUsecase.name, () => {
   })
 
   const roleMock = new ZodMockSchema(RoleEntitySchema)
-  const roles = roleMock.generateMany<RoleEntity>(3, {
+  const roles = roleMock.generateMany(3, {
     overrides: {
       permissions: []
-    }
+    },
+    factory: (data) => new RoleEntity(data)
   })
   const userMock = new ZodMockSchema(UserEntitySchema)
-  const user = userMock.generate<UserEntity>({
+  const user = userMock.generate({
     overrides: {
       roles
-    }
+    },
+    factory: (data) => new UserEntity(data)
   })
 
   const userUpdateMock = new ZodMockSchema(UserUpdateSchema)
@@ -95,7 +97,7 @@ describe(UserUpdateUsecase.name, () => {
   const role = new RoleEntity({ id: IDGeneratorUtils.uuid(), name: RoleEnum.USER })
 
   test('when user already exists, should expect an error', async () => {
-    repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(user)
+    repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(user.clone())
     repository.existsOnUpdate = TestUtils.mockResolvedValue<boolean>(true)
     roleRepository.findIn = TestUtils.mockResolvedValue<RoleEntity[]>([role])
 
@@ -103,29 +105,29 @@ describe(UserUpdateUsecase.name, () => {
   })
 
   test('when role not found, should expect an error', async () => {
-    repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(user)
+    repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(user.clone())
     roleRepository.findIn = TestUtils.mockResolvedValue<RoleEntity[]>([])
 
     await expect(usecase.execute(input, MockUtils.Tracing())).rejects.toThrow(ApiNotFoundException)
   })
 
   test('when user updated successfully, should expect a user updated', async () => {
-    repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(user)
+    repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(user.clone())
     repository.existsOnUpdate = TestUtils.mockResolvedValue<boolean>(false)
     roleRepository.findIn = TestUtils.mockResolvedValue<RoleEntity[]>([role])
     repository.create = TestUtils.mockResolvedValue<CreatedModel>()
-    repository.findOne = TestUtils.mockResolvedValue<UserEntity>(user)
+    repository.findOne = TestUtils.mockResolvedValue<UserEntity>(user.clone())
 
-    await expect(usecase.execute(input, MockUtils.Tracing())).resolves.toEqual(user)
+    await expect(usecase.execute(input, MockUtils.Tracing())).resolves.toEqual(user.toData())
   })
 
   test('when user role not provided, should use user role, then should expect a user updated', async () => {
-    repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(user)
+    repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(user.clone())
     repository.existsOnUpdate = TestUtils.mockResolvedValue<boolean>(false)
     roleRepository.findIn = TestUtils.mockResolvedValue<RoleEntity[]>([role])
     repository.create = TestUtils.mockResolvedValue<CreatedModel>()
-    repository.findOne = TestUtils.mockResolvedValue<UserEntity>(user)
+    repository.findOne = TestUtils.mockResolvedValue<UserEntity>(user.clone())
 
-    await expect(usecase.execute({ id: user.id }, MockUtils.Tracing())).resolves.toEqual(user)
+    await expect(usecase.execute({ id: user.id }, MockUtils.Tracing())).resolves.toEqual(user.toData())
   })
 })
