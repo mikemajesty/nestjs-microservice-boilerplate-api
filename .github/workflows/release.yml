@@ -172,7 +172,7 @@ jobs:
           gh pr create \
             --base master \
             --head "changelog/${TAG}" \
-            --title "📝 Changelog for ${TAG}" \
+            --title "docs(changelog): update changelog for ${TAG}" \
             --body "This PR adds the changelog for release \`${TAG}\`."
 
       - name: Workflow summary
