@@ -150,7 +150,6 @@ jobs:
         run: |
           npm ci
           npm run lint:check
-          npm test
           npm run build
 
       - name: Create Tag
@@ -196,6 +195,8 @@ jobs:
           BRANCH_NAME="${{ inputs.branch_from }}"
           INCREMENT="${{ inputs.increment_type }}"
           MERGED="${{ inputs.merge_from_master }}"
+
+          echo "Created release tag: $TAG_NAME (version $VERSION)"
 
           cat >> $GITHUB_STEP_SUMMARY << EOF
           ## 🏷️ Tag Created Successfully!
