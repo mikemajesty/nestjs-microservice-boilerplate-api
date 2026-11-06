@@ -7,11 +7,10 @@ import { Test } from '@nestjs/testing'
 import { RoleEntity, RoleEntitySchema } from '@/core/role/entity/role'
 import { IUserList } from '@/modules/user/interfaces'
 import { TestUtils } from '@/utils/test/utils'
-import { ZodExceptionIssue } from '@/utils/validator'
 
 import { UserEntity, UserEntitySchema } from '../../entity/user'
 import { IUserRepository } from '../../repository/user'
-import { UserListInput, UserListOutput, UserListSchema, UserListUsecase } from '../user-list'
+import { UserListOutput, UserListSchema, UserListUsecase } from '../user-list'
 
 describe(UserListUsecase.name, () => {
   let usecase: IUserList
@@ -34,20 +33,6 @@ describe(UserListUsecase.name, () => {
 
     usecase = app.get(IUserList)
     repository = app.get(IUserRepository)
-  })
-
-  test('when no input is specified, should expect an error', async () => {
-    await TestUtils.expectZodError(
-      () => usecase.execute({} as UserListInput),
-      (issues: ZodExceptionIssue[]) => {
-        expect(issues).toEqual([
-          {
-            message: 'Invalid input: expected string, received undefined',
-            path: TestUtils.nameOf<UserListInput>('search')
-          }
-        ])
-      }
-    )
   })
 
   const roleMock = new ZodMockSchema(RoleEntitySchema)

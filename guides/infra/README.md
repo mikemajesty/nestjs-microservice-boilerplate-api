@@ -8,6 +8,7 @@
 src/infra/
 ├── module.ts           # Imports/exports all infra modules
 ├── cache/              # Redis + Memory cache
+├── distributed-lock/   # Redis-based distributed lock with fencing tokens
 ├── database/           # MongoDB + PostgreSQL
 ├── email/              # Email service with templates
 ├── http/               # HTTP client (Axios wrapper)
@@ -26,6 +27,7 @@ src/infra/
 | [Email](./email.md)           | [email/](../../src/infra/email/)           | Nodemailer + Handlebars templates, event-driven                      |
 | [Cache](./cache.md)           | [cache/](../../src/infra/cache/)           | ICacheAdapter for Redis and Memory (node-cache)                      |
 | [Cache Aside](./cache-aside.md) | [cache/aside/](../../src/infra/cache/aside/) | Read-through cache with batching, single-flight, and invalidation |
+| [Distributed Lock](./distributed-lock.md) | [distributed-lock/](../../src/infra/distributed-lock/) | Redis lease with owner-safe release and fencing tokens |
 | [Database](./database.md)     | [database/](../../src/infra/database/)     | Schemas and migrations for MongoDB and PostgreSQL                    |
 | [Repository](./repository.md) | [repository/](../../src/infra/repository/) | IRepository pattern for database-agnostic data access                |
 

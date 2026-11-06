@@ -33,7 +33,8 @@ import { SecretsModule } from './secrets'
     CacheRedisModule,
     CacheMemoryModule,
     EmailModule,
-    CacheAsideModule
+    CacheAsideModule,
+    DistributedLockModule
   ]
 })
 export class InfraModule {}

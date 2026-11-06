@@ -1,79 +1,199 @@
 # Test Standards
 
-Tests in `core` and `modules` have dedicated guides. For tests in other parts of
-the application, follow these shared conventions while preserving the
-unit/integration distinction.
+These are the canonical conventions for creating tests in this repository.
+Start by identifying the layer and behavior under test; do not apply a
+controller, Nest testing module, or container pattern to a test that does not
+need it.
 
-## Suite and test names
+## Test runner and shared conventions
 
-- Use `describe(ClassName.name, ...)` for a class under test.
-- For exported functions, use `describe(functionName.name, ...)`; group related
-  functions under a descriptive name only when a class/function name would be
-  misleading.
-- Name tests after the expected behavior, using `should ...` (or
-  `when ..., should ...` when the condition adds useful context).
-- Keep setup shared by scenarios in `beforeEach`/`beforeAll` instead of
-  repeating it in every test.
+- Place TypeScript tests under the corresponding source folder in
+  `src/**/__tests__/` and name them `*.spec.ts`. Jest's current config only
+  discovers `.spec.ts` files under `src`.
+- Use `describe(Class.name, ...)` for the unit under test. Add nested
+  `describe` blocks to group meaningful behaviors.
+- For new non-module tests, use `test('when ..., should ...', ...)`. Module
+  controller tests keep route-oriented names such as
+  `it('/GET /users/:id not found', ...)`.
+- Assert observable behavior and relevant outputs, not implementation details
+  that are not part of the contract.
+- Use `@see` links to the relevant test/layer guide at the top of a test file.
+- Run a focused suite with `npm test -- --runInBand path/to/file.spec.ts`.
+  The current `test/initialization.ts` checks Docker for every suite, so Docker
+  must be accessible even when running unit tests.
 
-## Unit tests
+## Shared test utilities and data
 
-- Put unit tests near the implementation in `__tests__` and name files
-  `*.spec.ts`.
-- Instantiate the class directly when a Nest testing module adds no value.
-- Use `TestUtils` for mocks, spies, and mock cleanup. Prefer typed mocks over
-  raw `jest.fn()` when mocking application dependencies.
-- Keep each test focused on observable behavior and assert relevant side
-  effects as well as the result.
+- Import `TestUtils`, `MockUtils`, `ZodMockSchema`, and related helpers from
+  `@/utils/test`. Avoid direct imports from the Zod mock library or old
+  `@/utils/test/util`, `mock`, or `containers` paths.
+- Use `TestUtils` for typed Jest mocks, Nest `mockProvider` setup, spies, and
+  validation assertions. Restore spies and clear shared mock calls in
+  `afterEach` when a suite changes global methods or reuses mock instances.
+- Use `MockUtils` for UUIDs, Mongo ObjectIds, dates, text, numbers, booleans,
+  arrays, request users, tracing input, and logger mocks. Use
+  `MockUtils.faker` for additional generated values.
+- Generated Faker values are not fixed or automatically reproducible. Use
+  literals or schema `overrides` when values determine behavior or assertions;
+  use a fixed date or spy on time for deterministic time-sensitive tests.
+- `MockUtils.Array(item)` repeats the same value/reference. Create separate
+  objects or entities explicitly when the array needs independent instances.
+- Use `MockUtils.Logger()` rather than constructing and casting partial
+  `ILoggerAdapter` objects. Its methods are Jest mocks by default; enable
+  console logging only to debug a test.
+- `ZodMockSchema` may be used in any test folder when a Zod schema describes
+  its input or fixture. Use generated values for irrelevant fields and
+  overrides for scenario-defining fields. Use `factory` for real entity
+  instances, `generateMany` for collections, and `.clone()` for independent
+  entity copies. Generated values do not replace business-invariant checks.
+- Keep invalid data intentionally invalid in validation tests; don't use a
+  generator configured to produce valid schema values for that purpose.
+
+See [TestUtils](./util.md) and [MockUtils/ZodMockSchema](./mock.md).
+
+## Core use-case tests
+
+Core tests validate business behavior with dependency ports replaced by typed
+test doubles. Follow [Core testing](../core/test.md).
+
+### Location, filename, and setup
+
+- Use `src/core/{domain}/use-cases/__tests__/`.
+- Name the file after the use-case source file, adding only `.spec.ts`:
+  `user-create.ts` → `user-create.spec.ts`.
+- Use `describe(UseCase.name, ...)`.
+- Use `@nestjs/testing` and a fresh `Test.createTestingModule(...)` in
+  `beforeEach`. Register dependency ports with `TestUtils.mockProvider(Port)`,
+  then register the use case through a `useFactory`, inject its dependencies,
+  and retrieve both the use case and its mocks from the compiled module.
+- Use a real application module only when testing module wiring is itself the
+  requirement; ordinary use-case tests should construct only the use case and
+  mocked ports they need.
+
+### Validation, fixtures, and coverage
+
+- For valid inputs to use cases decorated with `@ValidateSchema`, generate
+  data from that use case's input schema with `ZodMockSchema`.
+- Include an input-validation test for each use case. Use
+  `TestUtils.expectZodError` and assert the expected issues, including the
+  paths for invalid fields. Use `TestUtils.nameOf<Input>('field')` for each
+  path so the compiler catches renamed or mistyped input properties:
 
 ```typescript
-describe(MyService.name, () => {
-  let service: MyService
-  const load = TestUtils.mockResolvedValue<MyValue>()
+import { MockUtils, TestUtils } from '@/utils/test'
+import { ZodExceptionIssue } from '@/utils/validator'
 
-  beforeEach(() => {
-    service = new MyService({ load })
-  })
-
-  afterEach(() => {
-    TestUtils.restoreMocks()
-    TestUtils.clearMocks()
-  })
-
-  it('should return the loaded value', async () => {
-    load.mockResolvedValue(value)
-
-    await expect(service.get()).resolves.toEqual(value)
-    expect(load).toHaveBeenCalledTimes(1)
-  })
-})
+await TestUtils.expectZodError(
+  () => usecase.execute({} as CatCreateInput, MockUtils.Tracing()),
+  (issues: ZodExceptionIssue[]) => {
+    expect(issues).toEqual([
+      {
+        message: 'Invalid input: expected string, received undefined',
+        path: TestUtils.nameOf<CatCreateInput>('name')
+      },
+      {
+        message: 'Invalid input: expected string, received undefined',
+        path: TestUtils.nameOf<CatCreateInput>('breed')
+      },
+      {
+        message: 'Invalid input: expected number, received undefined',
+        path: TestUtils.nameOf<CatCreateInput>('age')
+      }
+    ])
+  }
+)
 ```
 
-## Integration tests
+Keep the issue ordering/messages aligned with the actual schema and validator.
+When wording is intentionally not part of the contract, assert messages with
+an appropriate matcher while still checking every relevant path. See
+[TestUtils](./util.md) for the helper's failure behavior.
+- Generate entity fixtures from entity schemas. Supply `factory` when the
+  tested behavior depends on entity methods. Override relationships and
+  values relevant to each scenario; clone when mutation or independent state
+  matters.
+- Cover success, validation, dependency failures, and business edge cases.
+- Configure return values in the test scenario with `TestUtils` methods such
+  as `mockResolvedValue`, `mockRejectedValue`, `mockReturnValue`, and
+  `mockImplementation`.
 
-- Exercise the real boundary being tested: use a local server for HTTP behavior
-  or the existing test containers for infrastructure dependencies.
-- Keep infrastructure setup and teardown in lifecycle hooks, and isolate test
+## Module controller HTTP tests
+
+Module tests verify HTTP behavior and real Nest module wiring. Follow
+[Module controller tests](../modules/test.md).
+
+- Use `src/modules/{domain}/__tests__/controller.spec.ts`, including HTTP and
+  end-to-end coverage. Do not name this `controller.e2e.spec.ts`.
+- Use `describe(Controller.name, ...)` and route-oriented case names.
+- Use `@nestjs/testing` with the real module, guards, and required database
+  modules. Override only dependencies intentionally replaced by the test.
+- Start only the required containers in `beforeAll`; use
+  `TestEnd2EndUtils.getPostgresModule` and `TestEnd2EndUtils.createApp` for the
+  established PostgreSQL/Fastify setup.
+- Use the fixture classes in `src/utils/test/e2e/fixtures/` for shared DB
+  records and `FixtureUtils.addBaseSeeds` for related base data.
+- Seed per-test state in `beforeEach`, clean per-test state in `afterEach`,
+  and release app/clients/connections/containers in `afterAll`.
+- Use Supertest with `app.getHttpServer()` and
+  `TestEnd2EndUtils.AUTHORIZATION_HEADER` for authenticated routes.
+- Generate schema-valid payloads with `ZodMockSchema`; assert status and
+  relevant response fields, using `TestUtils.nameOf<Output>('field')`.
+
+## Other folders
+
+Use the pattern appropriate to the unit under test; these folders do not
+automatically require a Nest test module or HTTP server.
+
+### Infrastructure (`src/infra`)
+
+- Place tests beside the infrastructure service/adapter under
+  `src/infra/{area}/__tests__/`.
+- If both levels exist, use `unit.spec.ts` for isolated service behavior and
+  `integration.spec.ts` for real dependency/infrastructure behavior. If there
+  is only one focused suite, use a descriptive source-based name such as
+  `service.spec.ts` or `util.spec.ts`.
+- Unit tests should instantiate the service directly and replace only its
+  dependency boundary with `TestUtils` mocks. Do not add a Nest test module
+  unless Nest DI behavior is under test.
+- Integration tests should exercise the real adapter/dependency. Use
+  Testcontainers for real MongoDB, PostgreSQL, or Redis; close direct clients,
+  Mongoose connections, TypeORM data sources, and the Nest app as applicable.
+- Isolate and clean test state between cases. Use targeted deletes or
+  suite-owned `flushdb()` for Redis; never flush a shared external service.
+- An HTTP client may use a local scripted HTTP server for integration tests;
+  use `beforeAll`/`afterAll` to start/close it and reset its request/reply
   state between cases.
-- Use small helpers or fixtures for repeated setup; do not mock away the
-  boundary whose integration behavior the test is meant to verify.
-- Use the same suite naming, behavior naming, and `@see` conventions as unit
-  tests.
 
-## Documentation reference
+### Utilities, decorators, and middleware
 
-Add a top-of-file `@see` pointing to both this guide and the documentation for
-the component being tested:
+- Place utility tests in `src/utils/__tests__/`, decorator tests in
+  `src/utils/decorators/__tests__/`, and middleware tests beside their
+  middleware under `src/middlewares/**/__tests__/`.
+- Use a descriptive filename matching the tested source unit, such as
+  `deadline.spec.ts` or `request-timeout.interceptor.spec.ts`.
+- Call pure utilities directly. Invoke decorators through a small local class
+  and assert the behavior of the decorated method. For guards/interceptors,
+  create typed minimal execution contexts and handlers; use Nest testing
+  utilities only when DI or framework wiring is part of the behavior.
+- Restore spies and reset shared mocks/global state after each case. Use
+  deterministic clocks and controlled observables/promises for timing and
+  concurrency behavior.
 
-```typescript
-/**
- * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/tests/standards.md
- * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/infra/http.md
- */
-```
+## Testcontainers and cleanup
+
+Use the wrappers from `@/utils/test/e2e/containers`, not direct container
+construction, unless a test explicitly requires a different image or setup.
+The wrapper APIs and their connection-cleanup requirements are documented in
+[Testcontainers](./containers.md).
+
+Always clean resources owned by the test. A container's `close()` does not
+close every separately created database connection/data source; release those
+clients too. Do not rely on `forceExit` to hide open handles or leaked state.
 
 ## Related
 
-- [Core testing](../core/test.md)
-- [Module testing](../modules/test.md)
-- [Test utilities](./util.md)
+- [Core use-case tests](../core/test.md)
+- [Module controller tests](../modules/test.md)
+- [TestUtils](./util.md)
+- [MockUtils and ZodMockSchema](./mock.md)
 - [Testcontainers](./containers.md)

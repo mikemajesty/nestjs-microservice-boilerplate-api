@@ -3,8 +3,8 @@
  */
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common'
 import opentelemetry, {
+  AnyValue,
   Attributes,
-  AttributeValue,
   Context,
   SpanStatus,
   SpanStatusCode,
@@ -47,7 +47,7 @@ export class TracingInterceptor implements NestInterceptor {
         logEvent: (key, value) => {
           span.addEvent(key, value as Attributes | TimeInput)
         },
-        addAttribute: (key: string, value: AttributeValue) => {
+        addAttribute: (key: string, value: AnyValue) => {
           span.setAttribute(key, value)
         },
         finish: () => {

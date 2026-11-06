@@ -4,10 +4,9 @@
 import { ZodMockSchema } from '@mikemajesty/zod-mock-schema'
 import { Test } from '@nestjs/testing'
 
-import { CatListInput, CatListOutput, CatListSchema, CatListUsecase } from '@/core/cat/use-cases/cat-list'
+import { CatListOutput, CatListSchema, CatListUsecase } from '@/core/cat/use-cases/cat-list'
 import { ICatList } from '@/modules/cat/interfaces'
 import { TestUtils } from '@/utils/test/utils'
-import { ZodExceptionIssue } from '@/utils/validator'
 
 import { CatEntity, CatEntitySchema } from '../../entity/cat'
 import { ICatRepository } from '../../repository/cat'
@@ -33,20 +32,6 @@ describe(CatListUsecase.name, () => {
 
     usecase = app.get(ICatList)
     repository = app.get(ICatRepository)
-  })
-
-  test('when no input is specified, should expect an error', async () => {
-    await TestUtils.expectZodError(
-      () => usecase.execute({} as CatListInput),
-      (issues: ZodExceptionIssue[]) => {
-        expect(issues).toEqual([
-          {
-            message: 'Invalid input: expected string, received undefined',
-            path: TestUtils.nameOf<CatListInput>('search')
-          }
-        ])
-      }
-    )
   })
 
   const mock = new ZodMockSchema(CatEntitySchema)

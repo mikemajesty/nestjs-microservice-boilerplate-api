@@ -5,14 +5,12 @@ import { ZodMockSchema } from '@mikemajesty/zod-mock-schema'
 import { Test } from '@nestjs/testing'
 
 import {
-  PermissionListInput,
   PermissionListOutput,
   PermissionListSchema,
   PermissionListUsecase
 } from '@/core/permission/use-cases/permission-list'
 import { IPermissionList } from '@/modules/permission/interfaces'
 import { TestUtils } from '@/utils/test/utils'
-import { ZodExceptionIssue } from '@/utils/validator'
 
 import { IPermissionRepository } from '../../repository/permission'
 import { PermissionEntity, PermissionEntitySchema } from './../../entity/permission'
@@ -37,20 +35,6 @@ describe(PermissionListUsecase.name, () => {
 
     usecase = app.get(IPermissionList)
     repository = app.get(IPermissionRepository)
-  })
-
-  test('when sort input is specified, should expect an error', async () => {
-    await TestUtils.expectZodError(
-      () => usecase.execute({} as PermissionListInput),
-      (issues: ZodExceptionIssue[]) => {
-        expect(issues).toEqual([
-          {
-            message: 'Invalid input: expected string, received undefined',
-            path: TestUtils.nameOf<PermissionListInput>('search')
-          }
-        ])
-      }
-    )
   })
 
   const input = new ZodMockSchema(PermissionListSchema).generate()

@@ -1,481 +1,155 @@
-# Test Containers
+# Testcontainers
 
-Real infrastructure testing with Docker containers that eliminate the need for mocking databases and external services. Uses [Testcontainers](https://testcontainers.com/) to provide **isolated, reproducible integration and end-to-end tests** with actual database instances.
+The project wrappers in `src/utils/test/e2e/containers.ts` start real MongoDB,
+PostgreSQL and Redis containers. Use them for integration tests that need real
+infrastructure; unit tests should not start containers.
 
-## Why Testcontainers is a Game Changer
+The current Jest setup runs `test/initialization.ts` for every suite, and that
+file checks that Docker is accessible. Therefore, **with the current setup,
+even unit-test runs require Docker to be running**. Container tests also need
+the database environment variables described below.
 
-### The Mocking Problem
-
-Traditional integration testing relies on mocks that don't reflect real-world behavior:
-
-```typescript
-// ❌ MOCKED TESTING: Doesn't catch real database issues
-const mockRepository = {
-  save: jest.fn().mockResolvedValue({ id: '123' }),
-  findById: jest.fn().mockResolvedValue(mockUser)
-}
-
-// Tests pass but may fail in production with:
-// - Database constraint violations
-// - Connection pool issues
-// - Query performance problems
-// - Transaction isolation issues
-```
-
-### Real Infrastructure Testing
-
-Testcontainers solves this by providing **actual database instances** in containers:
+Import wrappers from:
 
 ```typescript
-// ✅ REAL TESTING: Catches actual database behavior
-const mongoContainer = new TestMongoContainer()
-const { mongoConnection } = await mongoContainer.getTestMongo(ConnectionName.USER)
-
-// Tests run against real MongoDB with:
-// - Actual query execution
-// - Real indexing behavior
-// - Genuine constraint enforcement
-// - Transaction consistency
-```
-
-## Available Containers
-
-### MongoDB Container
-
-Perfect for testing document-based operations, aggregations, and text search:
-
-```typescript
-import { TestMongoContainer } from '@/utils/test/e2e/containers'
-
-describe('User Repository Integration', () => {
-  let mongoContainer: TestMongoContainer
-  let userRepository: UserRepository
-
-  beforeAll(async () => {
-    mongoContainer = new TestMongoContainer()
-    const { mongoConnection } = await mongoContainer.getTestMongo(ConnectionName.USER)
-
-    userRepository = new UserRepository(mongoConnection.model('User', userSchema))
-  })
-
-  afterAll(async () => {
-    await mongoContainer.close()
-  })
-
-  it('should save and retrieve user with complex data', async () => {
-    const userData = {
-      id: TestUtils.getMockUUID(),
-      name: 'John Doe',
-      email: 'john@example.com',
-      profile: {
-        preferences: {
-          theme: 'dark',
-          language: 'pt-BR'
-        },
-        metadata: {
-          lastLogin: new Date(),
-          loginCount: 5
-        }
-      }
-    }
-
-    // Test actual MongoDB operations
-    await userRepository.save(new UserEntity(userData))
-    const foundUser = await userRepository.findById(userData.id)
-
-    expect(foundUser).toBeDefined()
-    expect(foundUser.profile.preferences.theme).toBe('dark')
-    expect(foundUser.profile.metadata.loginCount).toBe(5)
-  })
-
-  it('should handle MongoDB text search', async () => {
-    await userRepository.save(
-      new UserEntity({
-        id: '1',
-        name: 'João Silva',
-        email: 'joao@example.com'
-      })
-    )
-    await userRepository.save(
-      new UserEntity({
-        id: '2',
-        name: 'Maria Santos',
-        email: 'maria@example.com'
-      })
-    )
-
-    // Test MongoDB text search capabilities
-    const results = await userRepository.searchByText('João')
-    expect(results).toHaveLength(1)
-    expect(results[0].name).toBe('João Silva')
-  })
-})
-```
-
-### PostgreSQL Container
-
-Ideal for testing relational data, constraints, transactions, and complex queries:
-
-```typescript
-import { ICacheAdapter } from '@/infra/cache'
-import { TestPostgresContainer, TestRedisContainer } from '@/utils/test/e2e/containers'
-import { TestEnd2EndUtils } from '@/utils/test/e2e/utils'
-
-describe('Order Service Integration', () => {
-  let app: INestApplication
-  let redisService: ICacheAdapter
-
-  const postgresContainer = new TestPostgresContainer()
-  const redisContainer = new TestRedisContainer()
-
-  beforeAll(async () => {
-    const { postgresConfig } = await postgresContainer.getPostgres()
-    redisService = await redisContainer.getTestRedis()
-
-    const moduleRef = await Test.createTestingModule({
-      imports: [OrderModule, TestEnd2EndUtils.getPostgresModule(postgresContainer, postgresConfig)]
-    })
-      .overrideProvider(IOrderRepository)
-      .useFactory({
-        factory(repository: Repository<OrderModel>) {
-          return new OrderRepository(repository)
-        },
-        inject: [getRepositoryToken(OrderSchema)]
-      })
-      .overrideProvider(ICacheAdapter)
-      .useValue(redisService)
-      .compile()
-
-    app = moduleRef.createNestApplication()
-    await app.init()
-  })
-
-  afterAll(async () => {
-    await postgresContainer.close()
-    await redisContainer.close()
-    await app.close()
-  })
-
-  it('should create an order', async () => {
-    const response = await request(app.getHttpServer())
-      .post('/orders')
-      .send({ customerId: TestUtils.getMockUUID(), total: 99.99 })
-      .expect(201)
-
-    expect(response.body).toHaveProperty('id')
-    expect(response.body).toHaveProperty('created', true)
-  })
-
-  it('should enforce unique constraints', async () => {
-    const response = await request(app.getHttpServer()).post('/orders').send({ customerId: 'invalid-id', total: 0 })
-    expect(response.status).toBe(400)
-  })
-})
-```
-
-### Redis Container
-
-Perfect for testing caching, session management, and real-time features:
-
-```typescript
-import { ICacheAdapter } from '@/infra/cache'
-import { TestRedisContainer } from '@/utils/test/e2e/containers'
-
-describe('Cache Service Integration', () => {
-  let redisContainer: TestRedisContainer
-  let cacheService: ICacheAdapter
-
-  beforeAll(async () => {
-    redisContainer = new TestRedisContainer()
-    cacheService = await redisContainer.getTestRedis()
-  })
-
-  afterAll(async () => {
-    await redisContainer.close()
-  })
-
-  it('should cache and retrieve a value', async () => {
-    const key = 'user:profile:123'
-    const value = JSON.stringify({ id: '123', name: 'John Doe' })
-
-    await cacheService.set(key, value)
-    const cached = await cacheService.get(key)
-
-    expect(cached).toBe(value)
-  })
-
-  it('should return null for a missing key', async () => {
-    const result = await cacheService.get('non:existent:key')
-    expect(result).toBeNull()
-  })
-
-  it('should delete a key', async () => {
-    const key = 'temp:data'
-    await cacheService.set(key, 'value')
-    await cacheService.del(key)
-    expect(await cacheService.get(key)).toBeNull()
-  })
-})
-```
-
-## End-to-End Testing with Multiple Containers
-
-```typescript
-import { ICacheAdapter } from '@/infra/cache'
 import { TestMongoContainer, TestPostgresContainer, TestRedisContainer } from '@/utils/test/e2e/containers'
-import { TestEnd2EndUtils } from '@/utils/test/e2e/utils'
-
-describe(CatController.name, () => {
-  let app: INestApplication
-  let redisService: ICacheAdapter
-
-  const mongoContainer = new TestMongoContainer()
-  const postgresContainer = new TestPostgresContainer()
-  const redisContainer = new TestRedisContainer()
-
-  beforeAll(async () => {
-    const { mongoConnection } = await mongoContainer.getTestMongo(ConnectionName.CATS)
-    const { postgresConfig } = await postgresContainer.getPostgres()
-    redisService = await redisContainer.getTestRedis()
-
-    const moduleRef = await Test.createTestingModule({
-      imports: [CatModule, TestEnd2EndUtils.getPostgresModule(postgresContainer, postgresConfig)]
-    })
-      .overrideProvider(ICatRepository)
-      .useFactory({
-        factory() {
-          const repository = mongoConnection.model<CatDocument, PaginateModel<CatDocument>>(
-            Cat.name,
-            CatSchema as Schema
-          )
-          return new CatRepository(repository)
-        }
-      })
-      .overrideProvider(ICacheAdapter)
-      .useValue(redisService)
-      .compile()
-
-    app = moduleRef.createNestApplication()
-    await app.init()
-  })
-
-  afterAll(async () => {
-    await mongoContainer.close()
-    await redisContainer.close()
-    await postgresContainer.close()
-    await app.close()
-  })
-})
 ```
 
-## Configuration Management
+## Resource lifecycle
 
-### Environment Variables
-
-Containers automatically use environment variables for database names:
+Create one container wrapper per suite, start it in `beforeAll`, isolate test
+state between cases, and stop resources in `afterAll`. Container `close()`
+stops the Docker container; it does not close every client created from it.
+Close direct database connections and data sources explicitly as well.
 
 ```typescript
-// Required environment variables
-MONGO_DATABASE = test_app_db
-POSTGRES_DATABASE = test_app_db
-
-// Containers use these for consistent naming
-const mongoContainer = new TestMongoContainer()
-// Uses MONGO_DATABASE for database name
-
-const postgresContainer = new TestPostgresContainer()
-// Uses POSTGRES_DATABASE for database name
-```
-
-### Path Configuration for PostgreSQL
-
-```typescript
-// Automatically loads migrations and entities
-const { postgresConfig } = await postgresContainer.getPostgres()
-
-// postgresConfig includes:
-// - Migrations: /src/infra/database/postgres/migrations/
-// - Entities: /src/infra/database/postgres/schemas/
-// - Naming strategy: SnakeNamingStrategy
-// - Auto-run migrations: true
-
-// Pass to module setup:
-TestEnd2EndUtils.getPostgresModule(postgresContainer, postgresConfig)
-```
-
-## Benefits of Real Infrastructure Testing
-
-### 🎯 **Catches Real Issues**
-
-- **Database constraint violations** caught before production
-- **Query performance problems** identified early
-- **Transaction isolation** issues discovered
-- **Index behavior** tested with real data
-
-### 🚀 **Confidence in Deployments**
-
-- **Production-like behavior** in tests
-- **Infrastructure compatibility** verified
-- **Data migration scripts** tested
-- **Performance characteristics** measured
-
-### 🔧 **Developer Experience**
-
-- **Easy setup** with single container start
-- **Isolated test runs** prevent interference
-- **Consistent environments** across team
-- **No external dependencies** required
-
-### 🛡️ **Reliability Benefits**
-
-- **No mock maintenance** for infrastructure
-- **Real error conditions** tested
-- **Actual network timeouts** handled
-- **Genuine concurrency** scenarios
-
-Testcontainers transforms testing from **mocked simulations** into **real infrastructure validation**, providing confidence that your code works with actual databases and services in production environments.
-
-let app: INestApplication
-let repository: ICatRepository
-
-const containerMongo = new TestMongoContainer()
-const containerRedis = new TestRedisContainer()
-
 beforeAll(async () => {
-// Configuração do MongoDB com ConnectionName específico
-const { mongoConnection } = await containerMongo.getTestMongo(ConnectionName.CATS)
-
-    const moduleRef = await Test.createTestingModule({
-      imports: [CatModule]
-    })
-      .overrideProvider(ICatRepository)
-      .useFactory({
-        factory() {
-          type Model = mongoose.PaginateModel<CatDocument>
-
-          const repository: PaginateModel<CatDocument> = mongoConnection.model<CatDocument, Model>(
-            Cat.name,
-            CatSchema as Schema
-          )
-          return new CatRepository(repository)
-        }
-      })
-      .overrideProvider(ICacheAdapter)
-      .useFactory({
-        async factory(): Promise<RedisService> {
-          const redis = await containerRedis.getTestRedis()
-          return redis
-        },
-        inject: []
-      })
-      .compile()
-
-    app = moduleRef.createNestApplication()
-    repository = app.get(ICatRepository)
-    await app.init()
-
+  // Start containers and create their clients.
 })
 
-it('/GET /v1/cats', async () => {
-// Geração automática de mock com Zod
-const catMock = new ZodMockSchema(CatEntitySchema)
-const input = catMock.generate()
-await repository.create(new CatEntity(input))
-
-    return request(app.getHttpServer())
-      .get('/cats')
-      .set('Authorization', `Bearer ${process.env.TOKEN_TEST}`)
-      .expect(200)
-
+afterEach(async () => {
+  // Delete only the current test's data, or flush the isolated test Redis DB.
 })
 
 afterAll(async () => {
-await containerMongo.close()
-await containerRedis.close()
-await app.close()
+  // Close app/clients/connections/data sources, then stop containers.
 })
-})
+```
 
-````
+Use the hooks a suite needs. Do not clear a shared database globally unless
+the test owns an isolated container/database. Clean up rows created by each
+test so failures and order changes do not leak state.
 
-### User Controller Integration - PostgreSQL + Redis
+## MongoDB
 
-Testes de integração com PostgreSQL para dados relacionais e Redis para cache:
+`TestMongoContainer.getTestMongo()` starts MongoDB and returns a Mongoose
+connection for the configured `MONGO_DATABASE`. Set the environment variable
+before starting the container; the wrapper also exposes `mongoDatabase` if a
+suite needs to override the database name.
+
+The wrapper's `close()` stops the container but does **not** close the returned
+Mongoose connection. Close the connection first:
 
 ```typescript
-describe('UserController', () => {
-  let app: INestApplication
+const container = new TestMongoContainer()
+let connection: mongoose.Connection
 
-  const postgresContainer = new TestPostgresContainer()
-  const redisContainer = new TestRedisContainer()
-
-  beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({
-      imports: [
-        TypeOrmModule.forRootAsync({
-          inject: [TestPostgresContainer],
-          useFactory: async (container: TestPostgresContainer) => {
-            return await container.getTestPostgres()
-          }
-        }),
-        UserModule
-      ],
-      providers: [TestPostgresContainer, TestRedisContainer]
-    })
-      .overrideProvider(IUserRepository)
-      .useFactory({
-        factory(repository: Repository<UserSchema & UserEntity>) {
-          return new UserRepository(repository)
-        },
-        inject: [getRepositoryToken(UserSchema)]
-      })
-      .overrideProvider(ICacheAdapter)
-      .useFactory({
-        async factory(): Promise<RedisService> {
-          const conn = await redisContainer.getTestRedis()
-          return conn
-        }
-      })
-      .compile()
-
-    app = moduleRef.createNestApplication()
-    await app.init()
-  })
-
-  it('/GET /v1/users', async () => {
-    return request(app.getHttpServer())
-      .get('/users')
-      .set('Authorization', `Bearer ${process.env.TOKEN_TEST}`)
-      .expect(200)
-  })
-
-  afterAll(async () => {
-    await postgresContainer.close()
-    await redisContainer.close()
-    await app.close()
-  })
+beforeAll(async () => {
+  ;({ mongoConnection: connection } = await container.getTestMongo())
 })
-````
 
-### Padrões de Implementação
+afterEach(async () => {
+  await model.deleteMany({})
+})
 
-#### 1. **NestJS Testing Module Override**
+afterAll(async () => {
+  await connection.close()
+  await container.close()
+})
+```
 
-- Override de providers com instâncias reais dos containers
-- Configuração TypeORM dinâmica com PostgreSQL
-- Mongoose connection override para MongoDB
-- Redis service injection para cache
+Use a unique test database or isolated container. If setting
+`container.mongoDatabase`, do so before `getTestMongo()`.
 
-#### 2. **Cleanup Pattern**
+## PostgreSQL
 
-- `afterAll` sempre fecha todos os containers
-- Ordem específica: database → cache → app
-- Evita vazamento de recursos entre testes
+`TestPostgresContainer.getPostgres()` starts PostgreSQL and returns
+`postgresConfig`. `getDataSource(options)` initializes a TypeORM `DataSource`.
+Set `POSTGRES_DATABASE` before starting the wrapper.
 
-#### 3. **Integration com Mocking**
+When using the data source directly, destroy it before stopping the
+container. When PostgreSQL is initialized through a Nest module, close the
+application/module so Nest can release its data source before stopping the
+container.
 
-- `ZodMockSchema` para geração de dados de teste
-- Combinação de infraestrutura real + dados mock
-- Testes realistas sem setup manual de dados
+```typescript
+const container = new TestPostgresContainer()
+let dataSource: DataSource
 
-Esta implementação garante **testes confiáveis** que validam tanto a **lógica de negócio** quanto a **integração com infraestrutura real**, eliminando a necessidade de mocks complexos e aumentando a confiança nos deployments.
+beforeAll(async () => {
+  const { postgresConfig } = await container.getPostgres()
+  dataSource = await container.getDataSource(postgresConfig)
+})
+
+afterAll(async () => {
+  await dataSource.destroy()
+  await container.close()
+})
+```
+
+The wrapper configuration uses the project's migrations, entities and naming
+strategy. Test repository behavior against the real `DataSource` rather than
+reimplementing that configuration in each suite.
+
+## Redis
+
+`TestRedisContainer.getTestRedis()` starts Redis, exposes its ioredis client as
+`container.client`, and returns the project `ICacheAdapter`. Clear test-owned
+state between cases, commonly with `flushdb()` for a suite-isolated Redis
+container. Do not use `flushall()` against a shared Redis server.
+
+```typescript
+const container = new TestRedisContainer()
+let cache: ICacheAdapter
+
+beforeAll(async () => {
+  cache = await container.getTestRedis()
+})
+
+afterEach(async () => {
+  await container.client.flushdb()
+})
+
+afterAll(async () => {
+  await container.close()
+})
+```
+
+The wrapper disconnects its client and stops its container in `close()`.
+Prefer targeted key deletion when a suite shares a client or when flushing
+would hide unintended cross-test state.
+
+## Nest HTTP tests
+
+For module/controller HTTP tests, use the existing `TestEnd2EndUtils`:
+
+- `createApp(moduleRef)` creates the project's Fastify Nest application,
+  installs the tracing hook and waits until Fastify is ready.
+- `getPostgresModule(container, config)` configures the project's named
+  PostgreSQL connection and uses the wrapper's data-source factory.
+- `AUTHORIZATION_HEADER` supplies the shared test authorization header.
+
+See [Module testing](../modules/test.md) for the application setup, provider
+overrides, fixtures, and Supertest patterns. Do not copy standalone
+container-only examples into module tests.
+
+## Failure-safe cleanup
+
+If setup starts multiple resources, ensure all successfully started resources
+are closed even when a later setup step fails. Register resources before
+starting dependent services where possible, and use `try/finally` in custom
+setup helpers when ordinary Jest `afterAll` registration cannot cover partial
+initialization.
+
+See [Test Standards](./standards.md) for deciding between unit and integration
+tests.

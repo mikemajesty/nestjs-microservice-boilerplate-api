@@ -9,7 +9,7 @@ import { IUserRepository } from '@/core/user/repository/user'
 import { UserListInput, UserListOutput } from '@/core/user/use-cases/user-list'
 import { UserSchema } from '@/infra/database/postgres/schemas/user'
 import { TypeORMRepository } from '@/infra/repository/postgres/repository'
-import { handleDatabaseError } from '@/infra/repository/util'
+import { WithDatabaseErrorContext } from '@/infra/repository/util'
 import { SearchTypeEnum, TransformSort, TransformTypeOrmSearch } from '@/utils/decorators'
 import { ApiUnprocessableEntityException } from '@/utils/exception'
 
@@ -36,6 +36,7 @@ export class UserRepository extends TypeORMRepository<UserModel, UserEntity> imp
    * @throws ApiUnprocessableEntityException if the timeout is not a positive integer.
    * @throws DatabaseError if any database error occurs during the transaction.
    */
+  @WithDatabaseErrorContext
   async withDeadline<R>(timeoutMs: number, fn: (repository: UserRepository) => Promise<R>): Promise<R> {
     if (!Number.isSafeInteger(timeoutMs) || timeoutMs <= 0) {
       throw new ApiUnprocessableEntityException('User repository deadline must be a positive integer in milliseconds')
@@ -57,7 +58,7 @@ export class UserRepository extends TypeORMRepository<UserModel, UserEntity> imp
         await queryRunner.rollbackTransaction()
       }
 
-      throw handleDatabaseError({ error, context: `${UserRepository.name}.withDeadline` })
+      throw error
     } finally {
       await queryRunner.release()
     }

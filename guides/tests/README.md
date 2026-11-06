@@ -5,18 +5,18 @@ Comprehensive testing tools that ensure **quality, reliability, and efficiency**
 ## 📋 **Available Utilities**
 
 ### Core Testing Tools
-- **[TestUtils](util.md)** | [📄 Code](../../src/utils/test/util.ts) - Type-safe utilities for mocking and validations
-- **[ZodMockSchema](mock.md)** | [📄 Code](../../src/utils/test/mock.ts) - Automatic mock generation from Zod schemas
-- **[Testcontainers](containers.md)** | [📄 Code](../../src/utils/test/containers.ts) - Real infrastructure testing with Docker containers
-- **[Test Standards](standards.md)** - Shared conventions for tests outside `core` and `modules`
+- **[TestUtils](util.md)** | [📄 Code](../../src/utils/test/utils.ts) - Typed mocks and validation assertions
+- **[MockUtils and ZodMockSchema](mock.md)** | [📄 Code](../../src/utils/test/mock.ts) - Common test values and schema-based data generation
+- **[Testcontainers](containers.md)** | [📄 Code](../../src/utils/test/e2e/containers.ts) - Real infrastructure testing with Docker containers
+- **[Test Standards](standards.md)** - Canonical conventions for `core`, `modules`, infrastructure, utilities, and middleware
 
 ## 🎯 **Philosophy**
 
-**Real Infrastructure over Mocks**: We prefer real containers (MongoDB, PostgreSQL, Redis) instead of complex mocks to ensure tests reflect production behavior.
+**Use the right test boundary**: Use typed mocks for isolated unit tests and real containers for integration tests whose behavior depends on MongoDB, PostgreSQL, or Redis.
 
-**Type-Safe Testing**: All utilities are type-safe by design, eliminating runtime errors and improving developer experience.
+**Type-aware test data**: Prefer `ZodMockSchema` for schema-shaped objects and use typed `TestUtils` mocks at dependency boundaries.
 
-**Automated Mock Generation**: Automatic test data generation from existing schemas, maintaining consistency and reducing manual maintenance.
+**Isolate state and release resources**: Tests should not depend on execution order and must close clients/connections as well as containers.
 
 ---
 

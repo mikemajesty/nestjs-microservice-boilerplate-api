@@ -13,7 +13,7 @@ import { DefaultErrorMessage } from '@/utils/http-status'
 import { Namespaces, NamespacesKeys } from '@/utils/namespaces'
 import { ObjectUtils } from '@/utils/object'
 
-import { FastifyRequest, finishTracing } from './utils'
+import { FastifyRequest, finishTracingWithError } from './utils'
 
 @Injectable()
 export class AuthorizationGuard implements CanActivate {
@@ -38,14 +38,14 @@ export class AuthorizationGuard implements CanActivate {
     const userId = ObjectUtils.reach(request, (o) => o.user.id)
 
     if (!userId) {
-      finishTracing(request, ApiForbiddenException.STATUS, 'accessRevoked')
+      finishTracingWithError(request, ApiForbiddenException.STATUS, 'accessRevoked')
       throw new ApiForbiddenException('accessRevoked')
     }
 
     const permissions = await this.getPermissions(userId)
 
     if (!permissions || permissions.size === 0) {
-      finishTracing(request, ApiForbiddenException.STATUS, 'accessRevoked')
+      finishTracingWithError(request, ApiForbiddenException.STATUS, 'accessRevoked')
       throw new ApiForbiddenException('accessRevoked')
     }
 
@@ -54,7 +54,7 @@ export class AuthorizationGuard implements CanActivate {
     if (!hasPermission) {
       const appContext = `${context.getClass().name}.${context.getHandler().name}`
       const permission = this.reflector.get(PERMISSION_GUARD, context.getHandler())
-      finishTracing(request, ApiForbiddenException.STATUS, ApiForbiddenException.name)
+      finishTracingWithError(request, ApiForbiddenException.STATUS, ApiForbiddenException.name)
       throw new ApiForbiddenException(DefaultErrorMessage[ApiForbiddenException.STATUS], {
         context: appContext,
         parameters: { permission }

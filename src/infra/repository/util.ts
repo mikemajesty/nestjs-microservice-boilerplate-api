@@ -2,9 +2,9 @@ import { HttpStatus } from '@nestjs/common'
 import { DefaultNamingStrategy, FindOptionsRelations, NamingStrategyInterface, Table } from 'typeorm'
 
 import { CollectionUtil } from '@/utils/collection'
+import { WithErrorContext } from '@/utils/decorators/with-error-context.decorator'
 import { ApiBadRequestException, BaseException, MessageType, ParametersType } from '@/utils/exception'
 
-import { ErrorType } from '../logger'
 import { DatabaseOperationCommand, DatabaseOperationEnum, JoinType } from './types'
 
 export const validateFindByCommandsFilter = <T>(filterList: DatabaseOperationCommand<T>[]) => {
@@ -55,18 +55,14 @@ export const createRelations = <T>(joins?: JoinType<T>): FindOptionsRelations<T>
   return relations
 }
 
-export const handleDatabaseError = ({
-  error,
-  context
-}: {
-  error: ErrorType | unknown
-  context?: string
-}): ApiDatabaseException => {
-  return new ApiDatabaseException((error as Error)?.message ?? String(error), {
-    cause: error,
-    context
-  })
-}
+export const WithDatabaseErrorContext = WithErrorContext({
+  map: (error) => {
+    if (error instanceof BaseException) return error
+
+    const cause = error instanceof Error ? error : new Error(String(error))
+    return new ApiDatabaseException(cause.message, { cause })
+  }
+})
 
 export class ApiDatabaseException extends BaseException {
   static STATUS = HttpStatus.INTERNAL_SERVER_ERROR

@@ -1,3 +1,6 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/decorators/with-error-context.md
+ */
 import { ApiInternalServerException, BaseException } from '../exception'
 
 /**
@@ -13,7 +16,7 @@ import { ApiInternalServerException, BaseException } from '../exception'
  *
  * The context will automatically be 'className.methodName'
  */
-export function WithErrorContext() {
+export function WithErrorContext(input?: WithErrorContextInput) {
   return function (target: object, propertyKey: string, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value
     const className = target.constructor.name
@@ -24,35 +27,70 @@ export function WithErrorContext() {
       try {
         return await originalMethod.apply(this, args)
       } catch (error) {
-        if ((typeof error === 'object' && error !== null) || typeof error === 'function') {
-          if ('context' in error && error.context != null) {
-            throw error
-          }
+        const existingContext = getErrorContext(error)
+        const mappedError = input?.map ? input.map(error) : error
+        const mappedContext = getErrorContext(mappedError)
 
-          const descriptor = Object.getOwnPropertyDescriptor(error, 'context')
-          const added = Reflect.defineProperty(
-            error,
-            'context',
-            descriptor
-              ? { value: context }
-              : { value: context, enumerable: error instanceof BaseException, configurable: true, writable: true }
-          )
-
-          if (added || error instanceof BaseException) throw error
+        if (mappedContext != null) {
+          throw mappedError
         }
 
-        const message =
-          error !== null &&
-          (typeof error === 'object' || typeof error === 'function') &&
-          'message' in error &&
-          typeof error.message === 'string'
-            ? error.message
-            : String(error)
+        const contextToApply = existingContext ?? context
+        const added = addErrorContext(mappedError, contextToApply)
 
-        throw new ApiInternalServerException(message, { context, cause: error })
+        if (added) {
+          throw mappedError
+        }
+
+        throw new ApiInternalServerException(getErrorMessage(mappedError), {
+          context: contextToApply,
+          cause: error
+        })
       }
     }
 
     return descriptor
   }
+}
+
+function getErrorContext(error: unknown): string | undefined {
+  if (((typeof error === 'object' && error !== null) || typeof error === 'function') && 'context' in error) {
+    return typeof error.context === 'string' ? error.context : undefined
+  }
+
+  return undefined
+}
+
+function addErrorContext(error: unknown, context: string): boolean {
+  if ((typeof error !== 'object' || error === null) && typeof error !== 'function') {
+    return false
+  }
+
+  const descriptor = Object.getOwnPropertyDescriptor(error, 'context')
+  const added = Reflect.defineProperty(
+    error,
+    'context',
+    descriptor
+      ? { value: context }
+      : { value: context, enumerable: error instanceof BaseException, configurable: true, writable: true }
+  )
+
+  return added || error instanceof BaseException
+}
+
+function getErrorMessage(error: unknown): string {
+  if (
+    error !== null &&
+    (typeof error === 'object' || typeof error === 'function') &&
+    'message' in error &&
+    typeof error.message === 'string'
+  ) {
+    return error.message
+  }
+
+  return String(error)
+}
+
+export type WithErrorContextInput = {
+  map: (error: unknown) => unknown
 }

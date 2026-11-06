@@ -56,12 +56,15 @@ All read methods receive these options:
 ```ts
 {
   ttlSeconds: 300,
-  nullTtlSeconds: 30, // optional; defaults to 60 seconds
+  cacheNullResults: false, // optional; defaults to false
+  nullTtlSeconds: 30, // optional; used when caching null; defaults to 60 seconds
   tags: [{ key: 'users', ttlSeconds: 300 }] // optional
 }
 ```
 
-Cached values receive a small TTL jitter. `null` is stored with an internal sentinel to prevent repeated lookups for missing data. `undefined` is never cached.
+Cached values receive a small TTL jitter. By default, `null` results and missing keys are not cached. Set `cacheNullResults: true` to cache them with an internal sentinel using `nullTtlSeconds` (60 seconds by default). `undefined` is never cached.
+
+Negative caching applies to both `readThrough` and `readThroughMany` when enabled. If a record is created while its missing result is cached, reads can continue returning `null` until that entry expires. Use a short `nullTtlSeconds` and invalidate the key after creating the record when immediate visibility is required.
 
 ## `readThrough`
 
@@ -71,7 +74,7 @@ Reads one key. Calls `loader` only when the key is missing or contains invalid J
 const user = await this.cacheAside.readThrough(
   `user:id:${id}`,
   () => this.userRepository.findById(id),
-  { ttlSeconds: 300, nullTtlSeconds: 30 }
+  { ttlSeconds: 300, cacheNullResults: true, nullTtlSeconds: 30 }
 )
 ```
 
@@ -79,7 +82,7 @@ Use it for independent values with a normal cache-aside flow. Concurrent misses 
 
 ## `readThroughSingleFlight`
 
-Works like `readThrough`, but concurrent misses for the same key in the same application instance share one loader execution.
+Works like `readThrough`, but concurrent misses for the same key and the same cache options in the same application instance share one loader execution. Calls with different cache options run separate loader executions so each applies its own cache policy.
 
 ```ts
 const settings = await this.cacheAside.readThroughSingleFlight(
@@ -110,7 +113,7 @@ const roles = await this.cacheAside.readThroughMany(
 )
 ```
 
-Missing values returned by the loader are written in one Redis transaction. Use it when multiple related records can be loaded in one database query.
+Values returned by the loader and, when `cacheNullResults` is enabled, missing keys are written in one Redis transaction. Keys omitted from the loader's `Map` are treated as not found and returned as `null`; by default, these missing keys are not cached. Use it when multiple related records can be loaded in one database query.
 
 ## `invalidate`
 
@@ -167,7 +170,7 @@ Cache a product and its related categories with different TTLs:
 const product = await this.cacheAside.readThrough(
   `product:id:${productId}`,
   () => this.productRepository.findById(productId),
-  { ttlSeconds: 300, nullTtlSeconds: 30 }
+  { ttlSeconds: 300, cacheNullResults: true, nullTtlSeconds: 30 }
 )
 
 if (!product) {

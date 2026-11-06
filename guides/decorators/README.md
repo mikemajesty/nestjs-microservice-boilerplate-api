@@ -8,6 +8,12 @@ These decorators solve **real-world problems** by eliminating boilerplate code, 
 
 ## 📋 **Available Decorators**
 
+### **🧰 Error Handling**
+
+#### **[WithErrorContext](with-error-context.md)** | **[📄 Code](../../src/utils/decorators/with-error-context.decorator.ts)**
+
+**Adds class/method context to async errors, with optional error mapping.**
+
 ### **🛡️ Validation & Security**
 
 #### **[ValidateSchema](validate-schema.md)** | **[📄 Code](../../src/utils/decorators/validate-schema.decorator.ts)**
@@ -61,6 +67,10 @@ These decorators solve **real-world problems** by eliminating boilerplate code, 
 #### **[NormalizeMongoFilter](convert-mongoose-filter.md)** | **[📄 Code](../../src/utils/decorators/filter/mongoose/normalize-mongo-filter.decorator.ts)**
 
 **MongoDB filter normalization (Base Repository / Infra layer).** Flattens nested filter objects, handles id→_id conversion, and prepares queries for base repository operations.
+
+#### **[NormalizeTypeOrmFilter](normalize-typeorm-filter.md)** | **[📄 Code](../../src/utils/decorators/filter/typeorm/normalize-typeorm-filter.decorator.ts)**
+
+**TypeORM filter normalization (Base Repository / Infra layer).** Adds an explicit `deletedAt IS NULL` condition to a filter or each filter in an OR array.
 
 ---
 

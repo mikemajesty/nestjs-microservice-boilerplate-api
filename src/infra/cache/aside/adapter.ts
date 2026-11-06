@@ -34,7 +34,8 @@ export abstract class ICacheAsideAdapter {
    * for the missing keys, stores the results in cache, and returns them.
    *
    * The returned array maintains the order of the input keys, with `null`
-   * for any key that could not be loaded.
+   * for any key that could not be loaded. Null results and missing keys are
+   * cached only when `cacheNullResults` is enabled.
    */
   abstract readThroughMany<T>(
     keys: string[],
@@ -53,6 +54,8 @@ export abstract class ICacheAsideAdapter {
    * distributed across replicas. Each replica may still run the `loader`
    * once in parallel for the same key. This is a deliberate trade-off to
    * avoid the complexity and failure modes of a distributed lock.
+   *
+   * Calls for the same key share a load only when their cache options match.
    */
   abstract readThroughSingleFlight<T = AnyType>(
     key: string,

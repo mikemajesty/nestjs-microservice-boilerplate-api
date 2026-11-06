@@ -1,5 +1,6 @@
 export * from './filter/mongoose/normalize-mongo-filter.decorator'
 export * from './filter/mongoose/transform-mongoose-search.decorator'
+export * from './filter/typeorm/normalize-typeorm-filter.decorator'
 export * from './filter/typeorm/transform-type-orm-search.decorator'
 export * from './public.decorator'
 export * from './request-timeout.decorator'

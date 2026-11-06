@@ -17,6 +17,7 @@ import {
   SaveOptions
 } from 'typeorm'
 
+import { NormalizeTypeOrmFilter } from '@/utils/decorators'
 import { IEntity } from '@/utils/entity'
 import { ApiInternalServerException } from '@/utils/exception'
 import { PaginationInput, PaginationOutput, PaginationUtils } from '@/utils/pagination'
@@ -33,7 +34,7 @@ import {
   RemovedModel,
   UpdatedModel
 } from '../types'
-import { createRelations, handleDatabaseError } from '../util'
+import { createRelations, WithDatabaseErrorContext } from '../util'
 
 export class TypeORMRepository<
   TModel extends BaseEntity & IEntity = BaseEntity & IEntity,
@@ -46,6 +47,7 @@ export class TypeORMRepository<
     private readonly Entity: EntityConstructor<TEntity>
   ) {}
 
+  @WithDatabaseErrorContext
   async runInTransaction<R>(fn: (manager: EntityManager) => Promise<R>): Promise<R> {
     const queryRunner = this.repository.manager.dataSource.createQueryRunner()
     await queryRunner.connect()
@@ -58,12 +60,13 @@ export class TypeORMRepository<
       if (queryRunner.isTransactionActive) {
         await queryRunner.rollbackTransaction()
       }
-      throw handleDatabaseError({ error: err, context: `${this.context}.runInTransaction` })
+      throw err
     } finally {
       await queryRunner.release()
     }
   }
 
+  @WithDatabaseErrorContext
   async applyPagination<R>(input: PaginationInput<R>, joins?: JoinType<TEntity>): Promise<PaginationOutput<TEntity>> {
     const skip = PaginationUtils.calculateSkip(input)
 
@@ -73,7 +76,7 @@ export class TypeORMRepository<
       take: input.limit,
       skip,
       order: input.sort as FindOptionsOrder<TModel>,
-      where: input.search as FindOptionsWhere<TModel>,
+      where: { ...input.search, deletedAt: IsNull() } as FindOptionsWhere<TModel>,
       relations: relations as FindManyOptions<TModel>['relations']
     })
 
@@ -86,77 +89,78 @@ export class TypeORMRepository<
     }
   }
 
+  @WithDatabaseErrorContext
   async findOr(propertyList: (keyof TEntity)[], value: string): Promise<TEntity[]> {
     const filter = propertyList.map((property) => {
-      return { [property]: value }
+      return { [property]: value, deletedAt: IsNull() }
     })
 
-    Object.assign(filter, { deletedAt: null })
     const models = await this.repository.find({
       where: filter as FindOptionsWhere<TModel>[] | FindOptionsWhere<TModel>
     })
     return this.hydrateAll(models)
   }
 
+  @WithDatabaseErrorContext
   async create<TOptions = SaveOptions>(document: TEntity, saveOptions?: TOptions): Promise<CreatedModel> {
-    try {
-      const entity = this.repository.create(document as unknown as TModel)
-      const model = await entity.save(saveOptions as SaveOptions)
-      return { created: model.hasId(), id: model.id }
-    } catch (error) {
-      throw handleDatabaseError({ error, context: `${this.context}.create` })
-    }
+    const entity = this.repository.create(document as unknown as TModel)
+    const model = await entity.save(saveOptions as SaveOptions)
+    return { created: model.hasId(), id: model.id }
   }
 
+  @WithDatabaseErrorContext
   async findById(id: string): Promise<TEntity | null> {
     const model = await this.repository.findOne({ where: { id } } as FindOneOptions<TModel>)
     return model ? this.hydrate(model) : null
   }
 
+  @WithDatabaseErrorContext
   async insertMany(document: TEntity[]): Promise<void> {
     await this.repository.insert(document as object[])
   }
 
+  @WithDatabaseErrorContext
   async createOrUpdate<TUpdate = MakePartial<TEntity>>(updated: TUpdate): Promise<CreatedOrUpdateModel> {
-    try {
-      const documentEntity: IEntity = updated as IEntity
-      if (!documentEntity?.id) {
-        throw new ApiInternalServerException('id is required', { context: `${TypeORMRepository.name}.createOrUpdate` })
-      }
-
-      const exists = await this.findById(documentEntity.id)
-
-      if (!exists) {
-        const created = await this.create(updated as unknown as TEntity)
-
-        return { id: created.id, created: true, updated: false }
-      }
-
-      const row = await this.repository.update({ id: exists.id } as FindOptionsWhere<TModel>, updated as object)
-
-      return { id: exists.id, created: false, updated: (row.affected || 0) > 0 }
-    } catch (error) {
-      throw handleDatabaseError({ error, context: `${this.context}.createOrUpdate` })
+    const documentEntity: IEntity = updated as IEntity
+    if (!documentEntity?.id) {
+      throw new ApiInternalServerException('id is required', { context: `${TypeORMRepository.name}.createOrUpdate` })
     }
+
+    const exists = await this.findById(documentEntity.id)
+
+    if (!exists) {
+      const created = await this.create(updated as unknown as TEntity)
+
+      return { id: created.id, created: true, updated: false }
+    }
+
+    const row = await this.repository.update({ id: exists.id } as FindOptionsWhere<TModel>, updated as object)
+
+    return { id: exists.id, created: false, updated: (row.affected || 0) > 0 }
   }
 
+  @WithDatabaseErrorContext
   async findAll(): Promise<TEntity[]> {
     return this.hydrateAll(await this.repository.find())
   }
 
+  @WithDatabaseErrorContext
+  @NormalizeTypeOrmFilter()
   async find<TQuery = MakePartialFilter<TEntity>>(filter: TQuery): Promise<TEntity[]> {
     const models = await this.repository.find({
-      where: { ...filter, deletedAt: null }
+      where: filter
     } as FindOneOptions<TModel>)
     return this.hydrateAll(models)
   }
 
+  @WithDatabaseErrorContext
   async findIn(filter: { [key in keyof MakePartialFilter<TEntity>]: string[] }): Promise<TEntity[]> {
     const where: { [key: string]: unknown } = {
       deletedAt: IsNull()
     }
 
     for (const key of Object.keys(filter)) {
+      if (key === 'deletedAt') continue
       where[key] = In((filter as { [key: string]: string[] })[key])
     }
 
@@ -166,6 +170,7 @@ export class TypeORMRepository<
     return this.hydrateAll(models)
   }
 
+  @WithDatabaseErrorContext
   async findOneByCommands(filterList: DatabaseOperationCommand<TEntity>[]): Promise<TEntity | null> {
     const searchList: { [key: string]: unknown } = {}
 
@@ -207,6 +212,7 @@ export class TypeORMRepository<
     return this.hydrate(result)
   }
 
+  @WithDatabaseErrorContext
   async findByCommands(filterList: DatabaseOperationCommand<TEntity>[]): Promise<TEntity[]> {
     const searchList: { [key: string]: unknown } = {}
 
@@ -243,15 +249,15 @@ export class TypeORMRepository<
     return this.hydrateAll(models)
   }
 
+  @WithDatabaseErrorContext
+  @NormalizeTypeOrmFilter()
   async remove<TQuery = MakePartialFilter<TEntity>>(filter: TQuery): Promise<RemovedModel> {
-    try {
-      const data = await this.repository.delete(filter as FindOptionsWhere<TModel>)
-      return { deletedCount: data.affected || 0, deleted: !!data.affected }
-    } catch (error) {
-      throw handleDatabaseError({ error, context: `${this.context}.remove` })
-    }
+    const data = await this.repository.delete(filter as FindOptionsWhere<TModel>)
+    return { deletedCount: data.affected || 0, deleted: !!data.affected }
   }
 
+  @WithDatabaseErrorContext
+  @NormalizeTypeOrmFilter()
   async findOne<TQuery = MakePartialFilter<TEntity>>(filter: TQuery): Promise<TEntity | null> {
     const model = await this.repository.findOne({
       where: filter
@@ -259,24 +265,24 @@ export class TypeORMRepository<
     return model ? this.hydrate(model) : null
   }
 
+  @WithDatabaseErrorContext
+  @NormalizeTypeOrmFilter()
   async updateOne<TQuery = MakePartialFilter<TEntity>, TUpdate = MakePartial<TEntity>>(
     filter: TQuery,
     updated: TUpdate
   ): Promise<UpdatedModel> {
-    try {
-      const data = await this.repository.update(filter as FindOptionsWhere<TModel>, Object.assign({}, updated))
-      return {
-        modifiedCount: data.affected || 0,
-        upsertedCount: 0,
-        upsertedId: 0,
-        matchedCount: data.affected || 0,
-        acknowledged: !!data.affected
-      }
-    } catch (error) {
-      throw handleDatabaseError({ error, context: `${this.context}.updateOne` })
+    const data = await this.repository.update(filter as FindOptionsWhere<TModel>, Object.assign({}, updated))
+    return {
+      modifiedCount: data.affected || 0,
+      upsertedCount: 0,
+      upsertedId: 0,
+      matchedCount: data.affected || 0,
+      acknowledged: !!data.affected
     }
   }
 
+  @WithDatabaseErrorContext
+  @NormalizeTypeOrmFilter()
   async findOneAndUpdate<TQuery = MakePartialFilter<TEntity>, TUpdate = MakePartial<TEntity>>(
     filter: TQuery,
     updated: TUpdate
@@ -286,24 +292,24 @@ export class TypeORMRepository<
     return this.findOne(filter)
   }
 
+  @WithDatabaseErrorContext
+  @NormalizeTypeOrmFilter()
   async updateMany<TQuery = MakePartialFilter<TEntity>, TUpdate = MakePartial<TEntity>>(
     filter: TQuery,
     updated: TUpdate
   ): Promise<UpdatedModel> {
-    try {
-      const data = await this.repository.update(filter as FindOptionsWhere<TModel>, updated as object)
-      return {
-        modifiedCount: data.affected || 0,
-        upsertedCount: 0,
-        upsertedId: 0,
-        matchedCount: data.affected || 0,
-        acknowledged: !!data.affected
-      }
-    } catch (error) {
-      throw handleDatabaseError({ error, context: `${this.context}.updateMany` })
+    const data = await this.repository.update(filter as FindOptionsWhere<TModel>, updated as object)
+    return {
+      modifiedCount: data.affected || 0,
+      upsertedCount: 0,
+      upsertedId: 0,
+      matchedCount: data.affected || 0,
+      acknowledged: !!data.affected
     }
   }
 
+  @WithDatabaseErrorContext
+  @NormalizeTypeOrmFilter()
   async findOneWithSelectFields<TQuery = MakePartialFilter<TEntity>>(
     filter: TQuery,
     includeProperties: (keyof TEntity)[]
@@ -316,6 +322,8 @@ export class TypeORMRepository<
     return model ? this.hydrate(model) : null
   }
 
+  @WithDatabaseErrorContext
+  @NormalizeTypeOrmFilter(1)
   async findAllWithSelectFields<TQuery = MakePartialFilter<TEntity>>(
     includeProperties: (keyof TEntity)[],
     filter?: TQuery
@@ -328,6 +336,8 @@ export class TypeORMRepository<
     return this.hydrateAll(models)
   }
 
+  @WithDatabaseErrorContext
+  @NormalizeTypeOrmFilter()
   async findOneWithExcludeFields(filter: unknown, excludeProperties: (keyof TEntity)[]): Promise<TEntity | null> {
     const select = excludeProperties.map((e) => `${e.toString()}`)
     const model = await this.repository.findOne({
@@ -337,6 +347,8 @@ export class TypeORMRepository<
     return model ? this.hydrate(model) : null
   }
 
+  @WithDatabaseErrorContext
+  @NormalizeTypeOrmFilter(1)
   async findAllWithExcludeFields<TQuery = MakePartialFilter<TEntity>>(
     excludeProperties: (keyof TEntity)[],
     filter?: TQuery
@@ -349,6 +361,8 @@ export class TypeORMRepository<
     return this.hydrateAll(models)
   }
 
+  @WithDatabaseErrorContext
+  @NormalizeTypeOrmFilter()
   async findOneWithRelation<Filter = MakePartialFilter<TEntity>>(
     filter: Filter,
     joins?: JoinType<TEntity>
@@ -367,16 +381,15 @@ export class TypeORMRepository<
     return model ? this.hydrate(model) : null
   }
 
+  @WithDatabaseErrorContext
+  @NormalizeTypeOrmFilter()
   async findAllWithRelation<Filter = MakePartialFilter<TEntity>>(
     filter?: Filter,
     joins?: JoinType<TEntity>
   ): Promise<TEntity[]> {
     const relations = createRelations(joins)
 
-    const where: FindOptionsWhere<TModel> = {
-      deletedAt: null,
-      ...(filter as FindOptionsWhere<TModel>)
-    } as FindOptionsWhere<TModel>
+    const where = (filter ?? {}) as FindOptionsWhere<TModel>
 
     const options: FindManyOptions<TModel> = { where }
 
@@ -387,11 +400,15 @@ export class TypeORMRepository<
     return this.hydrateAll(await this.repository.find(options))
   }
 
+  @WithDatabaseErrorContext
+  @NormalizeTypeOrmFilter()
   async exists<TQuery = MakePartialFilter<TEntity>>(filter: TQuery): Promise<boolean> {
     const result = await this.repository.exists({ where: filter as FindOptionsWhere<TModel> })
     return result
   }
 
+  @WithDatabaseErrorContext
+  @NormalizeTypeOrmFilter()
   async existsOnUpdate<TQuery = MakePartialFilter<TEntity>>(filter: TQuery, id: string | number): Promise<boolean> {
     const result = await this.repository.exists({
       where: { ...filter, id: Not(id) } as FindOptionsWhere<TModel>
@@ -399,6 +416,8 @@ export class TypeORMRepository<
     return result
   }
 
+  @WithDatabaseErrorContext
+  @NormalizeTypeOrmFilter()
   async softRemove(entity: MakePartialFilter<TEntity>): Promise<TEntity> {
     const model = await this.repository.findOne({
       where: entity as unknown as FindOptionsWhere<TModel>
@@ -440,9 +459,9 @@ export class TypeORMRepository<
     const select: Record<string, boolean> = {}
 
     this.repository.metadata.columns.forEach((column) => {
-      const columnName = column.databaseName
+      const columnName = column.propertyName
       if (!excludeSet.has(columnName)) {
-        select[columnName] = true
+        select[column.propertyPath] = true
       }
     })
 

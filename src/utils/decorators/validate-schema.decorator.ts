@@ -45,7 +45,7 @@ export function ValidateSchema(...schemas: BaseZodType[]) {
         })
 
         throw new ApiBadRequestException(messages.join(', '), {
-          context: target.constructor.name ?? 'ValidateSchema',
+          context: target.constructor.name,
           details: errors
         })
       }

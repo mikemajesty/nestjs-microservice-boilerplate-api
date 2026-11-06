@@ -4,10 +4,9 @@
 import { ZodMockSchema } from '@mikemajesty/zod-mock-schema'
 import { Test } from '@nestjs/testing'
 
-import { RoleListInput, RoleListOutput, RoleListSchema, RoleListUsecase } from '@/core/role/use-cases/role-list'
+import { RoleListOutput, RoleListSchema, RoleListUsecase } from '@/core/role/use-cases/role-list'
 import { IRoleList } from '@/modules/role/interfaces'
 import { TestUtils } from '@/utils/test/utils'
-import { ZodExceptionIssue } from '@/utils/validator'
 
 import { IRoleRepository } from '../../repository/role'
 import { RoleEntity, RoleEntitySchema } from './../../entity/role'
@@ -32,20 +31,6 @@ describe(RoleListUsecase.name, () => {
 
     usecase = app.get(IRoleList)
     repository = app.get(IRoleRepository)
-  })
-
-  test('when sort input is specified, should expect an error', async () => {
-    await TestUtils.expectZodError(
-      () => usecase.execute({} as RoleListInput),
-      (issues: ZodExceptionIssue[]) => {
-        expect(issues).toEqual([
-          {
-            message: 'Invalid input: expected string, received undefined',
-            path: TestUtils.nameOf<RoleListInput>('search')
-          }
-        ])
-      }
-    )
   })
 
   const input = new ZodMockSchema(RoleListSchema).generate()

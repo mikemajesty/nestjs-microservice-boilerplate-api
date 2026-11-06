@@ -12,7 +12,7 @@ import { Namespaces } from '@/utils/namespaces'
 import { ObjectUtils } from '@/utils/object'
 import { AppFastifyRequest, ensureTraceId, UserRequest } from '@/utils/request'
 
-import { finishTracing } from './utils'
+import { finishTracingWithError } from './utils'
 
 @Injectable()
 export class AuthenticationGuard implements CanActivate {
@@ -40,7 +40,7 @@ export class AuthenticationGuard implements CanActivate {
     }
 
     if (!tokenHeader) {
-      finishTracing(request, ApiUnauthorizedException.STATUS, 'no token provided')
+      finishTracingWithError(request, ApiUnauthorizedException.STATUS, 'no token provided')
       throw new ApiUnauthorizedException('no token provided')
     }
 
@@ -54,14 +54,14 @@ export class AuthenticationGuard implements CanActivate {
     const [scheme, token] = tokenHeader.trim().split(/\s+/)
 
     if (scheme !== 'Bearer' || !token) {
-      finishTracing(request, ApiUnauthorizedException.STATUS, 'malformed authorization header')
+      finishTracingWithError(request, ApiUnauthorizedException.STATUS, 'malformed authorization header')
       throw new ApiUnauthorizedException('malformed authorization header')
     }
 
     try {
       request.user = await this.tokenService.verify<UserRequest>({ token })
     } catch {
-      finishTracing(request, ApiUnauthorizedException.STATUS, 'invalidToken')
+      finishTracingWithError(request, ApiUnauthorizedException.STATUS, 'invalidToken')
       throw new ApiUnauthorizedException('invalidToken')
     }
   }
@@ -70,7 +70,7 @@ export class AuthenticationGuard implements CanActivate {
     const userId = ObjectUtils.reach(request, (r) => r.user.id)
 
     if (!userId) {
-      finishTracing(request, ApiUnauthorizedException.STATUS, 'invalidToken')
+      finishTracingWithError(request, ApiUnauthorizedException.STATUS, 'invalidToken')
       throw new ApiUnauthorizedException('invalidToken')
     }
 
@@ -79,7 +79,7 @@ export class AuthenticationGuard implements CanActivate {
     const blackListToken = await this.getBlackListToken(key, request)
 
     if (blackListToken) {
-      finishTracing(request, ApiUnauthorizedException.STATUS, 'you have been logged out')
+      finishTracingWithError(request, ApiUnauthorizedException.STATUS, 'you have been logged out')
       throw new ApiUnauthorizedException('you have been logged out')
     }
   }
@@ -89,7 +89,7 @@ export class AuthenticationGuard implements CanActivate {
       const blackListToken = await this.redisService.get(key)
       return blackListToken
     } catch {
-      finishTracing(request, ApiUnauthorizedException.STATUS, 'unable to verify session')
+      finishTracingWithError(request, ApiUnauthorizedException.STATUS, 'unable to verify session')
       throw new ApiUnauthorizedException('unable to verify session')
     }
   }

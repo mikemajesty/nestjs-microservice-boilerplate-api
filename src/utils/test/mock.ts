@@ -1,6 +1,7 @@
 /**
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/tests/mock.md
  */
+import { ILoggerAdapter } from '@/infra/logger'
 import { faker } from '@faker-js/faker'
 import { MockOptions, ZodMockSchema } from '@mikemajesty/zod-mock-schema'
 import { SpanStatus } from '@opentelemetry/api'
@@ -53,4 +54,20 @@ export class MockUtils {
     const user: UserRequest = { email: 'test', name: 'test', id: this.UUID() }
     return user
   }
+
+  static Logger = (input?: MockUtilsLoggerInput): ILoggerAdapter => {
+    return {
+      log: input?.enableLogger ? console.log : jest.fn(),
+      error: input?.enableLogger ? console.error : jest.fn(),
+      warn: input?.enableLogger ? console.warn : jest.fn(),
+      debug: input?.enableLogger ? console.debug : jest.fn(),
+      info: input?.enableLogger ? console.info : jest.fn(),
+      fatal: input?.enableLogger ? console.error : jest.fn(),
+      connect: jest.fn()
+    } as Partial<ILoggerAdapter> as ILoggerAdapter
+  }
+}
+
+export type MockUtilsLoggerInput = {
+  enableLogger?: boolean
 }

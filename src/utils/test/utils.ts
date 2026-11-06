@@ -2,10 +2,33 @@
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/tests/util.md
  */
 
-import { BaseException } from '@/utils/exception'
+import { ApiBadRequestException, BaseException } from '@/utils/exception'
 import { ZodException, ZodExceptionIssue } from '@/utils/validator'
 import { Provider } from '@nestjs/common'
 import { AnyFunction } from '../types'
+
+const isZodExceptionIssue = (value: unknown): value is ZodExceptionIssue => {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'message' in value &&
+    typeof value.message === 'string' &&
+    'path' in value &&
+    Array.isArray(value.path)
+  )
+}
+
+const isZodExceptionIssues = (value: unknown): value is ZodExceptionIssue[] => {
+  return Array.isArray(value) && value.length > 0 && value.every(isZodExceptionIssue)
+}
+
+const getZodIssues = (error: unknown): ZodExceptionIssue[] | undefined => {
+  if (error instanceof ZodException) return error.issues
+  if (!(error instanceof ApiBadRequestException)) return undefined
+
+  const details = error.parameters?.details
+  return isZodExceptionIssues(details) ? details : undefined
+}
 
 export class TestUtils {
   static mock<T = void>(): jest.Mock<NoInfer<T>> {
@@ -62,11 +85,14 @@ export class TestUtils {
     try {
       await callback()
     } catch (error) {
-      if (error instanceof ZodException) {
-        const issues = error.issues.map(({ message, path }: ZodExceptionIssue) => ({ message, path: path[0] }))
-        expected(issues)
-      }
+      const zodIssues = getZodIssues(error)
+      if (!zodIssues) throw error
+
+      expected(zodIssues.map(({ message, path }) => ({ message, path: path[0] })))
+      return
     }
+
+    throw new Error('Expected callback to throw a ZodException')
   }
 
   static nameOf<T>(name: keyof T) {

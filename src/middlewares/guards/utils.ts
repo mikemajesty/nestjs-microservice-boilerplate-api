@@ -4,7 +4,11 @@ import { AppFastifyRequest, generalizePath, TRACEID_HEADER, UserRequest } from '
 
 import { name, version } from '../../../package.json'
 
-export const finishTracing = (request: FastifyRequest | AppFastifyRequest, status: number, message: string) => {
+export const finishTracingWithError = (
+  request: FastifyRequest | AppFastifyRequest,
+  status: number,
+  message: string
+) => {
   if (request?.tracing) {
     request.tracing.addAttribute('http.status_code', status)
     request.tracing.addAttribute('error.message', message)

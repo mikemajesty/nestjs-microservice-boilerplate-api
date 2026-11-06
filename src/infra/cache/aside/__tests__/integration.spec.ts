@@ -4,7 +4,7 @@
  */
 
 import { ICacheAdapter } from '@/infra/cache'
-import { ILoggerAdapter } from '@/infra/logger'
+import { MockUtils } from '@/utils/test'
 import { TestRedisContainer } from '@/utils/test/e2e/containers'
 
 import { CacheAsideService } from '../service'
@@ -16,11 +16,7 @@ type CachedRole = {
 
 describe(CacheAsideService.name, () => {
   const redisContainer = new TestRedisContainer()
-  const logger = {
-    debug: () => undefined,
-    error: () => undefined,
-    warn: () => undefined
-  } as Partial<ILoggerAdapter> as ILoggerAdapter
+  const logger = MockUtils.Logger()
 
   let cache: ICacheAdapter
   let service: CacheAsideService
@@ -30,7 +26,6 @@ describe(CacheAsideService.name, () => {
     service = new CacheAsideService(logger, cache)
   })
 
-
   afterEach(async () => {
     await redisContainer.client.flushdb()
   })
@@ -39,7 +34,7 @@ describe(CacheAsideService.name, () => {
     await redisContainer.close()
   })
 
-  it('should persist multiple cache misses in one transaction and reuse them on the next read', async () => {
+  test('when multiple keys miss, should persist them in one transaction and reuse them on the next read', async () => {
     const keys = ['role:id:1', 'role:id:2', 'role:id:3']
     const values: CachedRole[] = keys.map((key) => ({
       id: key.replace('role:id:', ''),
@@ -83,7 +78,7 @@ describe(CacheAsideService.name, () => {
     }
   })
 
-  it('should load and persist only missing keys while preserving cached values and input order', async () => {
+  test('when some keys are cached, should load only missing keys and preserve input order', async () => {
     const keys = ['role:id:1', 'role:id:2', 'role:id:3']
     const cachedFirst: CachedRole = { id: '1', permissions: ['user:read'] }
     const loadedSecond: CachedRole = { id: '2', permissions: ['user:write'] }
@@ -110,21 +105,54 @@ describe(CacheAsideService.name, () => {
     ])
   })
 
-  it('should return null and avoid caching keys not found by the loader', async () => {
+  test('when null caching is enabled, should cache keys not found by the loader', async () => {
     const keys = ['role:id:1', 'role:id:2', 'role:id:3']
     const foundRole: CachedRole = { id: '2', permissions: ['user:read'] }
+    const options = { ttlSeconds: 60, nullTtlSeconds: 5, cacheNullResults: true }
+    let loaderCalls = 0
 
     await expect(
       service.readThroughMany(
         keys,
-        async (missingKeys) => new Map([[missingKeys[1], foundRole]]),
-        { ttlSeconds: 60 }
+        async (missingKeys) => {
+          loaderCalls++
+          return new Map([[missingKeys[1], foundRole]])
+        },
+        options
       )
     ).resolves.toEqual([null, foundRole, null])
-    expect(await redisContainer.client.mget(...keys)).toEqual([null, JSON.stringify(foundRole), null])
+    expect(await redisContainer.client.mget(...keys)).toEqual([
+      JSON.stringify('__cache-aside:null__'),
+      JSON.stringify(foundRole),
+      JSON.stringify('__cache-aside:null__')
+    ])
+    expect(await redisContainer.client.pttl(keys[0])).toBeLessThanOrEqual(5_000)
+    expect(await redisContainer.client.pttl(keys[2])).toBeLessThanOrEqual(5_000)
+
+    await expect(service.readThroughMany(keys, async () => new Map(), options)).resolves.toEqual([
+      null,
+      foundRole,
+      null
+    ])
+    expect(loaderCalls).toBe(1)
   })
 
-  it('should treat corrupted cached JSON as a miss and replace it with the loaded value', async () => {
+  test('when null caching is disabled, should not cache keys not found by the loader', async () => {
+    const key = 'role:id:missing'
+    let loaderCalls = 0
+    const loader = async () => {
+      loaderCalls++
+      return new Map<string, CachedRole>()
+    }
+
+    await expect(service.readThroughMany([key], loader, { ttlSeconds: 60 })).resolves.toEqual([null])
+    expect(await redisContainer.client.get(key)).toBeNull()
+
+    await expect(service.readThroughMany([key], loader, { ttlSeconds: 60 })).resolves.toEqual([null])
+    expect(loaderCalls).toBe(2)
+  })
+
+  test('when cached JSON is corrupted, should reload and replace it with the loaded value', async () => {
     const key = 'role:id:1'
     const loaded: CachedRole = { id: '1', permissions: ['user:read'] }
 
@@ -134,7 +162,7 @@ describe(CacheAsideService.name, () => {
     expect(await redisContainer.client.get(key)).toBe(JSON.stringify(loaded))
   })
 
-  it('should share a single loader execution between concurrent single-flight reads', async () => {
+  test('when single-flight reads run concurrently, should share one loader execution', async () => {
     const key = 'role:id:1'
     const loaded: CachedRole = { id: '1', permissions: ['user:read'] }
     let resolveLoader: (value: CachedRole) => void = () => undefined
@@ -162,7 +190,7 @@ describe(CacheAsideService.name, () => {
     expect(await redisContainer.client.get(key)).toBe(JSON.stringify(loaded))
   })
 
-  it('should allow a new single-flight load after the previous loader fails', async () => {
+  test('when a single-flight loader fails, should allow a subsequent load', async () => {
     const key = 'role:id:1'
     const loaded: CachedRole = { id: '1', permissions: ['user:read'] }
     let loaderCalls = 0
@@ -180,7 +208,7 @@ describe(CacheAsideService.name, () => {
     expect(await redisContainer.client.get(key)).toBe(JSON.stringify(loaded))
   })
 
-  it('should remove values from Redis when invalidating one or multiple keys', async () => {
+  test('when invalidating one or multiple keys, should remove their Redis values', async () => {
     const keys = ['role:id:1', 'role:id:2', 'role:id:3']
 
     await redisContainer.client.mset(...keys.flatMap((key) => [key, JSON.stringify({ id: key })]))
@@ -191,7 +219,7 @@ describe(CacheAsideService.name, () => {
     expect(await redisContainer.client.mget(...keys)).toEqual([null, null, null])
   })
 
-  it('should invalidate only entries associated with the requested tag', async () => {
+  test('when invalidating a tag, should remove only entries associated with it', async () => {
     const taggedKeys = ['role:id:1', 'role:id:2']
     const retainedKey = 'role:id:3'
 
@@ -224,7 +252,7 @@ describe(CacheAsideService.name, () => {
     expect(await redisContainer.client.hgetall('cache-aside:tag:permission:id:2')).toEqual({ [retainedKey]: '1' })
   })
 
-  it('should cache null with the null TTL sentinel and reload after expiration', async () => {
+  test('when null caching is enabled, should cache a sentinel and reload after expiration', async () => {
     const key = 'user:id:missing'
     let loaderCalls = 0
     const loader = async () => {
@@ -232,27 +260,29 @@ describe(CacheAsideService.name, () => {
       return null
     }
 
-    await expect(service.readThrough(key, loader, { ttlSeconds: 60, nullTtlSeconds: 1 })).resolves.toBeNull()
+    const options = { ttlSeconds: 60, nullTtlSeconds: 1, cacheNullResults: true }
+
+    await expect(service.readThrough(key, loader, options)).resolves.toBeNull()
     expect(await redisContainer.client.get(key)).toBe(JSON.stringify('__cache-aside:null__'))
     expect(await redisContainer.client.pttl(key)).toBeGreaterThan(0)
 
-    await expect(service.readThrough(key, loader, { ttlSeconds: 60, nullTtlSeconds: 1 })).resolves.toBeNull()
+    await expect(service.readThrough(key, loader, options)).resolves.toBeNull()
     expect(loaderCalls).toBe(1)
 
     await new Promise((resolve) => setTimeout(resolve, 1_100))
 
-    await expect(service.readThrough(key, loader, { ttlSeconds: 60, nullTtlSeconds: 1 })).resolves.toBeNull()
+    await expect(service.readThrough(key, loader, options)).resolves.toBeNull()
     expect(loaderCalls).toBe(2)
   })
 
-  it('should not persist undefined loader results', async () => {
+  test('when a loader returns undefined, should not persist a cache value', async () => {
     const key = 'role:id:undefined'
 
     await expect(service.readThrough(key, () => undefined, { ttlSeconds: 60 })).resolves.toBeUndefined()
     expect(await redisContainer.client.get(key)).toBeNull()
   })
 
-  it('should treat a null sentinel as a hit while reloading only corrupted values from a batch', async () => {
+  test('when a batch contains null sentinels and corrupted values, should reload only corrupted values', async () => {
     const keys = ['role:id:cached', 'role:id:null', 'role:id:corrupted']
     const cached: CachedRole = { id: 'cached', permissions: ['user:read'] }
     const reloaded: CachedRole = { id: 'corrupted', permissions: ['user:write'] }
@@ -286,7 +316,7 @@ describe(CacheAsideService.name, () => {
     ])
   })
 
-  it('should bound a tag TTL by its cached key TTL', async () => {
+  test('when a tag TTL exceeds its key TTL, should bound the tag TTL by the key TTL', async () => {
     const key = 'role:id:ttl'
     const tagKey = 'cache-aside:tag:permission:id:ttl'
 
@@ -301,7 +331,7 @@ describe(CacheAsideService.name, () => {
     expect(tagTtl).toBeLessThanOrEqual(keyTtl)
   })
 
-  it('should treat empty and unknown invalidations as safe no-ops', async () => {
+  test('when invalidating empty or unknown entries, should leave unrelated values untouched', async () => {
     const retainedKey = 'role:id:retained'
     await redisContainer.client.set(retainedKey, JSON.stringify({ id: retainedKey }))
 
@@ -312,7 +342,7 @@ describe(CacheAsideService.name, () => {
     expect(await redisContainer.client.exists('cache-aside:tag:permission:id:missing')).toBe(0)
   })
 
-  it('should invalidate tags with more keys than the Redis Lua unpack limit', async () => {
+  test('when a tag has more keys than the Redis Lua unpack limit, should invalidate all of them', async () => {
     const tag = 'permission:id:large'
     const tagKey = `cache-aside:tag:${tag}`
     const keys = Array.from({ length: 8_001 }, (_, index) => `role:id:large:${index}`)
@@ -330,7 +360,7 @@ describe(CacheAsideService.name, () => {
     expect(await redisContainer.client.exists(tagKey)).toBe(0)
   })
 
-  it('should preserve a consistent cached value during concurrent reads from separate service instances', async () => {
+  test('when separate service instances read concurrently, should preserve a consistent cached value', async () => {
     const key = 'role:id:concurrent'
     const loaded: CachedRole = { id: 'concurrent', permissions: ['user:read'] }
     const otherService = new CacheAsideService(logger, cache)
@@ -351,7 +381,7 @@ describe(CacheAsideService.name, () => {
     expect(await redisContainer.client.get(key)).toBe(JSON.stringify(loaded))
   })
 
-  it('should return an empty result without querying Redis when no keys are requested', async () => {
+  test('when no keys are requested, should return an empty result without querying Redis', async () => {
     let loaderCalls = 0
     const loader = async () => {
       loaderCalls++

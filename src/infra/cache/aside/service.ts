@@ -43,7 +43,7 @@ const INVALIDATE_BY_TAG_SCRIPT = `
 
 @Injectable()
 export class CacheAsideService implements ICacheAsideAdapter {
-  private readonly inFlight = new Map<string, Promise<unknown>>()
+  private readonly inFlight = new Map<string, Map<string, Promise<unknown>>>()
 
   constructor(
     private readonly logger: ILoggerAdapter,
@@ -101,8 +101,34 @@ export class CacheAsideService implements ICacheAsideAdapter {
       const storeOperations: CacheAsideStoreOperation[] = []
 
       for (const [key, value] of loaded) {
+        if (value === undefined) {
+          result.set(key, null)
+          continue
+        }
+
         result.set(key, value)
-        storeOperations.push(this.createStoreOperation(key, value, options))
+
+        const isNull = value === null
+        if (isNull && !options.cacheNullResults) continue
+
+        const ttlSeconds = isNull ? (options.nullTtlSeconds ?? DEFAULT_NULL_TTL_SECONDS) : options.ttlSeconds
+        const toStore = isNull ? NULL_SENTINEL : value
+
+        storeOperations.push(this.createStoreOperation(key, toStore, { ...options, ttlSeconds }))
+      }
+
+      for (const key of missing) {
+        if (loaded.has(key)) continue
+
+        result.set(key, null)
+        if (!options.cacheNullResults) continue
+
+        storeOperations.push(
+          this.createStoreOperation(key, NULL_SENTINEL, {
+            ...options,
+            ttlSeconds: options.nullTtlSeconds ?? DEFAULT_NULL_TTL_SECONDS
+          })
+        )
       }
 
       await this.storeMany(storeOperations)
@@ -209,19 +235,60 @@ export class CacheAsideService implements ICacheAsideAdapter {
     loader: () => Promise<T> | T,
     options: CacheAsideSingleFlightOptionsInput
   ): Promise<T> {
-    const existing = this.inFlight.get(key)
+    const optionsKey = this.getSingleFlightOptionsKey(options)
+    const inFlightByOptions = this.inFlight.get(key) ?? new Map<string, Promise<unknown>>()
+    const existing = inFlightByOptions.get(optionsKey)
 
     if (existing) {
       return existing as Promise<T>
     }
 
+    this.inFlight.set(key, inFlightByOptions)
+
     const promise = this.loadAndStore(key, loader, options).finally(() => {
-      this.inFlight.delete(key)
+      const currentInFlightByOptions = this.inFlight.get(key)
+      currentInFlightByOptions?.delete(optionsKey)
+
+      if (!currentInFlightByOptions?.size) {
+        this.inFlight.delete(key)
+      }
     })
 
-    this.inFlight.set(key, promise)
+    inFlightByOptions.set(optionsKey, promise)
 
     return promise
+  }
+
+  private getSingleFlightOptionsKey(options: CacheAsideSingleFlightOptionsInput): string {
+    const cacheNullResults = options.cacheNullResults ?? false
+    const metadata = {
+      ttlSeconds: options.ttlSeconds,
+      cacheNullResults,
+      nullTtlSeconds: cacheNullResults ? (options.nullTtlSeconds ?? DEFAULT_NULL_TTL_SECONDS) : undefined,
+      tagCount: options.tags?.length ?? 0
+    }
+
+    try {
+      const optionsKey = JSON.stringify([
+        options.ttlSeconds,
+        cacheNullResults,
+        cacheNullResults ? (options.nullTtlSeconds ?? DEFAULT_NULL_TTL_SECONDS) : null,
+        options.tags?.map(({ key, ttlSeconds }) => [key, ttlSeconds]) ?? []
+      ])
+
+      if (optionsKey === undefined) {
+        throw new Error('JSON.stringify returned undefined')
+      }
+
+      return optionsKey
+    } catch (error) {
+      throw new ApiInternalServerException('Unable to serialize cache options for single-flight coordination', {
+        context: `${CacheAsideService.name}.getSingleFlightOptionsKey`,
+        details: ['Cache options could not be serialized to coordinate concurrent requests'],
+        metadata,
+        cause: error
+      })
+    }
   }
 
   private async loadAndStore<T>(
@@ -231,7 +298,7 @@ export class CacheAsideService implements ICacheAsideAdapter {
   ): Promise<T> {
     const value = await loader()
 
-    if (value === undefined) {
+    if (value === undefined || (value === null && !options.cacheNullResults)) {
       return value
     }
 
@@ -371,6 +438,11 @@ export class CacheAsideService implements ICacheAsideAdapter {
 export type CacheAsideReadThroughOptionsInput = {
   ttlSeconds: number
   /**
+   * Whether to cache `null` results and missing keys from `readThroughMany`.
+   * Default: false.
+   */
+  cacheNullResults?: boolean
+  /**
    * Lifetime of the cached null value (in seconds).
    * Default: 60s.
    */
@@ -386,8 +458,9 @@ export type CacheAsideSingleFlightOptionsInput = CacheAsideReadThroughOptionsInp
  * Receives the keys that missed the cache. Must return a Map with the
  * values it found, keyed by the *full cache key* (not the raw id).
  *
- * Keys not present in the returned Map are treated as "not found" and
- * returned as `null` in the final array.
+ * Keys not present in the returned Map are treated as "not found" and returned
+ * as `null`. When `cacheNullResults` is enabled, they are cached using
+ * `nullTtlSeconds` (60 seconds by default).
  */
 export type CacheAsideReadThroughManyLoaderInput<T> = (
   missingKeys: string[]

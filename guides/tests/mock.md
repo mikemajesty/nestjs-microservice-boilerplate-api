@@ -1,219 +1,106 @@
-# Mock Schema Generator
+# MockUtils and ZodMockSchema
 
-Automatic mock generation from Zod schemas that eliminates manual mock maintenance. This utility leverages [zod-mock-schema](https://github.com/mikemajesty/zod-mock-schema) to generate **realistic, type-safe test data** automatically from your validation schemas.
-
-## Why This is a Game Changer
-
-### Manual Mock Maintenance Pain
-
-Without automatic mock generation, developers face constant maintenance overhead:
+Import test helpers through the project's barrel:
 
 ```typescript
-// ❌ MANUAL MOCK: Breaks every time schema changes
-const mockUser = {
-  id: 'uuid-123',
-  name: 'John Doe',
-  email: 'john@example.com',
-  createdAt: new Date(),
-  // Oops! Forgot new 'role' field added to schema
-  // Oops! Missing new 'isVerified' field 
-  // Tests pass but don't reflect real data structure
-}
+import { MockUtils, MockOptions, ZodMockSchema } from '@/utils/test'
 ```
 
-### Automatic Mock Generation Solution
+Do not import `ZodMockSchema` directly from `@mikemajesty/zod-mock-schema` in
+tests. The local barrel is the project's stable import surface.
 
-With ZodMockSchema, mocks **automatically evolve** with your schemas:
+## MockUtils
+
+`MockUtils` provides shared generated values:
+
+| Helper | Use |
+| --- | --- |
+| `UUID()` | UUID strings |
+| `ObjectId()` | 24-character hexadecimal Mongo ObjectId values |
+| `Date()` / `ISODate()` | Faker-generated dates in the past, as `Date` / ISO string |
+| `Text(length?)` | Faker-generated lorem words |
+| `Number(min?, max?)` | Faker-generated integer in the inclusive range (defaults 0–100) |
+| `Boolean()` | Faker-generated boolean |
+| `Array(item, length?)` | Array containing the supplied item (defaults to length 3) |
+| `User()` | Basic request user with generated ID and `test` name/email |
+| `Tracing()` | Tracing input with a generated user |
+| `Logger(input?)` | `ILoggerAdapter` whose methods are Jest mocks by default |
+| `faker` | The shared Faker instance for other generated values |
+
+Generated values are not fixed constants. If the exact value matters to a
+scenario, use a literal or override; if deterministic time is required, use a
+fixed date or control `Date.now()` with `TestUtils.spyOn`.
+
+`Array(item)` repeats the same item reference; it does not create independent
+copies of object values. Use `.map` or generate/clone separate entities when
+each element must be independent.
 
 ```typescript
-// ✅ AUTOMATIC MOCK: Always stays in sync with schema
-const userSchema = z.object({
-  id: z.string().uuid(),
-  name: z.string().min(1),
-  email: z.string().email(),
-  role: z.enum(['user', 'admin']),      // New field? Automatically included!
-  isVerified: z.boolean(),              // Another new field? Also included!
-  createdAt: z.date(),
-  updatedAt: z.date().optional()
-})
-
-const mock = new ZodMockSchema(userSchema)
-const mockUser = mock.generate()
-// Result: Perfect mock with ALL fields, realistic data types
+const id = MockUtils.UUID()
+const email = MockUtils.faker.internet.email()
+const user = MockUtils.User()
+const tracing = MockUtils.Tracing()
 ```
 
-## Centralized Import Pattern
-
-**IMPORTANT**: Always import through our centralized export, not directly from the library:
+`MockUtils.Logger()` silences logger output and exposes Jest mocks for
+assertions. Enable real console logging only while debugging:
 
 ```typescript
-// ✅ CORRECT: Use centralized import
-import { ZodMockSchema, MockOptions } from '@/utils/test/mock'
-
-// ❌ WRONG: Direct import bypasses centralization
-import { ZodMockSchema } from '@mikemajesty/zod-mock-schema'
+const logger = MockUtils.Logger({ enableLogger: true })
 ```
 
-This centralization allows us to:
-- **Control the API** across the entire application
-- **Add custom configurations** or wrapper functions if needed
-- **Update the underlying library** without changing imports everywhere
-- **Maintain consistency** in mock generation patterns
+## ZodMockSchema
 
-## Basic Usage Examples
-
-### Entity Mock Generation
+Use `ZodMockSchema` in tests in **any folder** when a Zod schema describes the
+input or fixture. It is especially valuable for large objects: generated
+fields stay tied to the schema instead of requiring a manually maintained
+object literal. This is the standard for valid `core` use-case input that is
+validated by `@ValidateSchema`.
 
 ```typescript
-import { ZodMockSchema } from '@/utils/test/mock'
+const input = new ZodMockSchema(UserCreateSchema).generate()
+```
 
-const userEntitySchema = z.object({
-  id: z.string().uuid(),
-  name: z.string().min(1),
-  email: z.string().email(),
-  age: z.number().min(18).max(100),
-  role: z.enum(['user', 'admin']),
-  isActive: z.boolean(),
-  createdAt: z.date()
-})
+Use `overrides` for values relevant to the scenario, and `factory` when the
+test needs an actual class instance with entity behavior:
 
-describe('UserService', () => {
-  it('should process user data correctly', () => {
-    // Generate perfect mock automatically
-    const mock = new ZodMockSchema(userEntitySchema)
-    const mockUser = mock.generate()
-    
-    const userEntity = new UserEntity(mockUser)
-    const result = userService.processUser(userEntity)
-    
-    expect(result).toBeDefined()
-    expect(mockUser.id).toMatch(/^[0-9a-f-]{36}$/) // Valid UUID
-    expect(mockUser.email).toContain('@')           // Valid email
-    expect(mockUser.age).toBeGreaterThanOrEqual(18) // Respects constraints
-  })
+```typescript
+const user = new ZodMockSchema(UserEntitySchema).generate({
+  overrides: {
+    email: 'user@example.com',
+    roles: [role]
+  },
+  factory: (data) => new UserEntity(data)
 })
 ```
 
-### Custom Values Override
+Use `generateMany(count, options)` for collections. Use `.clone()` when a test
+needs an independent copy of a generated entity. For a test of validation
+failure, create an intentionally invalid value explicitly; do not expect a
+schema-based generator to produce invalid data.
+
+Generated values are data, not a guarantee that every business rule or
+cross-field invariant is satisfied. Override the fields that drive the
+scenario, and validate generated data through the relevant schema when that
+is part of the test's purpose.
+
+## Schema evolution and test clarity
+
+Prefer generated values for fields irrelevant to the behavior under test.
+Keep significant fields explicit through `overrides`, so the test communicates
+why that value matters:
 
 ```typescript
-import { ZodMockSchema } from '@/utils/test/mock'
-
-describe('OrderService', () => {
-  it('should handle high-value orders', async () => {
-    const orderSchema = z.object({
-      id: z.string().uuid(),
-      customerId: z.string().uuid(),
-      amount: z.number().min(0),
-      currency: z.string().length(3)
-    })
-
-    // Create mock instance
-    const mock = new ZodMockSchema(orderSchema)
-    const mockOrder = mock.generate()
-    
-    // Override specific values for this test scenario
-    mockOrder.amount = 50000     // Specific high value for this test
-    mockOrder.currency = 'USD'   // Specific currency
-    
-    const result = await orderService.processHighValueOrder(mockOrder)
-    expect(result.requiresApproval).toBe(true)
-  })
+const order = new ZodMockSchema(OrderCreateSchema).generate({
+  overrides: {
+    total: 50_000,
+    currency: 'USD'
+  }
 })
 ```
 
-## Schema Evolution Benefits
+Do not assert arbitrary Faker values. Assert the contract, or capture and
+assert against the generated value used as input.
 
-When schemas evolve, mocks automatically stay in sync:
-
-```typescript
-// Version 1: Original schema
-const userSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  email: z.string()
-})
-
-// Version 2: Schema evolves (new fields added)
-const userSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  email: z.string(),
-  role: z.enum(['user', 'admin']),           // NEW FIELD
-  permissions: z.array(z.string())           // NEW FIELD
-})
-
-// Same test code, but now includes new fields automatically!
-const mock = new ZodMockSchema(userSchema)
-const mockUser = mock.generate()
-// mockUser automatically has role, permissions with realistic data
-```
-
-## Integration with TestUtils
-
-```typescript
-import { TestUtils } from '@/utils/test/util'
-import { ZodMockSchema } from '@/utils/test/mock'
-
-describe('UserRepository', () => {
-  it('should save user entity', async () => {
-    // Combine automatic mock generation with standardized IDs
-    const mock = new ZodMockSchema(userEntitySchema)
-    const mockUser = mock.generate()
-    mockUser.id = TestUtils.getMockUUID()           // Use standard UUID
-    mockUser.createdAt = TestUtils.getMockDate()    // Use standard date
-    
-    const mockSave = TestUtils.mockResolvedValue<void>()
-    const repository = new UserRepository({ save: mockSave })
-    
-    await repository.save(new UserEntity(mockUser))
-    
-    expect(mockSave).toHaveBeenCalledWith(expect.objectContaining({
-      id: TestUtils.getMockUUID(),
-      name: expect.any(String),
-      email: expect.stringContaining('@')
-    }))
-  })
-})
-```
-
-## Advanced Library Features
-
-For more advanced features like custom generators, seed data, and complex transformations, see the complete documentation at:
-
-**📚 [zod-mock-schema Documentation](https://github.com/mikemajesty/zod-mock-schema)**
-
-The library provides extensive customization options including:
-- **Custom data generators** for specific field types
-- **Seed data** for reproducible tests
-- **Transform functions** for post-processing generated data
-- **Recursive depth control** for nested structures
-- **Custom faker configurations** for localized data
-
-## Benefits Summary
-
-### 🎯 **Zero Mock Maintenance**
-- **Automatic evolution** when schemas change
-- **Always up-to-date** test data
-- **Eliminates manual mock updates**
-- **Reduces test maintenance overhead**
-
-### 🔒 **Type Safety & Realism**  
-- **Schema-compliant data** always
-- **Realistic constraints** respected (min/max, regex patterns)
-- **Proper data types** for all fields
-- **Validation-ready** mock data
-
-### 🚀 **Developer Productivity**
-- **Instant mock generation** for new schemas
-- **No boilerplate** mock creation code
-- **Focus on test logic** not mock data
-- **Consistent test data** across team
-
-### 🔧 **Integration Friendly**
-- **Works with existing patterns** (TestUtils, Entity validation)
-- **Customizable** for specific test scenarios
-- **Centralized import** maintains consistency
-- **Library updates** without code changes
-
-ZodMockSchema transforms test data creation from **manual, error-prone maintenance** into **automatic, reliable, and always-current** mock generation.
+See [TestUtils](./util.md) for typed dependency mocks and validation
+assertions, and [Test Standards](./standards.md) for layer-specific guidance.

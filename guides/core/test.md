@@ -1,199 +1,136 @@
-# Use Case Testing
+# Core Use-Case Tests
 
-Tests for use cases live inside `src/core/{domain}/use-cases/__tests__/` — keeping tests close to the code they validate.
+Core tests validate use-case input validation and business behavior with
+dependencies replaced by typed test doubles. These are unit tests; do not start
+containers or create an HTTP application unless the behavior under test
+specifically requires that boundary.
 
-## VS Code Snippet
+The VS Code `usecasetest` snippet can scaffold the common shape, but it is a
+starting point: update its provider dependencies, input types, and expected
+validation issues to match the actual use case.
 
-There's a **snippet** that generates the entire test structure automatically:
+## Location, file name, and suite
 
-```
-1. Create a new file: cat-create.spec.ts
-2. Type: usecasetest
-3. Press Tab
-4. Done! ✨
-```
+- Place tests in `src/core/{domain}/use-cases/__tests__/`.
+- Name the file after the use-case source file, adding only `.spec.ts`:
+  `user-create.ts` → `user-create.spec.ts`.
+- Add a file-level `@see` for this guide.
+- Use `describe(UseCase.name, ...)`.
+- Name each case `test('when ..., should ...', ...)`.
 
-The snippet is located at `.vscode/usecase-test.code-snippets` and generates:
+## Nest testing module and dependency mocks
 
-- NestJS test module setup
-- `describe` block with `Usecase.name`
-- Adapter injection pattern
-- Input validation test template
-
----
-
-## Test Structure
-
-We follow the **NestJS testing pattern** with `@nestjs/testing`:
+Use `@nestjs/testing` to construct a fresh use case and its test doubles in
+`beforeEach`. Register repository/adapter ports with
+`TestUtils.mockProvider(Port)`, then provide the use case through a factory
+that injects its dependencies. Retrieve the use case and mocked ports from the
+compiled module. Import a real shared module only when its behavior is
+intentionally part of the test; for example, some use cases use the real
+logger module.
 
 ```typescript
-import { Test } from '@nestjs/testing'
+beforeEach(async () => {
+  const moduleRef = await Test.createTestingModule({
+    imports: [],
+    providers: [
+      TestUtils.mockProvider(ICatRepository),
+      {
+        provide: ICatCreate,
+        useFactory: (repository: ICatRepository) => new CatCreateUsecase(repository),
+        inject: [ICatRepository]
+      }
+    ]
+  }).compile()
 
-describe(CatCreateUsecase.name, () => {
-  // ✅ Always use ClassName.name
-  let usecase: ICatCreateAdapter
-  let repository: ICatRepository
-
-  beforeEach(async () => {
-    const app = await Test.createTestingModule({
-      providers: [
-        { provide: ICatRepository, useValue: {} },
-        {
-          provide: ICatCreateAdapter,
-          useFactory: (catRepository: ICatRepository) => {
-            return new CatCreateUsecase(catRepository)
-          },
-          inject: [ICatRepository]
-        }
-      ]
-    }).compile()
-
-    usecase = app.get(ICatCreateAdapter)
-    repository = app.get(ICatRepository)
-  })
-
-  // tests...
+  usecase = moduleRef.get(ICatCreate)
+  repository = moduleRef.get(ICatRepository)
 })
 ```
 
-**Key rule:** `describe()` **always** uses `ClassName.name` — never hardcoded strings.
+Configure dependency behavior in each scenario with `TestUtils` helpers:
+`mockResolvedValue`, `mockRejectedValue`, `mockReturnValue`, or
+`mockImplementation`. Prefer `mockProvider` over hand-built cast provider
+objects.
 
----
+## Input validation
 
-## Test Naming Convention
-
-Follow the pattern: **"when X, should Y"**
+Every use case test includes a validation case for its `@ValidateSchema`
+input. Call the use case with intentionally invalid input and use
+`TestUtils.expectZodError` to assert **all expected issues**, including the
+field paths. Use `TestUtils.nameOf<Input>('field')` for paths so TypeScript
+catches renamed or mistyped properties:
 
 ```typescript
-// ✅ Good naming
-test('when no input is specified, should expect an error', ...)
-test('when cat created successfully, should expect a cat created', ...)
-test('when transaction throws an error, should expect an error', ...)
-
-// ❌ Bad naming
-test('test create', ...)
-test('error case', ...)
-test('it works', ...)
+await TestUtils.expectZodError(
+  () => usecase.execute({} as CatCreateInput, MockUtils.Tracing()),
+  (issues: ZodExceptionIssue[]) => {
+    expect(issues).toEqual([
+      {
+        message: 'Invalid input: expected string, received undefined',
+        path: TestUtils.nameOf<CatCreateInput>('name')
+      },
+      {
+        message: 'Invalid input: expected string, received undefined',
+        path: TestUtils.nameOf<CatCreateInput>('breed')
+      },
+      {
+        message: 'Invalid input: expected number, received undefined',
+        path: TestUtils.nameOf<CatCreateInput>('age')
+      }
+    ])
+  }
+)
 ```
 
----
+Import `ZodExceptionIssue` from `@/utils/validator`; import `TestUtils`,
+`MockUtils`, and `ZodMockSchema` from `@/utils/test`. Match issue order and
+messages to the actual schema. If exact wording is not part of the contract,
+use a message matcher but still assert the expected field paths.
 
-## Input Validation Test (Mandatory)
+`expectZodError` fails if the callback completes without throwing and
+rethrows errors that are not Zod errors. It reports the first segment of each
+issue path; see [TestUtils](../tests/util.md).
 
-Every use case test **must** include input validation:
+## Valid inputs and entity fixtures
+
+Use `ZodMockSchema` from `@/utils/test` to generate valid input from the same
+schema used by `@ValidateSchema`. This is the standard for valid `core`
+use-case inputs, especially when schemas contain many fields. Use `overrides`
+for values that drive the scenario:
 
 ```typescript
-test('when no input is specified, should expect an error', async () => {
-  await TestUtils.expectZodError(
-    () => usecase.execute({} as CatCreateInput, TestUtils.getMockTracing()),
-    (issues: ZodExceptionIssue[]) => {
-      expect(issues).toEqual([
-        {
-          message: 'Invalid input: expected string, received undefined',
-          path: TestUtils.nameOf<CatCreateInput>('name')
-        },
-        {
-          message: 'Invalid input: expected string, received undefined',
-          path: TestUtils.nameOf<CatCreateInput>('breed')
-        },
-        {
-          message: 'Invalid input: expected number, received undefined',
-          path: TestUtils.nameOf<CatCreateInput>('age')
-        }
-      ])
-    }
-  )
+const input = new ZodMockSchema(CatCreateSchema).generate({
+  overrides: { name: 'Milo' }
+})
+
+const output = { created: true, id: MockUtils.UUID() }
+repository.create = TestUtils.mockResolvedValue<CreatedModel>(output)
+
+await expect(usecase.execute(input, MockUtils.Tracing())).resolves.toEqual(output)
+```
+
+For repository fixtures, use the entity schema. Supply `factory` if the test
+needs actual entity methods; use `generateMany` for collections and `.clone()`
+when independent entity instances are needed:
+
+```typescript
+const entity = new ZodMockSchema(CatEntitySchema).generate({
+  factory: (data) => new CatEntity(data)
 })
 ```
 
----
+Prefer generated values for fields irrelevant to a scenario; keep significant
+values explicit with overrides. Use `MockUtils` for common IDs and tracing
+input, and `MockUtils.faker` for other generated values. Generated Faker
+values are not fixed; use a literal or controlled clock when determinism is
+required.
 
-## `TestUtils.nameOf<T>()` — Type-Safe Paths
+## Test coverage
 
-**Always** use `nameOf` for field paths:
+Cover validation, successful behavior, relevant dependency failures, and
+business edge cases for each use case. The coverage configuration targets
+100% for `src/core`; use coverage reports to find missing branches rather than
+adding assertions that do not verify behavior.
 
-```typescript
-// ✅ Type-safe — compiler catches typos
-path: TestUtils.nameOf<CatCreateInput>('name')
-
-// ❌ Not type-safe — typo goes unnoticed
-path: 'naem'
-```
-
-If you rename a field, TypeScript will catch it at compile time.
-
----
-
-## Mocking Best Practices
-
-### TestUtils is Mandatory
-
-**Always** use `TestUtils` for mocking — it enforces type safety:
-
-```typescript
-// ✅ Type-safe — compiler validates the return type
-repository.create = TestUtils.mockResolvedValue<CreatedModel>(input)
-
-// ❌ Not type-safe — no compile-time validation
-repository.create = jest.fn().mockResolvedValue(input)
-```
-
-This is **mandatory** because:
-
-- Forces you to declare the expected return type
-- Compiler catches type mismatches immediately
-- Prevents tests from passing with wrong data shapes
-
-See [Test Utils](../tests/util.md) for all available mock methods.
-
----
-
-### Generating Test Data
-
-Use `ZodMockSchema` to generate test data from schemas:
-
-```typescript
-import { ZodMockSchema } from '@mikemajesty/zod-mock-schema'
-
-const mock = new ZodMockSchema(CatEntitySchema)
-const input = mock.generate()
-
-test('when cat created successfully, should expect a cat created', async () => {
-  repository.create = TestUtils.mockResolvedValue<CreatedModel>(input)
-
-  await expect(usecase.execute(input, TestUtils.getMockTracing())).resolves.toEqual(input)
-})
-```
-
-For mocking repository methods:
-
-```typescript
-// Success case
-repository.create = TestUtils.mockResolvedValue<CreatedModel>(input)
-
-// Error case
-repository.create = TestUtils.mockRejectedValue(new ApiInternalServerException())
-```
-
-See [Mock Utils](../tests/mock.md) for more details.
-
----
-
-## Coverage Goal
-
-**Target: 100% coverage on use cases.**
-
-Use cases are the core business logic — they must be fully tested:
-
-- ✅ Input validation (empty input)
-- ✅ Success scenarios
-- ✅ Error scenarios (not found, transaction errors)
-- ✅ Edge cases
-
----
-
-## Related Links
-
-- [Use Case](./usecase.md) — Use case patterns
-- [Mock Utils](../tests/mock.md) — Test mocking utilities
-- [Test Utils](../tests/util.md) — Testing helpers
+See [Test Standards](../tests/standards.md), [TestUtils](../tests/util.md),
+and [MockUtils/ZodMockSchema](../tests/mock.md).
