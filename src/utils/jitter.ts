@@ -1,7 +1,7 @@
 /**
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/utils/jitter.md
  */
-import { InputValidator, SchemaInfer } from './validator'
+import { InferSchema, InputValidator } from './validator'
 
 export const JITTER_DEFAULT_PERCENTAGE = 0.1
 
@@ -58,4 +58,4 @@ export type JitterOptions = {
   integer?: boolean
 }
 
-export type JitterApplyOptionsInput = SchemaInfer<typeof JitterApplySchema>
+export type JitterApplyOptionsInput = InferSchema<typeof JitterApplySchema>

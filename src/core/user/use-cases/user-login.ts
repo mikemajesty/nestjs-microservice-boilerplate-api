@@ -6,7 +6,7 @@ import { ValidateSchema } from '@/utils/decorators'
 import { ApiNotFoundException } from '@/utils/exception'
 import { ApiTracingInput, UserRequest } from '@/utils/request'
 import { IUsecase } from '@/utils/usecase'
-import { SchemaInfer } from '@/utils/validator'
+import { InferSchema } from '@/utils/validator'
 
 import { UserEntitySchema } from '../entity/user'
 import { UserPasswordEntity, UserPasswordEntitySchema } from '../entity/user-password'
@@ -58,5 +58,5 @@ export class LoginUsecase implements IUsecase {
   }
 }
 
-export type LoginInput = SchemaInfer<typeof LoginSchema>
+export type LoginInput = InferSchema<typeof LoginSchema>
 export type LoginOutput = { accessToken: string; refreshToken: string }

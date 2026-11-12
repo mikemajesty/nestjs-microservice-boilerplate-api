@@ -6,7 +6,7 @@ import { Injectable } from '@nestjs/common'
 import { ValidateSchema } from '@/utils/decorators'
 import { ApiInternalServerException } from '@/utils/exception'
 import { IDGeneratorUtils } from '@/utils/id-generator'
-import { InputValidator, SchemaInfer } from '@/utils/validator'
+import { InferSchema, InputValidator } from '@/utils/validator'
 
 import { ICacheAdapter } from '../cache'
 import { IDistributedLockAdapter } from './adapter'
@@ -103,7 +103,7 @@ export class DistributedLockService implements IDistributedLockAdapter {
   }
 }
 
-export type DistributedLockGetInput = SchemaInfer<typeof DistributedLockSchema>
+export type DistributedLockGetInput = InferSchema<typeof DistributedLockSchema>
 export type DistributedLockGetOutput = DistributedLockGetInput
 
 export type DistributedLockReleaseLockFn = () => Promise<void>
@@ -115,4 +115,4 @@ export type DistributedLockAcquired = {
 }
 
 export type DistributedLockTryAcquireLockOutput = DistributedLockAcquired | null
-export type DistributedLockTryAcquireLockInput = SchemaInfer<typeof DistributedLockSchema>
+export type DistributedLockTryAcquireLockInput = InferSchema<typeof DistributedLockSchema>

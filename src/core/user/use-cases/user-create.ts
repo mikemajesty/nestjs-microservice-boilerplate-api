@@ -13,7 +13,7 @@ import { ApiConflictException, ApiNotFoundException } from '@/utils/exception'
 import { IDGeneratorUtils } from '@/utils/id-generator'
 import { ApiTracingInput } from '@/utils/request'
 import { IUsecase } from '@/utils/usecase'
-import { InputValidator, SchemaInfer } from '@/utils/validator'
+import { InferSchema, InputValidator } from '@/utils/validator'
 
 import { UserEntity, UserEntitySchema } from '../entity/user'
 import { UserPasswordEntity, UserPasswordEntitySchema } from '../entity/user-password'
@@ -75,5 +75,5 @@ export class UserCreateUsecase implements IUsecase {
   }
 }
 
-export type UserCreateInput = SchemaInfer<typeof UserCreateSchema>
+export type UserCreateInput = InferSchema<typeof UserCreateSchema>
 export type UserCreateOutput = CreatedModel

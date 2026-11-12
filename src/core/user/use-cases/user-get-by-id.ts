@@ -4,7 +4,7 @@
 import { ValidateSchema } from '@/utils/decorators'
 import { ApiNotFoundException } from '@/utils/exception'
 import { IUsecase } from '@/utils/usecase'
-import { SchemaInfer } from '@/utils/validator'
+import { InferSchema } from '@/utils/validator'
 
 import { UserEntity, UserEntitySchema } from '../entity/user'
 import { IUserRepository } from '../repository/user'
@@ -28,5 +28,5 @@ export class UserGetByIdUsecase implements IUsecase {
   }
 }
 
-export type UserGetByIdInput = SchemaInfer<typeof UserGetByIdSchema>
+export type UserGetByIdInput = InferSchema<typeof UserGetByIdSchema>
 export type UserGetByIdOutput = UserEntity

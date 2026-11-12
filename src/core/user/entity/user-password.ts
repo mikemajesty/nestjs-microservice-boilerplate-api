@@ -4,7 +4,7 @@
 import { CryptoUtils } from '@/utils/crypto'
 import { BaseEntity } from '@/utils/entity'
 import { ApiBadRequestException } from '@/utils/exception'
-import { InputValidator, SchemaInfer } from '@/utils/validator'
+import { InferSchema, InputValidator } from '@/utils/validator'
 
 const ID = InputValidator.uuid()
 const Password = InputValidator.string()
@@ -20,7 +20,7 @@ export const UserPasswordEntitySchema = InputValidator.object({
   deletedAt: DeletedAt
 })
 
-type UserPassword = SchemaInfer<typeof UserPasswordEntitySchema>
+type UserPassword = InferSchema<typeof UserPasswordEntitySchema>
 
 export class UserPasswordEntity extends BaseEntity<UserPasswordEntity>() {
   password!: UserPassword['password']

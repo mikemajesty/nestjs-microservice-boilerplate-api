@@ -6,7 +6,7 @@ import { ValidateSchema } from '@/utils/decorators'
 import { IDGeneratorUtils } from '@/utils/id-generator'
 import { ApiTracingInput } from '@/utils/request'
 import { IUsecase } from '@/utils/usecase'
-import { SchemaInfer } from '@/utils/validator'
+import { InferSchema } from '@/utils/validator'
 
 import { CatEntity, CatEntitySchema } from '../entity/cat'
 import { ICatRepository } from '../repository/cat'
@@ -32,5 +32,5 @@ export class CatCreateUsecase implements IUsecase {
   }
 }
 
-export type CatCreateInput = SchemaInfer<typeof CatCreateSchema>
+export type CatCreateInput = InferSchema<typeof CatCreateSchema>
 export type CatCreateOutput = CreatedModel

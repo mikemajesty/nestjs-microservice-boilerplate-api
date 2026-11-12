@@ -56,7 +56,7 @@ The Schema lives next to the use case, and the Input type is derived from it:
 
 ```typescript
 export const CatCreateSchema = CatEntitySchema.pick({ name: true, breed: true, age: true })
-export type CatCreateInput = Infer<typeof CatCreateSchema>
+export type CatCreateInput = InferSchematypeof CatCreateSchema>
 ```
 
 One file. One schema. One type. No duplication. No drift.
@@ -212,7 +212,7 @@ import { ValidateSchema } from '@/utils/decorators'
 import { IDGeneratorUtils } from '@/utils/id-generator'
 import { ApiTrancingInput } from '@/utils/request'
 import { IUsecase } from '@/utils/usecase'
-import { Infer } from '@/utils/validator'
+import { InferSchema } from '@/utils/validator'
 
 // 2️⃣ Internal imports (same domain)
 import { CatEntity, CatEntitySchema } from '../entity/cat'
@@ -245,7 +245,7 @@ export class CatCreateUsecase implements IUsecase {
 }
 
 // 8️⃣ Types at the bottom - exported first, private after
-export type CatCreateInput = Infer<typeof CatCreateSchema>
+export type CatCreateInput = InferSchematypeof CatCreateSchema>
 export type CatCreateOutput = CreatedModel
 ```
 
@@ -304,7 +304,7 @@ See [Repository (Core)](./repository.md).
 
 Every use case **must** have a Schema, even for simple operations. This is a best practice because:
 
-1. **Type Safety** — Input type is inferred from Schema via `Infer<typeof Schema>`
+1. **Type Safety** — Input type is inferred from Schema via `InferSchematypeof Schema>`
 2. **Validation** — `@ValidateSchema` uses it to validate input at runtime
 3. **Mock Generation** — The mock library can generate test data from the Schema automatically
 
@@ -312,7 +312,7 @@ Every use case **must** have a Schema, even for simple operations. This is a bes
 // ✅ Schema + Infer = Type safety + Mock generation
 export const CatDeleteSchema = CatEntitySchema.pick({ id: true })
 
-export type CatDeleteInput = Infer<typeof CatDeleteSchema>
+export type CatDeleteInput = InferSchematypeof CatDeleteSchema>
 ```
 
 With this pattern, you can generate mocks in tests:
@@ -404,7 +404,7 @@ export const CatListSchema = InputValidator.intersection(PaginationSchema, SortS
 
 ```typescript
 // ✅ Correct order
-export type CatCreateInput = Infer<typeof CatCreateSchema>
+export type CatCreateInput = InferSchematypeof CatCreateSchema>
 export type CatCreateOutput = CreatedModel
 
 type InternalHelper = { ... }  // Private types after

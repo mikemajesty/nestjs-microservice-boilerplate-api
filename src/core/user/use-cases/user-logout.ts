@@ -8,7 +8,7 @@ import { Namespaces } from '@/utils/namespaces'
 import { ObjectUtils } from '@/utils/object'
 import { ApiTracingInput } from '@/utils/request'
 import { IUsecase } from '@/utils/usecase'
-import { InputValidator, SchemaInfer } from '@/utils/validator'
+import { InferSchema, InputValidator } from '@/utils/validator'
 
 export const LogoutSchema = InputValidator.object({ token: InputValidator.string().trim().min(10) })
 
@@ -42,5 +42,5 @@ export class LogoutUsecase implements IUsecase {
   }
 }
 
-export type LogoutInput = SchemaInfer<typeof LogoutSchema>
+export type LogoutInput = InferSchema<typeof LogoutSchema>
 export type LogoutOutput = Promise<void>

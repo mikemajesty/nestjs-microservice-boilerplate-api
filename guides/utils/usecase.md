@@ -52,13 +52,15 @@ export class UserModule {}
 ```
 
 **Key Point**: Both the adapter (interface) and the use case (implementation) implement `IUsecase`, ensuring:
+
 - **Consistent contract**: Same interface for both abstraction and implementation
 - **Type safety**: TypeScript ensures matching signatures
 - **Clean injection**: NestJS can seamlessly bind abstract to concrete classes
 
 This separation ensures:
+
 - **Core remains pure**: Business logic has no knowledge of infrastructure
-- **Dependency inversion**: Application depends on abstractions, not concrete implementations  
+- **Dependency inversion**: Application depends on abstractions, not concrete implementations
 - **Testability**: Core logic can be tested independently
 - **Maintainability**: Changes in one layer don't affect others
 
@@ -67,6 +69,7 @@ This separation ensures:
 ### Creating a New Use Case
 
 1. **Define in Core Layer**:
+
 ```typescript
 export class ProductCreateUsecase implements IUsecase {
   constructor(
@@ -86,6 +89,7 @@ export class ProductCreateUsecase implements IUsecase {
 ```
 
 2. **Create Adapter in Module Layer**:
+
 ```typescript
 export abstract class IProductCreateAdapter implements IUsecase {
   abstract execute(input: ProductCreateInput, trace: ApiTrancingInput): Promise<ProductCreateOutput>
@@ -93,21 +97,18 @@ export abstract class IProductCreateAdapter implements IUsecase {
 ```
 
 3. **Wire in Module and Controller**:
+
 ```typescript
 // src/modules/product/module.ts - Connect adapter to use case
 @Module({
-  providers: [
-    { provide: IProductCreateAdapter, useClass: ProductCreateUsecase }
-  ]
+  providers: [{ provide: IProductCreateAdapter, useClass: ProductCreateUsecase }]
 })
 export class ProductModule {}
 
 // src/modules/product/controller.ts - Use adapter in controller
 @Controller('products')
 export class ProductController {
-  constructor(
-    private readonly productCreateAdapter: IProductCreateAdapter
-  ) {}
+  constructor(private readonly productCreateAdapter: IProductCreateAdapter) {}
 
   @Post()
   async create(@Req() { body }: ApiRequest) {
@@ -119,21 +120,25 @@ export class ProductController {
 ## Benefits for Developers
 
 ### Consistency
+
 Every business operation follows the same pattern:
+
 - Single `execute` method
 - Typed inputs and outputs
 - Standardized error handling
 - Uniform tracing integration
 
 ### Type Safety
+
 ```typescript
-export type ProductCreateInput = Infer<typeof ProductCreateSchema>
+export type ProductCreateInput = InferSchematypeof ProductCreateSchema>
 export type ProductCreateOutput = CreatedModel
 
 // TypeScript ensures correct usage throughout the application
 ```
 
 ### Testing Simplification
+
 ```typescript
 // Mock any use case easily
 const mockUseCase: IUsecase = {
@@ -142,7 +147,9 @@ const mockUseCase: IUsecase = {
 ```
 
 ### Dependency Injection
+
 The interface makes it easy to swap implementations:
+
 ```typescript
 // Development
 providers: [{ provide: IUserCreateAdapter, useClass: UserCreateUsecase }]
@@ -154,12 +161,15 @@ providers: [{ provide: IUserCreateAdapter, useClass: MockUserCreateUsecase }]
 ## Architectural Benefits
 
 ### Clean Boundaries
+
 - **Core**: Contains business logic, implements `IUsecase` directly
 - **Application**: Uses adapters that implement `IUsecase` for contracts
 - **Infrastructure**: Provides implementations for core interfaces
 
 ### Framework Independence
+
 Since core use cases only depend on the simple `IUsecase` interface, they remain framework-agnostic and can be easily ported or tested outside the NestJS context.
 
 ### Scalability
+
 Adding new business operations is straightforward - just implement `IUsecase` and follow the established patterns for validation, logging, and error handling.

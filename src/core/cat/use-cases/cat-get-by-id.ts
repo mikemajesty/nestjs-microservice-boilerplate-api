@@ -5,7 +5,7 @@ import { CatEntitySchema } from '@/core/cat/entity/cat'
 import { ValidateSchema } from '@/utils/decorators'
 import { ApiNotFoundException } from '@/utils/exception'
 import { IUsecase } from '@/utils/usecase'
-import { SchemaInfer } from '@/utils/validator'
+import { InferSchema } from '@/utils/validator'
 
 import { CatEntity } from '../entity/cat'
 import { ICatRepository } from '../repository/cat'
@@ -29,5 +29,5 @@ export class CatGetByIdUsecase implements IUsecase {
   }
 }
 
-export type CatGetByIdInput = SchemaInfer<typeof CatGetByIdSchema>
+export type CatGetByIdInput = InferSchema<typeof CatGetByIdSchema>
 export type CatGetByIdOutput = CatEntity

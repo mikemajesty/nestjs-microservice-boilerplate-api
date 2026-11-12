@@ -7,7 +7,7 @@ import { ApiNotFoundException } from '@/utils/exception'
 import { Namespaces } from '@/utils/namespaces'
 import { ApiTracingInput } from '@/utils/request'
 import { IUsecase } from '@/utils/usecase'
-import { SchemaInfer } from '@/utils/validator'
+import { InferSchema } from '@/utils/validator'
 
 import { UserEntity, UserEntitySchema } from '../entity/user'
 import { IUserRepository } from '../repository/user'
@@ -41,5 +41,5 @@ export class UserDeleteUsecase implements IUsecase {
   }
 }
 
-export type UserDeleteInput = SchemaInfer<typeof UserDeleteSchema>
+export type UserDeleteInput = InferSchema<typeof UserDeleteSchema>
 export type UserDeleteOutput = UserEntity

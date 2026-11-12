@@ -7,7 +7,7 @@ import { ValidateSchema } from '@/utils/decorators'
 import { ApiNotFoundException } from '@/utils/exception'
 import { ApiTracingInput } from '@/utils/request'
 import { IUsecase } from '@/utils/usecase'
-import { SchemaInfer } from '@/utils/validator'
+import { InferSchema } from '@/utils/validator'
 
 import { CatEntity, CatEntitySchema } from '../entity/cat'
 
@@ -43,5 +43,5 @@ export class CatUpdateUsecase implements IUsecase {
   }
 }
 
-export type CatUpdateInput = SchemaInfer<typeof CatUpdateSchema>
+export type CatUpdateInput = InferSchema<typeof CatUpdateSchema>
 export type CatUpdateOutput = CatEntity

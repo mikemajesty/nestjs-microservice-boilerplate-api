@@ -3,7 +3,7 @@
  */
 import { PermissionEntity, PermissionEntitySchema } from '@/core/permission/entity/permission'
 import { BaseEntity } from '@/utils/entity'
-import { InputValidator, SchemaInfer } from '@/utils/validator'
+import { InferSchema, InputValidator } from '@/utils/validator'
 
 export enum RoleEnum {
   USER = 'USER',
@@ -26,7 +26,7 @@ export const RoleEntitySchema = InputValidator.object({
   deletedAt: DeletedAt
 })
 
-type Role = SchemaInfer<typeof RoleEntitySchema>
+type Role = InferSchema<typeof RoleEntitySchema>
 
 export class RoleEntity extends BaseEntity<RoleEntity>() {
   name!: Role['name']

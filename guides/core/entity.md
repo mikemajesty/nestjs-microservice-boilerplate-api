@@ -4,20 +4,20 @@ Entities are the **heart of the domain layer**. They represent business concepts
 
 ## Location & Naming Conventions
 
-| Convention | Pattern | Example |
-|------------|---------|---------|
+| Convention | Pattern                     | Example                |
+| ---------- | --------------------------- | ---------------------- |
 | **Folder** | `src/core/{domain}/entity/` | `src/core/cat/entity/` |
-| **File** | `{domain}.ts` | `cat.ts` |
-| **Class** | `{Domain}Entity` | `CatEntity` |
-| **Schema** | `{Domain}EntitySchema` | `CatEntitySchema` |
-| **Type** | `{Domain}` (inferred) | `Cat` |
+| **File**   | `{domain}.ts`               | `cat.ts`               |
+| **Class**  | `{Domain}Entity`            | `CatEntity`            |
+| **Schema** | `{Domain}EntitySchema`      | `CatEntitySchema`      |
+| **Type**   | `{Domain}` (inferred)       | `Cat`                  |
 
 ## Anatomy of an Entity
 
 ```typescript
 // src/core/cat/entity/cat.ts
 import { BaseEntity } from '@/utils/entity'
-import { Infer, InputValidator } from '@/utils/validator'
+import { InferSchema, InputValidator } from '@/utils/validator'
 
 // 1️⃣ Define each field's validation rules
 const ID = InputValidator.uuid()
@@ -39,8 +39,8 @@ export const CatEntitySchema = InputValidator.object({
   deletedAt: DeletedAt
 })
 
-// 3️⃣ Infer the type from schema
-type Cat = Infer<typeof CatEntitySchema>
+// 3️⃣ InferSchema the type from schema
+type Cat = InferSchema<typeof CatEntitySchema>
 
 // 4️⃣ Create the entity class (always: {Domain}Entity)
 export class CatEntity extends BaseEntity<CatEntity>() {
@@ -78,23 +78,24 @@ Combine all fields into a single schema:
 ```typescript
 export const CatEntitySchema = InputValidator.object({
   id: ID,
-  name: Name,
+  name: Name
   // ...
 })
 ```
 
 ### 3️⃣ Infer the Type
 
-Use Zod's `Infer` to generate TypeScript type from schema:
+Use Zod's `InferSchema` to generate TypeScript type from schema:
 
 ```typescript
-type Cat = Infer<typeof CatEntitySchema>
+type Cat = InferSchema<typeof CatEntitySchema>
 // Result: { id: string; name: string; breed: string; age: number; ... }
 ```
 
 ### 4️⃣ Extend BaseEntity
 
 The entity class extends `BaseEntity` which provides:
+
 - `validate(entity)` — Validates and assigns all properties
 - `ensureID()` — Generates ID if not provided
 - `toData()` — Converts to plain object
@@ -148,9 +149,15 @@ export class OrderEntity extends BaseEntity<OrderEntity>() {
 
 // Business logic scattered in use cases
 class OrderService {
-  calculateTotal(order: OrderEntity) { /* ... */ }
-  canBeCancelled(order: OrderEntity) { /* ... */ }
-  applyDiscount(order: OrderEntity, discount: number) { /* ... */ }
+  calculateTotal(order: OrderEntity) {
+    /* ... */
+  }
+  canBeCancelled(order: OrderEntity) {
+    /* ... */
+  }
+  applyDiscount(order: OrderEntity, discount: number) {
+    /* ... */
+  }
 }
 ```
 
@@ -195,6 +202,7 @@ export class OrderEntity extends BaseEntity<OrderEntity>() {
 ### When to Add Business Logic
 
 Add methods to your entity when the logic:
+
 - **Relates to entity state** — Calculations, validations, state transitions
 - **Is reusable** — Used in multiple use cases
 - **Encapsulates rules** — Business invariants that should always be enforced
@@ -206,7 +214,7 @@ Add methods to your entity when the logic:
 ### Optional Fields
 
 ```typescript
-const Description = InputValidator.string().nullish()  // string | null | undefined
+const Description = InputValidator.string().nullish() // string | null | undefined
 const DeletedAt = InputValidator.date().nullish()
 ```
 
@@ -241,10 +249,12 @@ export const UserEntitySchema = InputValidator.object({
 
 ```typescript
 const Tags = InputValidator.array(InputValidator.string())
-const Items = InputValidator.array(InputValidator.object({
-  productId: InputValidator.uuid(),
-  quantity: InputValidator.int().min(1)
-}))
+const Items = InputValidator.array(
+  InputValidator.object({
+    productId: InputValidator.uuid(),
+    quantity: InputValidator.int().min(1)
+  })
+)
 ```
 
 ---

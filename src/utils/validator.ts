@@ -101,7 +101,7 @@ export const normalizeLocale = (locale: string): SupportedLocale => {
   return (localeMap[`${locale}`] || 'en-US') as SupportedLocale
 }
 
-export type SchemaInfer<T extends z.ZodType> = z.infer<T>
+export type InferSchema<T extends z.ZodType> = z.infer<T>
 
 export const ZodException = z.ZodError
 export type ZodException = z.ZodError

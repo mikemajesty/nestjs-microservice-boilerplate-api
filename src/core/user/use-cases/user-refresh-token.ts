@@ -6,7 +6,7 @@ import { ValidateSchema } from '@/utils/decorators'
 import { ApiBadRequestException, ApiNotFoundException } from '@/utils/exception'
 import { UserRequest } from '@/utils/request'
 import { IUsecase } from '@/utils/usecase'
-import { InputValidator, SchemaInfer } from '@/utils/validator'
+import { InferSchema, InputValidator } from '@/utils/validator'
 
 import { IUserRepository } from '../repository/user'
 
@@ -56,7 +56,7 @@ export class RefreshTokenUsecase implements IUsecase {
   }
 }
 
-export type RefreshTokenInput = SchemaInfer<typeof RefreshTokenSchema>
+export type RefreshTokenInput = InferSchema<typeof RefreshTokenSchema>
 export type RefreshTokenOutput = { accessToken: string; refreshToken: string }
 
 export type UserRefreshTokenVerifyInput = {

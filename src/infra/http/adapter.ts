@@ -3,7 +3,7 @@
  */
 import { AxiosRequestConfig } from 'axios'
 
-import { BaseZodType, SchemaInfer } from '@/utils/validator'
+import { BaseZodType, InferSchema } from '@/utils/validator'
 
 import { HttpData, HttpRetryInput } from './types'
 
@@ -60,7 +60,7 @@ export abstract class IHttpBuilder<Response = unknown> {
    * Must be called after the verb, which resets it. Returns the parsed value.
    * A mismatch throws a 502, never retried, with the issues in `parameters.upstreamIssues`.
    */
-  abstract schema<Schema extends BaseZodType>(schema: Schema): IHttpBuilder<SchemaInfer<Schema>>
+  abstract schema<Schema extends BaseZodType>(schema: Schema): IHttpBuilder<InferSchema<Schema>>
 
   abstract execute(): Promise<Response>
 }

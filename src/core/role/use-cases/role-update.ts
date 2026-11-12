@@ -6,7 +6,7 @@ import { ILoggerAdapter } from '@/infra/logger'
 import { ValidateSchema } from '@/utils/decorators'
 import { ApiNotFoundException } from '@/utils/exception'
 import { IUsecase } from '@/utils/usecase'
-import { SchemaInfer } from '@/utils/validator'
+import { InferSchema } from '@/utils/validator'
 
 import { RoleEntity, RoleEntitySchema } from './../entity/role'
 
@@ -40,5 +40,5 @@ export class RoleUpdateUsecase implements IUsecase {
   }
 }
 
-export type RoleUpdateInput = SchemaInfer<typeof RoleUpdateSchema>
+export type RoleUpdateInput = InferSchema<typeof RoleUpdateSchema>
 export type RoleUpdateOutput = RoleEntity

@@ -9,7 +9,7 @@ import { ApiNotFoundException } from '@/utils/exception'
 import { IDGeneratorUtils } from '@/utils/id-generator'
 import { Namespaces } from '@/utils/namespaces'
 import { IUsecase } from '@/utils/usecase'
-import { InputValidator, SchemaInfer } from '@/utils/validator'
+import { InferSchema, InputValidator } from '@/utils/validator'
 
 import { RoleEntitySchema } from '../entity/role'
 import { IRoleRepository } from '../repository/role'
@@ -51,5 +51,5 @@ export class RoleAddPermissionUsecase implements IUsecase {
   }
 }
 
-export type RoleAddPermissionInput = SchemaInfer<typeof RoleAddPermissionSchema>
+export type RoleAddPermissionInput = InferSchema<typeof RoleAddPermissionSchema>
 export type RoleAddPermissionOutput = void

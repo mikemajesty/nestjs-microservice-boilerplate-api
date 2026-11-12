@@ -8,7 +8,7 @@ import { ApiConflictException, ApiNotFoundException } from '@/utils/exception'
 import { Namespaces } from '@/utils/namespaces'
 import { ObjectUtils } from '@/utils/object'
 import { IUsecase } from '@/utils/usecase'
-import { SchemaInfer } from '@/utils/validator'
+import { InferSchema } from '@/utils/validator'
 
 import { RoleEntity, RoleEntitySchema } from '../entity/role'
 
@@ -43,5 +43,5 @@ export class RoleDeleteUsecase implements IUsecase {
   }
 }
 
-export type RoleDeleteInput = SchemaInfer<typeof RoleDeleteSchema>
+export type RoleDeleteInput = InferSchema<typeof RoleDeleteSchema>
 export type RoleDeleteOutput = RoleEntity

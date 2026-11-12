@@ -1,4 +1,4 @@
-import { SchemaInfer } from '@/utils/validator'
+import { InferSchema } from '@/utils/validator'
 
 import { CacheMemorySetConfigInput } from './memory'
 import { CacheRedisSetConfigInput, CacheSetNXInputSchema } from './redis'
@@ -11,7 +11,7 @@ export type CacheKeyValue = {
   value: CacheValueArgument | CacheValueArgument[]
 }
 
-export type CacheSetNXInput = SchemaInfer<typeof CacheSetNXInputSchema>
+export type CacheSetNXInput = InferSchema<typeof CacheSetNXInputSchema>
 
 export type CacheEvalInput = {
   script: string

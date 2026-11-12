@@ -14,13 +14,9 @@ import { CLIENT_TIMEOUT_CODES, CONNECTION_REFUSED_CODE } from '@/utils/http-stat
 import { ObjectUtils } from '@/utils/object'
 import { TRACEID_HEADER } from '@/utils/request'
 import { getCurrentRequestContext, type RequestContext } from '@/utils/request/context'
-import {
-  getCurrentDeadline,
-  REQUEST_DEADLINE_HEADER,
-  type RequestDeadline
-} from '@/utils/request/deadline'
+import { getCurrentDeadline, REQUEST_DEADLINE_HEADER, type RequestDeadline } from '@/utils/request/deadline'
 import { TimeoutBudget } from '@/utils/request/timeout-budget'
-import { BaseZodType, SchemaInfer } from '@/utils/validator'
+import { BaseZodType, InferSchema } from '@/utils/validator'
 
 import { IHttpBuilder } from './adapter'
 import { HttpData, HttpMethod, HttpRetryInput } from './types'
@@ -160,8 +156,8 @@ export class HttpBuilder<Response = unknown> implements IHttpBuilder<Response> {
     return this
   }
 
-  schema<Schema extends BaseZodType>(schema: Schema): HttpBuilder<SchemaInfer<Schema>> {
-    const builder = new HttpBuilder<SchemaInfer<Schema>>(this.axiosInstance, this.requestConfig)
+  schema<Schema extends BaseZodType>(schema: Schema): HttpBuilder<InferSchema<Schema>> {
+    const builder = new HttpBuilder<InferSchema<Schema>>(this.axiosInstance, this.requestConfig)
     builder.requestConfig.responseSchema = schema
 
     return builder

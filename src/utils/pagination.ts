@@ -3,7 +3,7 @@
  */
 import { SearchInput } from './search'
 import { SortInput } from './sort'
-import { InputValidator, SchemaInfer } from './validator'
+import { InferSchema, InputValidator } from './validator'
 
 const maxLimit = (limit: number) => (limit > 100 ? 100 : limit)
 
@@ -38,7 +38,7 @@ export const PaginationSchema = InputValidator.object({
   })
 
 export class PaginationUtils {
-  static calculateSkip = (input: SchemaInfer<typeof PaginationSchema>) => {
+  static calculateSkip = (input: InferSchema<typeof PaginationSchema>) => {
     return (input.page - 1) * input.limit
   }
 
@@ -47,8 +47,8 @@ export class PaginationUtils {
   }
 }
 
-export type PaginationInput<T> = SchemaInfer<typeof PaginationSchema> & SortInput & SearchInput<Partial<T>>
-export type PaginationOutput<T> = SchemaInfer<typeof PaginationSchema> & {
+export type PaginationInput<T> = InferSchema<typeof PaginationSchema> & SortInput & SearchInput<Partial<T>>
+export type PaginationOutput<T> = InferSchema<typeof PaginationSchema> & {
   total: number
   docs: T[]
   totalPages: number

@@ -10,7 +10,7 @@ import { ApiConflictException, ApiNotFoundException } from '@/utils/exception'
 import { Namespaces } from '@/utils/namespaces'
 import { ApiTracingInput } from '@/utils/request'
 import { IUsecase } from '@/utils/usecase'
-import { InputValidator, SchemaInfer } from '@/utils/validator'
+import { InferSchema, InputValidator } from '@/utils/validator'
 
 import { UserEntity, UserEntitySchema } from '../entity/user'
 import { IUserRepository } from '../repository/user'
@@ -74,5 +74,5 @@ export class UserUpdateUsecase implements IUsecase {
   }
 }
 
-export type UserUpdateInput = Partial<SchemaInfer<typeof UserUpdateSchema>>
+export type UserUpdateInput = Partial<InferSchema<typeof UserUpdateSchema>>
 export type UserUpdateOutput = UserEntity

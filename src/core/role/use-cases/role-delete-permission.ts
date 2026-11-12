@@ -7,7 +7,7 @@ import { ValidateSchema } from '@/utils/decorators'
 import { ApiNotFoundException } from '@/utils/exception'
 import { Namespaces } from '@/utils/namespaces'
 import { IUsecase } from '@/utils/usecase'
-import { InputValidator, SchemaInfer } from '@/utils/validator'
+import { InferSchema, InputValidator } from '@/utils/validator'
 
 import { RoleEntitySchema } from '../entity/role'
 import { IRoleRepository } from '../repository/role'
@@ -46,5 +46,5 @@ export class RoleDeletePermissionUsecase implements IUsecase {
   }
 }
 
-export type RoleDeletePermissionInput = SchemaInfer<typeof RoleDeletePermissionSchema>
+export type RoleDeletePermissionInput = InferSchema<typeof RoleDeletePermissionSchema>
 export type RoleDeletePermissionOutput = void

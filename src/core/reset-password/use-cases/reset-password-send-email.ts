@@ -12,7 +12,7 @@ import { ValidateSchema } from '@/utils/decorators'
 import { ApiNotFoundException } from '@/utils/exception'
 import { IDGeneratorUtils } from '@/utils/id-generator'
 import { IUsecase } from '@/utils/usecase'
-import { SchemaInfer } from '@/utils/validator'
+import { InferSchema } from '@/utils/validator'
 
 import { ResetPasswordEntity } from '../entity/reset-password'
 import { IResetPasswordRepository } from '../repository/reset-password'
@@ -62,5 +62,5 @@ export class ResetPasswordSendEmailUsecase implements IUsecase {
   }
 }
 
-export type ResetPasswordSendEmailInput = SchemaInfer<typeof ResetPasswordSendEmailSchema>
+export type ResetPasswordSendEmailInput = InferSchema<typeof ResetPasswordSendEmailSchema>
 export type ResetPasswordSendEmailOutput = void

@@ -2,7 +2,7 @@
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/utils/sort.md
  */
 
-import { InputValidator, SchemaInfer } from './validator'
+import { InferSchema, InputValidator } from './validator'
 
 export enum SortEnum {
   asc = 1,
@@ -56,4 +56,4 @@ export const SortSchema = InputValidator.object({
     .default({})
 })
 
-export type SortInput = SchemaInfer<typeof SortSchema>
+export type SortInput = InferSchema<typeof SortSchema>

@@ -3,7 +3,7 @@
  */
 import { UserEntity, UserEntitySchema } from '@/core/user/entity/user'
 import { BaseEntity } from '@/utils/entity'
-import { InputValidator, SchemaInfer } from '@/utils/validator'
+import { InferSchema, InputValidator } from '@/utils/validator'
 
 const ID = InputValidator.uuid()
 const Token = InputValidator.string().min(1).trim()
@@ -21,7 +21,7 @@ export const ResetPasswordEntitySchema = InputValidator.object({
   deletedAt: DeletedAt
 })
 
-type ResetPassword = SchemaInfer<typeof ResetPasswordEntitySchema>
+type ResetPassword = InferSchema<typeof ResetPasswordEntitySchema>
 
 export class ResetPasswordEntity extends BaseEntity<ResetPasswordEntity>() {
   token!: ResetPassword['token']

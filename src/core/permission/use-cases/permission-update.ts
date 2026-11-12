@@ -9,7 +9,7 @@ import { ValidateSchema } from '@/utils/decorators'
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception'
 import { Namespaces } from '@/utils/namespaces'
 import { IUsecase } from '@/utils/usecase'
-import { SchemaInfer } from '@/utils/validator'
+import { InferSchema } from '@/utils/validator'
 
 import { PermissionEntity, PermissionEntitySchema } from './../entity/permission'
 
@@ -63,5 +63,5 @@ export class PermissionUpdateUsecase implements IUsecase {
   }
 }
 
-export type PermissionUpdateInput = SchemaInfer<typeof PermissionUpdateSchema>
+export type PermissionUpdateInput = InferSchema<typeof PermissionUpdateSchema>
 export type PermissionUpdateOutput = PermissionEntity
