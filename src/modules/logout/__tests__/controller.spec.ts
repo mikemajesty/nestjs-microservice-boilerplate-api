@@ -1,3 +1,8 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/modules/test.md
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/tests/standards.md
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/tests/containers.md
+ */
 import { INestApplication } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
 import request from 'supertest'
@@ -9,7 +14,8 @@ import { LogoutInput } from '@/core/user/use-cases/user-logout'
 import { ICacheAdapter } from '@/infra/cache'
 import { GuardsModule } from '@/middlewares/guards/module'
 import { LoginModule } from '@/modules/login/module'
-import { ApiUnauthorizedException } from '@/utils/exception'
+import { ApiUnauthorizedException, BaseException } from '@/utils/exception'
+import { TestUtils } from '@/utils/test'
 import { TestPostgresContainer, TestRedisContainer } from '@/utils/test/e2e/containers'
 import { PermissionFixture } from '@/utils/test/e2e/fixtures/permission'
 import { RoleFixture } from '@/utils/test/e2e/fixtures/role'
@@ -102,7 +108,7 @@ describe(LogoutController.name, () => {
     it('should fail if not authenticated', async () => {
       const res = await request(app.getHttpServer()).post('/logout')
       expect(res.status).toBe(ApiUnauthorizedException.STATUS)
-      expect(res.body).toHaveProperty('message')
+      expect(res.body).toHaveProperty(TestUtils.nameOf<BaseException>('message'))
       expect(typeof res.body.message).toBe('string')
     })
 
@@ -124,7 +130,7 @@ describe(LogoutController.name, () => {
           token
         } as LogoutInput)
       expect([401, 403]).toContain(res.status)
-      expect(res.body).toHaveProperty('message')
+      expect(res.body).toHaveProperty(TestUtils.nameOf<BaseException>('message'))
       expect(typeof res.body.message).toBe('string')
     })
   })

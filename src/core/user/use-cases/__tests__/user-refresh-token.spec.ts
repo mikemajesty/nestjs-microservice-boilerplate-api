@@ -68,7 +68,7 @@ describe(RefreshTokenUsecase.name, () => {
     token.verify = TestUtils.mockImplementation<UserRefreshTokenVerifyInput>(() => ({
       userId: null
     }))
-    repository.findOne = TestUtils.mockResolvedValue<UserEntity>(null)
+    repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(null)
 
     await expect(usecase.execute(input)).rejects.toThrow(ApiBadRequestException)
   })
@@ -79,7 +79,7 @@ describe(RefreshTokenUsecase.name, () => {
         userId: MockUtils.UUID()
       }
     })
-    repository.findOne = TestUtils.mockResolvedValue<UserEntity>(null)
+    repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(null)
 
     await expect(usecase.execute(input)).rejects.toThrow(ApiNotFoundException)
   })
@@ -113,14 +113,15 @@ describe(RefreshTokenUsecase.name, () => {
         userId: MockUtils.UUID()
       }
     })
-    repository.findOne = TestUtils.mockResolvedValue<UserEntity>({ ...user, roles: [] })
+    repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>({ ...user, roles: [] })
 
     await expect(usecase.execute(input)).rejects.toThrow(ApiNotFoundException)
   })
 
   test('when user refresh token successfully, should expect a token', async () => {
+    const userId = MockUtils.UUID()
     token.verify = TestUtils.mockImplementation<UserRefreshTokenVerifyInput>(() => ({
-      userId: MockUtils.UUID()
+      userId
     }))
     token.sign = TestUtils.mockReturnValue<TokenSignOutput>({ token: '<token>' })
     const user = userMock.generate({
@@ -135,11 +136,12 @@ describe(RefreshTokenUsecase.name, () => {
       },
       factory: (data) => new UserEntity(data)
     })
-    repository.findOne = TestUtils.mockResolvedValue<UserEntity>(user.clone())
+    repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(user.clone())
 
     await expect(usecase.execute(input)).resolves.toEqual({
       accessToken: expect.any(String),
       refreshToken: expect.any(String)
     } as RefreshTokenOutput)
+    expect(repository.findOneWithRelation).toHaveBeenCalledWith({ id: userId }, { roles: true })
   })
 })

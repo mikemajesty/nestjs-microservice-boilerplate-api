@@ -18,6 +18,17 @@ need it.
 - Assert observable behavior and relevant outputs, not implementation details
   that are not part of the contract.
 - Use `@see` links to the relevant test/layer guide at the top of a test file.
+- For response fields asserted with `toHaveProperty`, always use
+  `TestUtils.nameOf<T>('field')`. Use the use-case output type for successful
+  responses (or the controller's declared return type when it returns directly
+  without a use case) and `BaseException` for standard error fields such as
+  `message`:
+
+```typescript
+expect(response.body).toHaveProperty(TestUtils.nameOf<UserCreateOutput>('id'))
+expect(errorResponse.body).toHaveProperty(TestUtils.nameOf<BaseException>('message'))
+```
+
 - Run a focused suite with `npm test -- --runInBand path/to/file.spec.ts`.
   The current `test/initialization.ts` checks Docker for every suite, so Docker
   must be accessible even when running unit tests.
@@ -119,25 +130,12 @@ an appropriate matcher while still checking every relevant path. See
 
 ## Module controller HTTP tests
 
-Module tests verify HTTP behavior and real Nest module wiring. Follow
-[Module controller tests](../modules/test.md).
-
-- Use `src/modules/{domain}/__tests__/controller.spec.ts`, including HTTP and
-  end-to-end coverage. Do not name this `controller.e2e.spec.ts`.
-- Use `describe(Controller.name, ...)` and route-oriented case names.
-- Use `@nestjs/testing` with the real module, guards, and required database
-  modules. Override only dependencies intentionally replaced by the test.
-- Start only the required containers in `beforeAll`; use
-  `TestEnd2EndUtils.getPostgresModule` and `TestEnd2EndUtils.createApp` for the
-  established PostgreSQL/Fastify setup.
-- Use the fixture classes in `src/utils/test/e2e/fixtures/` for shared DB
-  records and `FixtureUtils.addBaseSeeds` for related base data.
-- Seed per-test state in `beforeEach`, clean per-test state in `afterEach`,
-  and release app/clients/connections/containers in `afterAll`.
-- Use Supertest with `app.getHttpServer()` and
-  `TestEnd2EndUtils.AUTHORIZATION_HEADER` for authenticated routes.
-- Generate schema-valid payloads with `ZodMockSchema`; assert status and
-  relevant response fields, using `TestUtils.nameOf<Output>('field')`.
+For controller HTTP and end-to-end tests, use
+`src/modules/{domain}/__tests__/controller.spec.ts` and route-oriented case
+names. Follow [Module controller tests](../modules/test.md) for Nest wiring,
+Supertest, and fixture setup, and [Testcontainers](./containers.md) for
+container lifecycle. The shared response-property assertion convention is
+defined above.
 
 ## Other folders
 

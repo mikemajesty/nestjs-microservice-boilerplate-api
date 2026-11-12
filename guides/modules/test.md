@@ -1,140 +1,68 @@
 # Module Controller Tests
 
-Module tests verify the HTTP/API boundary and real Nest module wiring. These
-are integration/end-to-end tests, not isolated controller unit tests.
+Module controller tests exercise the HTTP boundary through a real Nest
+application and the module wiring. They are integration/end-to-end tests, not
+isolated controller unit tests.
 
-## Location, file name, and suite
+## Location and suite
 
-- Keep tests in `src/modules/{domain}/__tests__/`.
-- Name the HTTP suite `controller.spec.ts`, including end-to-end coverage.
-  Do not use `controller.e2e.spec.ts`.
-- Use `describe(Controller.name, ...)`.
-- Add a file-level `@see` for this guide.
-- Use the endpoint and scenario in case names, for example
-  `it('/GET /users/:id not found', ...)`. Keep descriptions specific to the
-  route and expected result.
+- Keep tests in `src/modules/{domain}/__tests__/controller.spec.ts`.
+- Keep HTTP and end-to-end coverage in this file; do not use
+  `controller.e2e.spec.ts`.
+- Use `describe(Controller.name, ...)` and route-oriented case names, such as
+  `it('/GET /users/:id not found', ...)`.
+- Add file-level `@see` references to this guide and
+  [Test Standards](../tests/standards.md). Add
+  [Testcontainers](../tests/containers.md) when the suite uses containers.
 
-## Application setup
+See [Test Standards](../tests/standards.md) for shared conventions, response
+assertions, and `TestUtils.nameOf` usage.
 
-Use the real module, guards, and infrastructure that the module needs. Use
-`TestEnd2EndUtils` rather than duplicating its Fastify, tracing, or PostgreSQL
-configuration:
+## Nest application and infrastructure
 
-1. Declare the required `TestMongoContainer`, `TestPostgresContainer`, and/or
-   `TestRedisContainer` at the suite level.
-2. In `beforeAll`, start the containers, build the Nest testing module, and
-   override only dependencies the test intentionally substitutes.
-3. Use `TestEnd2EndUtils.getPostgresModule(...)` for the project's PostgreSQL
-   connection and `TestEnd2EndUtils.createApp(moduleRef)` to create and ready
-   the Fastify application.
-4. Retrieve repositories/adapters from `moduleRef` for fixture setup.
-5. In `afterAll`, close the app and clients/connections before stopping their
-   containers. Follow [container lifecycle guidance](../tests/containers.md).
+Use the real module, guards, and infrastructure needed by the endpoint. Use
+`TestEnd2EndUtils` for project-specific Fastify, tracing, and PostgreSQL setup:
 
-Use `.overrideProvider(...).useValue(...)` for intentional test doubles such
-as token verification or a repository backed by a test database. Keep other
-module providers and guards real. Prefer `TestUtils` for typed mocked methods.
-For authenticated requests, use
-`request(app.getHttpServer()).set(...TestEnd2EndUtils.AUTHORIZATION_HEADER)`;
-omit the header in tests explicitly covering unauthenticated behavior.
+- `getPostgresModule(container, config)` configures the named PostgreSQL
+  connection and the container's data source.
+- `createApp(moduleRef)` creates the Fastify Nest application, installs the
+  tracing hook, and waits until Fastify is ready.
+- `AUTHORIZATION_HEADER` provides the shared test authorization header.
 
-```typescript
-describe(UserController.name, () => {
-  let app: INestApplication
-  let userRepository: IUserRepository
-
-  const postgresContainer = new TestPostgresContainer()
-  const redisContainer = new TestRedisContainer()
-
-  beforeAll(async () => {
-    const { postgresConfig } = await postgresContainer.getPostgres()
-    const cache = await redisContainer.getTestRedis()
-
-    const moduleRef = await Test.createTestingModule({
-      imports: [UserModule, GuardsModule, TestEnd2EndUtils.getPostgresModule(postgresContainer, postgresConfig)]
-    })
-      .overrideProvider(ICacheAdapter)
-      .useValue(cache)
-      .compile()
-
-    app = await TestEnd2EndUtils.createApp(moduleRef)
-    userRepository = moduleRef.get(IUserRepository)
-  })
-
-  afterAll(async () => {
-    await app.close()
-    await postgresContainer.close()
-    await redisContainer.close()
-  })
-})
-```
-
-Add MongoDB or token-provider overrides only when the module under test needs
-them. Keep the setup in the example minimal rather than starting unused
-containers.
-
-## Fixtures and state isolation
-
-- Use the existing fixture classes in `src/utils/test/e2e/fixtures/` for
-  shared database entities. Use `FixtureUtils.addBaseSeeds(...)` when fixtures
-  need connected roles, permissions, or users.
-- After retrieving repositories in `beforeAll`, clear stale fixture records
-  with each fixture's `down` method, then prepare shared relationships/seeds.
-- Use `beforeEach` to insert the records required by each request.
-- Use `afterEach` to remove per-test records and targeted Redis keys.
-- Use `afterAll` for final cleanup and closing app, clients, connections and
-  containers.
-- Only add hooks and containers that the suite actually uses. Stateless
-  endpoints such as health checks do not need database fixtures.
-
-The lifecycle in a suite is conceptually:
-
-```typescript
-beforeAll(async () => {
-  // Start dependencies, create the app, retrieve repositories, prepare fixtures.
-})
-
-beforeEach(async () => {
-  // Seed the rows required by this test.
-})
-
-afterEach(async () => {
-  // Remove rows and keys created by this test.
-})
-
-afterAll(async () => {
-  // Clean shared fixtures, close app/clients, then stop containers.
-})
-```
-
-Jest runs `beforeEach` before a test and `afterEach` after it regardless of
-their declaration order. Prefer declaring setup before cleanup for readability.
-
-## Requests, payloads, and assertions
-
-Use Supertest against the real application:
+Override providers only when a test intentionally replaces an external
+boundary, such as token verification or a repository backed by a test database.
+Use `TestUtils` to create typed test doubles; keep other module providers and
+guards real. For authenticated requests, set the shared authorization header:
 
 ```typescript
 const response = await request(app.getHttpServer())
-  .post('/users')
+  .get('/users')
   .set(...TestEnd2EndUtils.AUTHORIZATION_HEADER)
-  .send(input)
-  .expect(201)
-
-expect(response.body).toHaveProperty(TestUtils.nameOf<UserCreateOutput>('id'))
+  .expect(200)
 ```
 
-- Generate schema-valid request payloads with `ZodMockSchema` from
-  `@/utils/test` when a Zod schema describes the request. This applies to
-  modules as well as `core`.
-- Keep scenario-defining values explicit through `overrides` or literals.
-- Use `TestUtils.nameOf<Output>('field')` for type-checked response property
-  names.
-- Assert status and the response properties relevant to the endpoint's
-  contract; do not make a status-only assertion for successful responses
-  where output shape matters.
-- Cover success, authentication/authorization, validation, not-found, and
-  other endpoint-specific error behavior as applicable.
+Start only the containers and clients the module needs. Follow
+[Testcontainer lifecycle and cleanup guidance](../tests/containers.md) for
+starting resources, closing clients/connections, and stopping containers.
 
-See [Test Standards](../tests/standards.md) and
-[Testcontainers](../tests/containers.md).
+## Database fixtures
+
+Use the shared fixture classes in `src/utils/test/e2e/fixtures/` for database
+records. Use `FixtureUtils.addBaseSeeds(...)` when the endpoint depends on
+related users, roles, or permissions. Keep fixture setup scoped to the records
+needed by each scenario; follow [Test Standards](../tests/standards.md) for
+test isolation and [Testcontainers](../tests/containers.md) for resource
+cleanup.
+
+## Requests and payloads
+
+Use Supertest with `app.getHttpServer()` to exercise the actual route. Omit
+the authorization header only in cases specifically testing unauthenticated
+behavior. Generate schema-valid request payloads with `ZodMockSchema` when a
+Zod schema describes the input; use explicit overrides for scenario-defining
+values. See [MockUtils and ZodMockSchema](../tests/mock.md).
+
+Assert the HTTP status and the response fields relevant to the endpoint's
+contract. Follow [Test Standards](../tests/standards.md) for the required
+`toHaveProperty` typing: use the use-case output type for successful responses
+and `BaseException` for standard error fields such as `message`.

@@ -29,9 +29,7 @@ export class RefreshTokenUsecase implements IUsecase {
       throw new ApiBadRequestException('incorrectToken')
     }
 
-    const user = await this.userRepository.findOne({
-      id: userToken.userId
-    })
+    const user = await this.userRepository.findOneWithRelation({ id: userToken.userId }, { roles: true })
 
     if (!user) {
       throw new ApiNotFoundException('userNotFound')

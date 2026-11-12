@@ -1,3 +1,8 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/modules/test.md
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/tests/standards.md
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/tests/containers.md
+ */
 import { INestApplication } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
 import jwt from 'jsonwebtoken'
