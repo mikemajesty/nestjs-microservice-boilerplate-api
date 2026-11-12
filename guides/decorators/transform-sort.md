@@ -67,7 +67,7 @@ export class UserRepository {
 ## ✅ **The Elegant Solution: TransformSort**
 
 ```typescript
-import { TransformSort } from '@/utils/decorators/database'
+import { TransformSort } from '@/utils/decorators'
 
 export class UserRepository {
   

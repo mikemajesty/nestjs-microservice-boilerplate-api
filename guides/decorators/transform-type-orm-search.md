@@ -138,7 +138,7 @@ export class UserRepository {
 ## ✅ **The Elegant Solution: TransformTypeOrmSearch**
 
 ```typescript
-import { TransformTypeOrmSearch, SearchTypeEnum } from '@/utils/decorators/database'
+import { TransformTypeOrmSearch, SearchTypeEnum } from '@/utils/decorators'
 
 export class UserRepository {
   

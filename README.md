@@ -1237,15 +1237,19 @@ Shared libraries and utilities.
 
 Custom decorators for common patterns.
 
-| Guide                                                         | Description             |
-| ------------------------------------------------------------- | ----------------------- |
-| [Circuit Breaker](guides/decorators/circuit-breaker.md)       | Resilience pattern      |
-| [Permission](guides/decorators/permission.md)                 | Authorization decorator |
-| [Validate Schema](guides/decorators/validate-schema.md)       | Input validation        |
-| [Log Execution Time](guides/decorators/log-execution-time.md) | Performance logging     |
-| [Request Timeout](guides/decorators/request-timeout.md)       | Timeout handling        |
-| [Process](guides/decorators/process.md)                       | Background processing   |
-| [Thread](guides/decorators/thread.md)                         | Worker threads          |
+| Guide | Description |
+| --- | --- |
+| [Decorator index](guides/decorators/README.md) | Source-to-guide inventory for all current decorators |
+| [Permission](guides/decorators/permission.md) | Route permission metadata |
+| [Public](guides/decorators/public.md) | Public authentication metadata |
+| [Request Timeout](guides/decorators/request-timeout.md) | Per-route HTTP timeout |
+| [Validate Schema](guides/decorators/validate-schema.md) | Zod input validation |
+| [With Error Context](guides/decorators/with-error-context.md) | Error context enrichment |
+| [Normalize Mongo Filter](guides/decorators/normalize-mongo-filter.md) | Mongo filter normalization |
+| [Transform Mongoose Search](guides/decorators/transform-mongoose-search.md) | Mongoose search conversion |
+| [Normalize TypeORM Filter](guides/decorators/normalize-typeorm-filter.md) | TypeORM soft-delete filter |
+| [Transform TypeORM Search](guides/decorators/transform-type-orm-search.md) | TypeORM search conversion |
+| [Transform Sort](guides/decorators/transform-sort.md) | Repository sort validation |
 
 ### 📂 [Middlewares](guides/middlewares/)
 

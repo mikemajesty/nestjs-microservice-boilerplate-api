@@ -1,5 +1,5 @@
 /**
- * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/decorators/validate-mongoose-filter.md
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/decorators/transform-mongoose-search.md
  */
 import { IEntity } from '@/utils/entity'
 import { ApiBadRequestException } from '@/utils/exception'

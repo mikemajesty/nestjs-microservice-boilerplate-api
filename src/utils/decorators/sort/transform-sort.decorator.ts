@@ -1,5 +1,5 @@
 /**
- * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/decorators/validate-database-sort-allowed.md
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/decorators/transform-sort.md
  */
 import { ApiBadRequestException } from '@/utils/exception'
 import { PaginationSchema } from '@/utils/pagination'

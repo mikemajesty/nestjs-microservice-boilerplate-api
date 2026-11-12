@@ -160,7 +160,7 @@ Validates that only allowed fields can be used for sorting:
 async paginate(input: CatListInput): Promise<CatListOutput>
 ```
 
-See [TransformSort](../decorators/validate-database-sort-allowed.md).
+See [TransformSort](../decorators/transform-sort.md).
 
 ### `@TransformMongooseSearch`
 
@@ -174,7 +174,7 @@ Converts search input to Mongoose query format:
 ])
 ```
 
-See [TransformMongooseSearch](../decorators/validate-mongoose-filter.md).
+See [TransformMongooseSearch](../decorators/transform-mongoose-search.md).
 
 ### `@TransformTypeOrmSearch`
 
@@ -187,7 +187,7 @@ Converts search input to TypeORM query format:
 ])
 ```
 
-See [TransformTypeOrmSearch](../decorators/convert-typeorm-filter.md).
+See [TransformTypeOrmSearch](../decorators/transform-type-orm-search.md).
 
 ---
 
@@ -227,6 +227,6 @@ See [Module](./module.md) for full details.
 - [Module](./module.md) — Where binding happens
 - [MongoRepository](../infra/repository.md) — Generic MongoDB repository
 - [TypeORMRepository](../infra/repository.md) — Generic PostgreSQL repository
-- [TransformSort](../decorators/validate-database-sort-allowed.md) — Sort validation
-- [TransformMongooseSearch](../decorators/validate-mongoose-filter.md) — Mongoose filter conversion
-- [TransformTypeOrmSearch](../decorators/convert-typeorm-filter.md) — TypeORM filter conversion
+- [TransformSort](../decorators/transform-sort.md) — Sort validation
+- [TransformMongooseSearch](../decorators/transform-mongoose-search.md) — Mongoose filter conversion
+- [TransformTypeOrmSearch](../decorators/transform-type-orm-search.md) — TypeORM filter conversion

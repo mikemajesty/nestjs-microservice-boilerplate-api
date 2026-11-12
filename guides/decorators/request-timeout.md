@@ -1,14 +1,14 @@
 # RequestTimeout Decorator
 
 Simple decorator that sets a route's local timeout limit. The
-[RequestTimeoutInterceptor](../middlewares/interceptors/request-timeout.interceptor.ts)
+[RequestTimeoutInterceptor](../../src/middlewares/interceptors/request-timeout.interceptor.ts)
 applies that limit while honoring an earlier upstream `X-Request-Deadline`, if present.
 
 ## ⚠️ Important: HTTP timeout alone does not protect the database
 
 `@RequestTimeout` only changes **when the HTTP response gives up on the client**.
 It does **not** cancel the work still running on the server — including any
-Postgres query/transaction in progress. The [RxJS `timeout()` operator](../middlewares/interceptors/request-timeout.interceptor.md)
+Postgres query/transaction in progress. The [RxJS `timeout()` operator](../middlewares/request-timeout.interceptor.md)
 just stops listening to the `Observable`; it does not abort the underlying
 Promise or close the database connection.
 
@@ -110,7 +110,7 @@ throws during application setup.
 
 ### **Timeout Resolution**
 
-The [RequestTimeoutInterceptor](../middlewares/interceptors/request-timeout.interceptor.ts)
+The [RequestTimeoutInterceptor](../../src/middlewares/interceptors/request-timeout.interceptor.ts)
 uses the earliest deadline. `X-Request-Deadline` is an absolute Unix timestamp in
 milliseconds and can shorten the route's local timeout, but can never extend it:
 

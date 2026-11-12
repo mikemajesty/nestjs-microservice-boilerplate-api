@@ -2,7 +2,7 @@
 
 Transforms **manual, complex MongoDB query construction** into elegant, type-safe, automatic filter validation and query generation for **Repository layer** with built-in regex optimization, case-insensitive search, and MongoDB-specific operators.
 
-> **Note:** This decorator is different from `NormalizeMongoFilter` (see [convert-mongoose-filter.md](convert-mongoose-filter.md)). Use **TransformMongooseSearch** in Module Repositories (builds $or/$and queries) and **NormalizeMongoFilter** in Base Repository/Infra (flattens nested objects).
+> **Note:** This decorator is different from `NormalizeMongoFilter` (see [normalize-mongo-filter.md](normalize-mongo-filter.md)). Use **TransformMongooseSearch** in Module Repositories (builds $or/$and queries) and **NormalizeMongoFilter** in Base Repository/Infra (flattens nested objects).
 
 ## The Problem: Manual MongoDB Filter Construction in Repositories
 

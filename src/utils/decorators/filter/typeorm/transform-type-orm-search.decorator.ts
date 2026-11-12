@@ -1,5 +1,5 @@
 /**
- * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/decorators/convert-typeorm-filter.md
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/decorators/transform-type-orm-search.md
  */
 import { FindOperator, In, Raw } from 'typeorm'
 

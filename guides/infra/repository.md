@@ -739,7 +739,7 @@ async find(filter, options): Promise<T[]> {
 
 ## Related
 
-- [@NormalizeMongoFilter](../decorators/convert-mongoose-filter.md) — Auto filter conversion
-- [@TransformTypeOrmSearch](../decorators/convert-typeorm-filter.md) — TypeORM search conversion in module repositories
+- [@NormalizeMongoFilter](../decorators/normalize-mongo-filter.md) — Auto filter conversion
+- [@TransformTypeOrmSearch](../decorators/transform-type-orm-search.md) — TypeORM search conversion in module repositories
 - [Entity](../utils/entity.md) — Base entity interface
 - [Pagination](../utils/pagination.md) — Pagination utilities
