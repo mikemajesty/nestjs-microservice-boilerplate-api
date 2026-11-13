@@ -30,8 +30,6 @@ export const REQUEST_TIMEOUT_METADATA_KEY = 'request-timeout'
  *   return this.userRepository.withDeadline(28000, (repository) => repository.find(...))
  * }
  * ```
- *
- * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/decorators/request-timeout.md
  */
 export const RequestTimeout = (milliseconds: number): CustomDecorator<string> => {
   if (!Number.isInteger(milliseconds) || milliseconds <= 0) {

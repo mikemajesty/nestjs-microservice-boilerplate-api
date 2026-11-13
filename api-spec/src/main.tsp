@@ -17,6 +17,9 @@ using TypeSpec.Http;
 using TypeSpec.Versioning;
 
 @service(#{ title: "Microservice API" })
-@server("http://localhost:5000/")
+@server("{scheme}://{host}/", "API endpoint", {
+  scheme: string = "http",
+  host: string = "localhost:5000",
+})
 @versioned(api.Utils.Versioning.DocVersionVersion)
 namespace api;

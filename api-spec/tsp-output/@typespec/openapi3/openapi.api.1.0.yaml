@@ -4461,5 +4461,10 @@ components:
       type: http
       scheme: Bearer
 servers:
-  - url: http://localhost:5000/
-    variables: {}
+  - url: '{scheme}://{host}/'
+    description: API endpoint
+    variables:
+      scheme:
+        default: http
+      host:
+        default: localhost:5000

@@ -3,7 +3,7 @@
  */
 import 'fastify'
 
-import { AttributeValue, Context, Span, SpanStatus, Tracer } from '@opentelemetry/api'
+import { AnyValue, Context, Span, SpanStatus, Tracer } from '@opentelemetry/api'
 import { FastifyRequest } from 'fastify'
 
 import { UserEntity } from '@/core/user/entity/user'
@@ -34,7 +34,7 @@ export type TracingType = {
   tracer: Tracer
   setStatus: (status: SpanStatus) => void
   logEvent: (name: string, metadata: { action: string } & Record<string, unknown>) => void
-  addAttribute: (key: string | typeof TRACEID_HEADER, value: AttributeValue) => void
+  addAttribute: (key: string | typeof TRACEID_HEADER, value: AnyValue) => void
   createSpan: (name: string, parent?: Context) => Span
   finish: () => void
 } & TraceIdField
