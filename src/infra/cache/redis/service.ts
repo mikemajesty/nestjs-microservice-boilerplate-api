@@ -28,17 +28,6 @@ export class CacheRedisService implements Omit<ICacheAdapter<Redis>, 'mSet'> {
     this.client = client
   }
 
-  async mGet<T = string>(keys: CacheKeyArgument[]): Promise<(T | null)[]> {
-    if (!keys?.length) return []
-    const values = await this.client.mget(...keys)
-    return values.map((v) => (v === undefined ? null : v)) as (T | null)[]
-  }
-
-  async getTtl(key: CacheRedisKeyArgument): Promise<number | undefined> {
-    const ttl = await this.client.ttl(key as CacheRedisKeyArgument)
-    return ttl >= 0 ? ttl : undefined
-  }
-
   async set<
     TKey extends CacheRedisKeyArgument = CacheRedisKeyArgument,
     TValue extends CacheRedisValueArgument = CacheRedisValueArgument,
@@ -56,87 +45,19 @@ export class CacheRedisService implements Omit<ICacheAdapter<Redis>, 'mSet'> {
   }
 
   async ping(): Promise<string> {
+    let timer: NodeJS.Timeout | undefined
     try {
-      const timeout = new Promise((_, reject) =>
-        setTimeout(() => reject(new ApiInternalServerException('Redis ping timeout')), 2000)
-      )
-      const ping = this.client.ping()
-      const result = await Promise.race([ping, timeout])
+      const timeout = new Promise<never>((_, reject) => {
+        timer = setTimeout(() => reject(new ApiInternalServerException('Redis ping timeout')), 2000)
+      })
+      const result = await Promise.race([this.client.ping(), timeout])
       return result as string
     } catch (error) {
-      if (typeof error === 'string') {
-        const wrappedError = new ApiInternalServerException(error)
-        this.logger.error({ ...(wrappedError as object), context: `${CacheRedisService.name}.ping` } as ErrorType)
-        return 'DOWN'
-      }
       this.logger.error({ ...(error as object), context: `${CacheRedisService.name}.ping` } as ErrorType)
       return 'DOWN'
+    } finally {
+      if (timer) clearTimeout(timer)
     }
-  }
-
-  @WithErrorContext()
-  async connect(): Promise<Redis> {
-    if (this.client.status !== 'ready') {
-      await new Promise<void>((resolve, reject) => {
-        this.client.once('ready', resolve)
-        this.client.once('error', reject)
-      })
-    }
-    this.logger.log('🎯 redis connected!\n')
-    return this.client
-  }
-
-  async get<TKey = CacheRedisKeyArgument>(key: TKey): Promise<string | null> {
-    return await this.client.get(key as CacheRedisKeyArgument)
-  }
-
-  async del(key: CacheKeyArgument | CacheKeyArgument[]): Promise<void> {
-    if (Array.isArray(key)) {
-      if (key.length === 0) return
-
-      await this.client.del(...key)
-      return
-    }
-
-    await this.client.del(key)
-  }
-
-  async multiExec(commands: Array<[string, ...AnyType[]]>): Promise<void> {
-    if (!commands?.length) return
-
-    const multi: ChainableCommander = this.client.multi()
-
-    for (const command of commands) {
-      multi.call(...command)
-    }
-
-    const results = await multi.exec()
-
-    if (!results) {
-      throw new ApiInternalServerException('Cache multiExec aborted')
-    }
-
-    for (const [err, result] of results) {
-      if (err) {
-        throw new ApiInternalServerException('Cache multiExec command failed', {
-          metadata: { error: err, result }
-        })
-      }
-    }
-  }
-
-  async setMulti(redisList: CacheKeyValue[]): Promise<void> {
-    const multi: ChainableCommander = this.client.multi()
-
-    for (const model of redisList) {
-      multi.rpush(model.key, model.value as CacheRedisValueArgument)
-    }
-
-    await multi.exec()
-  }
-
-  async pExpire(key: CacheKeyArgument, milliseconds: number): Promise<void> {
-    await this.client.pexpire(key, milliseconds)
   }
 
   async hGet<TKey = CacheRedisKeyArgument, TArs = CacheRedisKeyArgument>(
@@ -158,6 +79,87 @@ export class CacheRedisService implements Omit<ICacheAdapter<Redis>, 'mSet'> {
     return await this.client.hgetall(key)
   }
 
+  async mGet<T = string>(keys: CacheKeyArgument[]): Promise<(T | null)[]> {
+    if (!keys?.length) return []
+    const values = await this.client.mget(...keys)
+    return values.map((v) => (v === undefined ? null : v)) as (T | null)[]
+  }
+
+  async getTtl(key: CacheRedisKeyArgument): Promise<number | undefined> {
+    const ttl = await this.client.ttl(key)
+    return ttl >= 0 ? ttl : undefined
+  }
+
+  @WithErrorContext()
+  async connect(): Promise<Redis> {
+    if (this.client.status !== 'ready') {
+      await new Promise<void>((resolve, reject) => {
+        const onReady = () => {
+          this.client.off('error', onError)
+          resolve()
+        }
+        const onError = (err: Error) => {
+          this.client.off('ready', onReady)
+          reject(err)
+        }
+        this.client.once('ready', onReady)
+        this.client.once('error', onError)
+      })
+    }
+    this.logger.log('🎯 redis connected!\n')
+    return this.client
+  }
+
+  async get(key: CacheRedisKeyArgument): Promise<string | null> {
+    return this.client.get(key)
+  }
+
+  async del(key: CacheKeyArgument | CacheKeyArgument[]): Promise<void> {
+    if (Array.isArray(key)) {
+      if (key.length === 0) return
+      await this.client.del(...key)
+      return
+    }
+    await this.client.del(key)
+  }
+
+  async multiExec(commands: Array<[string, ...AnyType[]]>): Promise<void> {
+    if (!commands?.length) return
+
+    const multi: ChainableCommander = this.client.multi()
+    for (const command of commands) {
+      const [cmd, ...args] = command
+      multi.call(cmd, ...args)
+    }
+
+    const results = await multi.exec()
+    if (!results) {
+      throw new ApiInternalServerException('Cache multiExec aborted')
+    }
+
+    for (const [err, result] of results) {
+      if (err) {
+        throw new ApiInternalServerException('Cache multiExec command failed', {
+          metadata: { error: err, result }
+        })
+      }
+    }
+  }
+
+  async setMulti(redisList: CacheKeyValue[]): Promise<void> {
+    if (!redisList?.length) return
+
+    const multi: ChainableCommander = this.client.multi()
+    for (const model of redisList) {
+      multi.set(model.key, model.value as CacheRedisValueArgument)
+    }
+    await multi.exec()
+  }
+
+  async pExpire(key: CacheKeyArgument, milliseconds: number): Promise<void> {
+    await this.client.pexpire(key, milliseconds)
+  }
+
   async has(key: string | number): Promise<boolean> {
     const exists = await this.client.exists(String(key))
     return exists > 0
@@ -168,7 +170,8 @@ export class CacheRedisService implements Omit<ICacheAdapter<Redis>, 'mSet'> {
     return result === 'OK'
   }
 
+  @WithErrorContext()
   async eval({ script, keys, args }: CacheEvalInput): Promise<unknown> {
-    return await this.client.eval(script, keys.length, ...keys, ...args)
+    return this.client.eval(script, keys.length, ...keys, ...args)
   }
 }

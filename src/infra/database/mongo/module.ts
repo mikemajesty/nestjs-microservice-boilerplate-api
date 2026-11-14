@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common'
 import { MongooseModule } from '@nestjs/mongoose'
-import { red } from 'colorette'
+import { yellow } from 'colorette'
 import { Connection } from 'mongoose'
 
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger'
@@ -48,7 +48,7 @@ import { MongoService } from './service'
               logger.error(new ApiInternalServerException('mongo disconnected!'))
             })
             connection.on('reconnected', () => {
-              logger.log(red('mongo reconnected!\n'))
+              logger.log(yellow('mongo reconnected!\n'))
             })
             connection.on('error', (error) => {
               logger.fatal(new ApiInternalServerException(error.message || error, { context: 'MongoConnection' }))

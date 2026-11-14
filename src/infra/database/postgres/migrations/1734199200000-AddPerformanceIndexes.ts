@@ -1,12 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm'
 
-export class AddPerformanceIndexes1734199200000 implements MigrationInterface {
-  transaction?: boolean | undefined
-  down(queryRunner: QueryRunner): Promise<any> {
-    throw new Error('Method not implemented.')
-  }
-  name = AddPerformanceIndexes1734199200000.name
-
+export class AddPerformanceIndexes1734199200000 implements Omit<MigrationInterface, 'down'> {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`CREATE EXTENSION IF NOT EXISTS pg_trgm`)
     await queryRunner.query(`CREATE EXTENSION IF NOT EXISTS unaccent`)
@@ -37,7 +31,6 @@ export class AddPerformanceIndexes1734199200000 implements MigrationInterface {
       CREATE INDEX IF NOT EXISTS "idx_permissions_name_trgm" 
       ON "permissions" USING gin (name gin_trgm_ops)
     `)
-
 
     await queryRunner.query(`
       CREATE INDEX IF NOT EXISTS "idx_users_roles_role_id" 

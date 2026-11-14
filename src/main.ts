@@ -26,8 +26,8 @@ import { runWithRequestContext } from '@/utils/request/context'
 
 import { name, version } from '../package.json'
 import { AppModule } from './app.module'
-import { IUserRepository } from './core/user/repository/user'
 import { ErrorType } from './infra/logger'
+import { EnvEnum } from './infra/secrets/types'
 import { initI18n, normalizeLocale, runWithRequestLocale } from './utils/validator'
 
 type LanguageQuery = {
@@ -92,40 +92,81 @@ async function bootstrap() {
 
   const requestStartTimes = new WeakMap<object, bigint>()
 
+  const isSkippedRoute = (url: string | undefined): boolean => {
+    const isSkipped = ['/api-docs', '/health', `/.well-known/appspecific/com.chrome.devtools.json`].some((route) =>
+      url?.startsWith(route)
+    )
+    if (isSkipped) {
+      return true
+    }
+
+    return url === `/`
+  }
+
+  const isNoContentRoute = (url: string | undefined): boolean => {
+    const isNoContent = ['/favicon.ico', `/.well-known/appspecific/com.chrome.devtools.json`].some((route) =>
+      url?.startsWith(route)
+    )
+    return isNoContent
+  }
+
   fastify.addHook(
     'onRequest',
     (request: FastifyRequest<{ Querystring: LanguageQuery }>, reply: FastifyReply, done: HookHandlerDoneFunction) => {
-      if (request.raw.url?.split('?')[0].split('/').pop() === 'favicon.ico') {
-        reply.code(204).send()
-        return
+      if (isNoContentRoute(request.raw.url)) {
+        reply.status(204).send()
+        return done()
+      }
+
+      if (isSkippedRoute(request.raw.url)) {
+        return done()
       }
 
       const traceId = ensureTraceId(request as AppFastifyRequest)
       const requestContext = { [TRACEID_HEADER]: traceId, authorization: request.headers.authorization }
 
+      reply.header('X-Trace-Id', traceId)
+
       runWithRequestLocale(getPreferredLocale(request), () => runWithRequestContext(requestContext, done))
     }
   )
 
-  const userRepository = app.get(IUserRepository)
+  fastify.addHook('onRequest', (request: FastifyRequest, reply: FastifyReply, done: HookHandlerDoneFunction) => {
+    if (isNoContentRoute(request.raw.url)) {
+      reply.status(204).send()
+      return done()
+    }
 
-  userRepository.findOneWithRelation({ id: '475ab54e-5753-455d-89e0-b10c57ec6db6' }, { password: true })
+    if (isSkippedRoute(request.raw.url)) {
+      return done()
+    }
+    const route = request.routeOptions?.url
+    if (!route) {
+      return done()
+    }
 
-  fastify.addHook('onRequest', (request: FastifyRequest, _reply: FastifyReply, done: HookHandlerDoneFunction) => {
     requestStartTimes.set(request, process.hrtime.bigint())
-    const route = request.routeOptions?.url || 'unknown'
+
     activeRequests.add(1, { 'http.method': request.method, 'http.route': route })
     done()
   })
 
   fastify.addHook('onResponse', (request: FastifyRequest, reply: FastifyReply, done: HookHandlerDoneFunction) => {
-    const startTime = requestStartTimes.get(request)
-    if (!startTime) {
-      done()
-      return
+    if (isSkippedRoute(request.raw.url)) {
+      return done()
     }
 
-    const route = request.routeOptions?.url || 'unknown'
+    const route = request.routeOptions?.url
+
+    if (!route) {
+      return done()
+    }
+
+    const startTime = requestStartTimes.get(request)
+    if (!startTime) {
+      return done()
+    }
+
     const statusCode = Number(reply.statusCode) || 500
     const labels = {
       'http.method': request.method,
@@ -141,18 +182,33 @@ async function bootstrap() {
     done()
   })
 
+  const {
+    ENV,
+    MONGO: { MONGO_URL, MONGO_EXPRESS_URL },
+    POSTGRES: { POSTGRES_URL, POSTGRES_PGADMIN_URL },
+    PORT,
+    HOST,
+    ZIPKIN_URL,
+    PROMETHUES_URL,
+    GRAFANA_URL,
+    IS_PRODUCTION
+  } = app.get(ISecretsAdapter)
+
+  const styleSrc = {
+    [EnvEnum.PRD]: [`'self'`]
+  }[ENV] ?? [`'self'`, `'unsafe-inline'`]
+
   await fastify.register(fastifyHelmet, {
     contentSecurityPolicy: {
       directives: {
         defaultSrc: [`'self'`],
-        styleSrc: [`'self'`],
+        styleSrc,
         frameSrc: ["'none'"],
         upgradeInsecureRequests: [],
         imgSrc: [`'self'`, 'data:', 'blob:', 'validator.swagger.io'],
         scriptSrc: [`'self'`]
       }
     },
-    xssFilter: true,
     hsts: {
       maxAge: 31536000,
       includeSubDomains: true,
@@ -165,27 +221,16 @@ async function bootstrap() {
     threshold: ByteSize.fromKilobytes(1)
   })
 
-  const {
-    ENV,
-    HTTP_REQUEST_TIMEOUT_MS,
-    MONGO: { MONGO_URL, MONGO_EXPRESS_URL },
-    POSTGRES: { POSTGRES_URL, POSTGRES_PGADMIN_URL },
-    PORT,
-    HOST,
-    ZIPKIN_URL,
-    PROMETHUES_URL,
-    GRAFANA_URL,
-    IS_PRODUCTION
-  } = app.get(ISecretsAdapter)
-
   app.enableVersioning({ type: VersioningType.URI })
 
   process.on('uncaughtException', (error) => {
     loggerService.error(error as ErrorType)
+    process.exit(1)
   })
 
   process.on('unhandledRejection', (error) => {
     loggerService.error(error as ErrorType)
+    process.exit(1)
   })
 
   if (!IS_PRODUCTION) {
@@ -206,9 +251,7 @@ async function bootstrap() {
         uiConfig: {
           docExpansion: 'list',
           deepLinking: false
-        },
-        staticCSP: true,
-        transformStaticCSP: (header: string) => header
+        }
       })
     } catch (error) {
       loggerService.warn({ message: 'Failed to load Swagger documentation', metadata: { cause: error } })
@@ -231,11 +274,6 @@ async function bootstrap() {
     loggerService.log(`🟢 ${name} listening at ${bold(PORT)} on ${bold(ENV?.toUpperCase())} 🟢`)
     if (!IS_PRODUCTION) loggerService.log(`🟢 Swagger listening at ${bold(`${HOST}/api-docs`)} 🟢`)
   })
-
-  const server = fastify.server
-  server.timeout = HTTP_REQUEST_TIMEOUT_MS + 1000
-  server.keepAliveTimeout = 60000
-  server.headersTimeout = 61000
 }
 
 bootstrap()
