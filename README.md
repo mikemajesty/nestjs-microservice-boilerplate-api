@@ -44,11 +44,13 @@ For infrastructure setup and deployment instructions, see the
 ## Table of Contents
 
 - [Architecture Overview](#architecture-overview)
+- [Architectural Identity](#architectural-identity)
 - [The Pragmatic Principle](#the-pragmatic-principle)
 - [Architecture Comparison](#architecture-comparison)
 - [Design Decisions](#design-decisions)
 - [Interface Naming Taxonomy](#interface-naming-taxonomy)
 - [What to Avoid in Core](#what-to-avoid-in-core)
+- [Entities, Sub-entities, and Value Objects](#entities-sub-entities-and-value-objects)
 - [Layer Communication Rules](#layer-communication-rules)
 - [Project Structure](#project-structure)
 - [Quick Start](#quick-start)
@@ -73,6 +75,56 @@ The architecture is built around one fundamental principle: **protect your busin
 
 ---
 
+## Architectural Identity
+
+**This project is not a copy of Clean Architecture, DDD, or Hexagonal Architecture.** It is a **pragmatic synthesis** that borrows concepts from all three, but makes its own decisions where the classical patterns do not pay for their cost.
+
+Every deviation is deliberate, documented, and falsifiable. If you are looking for a textbook implementation of Clean Architecture, this is not it. If you are looking for a foundation that uses the best ideas from those patterns without their ceremony, you are in the right place.
+
+### What This Project Is
+
+- A foundation that **protects business logic** from frameworks, databases, and external services
+- A synthesis that **uses the best ideas** from Clean Architecture, DDD, and Hexagonal — without their ceremony
+- A codebase where **every deviation is declared, documented, and falsifiable**
+
+### What This Project Is Not
+
+- A textbook implementation of Clean Architecture
+- A strict DDD codebase with separate `value-objects/` and `aggregates/` folders
+- A classical Hexagonal implementation with Ports and Adapters as separate concepts
+
+### The Decisions That Define This Project
+
+| Decision | Classical pattern says | This project does | Why |
+|----------|------------------------|-------------------|-----|
+| Where "Adapter" lives | On the implementation class | On the contract (interface) | The class has no identity without the contract |
+| Validation location | Controller / Validator layer | Use Case (via `@ValidateSchema`) | Validation is business logic; must be unit-testable |
+| Service layer | Domain Service + Application Service | Unified in `UseCase` | The split adds boilerplate without benefit here |
+| Value Objects | Separate classes in `value-objects/` | Live in `entity/{domain}-{subdomain}.ts` | No separate folder; the distinction is `ensureID()` and `id` |
+| Aggregates | Separate `aggregates/` folder | The root entity **is** the aggregate | One less folder; the root entity encapsulates the cluster |
+| Repository contract | Interface | Abstract class | NestJS DI needs runtime tokens |
+| Interface naming | Port / Adapter | `I*Adapter` / `I*Repository` / `I{Domain}{Operation}` | Each suffix declares architectural role |
+| `middlewares/` folder | Split by concern | Unified | No better name found; all wrap HTTP lifecycle |
+| External libraries in Core | Never | Zod allowed (conscious exception) | Solves validation + types + mocks in one dependency |
+
+### The Unifying Criterion
+
+Every decision above follows the same rule: **optimize for what happens most, treat what happens least as an explicit, documented exception.**
+
+This is the [Pragmatic Principle](#the-pragmatic-principle). If a decision cannot be justified by this rule, it does not belong in this project.
+
+### How to Disagree
+
+If you believe a decision is wrong, the README gives you the criteria to argue against it. Each decision has:
+
+- A **declared position** (what this project does)
+- A **justification** (why it does it)
+- A **falsification criterion** (when the decision should be revisited)
+
+That is the difference between a boilerplate and a dogma.
+
+---
+
 ## The Pragmatic Principle
 
 This architecture follows a simple rule: **optimize for what happens most, treat what happens least as an explicit, named exception.**
@@ -90,7 +142,7 @@ This means:
 | Decision | Common case (optimized) | Rare case (explicit exception) |
 |----------|------------------------|-------------------------------|
 | Validation | Business rules inside Use Case via `@ValidateSchema` | Transport format (query, sort, pagination) validated in Controller |
-| Aggregates | Single entity per folder | Group entities when they share lifecycle and transactional consistency |
+| Entities | Single root entity per domain | Sub-entities and Value Objects in `{domain}-{subdomain}.ts` |
 | `any` | Never used | `eslint-disable` with justification comment |
 | External libraries in Core | Avoided | Zod is a conscious exception (see below) |
 | Domain Services | Logic in Entity or Use Case | — (not needed in this architecture) |
@@ -104,10 +156,10 @@ This is not a rejection of Clean Architecture, DDD, or Hexagonal. It is **applyi
 | Signal | Suggested threshold | Action |
 |--------|---------------------|--------|
 | Use Cases validating transport in Controller | > 20% of Use Cases | Revisit whether validation should leave the Use Case |
-| Aggregates with multiple repositories | > 10% of Aggregates | Introduce a Unit of Work pattern |
+| Sub-entities with their own repository | > 10% of domains | Introduce a Unit of Work pattern |
 | `any` with `eslint-disable` | > 5 occurrences | Revisit typing or create a wrapper |
 | `I*Adapter` interfaces with a single implementation | > 6 months | Evaluate whether the contract is premature |
-| External libraries in Core | > 1 (currently Zod) | Require an ADR (Architecture Decision Record) for each addition |
+| External libraries in Core | > 1 (currently Zod) | Require an ADR for each addition |
 
 **The principle:** an exception is allowed, but it must be **visible**. If a threshold is crossed, the architecture is revisited — not silently patched.
 
@@ -125,7 +177,9 @@ Clean Architecture organizes code into concentric circles where dependencies poi
 - **Use Cases** live in `src/core/*/use-cases` — application-specific business rules
 - **Interfaces** live in `src/core/*/repository` — contracts for external dependencies
 - **Frameworks** live in `src/modules` and `src/infra` — NestJS controllers and database implementations
-  **What we simplified:**
+
+**What we simplified:**
+
 - No explicit Interactors or Presenters
 - No input/output boundary classes
 
@@ -142,8 +196,9 @@ DDD focuses on modeling your business domain. It introduces concepts like Entiti
 
 **What we simplified:**
 
-- No Value Objects as separate classes
-- Unified service layer (no Domain/Application Service split)
+- **No separate `value-objects/` or `aggregates/` folders** — everything lives in `entity/`
+- **The root entity is the aggregate** — no separate `AggregateRoot` class
+- **Unified service layer** (no Domain/Application Service split)
 
 #### Service Layer Comparison: DDD vs. This Architecture
 
@@ -663,34 +718,18 @@ An **anemic entity** is just a data container with no behavior — essentially a
 
 ---
 
-### Entities: Must Extend BaseEntity
+### Entities: Must Extend BaseEntity (Root Entity Only)
 
-Every Entity **must extend** the `BaseEntity` class. This is mandatory in this project.
+**The root entity of every domain must extend `BaseEntity`.** This is mandatory. Sub-entities and Value Objects **may** extend `BaseEntity` (if they need `toData()`, `clone()`, `merge()`, etc.), but it is **not mandatory**.
 
-| ❌ Avoid                     | ✅ Prefer                                                    |
-| ---------------------------- | ------------------------------------------------------------ |
-| `class UserEntity { }`       | `class UserEntity extends BaseEntity<UserEntity>() { }`      |
-| `export class CatEntity { }` | `export class CatEntity extends BaseEntity<CatEntity>() { }` |
+| Class | Extends `BaseEntity`? | Calls `ensureID()`? | Has `id`? |
+|-------|----------------------|---------------------|-----------|
+| Root entity (`{domain}.ts`) | ✅ **Mandatory** | ✅ **Mandatory** | ✅ Yes |
+| Sub-entity (`{domain}-{subdomain}.ts`) | ⚠️ Optional | ❌ **Never** | ✅ Yes (from outside) |
+| Value Object (`{domain}-{subdomain}.ts`) | ⚠️ Optional | ❌ **Never** | ❌ No |
 
 ```typescript
-// ❌ WRONG - Not extending BaseEntity
-export class CatEntity {
-  id!: string
-  name!: string
-  breed!: string
-  age!: number
-  createdAt?: Date
-  updatedAt?: Date
-  deletedAt?: Date
-
-  constructor(entity: Cat) {
-    Object.assign(this, entity)
-  }
-}
-
-// ✅ CORRECT - Extends BaseEntity
-import { BaseEntity } from '@/utils/entity'
-
+// ✅ CORRECT - Root entity: extends BaseEntity + ensureID()
 export class CatEntity extends BaseEntity<CatEntity>() {
   name!: Cat['name']
   breed!: Cat['breed']
@@ -699,33 +738,56 @@ export class CatEntity extends BaseEntity<CatEntity>() {
   constructor(entity: Cat) {
     super(CatEntitySchema)
     this.validate(entity)
-    this.ensureID()
+    this.ensureID()   // ← only the root entity calls this
+  }
+}
+
+// ✅ CORRECT - Sub-entity: optionally extends BaseEntity, NEVER calls ensureID()
+export class UserPasswordEntity extends BaseEntity<UserPasswordEntity>() {
+  hash!: UserPassword['hash']
+
+  constructor(entity: UserPassword) {
+    super(UserPasswordEntitySchema)
+    this.validate(entity)
+    // NO ensureID() — the id comes from outside (Use Case, parent, or database)
+  }
+}
+
+// ✅ CORRECT - Value Object: optionally extends BaseEntity, NEVER calls ensureID()
+export class RolePermissionValue extends BaseEntity<RolePermissionValue>() {
+  action!: RolePermissionValue['action']
+  resource!: RolePermissionValue['resource']
+
+  constructor(value: RolePermissionValue) {
+    super(RolePermissionValueSchema)
+    this.validate(value)
+    // NO ensureID() — Value Objects have no identity
   }
 }
 ```
 
-**What BaseEntity provides:**
+**What `BaseEntity` provides:**
 
-1. **Common properties** — `id`, `createdAt`, `updatedAt`, `deletedAt` are inherited
-2. **Validation** — `validate(entity)` method validates input against Zod schema
-3. **ID generation** — `ensureID()` generates UUID if not provided
+1. **Common properties** — `id` (only if the class calls `ensureID()`), `createdAt`, `updatedAt`, `deletedAt`
+2. **Validation** — `validate(entity)` method validates input against the Zod schema passed to `super()`
+3. **ID generation** — `ensureID()` generates UUID if not provided (**root entity only**)
 4. **Status methods** — `isActive()`, `isDeleted()`, `activate()`, `deactivate()`
-5. **Serialization** — `toObject()` returns plain object, `clone()` creates a copy
-6. **Type safety** — `nameOf()` provides type-safe property names
+5. **Serialization** — `toData()` returns plain object, `clone()` creates a copy, `merge()` merges partial data
+6. **Domain events** — `addEvent()`, `getEvents()`, `releaseEvents()`, `clearEvents()`
 
 **Constructor pattern:**
 
 Every entity constructor must follow this pattern:
 
 ```typescript
-constructor(entity: Cat) {
-  super(CatEntitySchema)  // 1. Pass Zod schema to parent
+constructor(entity: EntityType) {
+  super(EntitySchema)  // 1. Pass Zod schema to parent
   this.validate(entity)   // 2. Validate and assign properties
-  this.ensureID()         // 3. Generate ID if not provided
+  this.ensureID()         // 3. Generate ID if not provided (ROOT ENTITY ONLY)
 }
 ```
 
-📖 **See detailed examples:** [Entity Guide](guides/core/entity.md) — includes full entity implementation
+📖 **See detailed examples:** [Entity Guide](guides/core/entity.md) — includes full entity implementation and `BaseEntity` utilities
 
 ---
 
@@ -1212,71 +1274,165 @@ const calculateTotal = (items: OrderItem[]): number => {
 
 ---
 
-### Aggregates: Multiple Entities in the Same Folder
+## Entities, Sub-entities, and Value Objects
 
-In DDD, an **Aggregate** is a cluster of related entities that are treated as a single unit. When entities belong to the same aggregate, they can live together in the same folder.
+This project **does not have separate `value-objects/` or `aggregates/` folders**. Everything lives in `core/{domain}/entity/`, and the distinction between types is made by **naming and the `ensureID()` call**.
 
-**Example: User Aggregate**
+### The Three Types
 
-If `User` and `Address` are always created/updated together and `Address` has no meaning without a `User`, they belong to the same aggregate:
+| Type | File pattern | Class pattern | Extends `BaseEntity`? | Calls `ensureID()`? | Has `id`? |
+|------|-------------|---------------|----------------------|---------------------|-----------|
+| **Root entity** (Aggregate Root) | `{domain}.ts` | `{Domain}Entity` | ✅ **Mandatory** | ✅ **Mandatory** | ✅ Yes (generated) |
+| **Sub-entity** | `{domain}-{subdomain}.ts` | `{Domain}{Subdomain}Entity` | ⚠️ Optional | ❌ **Never** | ✅ Yes (from outside) |
+| **Value Object** | `{domain}-{subdomain}.ts` | `{Domain}{Subdomain}Value` | ⚠️ Optional | ❌ **Never** | ❌ No |
+
+**The decisive rule:** If the class calls `ensureID()`, it has its own identity → it is a **root entity**. If it does **not** call `ensureID()`:
+
+- If it has `id` in its schema → it is a **sub-entity** (the `id` comes from outside)
+- If it does **not** have `id` in its schema → it is a **Value Object**
+
+### Example: User Aggregate
 
 ```
-core/
-└── user/
-    ├── entity/
-    │   ├── user.ts           # Aggregate Root
-    │   └── address.ts        # Belongs to User aggregate
-    ├── repository/
-    │   ├── user.ts           # Main repository
-    │   └── address.ts        # Can have its own repository if needed
-    └── use-cases/
-        ├── user-create.ts    # May create User + Address together
-        └── address-update.ts # Can update Address independently
+core/user/entity/
+├── user.ts              ← Root entity: extends BaseEntity, calls ensureID()
+└── user-password.ts     ← Sub-entity: optionally extends BaseEntity, NO ensureID(), has id
 ```
-
-**When to use aggregates:**
-
-| Scenario                            | Same Folder (Aggregate) | Separate Folders |
-| ----------------------------------- | ----------------------- | ---------------- |
-| Entities always created together    | ✅                      | —                |
-| Child has no meaning without parent | ✅                      | —                |
-| Shared business rules               | ✅                      | —                |
-| Entities are independent            | —                       | ✅               |
-| Different lifecycles                | —                       | ✅               |
-
-**Key rules:**
-
-1. **Aggregate Root** — One entity is the "root" (e.g., `User`). External access should go through it
-2. **Transactional consistency** — Operations within an aggregate should be atomic
-3. **Own rules** — Each entity can still have its own validation and behavior
-4. **Separate repositories are OK** — `Address` can have its own repository for specific queries
-
-**Practical example:**
 
 ```typescript
-// user-create.ts - Creates User with Address in same transaction
-import { IUsecase } from '@/utils/usecase'
+// user.ts — Root entity (Aggregate Root)
+import { BaseEntity } from '@/utils/entity'
+import { InferSchema, InputValidator } from '@/utils/validator'
+import { UserPasswordEntity, UserPasswordEntitySchema } from './user-password'
 
-export class UserCreateUseCase implements IUsecase {
-  constructor(
-    private readonly userRepository: IUserRepository,
-    private readonly addressRepository: IAddressRepository
-  ) {}
+const ID = InputValidator.uuid()
+const Name = InputValidator.string()
+const Email = InputValidator.email()
+const Password = UserPasswordEntitySchema
+const CreatedAt = InputValidator.date().nullish()
+const UpdatedAt = InputValidator.date().nullish()
+const DeletedAt = InputValidator.date().nullish()
 
-  async execute(input: UserCreateInput): Promise<UserCreateOutput> {
-    // Create both as part of the same aggregate operation
-    const user = new UserEntity(input.user)
-    const address = new AddressEntity({ ...input.address, userId: user.id })
+export const UserEntitySchema = InputValidator.object({
+  id: ID,
+  name: Name,
+  email: Email,
+  roles: InputValidator.array(RoleEntitySchema.optional()).default([]),
+  password: Password.optional(),
+  createdAt: CreatedAt,
+  updatedAt: UpdatedAt,
+  deletedAt: DeletedAt
+})
 
-    await this.userRepository.create(user)
-    await this.addressRepository.create(address)
+type User = InferSchema<typeof UserEntitySchema>
 
-    return new UserCreateOutput(user)
+export class UserEntity extends BaseEntity<UserEntity>() {
+  name!: User['name']
+  email!: User['email']
+  roles!: RoleEntity[]
+  password!: UserPasswordEntity
+
+  constructor(entity: User) {
+    super(UserEntitySchema)   // ← validation schema
+    this.validate(entity)      // ← validates and assigns
+    this.ensureID()            // ← generates id (root entity only)
   }
 }
 ```
 
-**Don't over-engineer:** Not everything needs to be an aggregate. Start simple — if you notice entities are always manipulated together, then group them.
+```typescript
+// user-password.ts — Sub-entity
+// Optionally extends BaseEntity (here it does, to get toData/clone/merge)
+// But NEVER calls ensureID() — the id comes from outside
+import { BaseEntity } from '@/utils/entity'
+import { InferSchema, InputValidator } from '@/utils/validator'
+
+const ID = InputValidator.uuid()
+const Hash = InputValidator.string()
+
+export const UserPasswordEntitySchema = InputValidator.object({
+  id: ID,
+  hash: Hash
+})
+
+type UserPassword = InferSchema<typeof UserPasswordEntitySchema>
+
+export class UserPasswordEntity extends BaseEntity<UserPasswordEntity>() {
+  hash!: UserPassword['hash']
+
+  constructor(entity: UserPassword) {
+    super(UserPasswordEntitySchema)
+    this.validate(entity)
+    // NO ensureID() — the id comes from the Use Case, the parent, or the database
+  }
+}
+```
+
+### Value Object Example
+
+```typescript
+// role-permission.ts — Value Object
+// No id in schema → no identity → Value Object
+import { BaseEntity } from '@/utils/entity'
+import { InferSchema, InputValidator } from '@/utils/validator'
+
+const Action = InputValidator.string()
+const Resource = InputValidator.string()
+
+export const RolePermissionValueSchema = InputValidator.object({
+  action: Action,
+  resource: Resource
+  // NO id field — Value Objects have no identity
+})
+
+type RolePermissionValue = InferSchema<typeof RolePermissionValueSchema>
+
+export class RolePermissionValue extends BaseEntity<RolePermissionValue>() {
+  action!: RolePermissionValue['action']
+  resource!: RolePermissionValue['resource']
+
+  constructor(value: RolePermissionValue) {
+    super(RolePermissionValueSchema)
+    this.validate(value)
+    // NO ensureID() — Value Objects have no identity
+  }
+}
+```
+
+### How Validation Works
+
+The **child's schema is imported into the parent's schema**. The child does **not** validate itself in isolation — it is validated when the parent schema is parsed:
+
+```typescript
+// In user.ts — the parent schema includes the child schema
+const Password = UserPasswordEntitySchema
+
+export const UserEntitySchema = InputValidator.object({
+  // ...
+  password: Password.optional()  // ← child validation happens here
+})
+```
+
+This means:
+
+- `UserPasswordEntitySchema` can be used standalone (if needed)
+- But when a `UserEntity` is validated, the `password` field is validated **as part of the parent's schema**
+- The child class does **not** need its own `validate()` call in the constructor beyond `this.validate(entity)` (which uses the schema passed to `super()`)
+
+### Why This Simplification Exists
+
+Classical DDD has separate folders for `entities/`, `value-objects/`, and `aggregates/`. This project unifies everything in `entity/` because:
+
+1. **Most developers do not need to learn DDD vocabulary** to use the project. They need to know:
+   - Where to put the file → `entity/`
+   - How to name it → `{domain}.ts` for the root, `{domain}-{subdomain}.ts` for anything that belongs to it
+   - Whether to call `ensureID()` → only the root entity does
+
+2. **The distinction is actionable without the theory.** The presence or absence of `ensureID()` and `id` tells you exactly what type of class it is, without requiring the developer to know what a Value Object is.
+
+3. **The root entity IS the aggregate.** There is no separate `AggregateRoot` class. The root entity encapsulates the cluster, and the sub-entities/VOs belong to it.
+
+**Don't over-engineer:** Not every domain needs sub-entities or Value Objects. Start with a single root entity. If you notice a concept has its own validation rules and is always used with the parent, split it into `{domain}-{subdomain}.ts`.
 
 ---
 
@@ -1353,8 +1509,10 @@ The use case never knows if data goes to PostgreSQL, MongoDB, or a mock. It only
 ```
 src/
 ├── core/                    # 🧠 Business Logic (Framework-agnostic)
-│   └── [module]/
+│   └── [domain]/
 │       ├── entity/          # Domain entities with Zod validation
+│       │   ├── {domain}.ts              # Root entity (extends BaseEntity, ensureID)
+│       │   └── {domain}-{subdomain}.ts  # Sub-entity or Value Object (NO ensureID)
 │       ├── repository/      # Repository interfaces (contracts)
 │       └── use-cases/       # Business rules and operations
 │           └── __tests__/   # Unit tests for use cases
@@ -1382,10 +1540,10 @@ src/
 │   └── metrics/             # Prometheus metrics
 │
 └── utils/                   # 🛠️ Utility Functions
-    ├── decorators/          # Custom decorators
-    ├── middlewares/         # HTTP middlewares
-    ├── interceptors/        # NestJS interceptors
-    └── filters/             # Exception filters
+    ├── decorators/          # Custom decorators (including @ValidateSchema)
+    ├── middlewares/         # HTTP middlewares, guards, interceptors, filters
+    ├── entity/              # BaseEntity and entity utilities
+    └── validator/           # Zod-based InputValidator
 ```
 
 ### Folder Responsibilities
@@ -1396,7 +1554,7 @@ src/
 | `modules/` | NestJS controllers, dependency injection, route handling       | `core/`, `infra/`, `libs/` |
 | `infra/`   | External services, databases, cache, HTTP clients              | `core/` (interfaces only)  |
 | `libs/`    | Reusable libraries, framework-agnostic utilities               | Nothing from `src/`        |
-| `utils/`   | Helper functions, decorators, middlewares                      | Anything                   |
+| `utils/`   | Helper functions, decorators, entity utilities, validators     | Anything                   |
 
 ---
 
@@ -1599,6 +1757,7 @@ Utility functions and helpers.
 | [Validator](guides/utils/validator.md)   | Validation helpers   |
 | [Collection](guides/utils/collection.md) | Array utilities      |
 | [Search](guides/utils/search.md)         | Search utilities     |
+| [Entity](guides/utils/entity.md)         | BaseEntity utilities |
 
 ---
 
