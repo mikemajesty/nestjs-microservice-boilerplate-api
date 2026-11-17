@@ -1276,128 +1276,51 @@ const calculateTotal = (items: OrderItem[]): number => {
 
 ## Entities, Sub-entities, and Value Objects
 
-This project **does not have separate `value-objects/` or `aggregates/` folders**. Everything lives in `core/{domain}/entity/`, and the distinction between types is made by **naming and the `ensureID()` call**.
+This project **does not have separate `value-objects/` or `aggregates/` folders**. Everything lives in `core/{domain}/entity/`, and the distinction between types is made by naming and identity management.
 
 ### The Three Types
 
-| Type | File pattern | Class pattern | Extends `BaseEntity`? | Calls `ensureID()`? | Has `id`? |
-|------|-------------|---------------|----------------------|---------------------|-----------|
-| **Root entity** (Aggregate Root) | `{domain}.ts` | `{Domain}Entity` | ✅ **Mandatory** | ✅ **Mandatory** | ✅ Yes (generated) |
-| **Sub-entity** | `{domain}-{subdomain}.ts` | `{Domain}{Subdomain}Entity` | ⚠️ Optional | ❌ **Never** | ✅ Yes (from outside) |
-| **Value Object** | `{domain}-{subdomain}.ts` | `{Domain}{Subdomain}Value` | ⚠️ Optional | ❌ **Never** | ❌ No |
+| Type | File pattern | Class pattern | Calls `ensureID()`? | Has `id`? |
+|------|-------------|---------------|---------------------|-----------|
+| **Root Entity** (Aggregate Root) | `{domain}.ts` | `{Domain}Entity` | Yes | Yes |
+| **Sub-entity** | `{domain}-{subdomain}.ts` | `{Domain}{Subdomain}Entity` | Yes | Yes |
+| **Value Object** | `{domain}-{subdomain}.ts` | `{Domain}{Subdomain}Value` | No | No |
 
-**The decisive rule:** If the class calls `ensureID()`, it has its own identity → it is a **root entity**. If it does **not** call `ensureID()`:
+**The decisive rule:**
 
-- If it has `id` in its schema → it is a **sub-entity** (the `id` comes from outside)
-- If it does **not** have `id` in its schema → it is a **Value Object**
+- **Root Entity:** Represents the aggregate root and generates its own `id` through `ensureID()`.
+- **Sub-entity:** Has its own identity within the aggregate and also generates its `id` through `ensureID()`. Unlike the Root Entity, it is not the aggregate root.
+- **Value Object:** Has no identity or `id`. It is defined entirely by its attributes.
 
-### Example: User Aggregate
+### Examples
 
-```
-core/user/entity/
-├── user.ts              ← Root entity: extends BaseEntity, calls ensureID()
-└── user-password.ts     ← Sub-entity: optionally extends BaseEntity, NO ensureID(), has id
-```
+- `UserEntity`: Root Entity. Generates its own `id`.
+- `UserPasswordEntity`: Sub-entity. Generates its own `id`.
+- `RolePermissionValue`: Value Object. Has no `id`.
 
-```typescript
-// user.ts — Root entity (Aggregate Root)
-import { BaseEntity } from '@/utils/entity'
-import { InferSchema, InputValidator } from '@/utils/validator'
-import { UserPasswordEntity, UserPasswordEntitySchema } from './user-password'
+### The Convention
 
-const ID = InputValidator.uuid()
-const Name = InputValidator.string()
-const Email = InputValidator.email()
-const Password = UserPasswordEntitySchema
-const CreatedAt = InputValidator.date().nullish()
-const UpdatedAt = InputValidator.date().nullish()
-const DeletedAt = InputValidator.date().nullish()
+Start with a single Root Entity per domain. Introduce Sub-entities when a concept needs its own identity within the aggregate, and Value Objects when a concept has no identity and is defined entirely by its attributes.
 
-export const UserEntitySchema = InputValidator.object({
-  id: ID,
-  name: Name,
-  email: Email,
-  roles: InputValidator.array(RoleEntitySchema.optional()).default([]),
-  password: Password.optional(),
-  createdAt: CreatedAt,
-  updatedAt: UpdatedAt,
-  deletedAt: DeletedAt
-})
+Both Sub-entities and Value Objects live in `{domain}-{subdomain}.ts`. Their class names distinguish their roles.
 
-type User = InferSchema<typeof UserEntitySchema>
+**In short:** Root Entities and Sub-entities have identity and call `ensureID()`. Value Objects have no identity and do not call it.
 
-export class UserEntity extends BaseEntity<UserEntity>() {
-  name!: User['name']
-  email!: User['email']
-  roles!: RoleEntity[]
-  password!: UserPasswordEntity
+### How Validation Works
 
-  constructor(entity: User) {
-    super(UserEntitySchema)   // ← validation schema
-    this.validate(entity)      // ← validates and assigns
-    this.ensureID()            // ← generates id (root entity only)
-  }
-}
-```
+The **child's schema is imported into the parent's schema**. The child is validated as part of the parent's schema when the parent is parsed.
 
-```typescript
-// user-password.ts — Sub-entity
-// Optionally extends BaseEntity (here it does, to get toData/clone/merge)
-// But NEVER calls ensureID() — the id comes from outside
-import { BaseEntity } from '@/utils/entity'
-import { InferSchema, InputValidator } from '@/utils/validator'
+This allows the parent to validate its entire structure, including nested entities and Value Objects, in a single operation.
 
-const ID = InputValidator.uuid()
-const Hash = InputValidator.string()
+### Why This Simplification Exists
 
-export const UserPasswordEntitySchema = InputValidator.object({
-  id: ID,
-  hash: Hash
-})
+Classical DDD has separate folders for `entities/`, `value-objects/`, and `aggregates/`. This project unifies everything in `entity/` because:
 
-type UserPassword = InferSchema<typeof UserPasswordEntitySchema>
+1. **Less folder complexity.** Developers only need to know where to put the file and how to name it.
+2. **The distinction is explicit.** Entities have an `id` and call `ensureID()`. Value Objects have neither.
+3. **The Root Entity is the aggregate root.** There is no separate `AggregateRoot` class. The root entity encapsulates the aggregate, and its sub-entities and Value Objects belong to it.
 
-export class UserPasswordEntity extends BaseEntity<UserPasswordEntity>() {
-  hash!: UserPassword['hash']
-
-  constructor(entity: UserPassword) {
-    super(UserPasswordEntitySchema)
-    this.validate(entity)
-    // NO ensureID() — the id comes from the Use Case, the parent, or the database
-  }
-}
-```
-
-### Value Object Example
-
-```typescript
-// role-permission.ts — Value Object
-// No id in schema → no identity → Value Object
-import { BaseEntity } from '@/utils/entity'
-import { InferSchema, InputValidator } from '@/utils/validator'
-
-const Action = InputValidator.string()
-const Resource = InputValidator.string()
-
-export const RolePermissionValueSchema = InputValidator.object({
-  action: Action,
-  resource: Resource
-  // NO id field — Value Objects have no identity
-})
-
-type RolePermissionValue = InferSchema<typeof RolePermissionValueSchema>
-
-export class RolePermissionValue extends BaseEntity<RolePermissionValue>() {
-  action!: RolePermissionValue['action']
-  resource!: RolePermissionValue['resource']
-
-  constructor(value: RolePermissionValue) {
-    super(RolePermissionValueSchema)
-    this.validate(value)
-    // NO ensureID() — Value Objects have no identity
-  }
-}
-```
+**Don't over-engineer:** Not every domain needs Sub-entities or Value Objects. Start with a single Root Entity. Introduce other types only when the domain model requires them.
 
 ### How Validation Works
 
@@ -1415,24 +1338,24 @@ export const UserEntitySchema = InputValidator.object({
 
 This means:
 
-- `UserPasswordEntitySchema` can be used standalone (if needed)
-- But when a `UserEntity` is validated, the `password` field is validated **as part of the parent's schema**
-- The child class does **not** need its own `validate()` call in the constructor beyond `this.validate(entity)` (which uses the schema passed to `super()`)
+- `UserPasswordEntitySchema` can be used standalone, if needed.
+- When a `UserEntity` is validated, its `password` field is validated **as part of the parent's schema**.
+- The child schema does not need a separate parsing step when it is already included in the parent's schema.
 
 ### Why This Simplification Exists
 
-Classical DDD has separate folders for `entities/`, `value-objects/`, and `aggregates/`. This project unifies everything in `entity/` because:
+Classical DDD commonly separates `entities/`, `value-objects/`, and `aggregates/`. This project keeps everything in `entity/` to reduce folder complexity and make the conventions explicit.
 
-1. **Most developers do not need to learn DDD vocabulary** to use the project. They need to know:
+1. **Simple organization.** Developers only need to know:
    - Where to put the file → `entity/`
-   - How to name it → `{domain}.ts` for the root, `{domain}-{subdomain}.ts` for anything that belongs to it
-   - Whether to call `ensureID()` → only the root entity does
+   - How to name it → `{domain}.ts` for the Root Entity and `{domain}-{subdomain}.ts` for Sub-entities and Value Objects.
+   - How identity works → Root Entities and Sub-entities have an `id` and call `ensureID()`. Value Objects have neither.
 
-2. **The distinction is actionable without the theory.** The presence or absence of `ensureID()` and `id` tells you exactly what type of class it is, without requiring the developer to know what a Value Object is.
+2. **Explicit distinction.** The presence or absence of identity determines whether a class is an Entity or a Value Object. The Root Entity is distinguished from a Sub-entity by its role in the aggregate, not by ID generation.
 
-3. **The root entity IS the aggregate.** There is no separate `AggregateRoot` class. The root entity encapsulates the cluster, and the sub-entities/VOs belong to it.
+3. **The Root Entity is the Aggregate Root.** There is no separate `AggregateRoot` class. The Root Entity encapsulates the aggregate, while Sub-entities and Value Objects belong to it.
 
-**Don't over-engineer:** Not every domain needs sub-entities or Value Objects. Start with a single root entity. If you notice a concept has its own validation rules and is always used with the parent, split it into `{domain}-{subdomain}.ts`.
+**Don't over-engineer:** Not every domain needs Sub-entities or Value Objects. Start with a single Root Entity. Introduce a Sub-entity when a concept needs its own identity within the aggregate, or a Value Object when a concept is defined entirely by its attributes.
 
 ---
 
