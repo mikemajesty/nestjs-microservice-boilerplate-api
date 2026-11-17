@@ -45,6 +45,8 @@ For infrastructure setup and deployment instructions, see the
 
 - [Architecture Overview](#architecture-overview)
 - [Architecture Comparison](#architecture-comparison)
+- [Design Decisions](#design-decisions)
+- [Interface Naming Taxonomy](#interface-naming-taxonomy)
 - [Layer Communication Rules](#layer-communication-rules)
 - [Project Structure](#project-structure)
 - [Quick Start](#quick-start)
@@ -156,22 +158,11 @@ Hexagonal Architecture separates the application from external concerns through 
 - `HttpService` in `infra/` — implements `IHttpAdapter` with Axios
 - `RedisService` in `infra/` — implements `ICacheAdapter` with Redis
 
----
+#### Adapter: Classical Hexagonal vs. This Project
 
-## Design Decisions
+This is the most important conceptual difference between this project and classical Hexagonal Architecture. It is not an inversion — it is a deliberate **rescoping of the term "Adapter"**.
 
-> ⚠️ **Important Notes About This Architecture**
->
-> This section explains some deliberate choices that differ from traditional implementations. Understanding these decisions will help you work with the codebase effectively.
-
-### Why We Call Interfaces "Adapters"
-
-You may notice that some interfaces in this project use the word "Adapter" (e.g., `IHttpAdapter`, `ICacheAdapter`). In traditional Hexagonal Architecture:
-
-- **Port**: An interface that defines a contract (what operations are available)
-- **Adapter**: A concrete implementation that fulfills that contract (how it's done)
-
-**The academic distinction:**
+**Classical Hexagonal:**
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
@@ -184,30 +175,98 @@ You may notice that some interfaces in this project use the word "Adapter" (e.g.
 │   IEmailService          →      SendGridEmailService         │
 │   ICacheService          →      RedisCacheService            │
 │                                                              │
+│   The Adapter is the CONCRETE CLASS.                         │
+│   It is the thing that "adapts" to the Port contract.        │
 └──────────────────────────────────────────────────────────────┘
 ```
 
-**Our simplified approach:**
+**This project:**
 
-We use "Adapter" in interface names because, conceptually, **both are abstractions**. The fundamental principle is the same: decouple your core business logic from implementation details. Whether you call the interface a "Port" or "Adapter" doesn't change how the pattern works.
-
-```typescript
-// Traditional naming
-interface IUserRepository {} // Port
-class PostgresUserRepository {} // Adapter
-
-// Our naming (simplified)
-interface IHttpAdapter {} // Still an abstraction (contract)
-class HttpService {} // Still an implementation
+```
+┌──────────────────────────────────────────────────────────────┐
+│                  THIS PROJECT (Rescoped)                     │
+├──────────────────────────────────────────────────────────────┤
+│                                                              │
+│   I*Adapter (Interface)         Implementation (Class)       │
+│   ─────────────────────         ──────────────────────       │
+│   IHttpAdapter            →     HttpService (Axios)          │
+│   ICacheAdapter           →     RedisService                 │
+│   IQueueAdapter           →     SqsQueueService              │
+│                                                              │
+│   The Adapter is the CONTRACT (the point of adaptation).     │
+│   The implementation is just a class that plugs into it.     │
+└──────────────────────────────────────────────────────────────┘
 ```
 
-**Why this simplification?**
+**Why the rescope?**
 
-1. **Reduced cognitive load** — One less concept to explain to new developers
-2. **Practical focus** — The behavior is identical regardless of naming
-3. **Consistency** — All abstractions follow the same `I*Adapter` pattern
+The word "Adapter" in classical Hexagonal describes **the class that adapts to a contract**. But the class alone has no architectural identity — it only exists *in relation to* the contract. Without `IHttpAdapter`, `HttpService` is just a class.
 
-The key takeaway: **if it's an interface, it's a contract. If it's a class implementing that interface, it's the implementation.** The names are just labels.
+This project inverts the perspective: **the point of adaptation is the contract itself**. `IHttpAdapter` is the boundary where any HTTP technology can plug in. It communicates: *"this is an extension point — multiple implementations can coexist."* The implementation class carries no architectural role; it is a technology choice.
+
+**What this means in practice:**
+
+| Aspect | Classical Hexagonal | This Project |
+|--------|---------------------|--------------|
+| Where the name "Adapter" lives | On the concrete class | On the contract (interface) |
+| What "Adapter" describes | The class that adapts | The point of adaptation |
+| Implementation naming | `PostgresUserRepository`, `RedisCacheService` | `HttpService`, `RedisService` (technology-descriptive) |
+| Signal to new developers | "This class is an adapter" | "This interface is a plug point" |
+| Consistency with DDD | Port/Adapter split | Adapter = infra plug; Repository = domain contract |
+
+**Important:** This rescope applies **only to infrastructure contracts** (`I*Adapter`). Domain contracts (`I*Repository`) and application contracts (`I*Usecase`) follow their own naming semantics. See [Interface Naming Taxonomy](#interface-naming-taxonomy) for the full rule.
+
+---
+
+## Design Decisions
+
+> ⚠️ **Important Notes About This Architecture**
+>
+> This section explains some deliberate choices that differ from traditional implementations. Understanding these decisions will help you work with the codebase effectively.
+
+### Why We Call Interfaces "Adapters"
+
+You may notice that some interfaces in this project use the word "Adapter" (e.g., `IHttpAdapter`, `ICacheAdapter`). This is a **deliberate rescope** of the term, not an inversion of classical Hexagonal Architecture.
+
+**The key distinction:**
+
+- In classical Hexagonal, the **Adapter is the concrete class** that adapts to a Port.
+- In this project, the **Adapter is the contract (interface)** — the point where implementations adapt.
+
+**Why?**
+
+An implementation without an interface is just a class. It has no architectural identity. The implementation exists *in relation to* the contract, not the other way around. So the name "Adapter" belongs on the boundary — the place where adaptation happens — not on the class that happens to implement it today.
+
+```typescript
+// Classical Hexagonal naming
+interface IHttpClient {}          // Port (contract)
+class AxiosHttpClient {}          // Adapter (implementation)
+
+// This project's naming
+interface IHttpAdapter {}         // Adapter (contract — the point of adaptation)
+class HttpService {}              // Implementation (technology choice)
+```
+
+**What `I*Adapter` communicates:**
+
+1. **Extension point** — multiple implementations can coexist (Axios, Fetch, Undici)
+2. **Infrastructure concern** — this is a pluggable technology boundary, not a domain concept
+3. **Generic by design** — the contract must be generic enough to accept any implementation
+
+**What `I*Repository` and `I*Usecase` communicate (by contrast):**
+
+- `I*Repository` — a **domain concept** (DDD Repository). The name is inherently abstract; it does not need an "Adapter" suffix to signal pluggability.
+- `I*Usecase` / `I{Domain}{Operation}` — an **application operation**. The generic `IUsecase` already carries the role; the specific name carries the operation.
+
+**The trade-off we accept:**
+
+The word "Adapter" is a concrete noun in English — it reads as "a thing that adapts." So `IHttpAdapter` will always read, at first glance, as "an adapter." We accept this friction because:
+
+1. The rescope is **declared and documented** (this section, plus the taxonomy below)
+2. It is **consistent** — every infra contract follows `I*Adapter`
+3. It **signals pluggability** more strongly than `I*Client` or `I*Service` would
+
+**The rule that makes this falsifiable:** see [Interface Naming Taxonomy](#interface-naming-taxonomy). If a contract does not fit one of the three categories, it does not get a suffix from this taxonomy.
 
 ---
 
@@ -375,6 +434,90 @@ async createFromInternal(input: InternalUserInput): Promise<UserCreateOutput> {
 
 ---
 
+## Interface Naming Taxonomy
+
+This project uses **three categories of interface contracts**, each with its own naming convention. The suffix (or absence of one) is not cosmetic — it declares the contract's architectural role.
+
+### The Three Categories
+
+| Category | Naming Pattern | Example | What it represents |
+|----------|----------------|---------|-------------------|
+| **Infrastructure (pluggable)** | `I{Concept}Adapter` | `IHttpAdapter`, `ICacheAdapter`, `IQueueAdapter` | A point of adaptation — multiple technology implementations can plug in |
+| **Domain persistence** | `I{Domain}Repository` | `IUserRepository`, `ICatRepository` | A DDD Repository — the domain's contract for data access |
+| **Application operation** | `I{Domain}{Operation}` (implements `IUsecase`) | `ICatCreate`, `IUserUpdate`, `IOrderCancel` | A use case contract — a single business operation |
+
+### Decision Rule
+
+Use this flowchart when creating a new contract:
+
+```
+Is this contract about plugging in different technologies
+(HTTP clients, cache backends, queues, storage)?
+│
+├── YES → Use I{Concept}Adapter
+│         (e.g., IHttpAdapter, ICacheAdapter, IStorageAdapter)
+│
+└── NO → Is this contract about accessing domain data?
+          │
+          ├── YES → Use I{Domain}Repository
+          │         (e.g., IUserRepository, IOrderRepository)
+          │
+          └── NO → Is this contract about a business operation?
+                    │
+                    └── YES → Use I{Domain}{Operation}
+                              (e.g., IUserCreate, IOrderCancel)
+                              Must implement IUsecase.
+```
+
+### Why `I*Adapter` and Not `I*Port`?
+
+The choice of `Adapter` over `Port` is deliberate:
+
+- **`Port`** is a passive term — it describes a hole where something plugs in. It does not signal what kind of thing plugs in.
+- **`Adapter`** is an active term — it signals that the contract exists **to enable adaptation**. It tells the reader: *"implementations of this contract adapt to this boundary."*
+
+In classical Hexagonal, `Adapter` names the class that adapts. In this project, `Adapter` names the **boundary where adaptation happens**. The name is moved to the place where the architectural decision lives — the contract, not the implementation.
+
+### Why `I*Repository` and Not `I*RepositoryAdapter`?
+
+Because `Repository` is already a **domain concept** in DDD. It is inherently abstract — there is no "concrete Repository" in the domain model. Adding `Adapter` would be redundant and would blur the distinction between domain contracts and infrastructure contracts.
+
+`IUserRepository` says: *"the domain needs a way to access users."* The implementation (`UserRepository` in `modules/`) is a detail. The contract is domain-owned, not infrastructure-owned.
+
+### Why `I{Domain}{Operation}` Without a Suffix?
+
+Because the generic `IUsecase` already carries the role. Every use case contract implements `IUsecase`, so the specific name only needs to carry the operation:
+
+```typescript
+// The generic contract carries the role
+export interface IUsecase<TInput = unknown, TOutput = unknown> {
+  execute(input: TInput): Promise<TOutput>
+}
+
+// The specific contract carries the operation
+export abstract class ICatCreate implements IUsecase<CatCreateInput, CatCreateOutput> {
+  abstract execute(input: CatCreateInput): Promise<CatCreateOutput>
+}
+```
+
+Adding `Usecase` to every specific name (`ICatCreateUsecase`) would be redundant. The pattern `I{Domain}{Operation}` is grep-friendly and reads naturally.
+
+### Consistency Check
+
+| Contract | Suffix | Why |
+|----------|--------|-----|
+| `IHttpAdapter` | `Adapter` | Infra pluggable (HTTP client) |
+| `ICacheAdapter` | `Adapter` | Infra pluggable (cache backend) |
+| `IUserRepository` | `Repository` | Domain persistence contract |
+| `ICatRepository` | `Repository` | Domain persistence contract |
+| `ICatCreate` | (none) | Application operation (implements `IUsecase`) |
+| `IUserUpdate` | (none) | Application operation (implements `IUsecase`) |
+| `IUsecase` | (none) | Generic application operation contract |
+
+**If a contract does not fit one of these three categories, it should not use a suffix from this taxonomy.** This keeps the naming system falsifiable: you can always check whether a name follows the rule.
+
+---
+
 ## What to Avoid in Core
 
 The `core/` folder is sacred — it contains your business logic and must remain **pure and independent**. Here are the key rules to follow:
@@ -517,7 +660,7 @@ Every Use Case **must implement** the `IUsecase` interface. This is mandatory in
 | `class MyUseCase { }`                | `class MyUseCase implements IUsecase { }`                |
 | `export class CreateUserUseCase { }` | `export class CreateUserUseCase implements IUsecase { }` |
 
-````typescript
+```typescript
 // ❌ WRONG - Not implementing IUsecase
 export class CatCreateUsecase {
   constructor(private readonly catRepository: ICatRepository) {}
@@ -537,7 +680,7 @@ export class CatCreateUsecase implements IUsecase {
     // ...
   }
 }
-````
+```
 
 **Why this is mandatory:**
 
@@ -572,7 +715,7 @@ export abstract class ICatRepository extends IRepository<CatEntity> {
   abstract paginate(input: CatListInput): Promise<CatListOutput>
   abstract findByBreed(breed: string): Promise<CatEntity[]>
 }
-````
+```
 
 📖 **See full method list:** [Repository Guide](guides/core/repository.md) — includes `IRepository<T>` generic methods and examples
 
