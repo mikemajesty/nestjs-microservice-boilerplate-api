@@ -44,9 +44,11 @@ For infrastructure setup and deployment instructions, see the
 ## Table of Contents
 
 - [Architecture Overview](#architecture-overview)
+- [The Pragmatic Principle](#the-pragmatic-principle)
 - [Architecture Comparison](#architecture-comparison)
 - [Design Decisions](#design-decisions)
 - [Interface Naming Taxonomy](#interface-naming-taxonomy)
+- [What to Avoid in Core](#what-to-avoid-in-core)
 - [Layer Communication Rules](#layer-communication-rules)
 - [Project Structure](#project-structure)
 - [Quick Start](#quick-start)
@@ -68,6 +70,46 @@ This project implements a **pragmatic architecture** that combines the best idea
 The architecture is built around one fundamental principle: **protect your business logic**. Your domain rules should never depend on frameworks, databases, or external services. If you decide to switch from PostgreSQL to MongoDB, or from Redis to Memcached, your core business logic remains untouched.
 
 ![Architecture Diagram](OnionGraph.jpg)
+
+---
+
+## The Pragmatic Principle
+
+This architecture follows a simple rule: **optimize for what happens most, treat what happens least as an explicit, named exception.**
+
+We do not change a pattern because of a case that "almost never happens." We simplify for the common path, and we handle the rare path with a documented, adapted exception — not by ignoring it, and not by over-engineering for it.
+
+This means:
+
+- The **common case** is light: no ceremony that does not pay for itself.
+- The **rare case** is explicit: it has a name, a place, and a documented workaround.
+- The **boundary** is monitored: if an exception grows beyond a threshold, it stops being an exception and the architecture is revisited.
+
+**Examples in this project:**
+
+| Decision | Common case (optimized) | Rare case (explicit exception) |
+|----------|------------------------|-------------------------------|
+| Validation | Business rules inside Use Case via `@ValidateSchema` | Transport format (query, sort, pagination) validated in Controller |
+| Aggregates | Single entity per folder | Group entities when they share lifecycle and transactional consistency |
+| `any` | Never used | `eslint-disable` with justification comment |
+| External libraries in Core | Avoided | Zod is a conscious exception (see below) |
+| Domain Services | Logic in Entity or Use Case | — (not needed in this architecture) |
+
+This is not a rejection of Clean Architecture, DDD, or Hexagonal. It is **applying them with scoped pragmatism** — the patterns are guides, not mandates.
+
+### When Exceptions Become the Rule
+
+"Explicit exception" only works if you measure when the exception stops being an exception. These are the signals we watch:
+
+| Signal | Suggested threshold | Action |
+|--------|---------------------|--------|
+| Use Cases validating transport in Controller | > 20% of Use Cases | Revisit whether validation should leave the Use Case |
+| Aggregates with multiple repositories | > 10% of Aggregates | Introduce a Unit of Work pattern |
+| `any` with `eslint-disable` | > 5 occurrences | Revisit typing or create a wrapper |
+| `I*Adapter` interfaces with a single implementation | > 6 months | Evaluate whether the contract is premature |
+| External libraries in Core | > 1 (currently Zod) | Require an ADR (Architecture Decision Record) for each addition |
+
+**The principle:** an exception is allowed, but it must be **visible**. If a threshold is crossed, the architecture is revisited — not silently patched.
 
 ---
 
@@ -371,25 +413,80 @@ In traditional Clean Architecture, input validation happens in the Controller or
 Controller → Use Case (Validates + Business Logic)
 ```
 
-We validate inputs **inside** the Use Case using Zod schemas.
+We validate inputs **inside** the Use Case using a declarative decorator — `@ValidateSchema`.
 
-**Why we made this choice:**
+#### The Problem with Inline Validation
 
-1. **Testability**
+A naive implementation would call `schema.parse()` directly inside `execute()`:
 
-   When you test a Use Case, you should test the complete behavior — including validation. It's unacceptable to have a Use Case that passes tests but fails in production because validation was bypassed.
+```typescript
+// ❌ WRONG - Inline validation pollutes the Use Case body
+export class CatCreateUsecase implements IUsecase {
+  constructor(private readonly catRepository: ICatRepository) {}
+
+  async execute(input: CatCreateInput): Promise<CatCreateOutput> {
+    const validated = CatCreateSchema.parse(input) // ← mechanical noise
+    const entity = new CatEntity({ id: IDGeneratorUtils.uuid(), ...validated })
+    return await this.catRepository.create(entity.toData())
+  }
+}
+```
+
+This works, but it mixes **declaration** (what is valid) with **mechanics** (how validation runs). The Use Case body should read like business logic, not like plumbing.
+
+#### The Correct Approach: `@ValidateSchema`
+
+```typescript
+// ✅ CORRECT - Validation is declared, not implemented inline
+export class CatCreateUsecase implements IUsecase {
+  constructor(private readonly catRepository: ICatRepository) {}
+
+  @ValidateSchema(CatCreateSchema)
+  async execute(input: CatCreateInput, { tracing, user }: ApiTracingInput): Promise<CatCreateOutput> {
+    const entity = new CatEntity({ id: IDGeneratorUtils.uuid(), ...input })
+
+    const created = await this.catRepository.create(entity.toData())
+
+    tracing.logEvent('cat-created', { action: 'created', by: user.id, entity: created.id })
+
+    return created
+  }
+}
+```
+
+**What `@ValidateSchema` does:**
+
+1. **Validates** each argument against its Zod schema (supports multiple schemas for multiple arguments)
+2. **Accumulates** all validation errors instead of failing on the first one
+3. **Cleans** `undefined` fields so they don't overwrite defaults downstream
+4. **Throws** a `ValidationException` with structured details (path, message, context)
+
+**Why this is not a framework dependency:**
+
+`@ValidateSchema` is a **plain TypeScript method decorator** defined in `utils/decorators`. It wraps the method and runs the Zod schema before the original body. It does **not** depend on NestJS, Express, or any runtime framework. The Use Case remains framework-agnostic — the decorator is just a composition technique, the same way `@decorator` works in plain TypeScript.
+
+> 📖 **Full implementation and behavior:** [Validate Schema Guide](guides/decorators/validate-schema.md)
+
+#### Why We Validate Inside the Use Case
+
+1. **Testability (the decisive argument)**
+
+   When you test a Use Case, you should test the complete behavior — including validation. It is **unacceptable** to assume the input is valid in a unit test. If validation lives in the Controller, you are forced to write end-to-end tests just to cover validation scenarios — which is slower, more fragile, and tests the wrong layer.
 
    ```typescript
-   // Our tests validate the complete use case behavior
-   it('should throw validation error for invalid email', async () => {
-     const input = { email: 'invalid-email', name: 'John' }
-     await expect(useCase.execute(input)).rejects.toThrow(ValidationException)
+   // Unit test covers validation — no e2e needed
+   it('should throw validation error for invalid breed', async () => {
+     const useCase = new CatCreateUsecase(mockRepository)
+     const input = { name: 'Tom', breed: 'invalid-breed', age: 3 }
+
+     await expect(useCase.execute(input, mockTracing))
+       .rejects.toThrow(ValidationException)
    })
    ```
 
 2. **Use Case Integrity**
 
-   A Use Case is a complete unit of business logic. If `CreateUserUseCase` requires a valid email, that validation IS part of the use case — not something external to it.
+   A Use Case is a complete unit of business logic. If `CatCreateUsecase` requires a valid breed, that validation **is part of the use case** — not something external to it.
 
 3. **Self-Documenting Code**
 
@@ -399,13 +496,43 @@ We validate inputs **inside** the Use Case using Zod schemas.
 
    If multiple controllers call the same Use Case, validations are automatically applied. No risk of one controller forgetting to validate.
 
-**Comparison with other approaches:**
+#### But Not All Validation Lives in the Use Case
+
+We distinguish **two categories of validation**, each living in a different layer:
+
+| Validation type | Layer | Mechanism | Why |
+|-----------------|-------|-----------|-----|
+| **Business rule** (email format, age > 0, breed enum) | Use Case | `@ValidateSchema` decorator | Part of the domain; must be unit-testable |
+| **Transport format** (query params, sort, pagination, headers) | Controller | Zod `parse` inline | HTTP contract; not business logic |
+
+Example of transport validation in the Controller:
+
+```typescript
+// ✅ OK - Standardizing pagination inputs (transport format, not business logic)
+@Get()
+@Version('1')
+@Permission('cat:list')
+async list(@Req() { query }: ApiRequest): Promise<CatListOutput> {
+  const input: CatListInput = {
+    sort: SortHttpSchema.parse(query.sort),
+    search: SearchHttpSchema.parse(query.search),
+    limit: Number(query.limit),
+    page: Number(query.page)
+  }
+
+  return await this.listUsecase.execute(input)
+}
+```
+
+**The criterion:** if the validation rule is **about the business** (a cat must have a valid breed), it lives in the Use Case. If it is **about the transport** (a query param must be a number), it lives in the Controller.
+
+#### Comparison with Other Approaches
 
 | Approach              | Validation Location             | Pros                                 | Cons                                       |
 | --------------------- | ------------------------------- | ------------------------------------ | ------------------------------------------ |
 | **Traditional Clean** | Controller/Validator layer      | Thin use cases                       | Validation can be bypassed, harder to test |
 | **DDD**               | Domain entities (Value Objects) | Rich domain model                    | Complex, verbose                           |
-| **Our Approach**      | Inside Use Case                 | Complete testability, self-contained | See trade-offs below                       |
+| **Our Approach**      | Inside Use Case (via decorator) | Complete testability, self-contained | See trade-offs below                       |
 
 **The trade-off:**
 
@@ -417,20 +544,18 @@ If you need to consume a Use Case from multiple entry points with **different va
 // Controller A - Web API (strict validation)
 @Post()
 async create(@Body() input: CreateUserInput): Promise<UserCreateOutput> {
-  // Validate for web context
   const validated = WebUserSchema.parse(input);
   return this.useCase.execute(validated);
 }
 
 // Controller B - Internal service (different validation)
 async createFromInternal(input: InternalUserInput): Promise<UserCreateOutput> {
-  // Validate for internal context
   const validated = InternalUserSchema.parse(input);
   return this.useCase.execute(validated);
 }
 ```
 
-**Our recommendation:** Start with validations inside Use Cases. Only move them out when you have a concrete need for different validation rules per consumer.
+**Our recommendation:** Start with validations inside Use Cases via `@ValidateSchema`. Only move them out when you have a concrete need for different validation rules per consumer.
 
 ---
 
@@ -726,7 +851,7 @@ export abstract class ICatRepository extends IRepository<CatEntity> {
 Controllers must **never contain business logic**. Their responsibility is limited to:
 
 1. **Orchestration** — Receive request, call use case, return response
-2. **Input standardization** — Transform and normalize inputs for the use case
+2. **Input standardization** — Transform and normalize transport inputs for the use case
 
 | ❌ Avoid                   | ✅ Prefer                  |
 | -------------------------- | -------------------------- |
@@ -737,7 +862,7 @@ Controllers must **never contain business logic**. Their responsibility is limit
 
 **When input standardization is OK:**
 
-We standardize listing inputs (pagination, sorting, search) in the Controller before calling the Use Case:
+We standardize listing inputs (pagination, sorting, search) in the Controller before calling the Use Case. This is **transport validation**, not business logic:
 
 ```typescript
 // ✅ OK - Standardizing pagination inputs (not business logic)
@@ -775,7 +900,7 @@ async create(@Req() { body }: ApiRequest): Promise<CatCreateOutput> {
 
 ### Core: Avoid External Libraries
 
-The `core/` folder must remain **pure and framework-agnostic**. Never import external libraries directly into entities or use cases.
+The `core/` folder must remain **pure and framework-agnostic**. **Avoid** importing external libraries directly into entities or use cases — but understand this is a principle, not an absolute dogma.
 
 | ❌ Avoid in Core                       | ✅ Prefer                                |
 | -------------------------------------- | ---------------------------------------- |
@@ -820,7 +945,7 @@ export class GetExternalDataUseCase implements IUsecase {
 
 **Allowed in Core:**
 
-- ✅ Zod (validation is part of domain logic)
+- ✅ Zod (validation is part of domain logic — see the conscious exception below)
 - ✅ Native Node.js/JavaScript APIs
 - ✅ Your own `utils/` functions
 
@@ -863,6 +988,31 @@ export class MyUseCase implements IUsecase {
 - Easier to mock in tests
 - Controls which functions are exposed
 - Documents which external libs are used in the project
+
+#### Conscious Exceptions: When Breaking the Rule Pays Off
+
+"Avoid external libraries in Core" is a **principle**, not a dogma. There are cases where the gain outweighs the coupling — and those cases are allowed, provided they are **conscious, documented, and justified**.
+
+**The criterion for a conscious exception:**
+
+1. **The library solves more than one problem.** Zod is not only a validator — it also generates Input/Output types via `z.infer` and enables automatic mock generation from schemas. That is three problems solved by one dependency.
+2. **The library is mature and actively maintained.** Check release cadence, open issues, maintainer responsiveness, and adoption. A library with 1 maintainer and 6 months of inactivity is not a safe exception.
+3. **The coupling is contained.** If the library is swapped tomorrow, the blast radius is known and bounded (schemas live in `core/`, mechanics live in `utils/`).
+4. **The alternative is worse.** Writing a custom validator + type generator + mock generator would be more code, more bugs, and more maintenance.
+
+**Current conscious exceptions in this project:**
+
+| Library | Where | Why it is allowed |
+|---------|-------|-------------------|
+| **Zod** | `core/` (schemas, types) | Generates validation, types (`z.infer`), and mocks from a single schema. Mature, widely adopted, actively maintained. |
+
+**What is *not* a conscious exception:**
+
+- Adding a library because "it's convenient" without analyzing the trade-off
+- Adding a library with unknown maintenance status
+- Adding a library that solves only one problem when a wrapper in `utils/` would suffice
+
+**How to propose a new exception:** open an issue describing (1) which problem it solves, (2) why the existing patterns are insufficient, (3) the maintenance status of the library, and (4) the blast radius if it is later removed. If approved, add it to the table above.
 
 ---
 
@@ -1317,9 +1467,9 @@ The following diagram illustrates how a request flows through the system:
 **Flow explanation:**
 
 1. **Client** sends HTTP request
-2. **Controller** receives and validates input
+2. **Controller** receives and validates transport input
 3. **Adapter** transforms request and calls use case
-4. **Use Case** executes business logic
+4. **Use Case** validates business input (`@ValidateSchema`) and executes business logic
 5. **Repository** (via interface) persists/retrieves data
 6. **Response** flows back through the same layers
 
