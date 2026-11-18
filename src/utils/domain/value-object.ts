@@ -1,12 +1,16 @@
+/**
+ * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/utils/value-object.md
+ */
 import { isDeepStrictEqual } from 'node:util'
 
+import { ApiUnprocessableEntityException } from '../exception'
 import { BaseZodType } from '../validator'
 
 export const BaseValueObject = <T>(schema: BaseZodType) => {
   abstract class ValueObject {
     protected constructor(value: T) {
       if (!schema) {
-        throw new Error(`${this.constructor.name} requires a schema`)
+        throw new ApiUnprocessableEntityException(`${this.constructor.name} required a schema`)
       }
 
       const parsed = schema.parse(value) as T

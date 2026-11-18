@@ -4,13 +4,10 @@
 import { RoleEntity, RoleEntitySchema, RoleEnum } from '@/core/role/entity/role'
 import { BaseEntity } from '@/utils/domain'
 import { InferSchema, InputValidator } from '@/utils/validator'
+import { PermissionNameValueObject, PermissionNameValueObjectSchema } from './permission-name'
 
 const ID = InputValidator.uuid()
-const Name = InputValidator.string()
-  .transform((value) => value.trim().replace(/ /g, '_').toLowerCase())
-  .refine((val) => val.includes(':'), {
-    message: "permission must contains ':'"
-  })
+const Name = PermissionNameValueObjectSchema.shape.value
 const CreatedAt = InputValidator.date().nullish().optional()
 const UpdatedAt = InputValidator.date().nullish().optional()
 const DeletedAt = InputValidator.date().nullish().optional()
@@ -46,5 +43,9 @@ export class PermissionEntity extends BaseEntity<PermissionEntity>() {
 
   removeAllRoles() {
     delete this.roles
+  }
+
+  getName(): PermissionNameValueObject {
+    return new PermissionNameValueObject({ value: this.name })
   }
 }

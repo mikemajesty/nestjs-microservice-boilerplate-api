@@ -21,7 +21,8 @@ Collection of utility functions and helpers that enhance development experience 
 - [**Object**](./object.md) | [📄 Code](../../src/utils/object.ts) - Typed property names, safe nested access, and object helpers
 - [**Exception**](./exception.md) | [📄 Code](../../src/utils/exception.ts) - Centralized exception handling and error management
 - [**Excel**](./excel.md) | [📄 Code](../../src/utils/excel.ts) - Excel file generation with customizable formatting
-- [**Entity**](./entity.md) | [📄 Code](../../src/utils/entity.ts) - Base entity foundation for domain-driven design
+- [**Entity**](./entity.md) | [📄 Code](../../src/utils/domain/entity.ts) - Base entity foundation for domain-driven design
+- [**Value Object**](./value-object.md) | [📄 Code](../../src/utils/domain/value-object.ts) - Base Value Object with validation, equality by value, and immutability
 - [**Date**](./date.md) | [📄 Code](../../src/utils/date.ts) - Timezone-aware date manipulation and formatting
 - [**Crypto**](./crypto.md) | [📄 Code](../../src/utils/crypto.ts) - Centralized cryptographic operations and security utilities
 - [**Collection**](./collection.md) | [📄 Code](../../src/utils/collection.ts) - Array manipulation utilities replacing Lodash dependency

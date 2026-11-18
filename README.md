@@ -44,7 +44,13 @@ For infrastructure setup and deployment instructions, see the
 ## Table of Contents
 
 - [Architecture Overview](#architecture-overview)
+- [Architectural Identity](#architectural-identity)
+- [The Pragmatic Principle](#the-pragmatic-principle)
 - [Architecture Comparison](#architecture-comparison)
+- [Design Decisions](#design-decisions)
+- [Interface Naming Taxonomy](#interface-naming-taxonomy)
+- [What to Avoid in Core](#what-to-avoid-in-core)
+- [Entities, Sub-entities, and Value Objects](#entities-sub-entities-and-value-objects)
 - [Layer Communication Rules](#layer-communication-rules)
 - [Project Structure](#project-structure)
 - [Quick Start](#quick-start)
@@ -69,6 +75,96 @@ The architecture is built around one fundamental principle: **protect your busin
 
 ---
 
+## Architectural Identity
+
+**This project is not a copy of Clean Architecture, DDD, or Hexagonal Architecture.** It is a **pragmatic synthesis** that borrows concepts from all three, but makes its own decisions where the classical patterns do not pay for their cost.
+
+Every deviation is deliberate, documented, and falsifiable. If you are looking for a textbook implementation of Clean Architecture, this is not it. If you are looking for a foundation that uses the best ideas from those patterns without their ceremony, you are in the right place.
+
+### What This Project Is
+
+- A foundation that **protects business logic** from frameworks, databases, and external services
+- A synthesis that **uses the best ideas** from Clean Architecture, DDD, and Hexagonal — without their ceremony
+- A codebase where **every deviation is declared, documented, and falsifiable**
+
+### What This Project Is Not
+
+- A textbook implementation of Clean Architecture
+- A strict DDD codebase with separate `value-objects/` and `aggregates/` folders
+- A classical Hexagonal implementation with Ports and Adapters as separate concepts
+
+### The Decisions That Define This Project
+
+| Decision                   | Classical pattern says               | This project does                                                  | Why                                                                           |
+| -------------------------- | ------------------------------------ | ------------------------------------------------------------------ | ----------------------------------------------------------------------------- |
+| Where "Adapter" lives      | On the implementation class          | On the contract (interface)                                        | The class has no identity without the contract                                |
+| Validation location        | Controller / Validator layer         | Use Case (via `@ValidateSchema`)                                   | Validation is business logic; must be unit-testable                           |
+| Service layer              | Domain Service + Application Service | Unified in `UseCase`                                               | The split adds boilerplate without benefit here                               |
+| Value Objects              | Separate classes in `value-objects/` | Live in `entity/{domain}-{subdomain}.ts`, extend `BaseValueObject` | No separate folder; the base class and the `ValueObject` suffix mark the role |
+| Aggregates                 | Separate `aggregates/` folder        | The root entity **is** the aggregate                               | One less folder; the root entity encapsulates the cluster                     |
+| Repository contract        | Interface                            | Abstract class                                                     | NestJS DI needs runtime tokens                                                |
+| Interface naming           | Port / Adapter                       | `I*Adapter` / `I*Repository` / `I{Domain}{Operation}`              | Each suffix declares architectural role                                       |
+| `middlewares/` folder      | Split by concern                     | Unified                                                            | No better name found; all wrap HTTP lifecycle                                 |
+| External libraries in Core | Never                                | Zod allowed (conscious exception)                                  | Solves validation + types + mocks in one dependency                           |
+
+### The Unifying Criterion
+
+Every decision above follows the same rule: **optimize for what happens most, treat what happens least as an explicit, documented exception.**
+
+This is the [Pragmatic Principle](#the-pragmatic-principle). If a decision cannot be justified by this rule, it does not belong in this project.
+
+### How to Disagree
+
+If you believe a decision is wrong, the README gives you the criteria to argue against it. Each decision has:
+
+- A **declared position** (what this project does)
+- A **justification** (why it does it)
+- A **falsification criterion** (when the decision should be revisited)
+
+That is the difference between a boilerplate and a dogma.
+
+---
+
+## The Pragmatic Principle
+
+This architecture follows a simple rule: **optimize for what happens most, treat what happens least as an explicit, named exception.**
+
+We do not change a pattern because of a case that "almost never happens." We simplify for the common path, and we handle the rare path with a documented, adapted exception — not by ignoring it, and not by over-engineering for it.
+
+This means:
+
+- The **common case** is light: no ceremony that does not pay for itself.
+- The **rare case** is explicit: it has a name, a place, and a documented workaround.
+- The **boundary** is monitored: if an exception grows beyond a threshold, it stops being an exception and the architecture is revisited.
+
+**Examples in this project:**
+
+| Decision                   | Common case (optimized)                              | Rare case (explicit exception)                                     |
+| -------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------ |
+| Validation                 | Business rules inside Use Case via `@ValidateSchema` | Transport format (query, sort, pagination) validated in Controller |
+| Entities                   | Single root entity per domain                        | Sub-entities and Value Objects in `{domain}-{subdomain}.ts`        |
+| `any`                      | Never used                                           | `eslint-disable` with justification comment                        |
+| External libraries in Core | Avoided                                              | Zod is a conscious exception (see below)                           |
+| Domain Services            | Logic in Entity or Use Case                          | — (not needed in this architecture)                                |
+
+This is not a rejection of Clean Architecture, DDD, or Hexagonal. It is **applying them with scoped pragmatism** — the patterns are guides, not mandates.
+
+### When Exceptions Become the Rule
+
+"Explicit exception" only works if you measure when the exception stops being an exception. These are the signals we watch:
+
+| Signal                                              | Suggested threshold | Action                                               |
+| --------------------------------------------------- | ------------------- | ---------------------------------------------------- |
+| Use Cases validating transport in Controller        | > 20% of Use Cases  | Revisit whether validation should leave the Use Case |
+| Sub-entities with their own repository              | > 10% of domains    | Introduce a Unit of Work pattern                     |
+| `any` with `eslint-disable`                         | > 5 occurrences     | Revisit typing or create a wrapper                   |
+| `I*Adapter` interfaces with a single implementation | > 6 months          | Evaluate whether the contract is premature           |
+| External libraries in Core                          | > 1 (currently Zod) | Require an ADR for each addition                     |
+
+**The principle:** an exception is allowed, but it must be **visible**. If a threshold is crossed, the architecture is revisited — not silently patched.
+
+---
+
 ## Architecture Comparison
 
 ### Clean Architecture
@@ -81,7 +177,9 @@ Clean Architecture organizes code into concentric circles where dependencies poi
 - **Use Cases** live in `src/core/*/use-cases` — application-specific business rules
 - **Interfaces** live in `src/core/*/repository` — contracts for external dependencies
 - **Frameworks** live in `src/modules` and `src/infra` — NestJS controllers and database implementations
-  **What we simplified:**
+
+**What we simplified:**
+
 - No explicit Interactors or Presenters
 - No input/output boundary classes
 
@@ -98,8 +196,9 @@ DDD focuses on modeling your business domain. It introduces concepts like Entiti
 
 **What we simplified:**
 
-- No Value Objects as separate classes
-- Unified service layer (no Domain/Application Service split)
+- **No separate `value-objects/` or `aggregates/` folders** — everything lives in `entity/`
+- **The root entity is the aggregate** — no separate `AggregateRoot` class
+- **Unified service layer** (no Domain/Application Service split)
 
 #### Service Layer Comparison: DDD vs. This Architecture
 
@@ -156,22 +255,11 @@ Hexagonal Architecture separates the application from external concerns through 
 - `HttpService` in `infra/` — implements `IHttpAdapter` with Axios
 - `RedisService` in `infra/` — implements `ICacheAdapter` with Redis
 
----
+#### Adapter: Classical Hexagonal vs. This Project
 
-## Design Decisions
+This is the most important conceptual difference between this project and classical Hexagonal Architecture. It is not an inversion — it is a deliberate **rescoping of the term "Adapter"**.
 
-> ⚠️ **Important Notes About This Architecture**
->
-> This section explains some deliberate choices that differ from traditional implementations. Understanding these decisions will help you work with the codebase effectively.
-
-### Why We Call Interfaces "Adapters"
-
-You may notice that some interfaces in this project use the word "Adapter" (e.g., `IHttpAdapter`, `ICacheAdapter`). In traditional Hexagonal Architecture:
-
-- **Port**: An interface that defines a contract (what operations are available)
-- **Adapter**: A concrete implementation that fulfills that contract (how it's done)
-
-**The academic distinction:**
+**Classical Hexagonal:**
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
@@ -184,30 +272,98 @@ You may notice that some interfaces in this project use the word "Adapter" (e.g.
 │   IEmailService          →      SendGridEmailService         │
 │   ICacheService          →      RedisCacheService            │
 │                                                              │
+│   The Adapter is the CONCRETE CLASS.                         │
+│   It is the thing that "adapts" to the Port contract.        │
 └──────────────────────────────────────────────────────────────┘
 ```
 
-**Our simplified approach:**
+**This project:**
 
-We use "Adapter" in interface names because, conceptually, **both are abstractions**. The fundamental principle is the same: decouple your core business logic from implementation details. Whether you call the interface a "Port" or "Adapter" doesn't change how the pattern works.
-
-```typescript
-// Traditional naming
-interface IUserRepository {} // Port
-class PostgresUserRepository {} // Adapter
-
-// Our naming (simplified)
-interface IHttpAdapter {} // Still an abstraction (contract)
-class HttpService {} // Still an implementation
+```
+┌──────────────────────────────────────────────────────────────┐
+│                  THIS PROJECT (Rescoped)                     │
+├──────────────────────────────────────────────────────────────┤
+│                                                              │
+│   I*Adapter (Interface)         Implementation (Class)       │
+│   ─────────────────────         ──────────────────────       │
+│   IHttpAdapter            →     HttpService (Axios)          │
+│   ICacheAdapter           →     RedisService                 │
+│   IQueueAdapter           →     SqsQueueService              │
+│                                                              │
+│   The Adapter is the CONTRACT (the point of adaptation).     │
+│   The implementation is just a class that plugs into it.     │
+└──────────────────────────────────────────────────────────────┘
 ```
 
-**Why this simplification?**
+**Why the rescope?**
 
-1. **Reduced cognitive load** — One less concept to explain to new developers
-2. **Practical focus** — The behavior is identical regardless of naming
-3. **Consistency** — All abstractions follow the same `I*Adapter` pattern
+The word "Adapter" in classical Hexagonal describes **the class that adapts to a contract**. But the class alone has no architectural identity — it only exists _in relation to_ the contract. Without `IHttpAdapter`, `HttpService` is just a class.
 
-The key takeaway: **if it's an interface, it's a contract. If it's a class implementing that interface, it's the implementation.** The names are just labels.
+This project inverts the perspective: **the point of adaptation is the contract itself**. `IHttpAdapter` is the boundary where any HTTP technology can plug in. It communicates: _"this is an extension point — multiple implementations can coexist."_ The implementation class carries no architectural role; it is a technology choice.
+
+**What this means in practice:**
+
+| Aspect                         | Classical Hexagonal                           | This Project                                           |
+| ------------------------------ | --------------------------------------------- | ------------------------------------------------------ |
+| Where the name "Adapter" lives | On the concrete class                         | On the contract (interface)                            |
+| What "Adapter" describes       | The class that adapts                         | The point of adaptation                                |
+| Implementation naming          | `PostgresUserRepository`, `RedisCacheService` | `HttpService`, `RedisService` (technology-descriptive) |
+| Signal to new developers       | "This class is an adapter"                    | "This interface is a plug point"                       |
+| Consistency with DDD           | Port/Adapter split                            | Adapter = infra plug; Repository = domain contract     |
+
+**Important:** This rescope applies **only to infrastructure contracts** (`I*Adapter`). Domain contracts (`I*Repository`) and application contracts (`I*Usecase`) follow their own naming semantics. See [Interface Naming Taxonomy](#interface-naming-taxonomy) for the full rule.
+
+---
+
+## Design Decisions
+
+> ⚠️ **Important Notes About This Architecture**
+>
+> This section explains some deliberate choices that differ from traditional implementations. Understanding these decisions will help you work with the codebase effectively.
+
+### Why We Call Interfaces "Adapters"
+
+You may notice that some interfaces in this project use the word "Adapter" (e.g., `IHttpAdapter`, `ICacheAdapter`). This is a **deliberate rescope** of the term, not an inversion of classical Hexagonal Architecture.
+
+**The key distinction:**
+
+- In classical Hexagonal, the **Adapter is the concrete class** that adapts to a Port.
+- In this project, the **Adapter is the contract (interface)** — the point where implementations adapt.
+
+**Why?**
+
+An implementation without an interface is just a class. It has no architectural identity. The implementation exists _in relation to_ the contract, not the other way around. So the name "Adapter" belongs on the boundary — the place where adaptation happens — not on the class that happens to implement it today.
+
+```typescript
+// Classical Hexagonal naming
+interface IHttpClient {} // Port (contract)
+class AxiosHttpClient {} // Adapter (implementation)
+
+// This project's naming
+interface IHttpAdapter {} // Adapter (contract — the point of adaptation)
+class HttpService {} // Implementation (technology choice)
+```
+
+**What `I*Adapter` communicates:**
+
+1. **Extension point** — multiple implementations can coexist (Axios, Fetch, Undici)
+2. **Infrastructure concern** — this is a pluggable technology boundary, not a domain concept
+3. **Generic by design** — the contract must be generic enough to accept any implementation
+
+**What `I*Repository` and `I*Usecase` communicate (by contrast):**
+
+- `I*Repository` — a **domain concept** (DDD Repository). The name is inherently abstract; it does not need an "Adapter" suffix to signal pluggability.
+- `I*Usecase` / `I{Domain}{Operation}` — an **application operation**. The generic `IUsecase` already carries the role; the specific name carries the operation.
+
+**The trade-off we accept:**
+
+The word "Adapter" is a concrete noun in English — it reads as "a thing that adapts." So `IHttpAdapter` will always read, at first glance, as "an adapter." We accept this friction because:
+
+1. The rescope is **declared and documented** (this section, plus the taxonomy below)
+2. It is **consistent** — every infra contract follows `I*Adapter`
+3. It **signals pluggability** more strongly than `I*Client` or `I*Service` would
+
+**The rule that makes this falsifiable:** see [Interface Naming Taxonomy](#interface-naming-taxonomy). If a contract does not fit one of the three categories, it does not get a suffix from this taxonomy.
 
 ---
 
@@ -312,25 +468,79 @@ In traditional Clean Architecture, input validation happens in the Controller or
 Controller → Use Case (Validates + Business Logic)
 ```
 
-We validate inputs **inside** the Use Case using Zod schemas.
+We validate inputs **inside** the Use Case using a declarative decorator — `@ValidateSchema`.
 
-**Why we made this choice:**
+#### The Problem with Inline Validation
 
-1. **Testability**
+A naive implementation would call `schema.parse()` directly inside `execute()`:
 
-   When you test a Use Case, you should test the complete behavior — including validation. It's unacceptable to have a Use Case that passes tests but fails in production because validation was bypassed.
+```typescript
+// ❌ WRONG - Inline validation pollutes the Use Case body
+export class CatCreateUsecase implements IUsecase {
+  constructor(private readonly catRepository: ICatRepository) {}
+
+  async execute(input: CatCreateInput): Promise<CatCreateOutput> {
+    const validated = CatCreateSchema.parse(input) // ← mechanical noise
+    const entity = new CatEntity({ id: IDGeneratorUtils.uuid(), ...validated })
+    return await this.catRepository.create(entity.toData())
+  }
+}
+```
+
+This works, but it mixes **declaration** (what is valid) with **mechanics** (how validation runs). The Use Case body should read like business logic, not like plumbing.
+
+#### The Correct Approach: `@ValidateSchema`
+
+```typescript
+// ✅ CORRECT - Validation is declared, not implemented inline
+export class CatCreateUsecase implements IUsecase {
+  constructor(private readonly catRepository: ICatRepository) {}
+
+  @ValidateSchema(CatCreateSchema)
+  async execute(input: CatCreateInput, { tracing, user }: ApiTracingInput): Promise<CatCreateOutput> {
+    const entity = new CatEntity({ id: IDGeneratorUtils.uuid(), ...input })
+
+    const created = await this.catRepository.create(entity.toData())
+
+    tracing.logEvent('cat-created', { action: 'created', by: user.id, entity: created.id })
+
+    return created
+  }
+}
+```
+
+**What `@ValidateSchema` does:**
+
+1. **Validates** each argument against its Zod schema (supports multiple schemas for multiple arguments)
+2. **Accumulates** all validation errors instead of failing on the first one
+3. **Cleans** `undefined` fields so they don't overwrite defaults downstream
+4. **Throws** a `ValidationException` with structured details (path, message, context)
+
+**Why this is not a framework dependency:**
+
+`@ValidateSchema` is a **plain TypeScript method decorator** defined in `utils/decorators`. It wraps the method and runs the Zod schema before the original body. It does **not** depend on NestJS, Express, or any runtime framework. The Use Case remains framework-agnostic — the decorator is just a composition technique, the same way `@decorator` works in plain TypeScript.
+
+> 📖 **Full implementation and behavior:** [Validate Schema Guide](guides/decorators/validate-schema.md)
+
+#### Why We Validate Inside the Use Case
+
+1. **Testability (the decisive argument)**
+
+   When you test a Use Case, you should test the complete behavior — including validation. It is **unacceptable** to assume the input is valid in a unit test. If validation lives in the Controller, you are forced to write end-to-end tests just to cover validation scenarios — which is slower, more fragile, and tests the wrong layer.
 
    ```typescript
-   // Our tests validate the complete use case behavior
-   it('should throw validation error for invalid email', async () => {
-     const input = { email: 'invalid-email', name: 'John' }
-     await expect(useCase.execute(input)).rejects.toThrow(ValidationException)
+   // Unit test covers validation — no e2e needed
+   it('should throw validation error for invalid breed', async () => {
+     const useCase = new CatCreateUsecase(mockRepository)
+     const input = { name: 'Tom', breed: 'invalid-breed', age: 3 }
+
+     await expect(useCase.execute(input, mockTracing)).rejects.toThrow(ValidationException)
    })
    ```
 
 2. **Use Case Integrity**
 
-   A Use Case is a complete unit of business logic. If `CreateUserUseCase` requires a valid email, that validation IS part of the use case — not something external to it.
+   A Use Case is a complete unit of business logic. If `CatCreateUsecase` requires a valid breed, that validation **is part of the use case** — not something external to it.
 
 3. **Self-Documenting Code**
 
@@ -340,13 +550,43 @@ We validate inputs **inside** the Use Case using Zod schemas.
 
    If multiple controllers call the same Use Case, validations are automatically applied. No risk of one controller forgetting to validate.
 
-**Comparison with other approaches:**
+#### But Not All Validation Lives in the Use Case
+
+We distinguish **two categories of validation**, each living in a different layer:
+
+| Validation type                                                | Layer      | Mechanism                   | Why                                       |
+| -------------------------------------------------------------- | ---------- | --------------------------- | ----------------------------------------- |
+| **Business rule** (email format, age > 0, breed enum)          | Use Case   | `@ValidateSchema` decorator | Part of the domain; must be unit-testable |
+| **Transport format** (query params, sort, pagination, headers) | Controller | Zod `parse` inline          | HTTP contract; not business logic         |
+
+Example of transport validation in the Controller:
+
+```typescript
+// ✅ OK - Standardizing pagination inputs (transport format, not business logic)
+@Get()
+@Version('1')
+@Permission('cat:list')
+async list(@Req() { query }: ApiRequest): Promise<CatListOutput> {
+  const input: CatListInput = {
+    sort: SortHttpSchema.parse(query.sort),
+    search: SearchHttpSchema.parse(query.search),
+    limit: Number(query.limit),
+    page: Number(query.page)
+  }
+
+  return await this.listUsecase.execute(input)
+}
+```
+
+**The criterion:** if the validation rule is **about the business** (a cat must have a valid breed), it lives in the Use Case. If it is **about the transport** (a query param must be a number), it lives in the Controller.
+
+#### Comparison with Other Approaches
 
 | Approach              | Validation Location             | Pros                                 | Cons                                       |
 | --------------------- | ------------------------------- | ------------------------------------ | ------------------------------------------ |
 | **Traditional Clean** | Controller/Validator layer      | Thin use cases                       | Validation can be bypassed, harder to test |
 | **DDD**               | Domain entities (Value Objects) | Rich domain model                    | Complex, verbose                           |
-| **Our Approach**      | Inside Use Case                 | Complete testability, self-contained | See trade-offs below                       |
+| **Our Approach**      | Inside Use Case (via decorator) | Complete testability, self-contained | See trade-offs below                       |
 
 **The trade-off:**
 
@@ -358,20 +598,102 @@ If you need to consume a Use Case from multiple entry points with **different va
 // Controller A - Web API (strict validation)
 @Post()
 async create(@Body() input: CreateUserInput): Promise<UserCreateOutput> {
-  // Validate for web context
   const validated = WebUserSchema.parse(input);
   return this.useCase.execute(validated);
 }
 
 // Controller B - Internal service (different validation)
 async createFromInternal(input: InternalUserInput): Promise<UserCreateOutput> {
-  // Validate for internal context
   const validated = InternalUserSchema.parse(input);
   return this.useCase.execute(validated);
 }
 ```
 
-**Our recommendation:** Start with validations inside Use Cases. Only move them out when you have a concrete need for different validation rules per consumer.
+**Our recommendation:** Start with validations inside Use Cases via `@ValidateSchema`. Only move them out when you have a concrete need for different validation rules per consumer.
+
+---
+
+## Interface Naming Taxonomy
+
+This project uses **three categories of interface contracts**, each with its own naming convention. The suffix (or absence of one) is not cosmetic — it declares the contract's architectural role.
+
+### The Three Categories
+
+| Category                       | Naming Pattern                                 | Example                                          | What it represents                                                      |
+| ------------------------------ | ---------------------------------------------- | ------------------------------------------------ | ----------------------------------------------------------------------- |
+| **Infrastructure (pluggable)** | `I{Concept}Adapter`                            | `IHttpAdapter`, `ICacheAdapter`, `IQueueAdapter` | A point of adaptation — multiple technology implementations can plug in |
+| **Domain persistence**         | `I{Domain}Repository`                          | `IUserRepository`, `ICatRepository`              | A DDD Repository — the domain's contract for data access                |
+| **Application operation**      | `I{Domain}{Operation}` (implements `IUsecase`) | `ICatCreate`, `IUserUpdate`, `IOrderCancel`      | A use case contract — a single business operation                       |
+
+### Decision Rule
+
+Use this flowchart when creating a new contract:
+
+```
+Is this contract about plugging in different technologies
+(HTTP clients, cache backends, queues, storage)?
+│
+├── YES → Use I{Concept}Adapter
+│         (e.g., IHttpAdapter, ICacheAdapter, IStorageAdapter)
+│
+└── NO → Is this contract about accessing domain data?
+          │
+          ├── YES → Use I{Domain}Repository
+          │         (e.g., IUserRepository, IOrderRepository)
+          │
+          └── NO → Is this contract about a business operation?
+                    │
+                    └── YES → Use I{Domain}{Operation}
+                              (e.g., IUserCreate, IOrderCancel)
+                              Must implement IUsecase.
+```
+
+### Why `I*Adapter` and Not `I*Port`?
+
+The choice of `Adapter` over `Port` is deliberate:
+
+- **`Port`** is a passive term — it describes a hole where something plugs in. It does not signal what kind of thing plugs in.
+- **`Adapter`** is an active term — it signals that the contract exists **to enable adaptation**. It tells the reader: _"implementations of this contract adapt to this boundary."_
+
+In classical Hexagonal, `Adapter` names the class that adapts. In this project, `Adapter` names the **boundary where adaptation happens**. The name is moved to the place where the architectural decision lives — the contract, not the implementation.
+
+### Why `I*Repository` and Not `I*RepositoryAdapter`?
+
+Because `Repository` is already a **domain concept** in DDD. It is inherently abstract — there is no "concrete Repository" in the domain model. Adding `Adapter` would be redundant and would blur the distinction between domain contracts and infrastructure contracts.
+
+`IUserRepository` says: _"the domain needs a way to access users."_ The implementation (`UserRepository` in `modules/`) is a detail. The contract is domain-owned, not infrastructure-owned.
+
+### Why `I{Domain}{Operation}` Without a Suffix?
+
+Because the generic `IUsecase` already carries the role. Every use case contract implements `IUsecase`, so the specific name only needs to carry the operation:
+
+```typescript
+// The generic contract carries the role
+export interface IUsecase<TInput = unknown, TOutput = unknown> {
+  execute(input: TInput): Promise<TOutput>
+}
+
+// The specific contract carries the operation
+export abstract class ICatCreate implements IUsecase<CatCreateInput, CatCreateOutput> {
+  abstract execute(input: CatCreateInput): Promise<CatCreateOutput>
+}
+```
+
+Adding `Usecase` to every specific name (`ICatCreateUsecase`) would be redundant. The pattern `I{Domain}{Operation}` is grep-friendly and reads naturally.
+
+### Consistency Check
+
+| Contract          | Suffix       | Why                                           |
+| ----------------- | ------------ | --------------------------------------------- |
+| `IHttpAdapter`    | `Adapter`    | Infra pluggable (HTTP client)                 |
+| `ICacheAdapter`   | `Adapter`    | Infra pluggable (cache backend)               |
+| `IUserRepository` | `Repository` | Domain persistence contract                   |
+| `ICatRepository`  | `Repository` | Domain persistence contract                   |
+| `ICatCreate`      | (none)       | Application operation (implements `IUsecase`) |
+| `IUserUpdate`     | (none)       | Application operation (implements `IUsecase`) |
+| `IUsecase`        | (none)       | Generic application operation contract        |
+
+**If a contract does not fit one of these three categories, it should not use a suffix from this taxonomy.** This keeps the naming system falsifiable: you can always check whether a name follows the rule.
 
 ---
 
@@ -395,14 +717,15 @@ An **anemic entity** is just a data container with no behavior — essentially a
 
 ---
 
-### Entities: Must Extend BaseEntity
+### Entities and Value Objects: Use the Right Base Class
 
-Every Entity **must extend** the `BaseEntity` class. This is mandatory in this project.
+**The root entity of every domain must extend `BaseEntity`.** This is mandatory. Sub-entities **may** extend `BaseEntity` (if they need `toData()`, `clone()`, `merge()`, etc.). **Value Objects must extend `BaseValueObject`**, never `BaseEntity`, because they have no identity, no lifecycle (`createdAt`, `deletedAt`) and no domain events.
 
-| ❌ Avoid                     | ✅ Prefer                                                    |
-| ---------------------------- | ------------------------------------------------------------ |
-| `class UserEntity { }`       | `class UserEntity extends BaseEntity<UserEntity>() { }`      |
-| `export class CatEntity { }` | `export class CatEntity extends BaseEntity<CatEntity>() { }` |
+| Class                                    | Base class                         | Class suffix  | Calls `ensureID()`?   | Has `id`? |
+| ---------------------------------------- | ---------------------------------- | ------------- | --------------------- | --------- |
+| Root entity (`{domain}.ts`)              | `BaseEntity` ✅ **Mandatory**      | `Entity`      | ✅ **Mandatory**      | ✅ Yes    |
+| Sub-entity (`{domain}-{subdomain}.ts`)   | `BaseEntity` ⚠️ Optional           | `Entity`      | ✅ Yes                | ✅ Yes    |
+| Value Object (`{domain}-{subdomain}.ts`) | `BaseValueObject` ✅ **Mandatory** | `ValueObject` | ❌ No (not available) | ❌ No     |
 
 ```typescript
 // ❌ WRONG - Not extending BaseEntity
@@ -420,7 +743,7 @@ export class CatEntity {
   }
 }
 
-// ✅ CORRECT - Extends BaseEntity
+// ✅ CORRECT - Root entity: extends BaseEntity + ensureID()
 import { BaseEntity } from '@/utils/domain'
 
 export class CatEntity extends BaseEntity<CatEntity>() {
@@ -434,30 +757,89 @@ export class CatEntity extends BaseEntity<CatEntity>() {
     this.ensureID()
   }
 }
+
+// ✅ CORRECT - Sub-entity: extends BaseEntity + ensureID(), but is not the aggregate root
+export class UserPasswordEntity extends BaseEntity<UserPasswordEntity>() {
+  hash!: UserPassword['hash']
+
+  constructor(entity: UserPassword) {
+    super(UserPasswordEntitySchema)
+    this.validate(entity)
+    this.ensureID()
+  }
+}
+
+// ❌ WRONG - Value Object extending BaseEntity (inherits id, timestamps and events it should not have)
+export class RolePermissionValue extends BaseEntity<RolePermissionValue>() {}
+
+// ✅ CORRECT - Value Object: extends BaseValueObject and ends with `ValueObject`
+import { BaseValueObject } from '@/utils/domain'
+
+export const RolePermissionValueObjectSchema = InputValidator.object({
+  action: InputValidator.string(),
+  resource: InputValidator.string()
+})
+
+type RolePermission = InferSchema<typeof RolePermissionValueObjectSchema>
+
+export class RolePermissionValueObject extends BaseValueObject<RolePermission>(RolePermissionValueObjectSchema) {
+  // Use `declare`, not `!`. Properties are assigned inside super(); a regular field
+  // declaration would reset them to undefined right after super() returns.
+  declare readonly action: RolePermission['action']
+  declare readonly resource: RolePermission['resource']
+
+  constructor(value: RolePermission) {
+    super(value) // validates against the schema and assigns the properties
+    this.freeze() // optional: makes the instance immutable
+  }
+}
+
+// Value Objects are compared by value, not by reference
+new RolePermissionValueObject({ action: 'read', resource: 'cat' }).equals(
+  new RolePermissionValueObject({ action: 'read', resource: 'cat' })
+) // true
 ```
 
-**What BaseEntity provides:**
+**What `BaseEntity` provides:**
 
-1. **Common properties** — `id`, `createdAt`, `updatedAt`, `deletedAt` are inherited
-2. **Validation** — `validate(entity)` method validates input against Zod schema
-3. **ID generation** — `ensureID()` generates UUID if not provided
+1. **Common properties** — `id` (only if the class calls `ensureID()`), `createdAt`, `updatedAt`, `deletedAt`
+2. **Validation** — `validate(entity)` method validates input against the Zod schema passed to `super()`
+3. **ID generation** — `ensureID()` generates UUID if not provided (root entities and sub-entities)
 4. **Status methods** — `isActive()`, `isDeleted()`, `activate()`, `deactivate()`
-5. **Serialization** — `toObject()` returns plain object, `clone()` creates a copy
-6. **Type safety** — `nameOf()` provides type-safe property names
+5. **Serialization** — `toData()` returns plain object, `clone()` creates a copy, `merge()` merges partial data
+6. **Domain events** — `addEvent()`, `getEvents()`, `releaseEvents()`, `clearEvents()`
+
+**What `BaseValueObject` provides:**
+
+1. **Validation on construction** — the schema is passed to `BaseValueObject<T>(schema)` and the constructor parses and assigns the value. An invalid Value Object cannot exist.
+2. **Serialization** — `toData()` returns the plain, schema-parsed object
+3. **Equality by value** — `equals(other)` returns `true` when both instances are of the same class and have deeply equal data
+4. **Immutability** — `freeze()` calls `Object.freeze(this)`. Call it at the end of the constructor.
+
+> **Important:** declare Value Object properties with `declare readonly prop: Type`, never `prop!: Type`. Since ES2022, class fields are part of JavaScript and SWC compiles them with these standard semantics by default (`useDefineForClassFields`, regardless of `target`), so a `prop!:` field is re-initialized to `undefined` after `super()` returns, wiping the values that `BaseValueObject` just assigned. Entities don't have this problem because they call `this.validate()` after `super()`.
 
 **Constructor pattern:**
 
 Every entity constructor must follow this pattern:
 
 ```typescript
-constructor(entity: Cat) {
-  super(CatEntitySchema)  // 1. Pass Zod schema to parent
+constructor(entity: EntityType) {
+  super(EntitySchema)     // 1. Pass Zod schema to parent
   this.validate(entity)   // 2. Validate and assign properties
   this.ensureID()         // 3. Generate ID if not provided
 }
 ```
 
-📖 **See detailed examples:** [Entity Guide](guides/core/entity.md) — includes full entity implementation
+Every Value Object constructor follows this pattern:
+
+```typescript
+constructor(value: ValueType) {
+  super(value)   // 1. Validate and assign (schema was passed to BaseValueObject<T>(schema))
+  this.freeze()  // 2. Optional: make it immutable
+}
+```
+
+📖 **See detailed examples:** [Entity Guide](guides/core/entity.md) — includes full entity implementation and `BaseEntity` utilities
 
 ---
 
@@ -582,7 +964,7 @@ export abstract class ICatRepository extends IRepository<CatEntity> {
 Controllers must **never contain business logic**. Their responsibility is limited to:
 
 1. **Orchestration** — Receive request, call use case, return response
-2. **Input standardization** — Transform and normalize inputs for the use case
+2. **Input standardization** — Transform and normalize transport inputs for the use case
 
 | ❌ Avoid                   | ✅ Prefer                  |
 | -------------------------- | -------------------------- |
@@ -593,7 +975,7 @@ Controllers must **never contain business logic**. Their responsibility is limit
 
 **When input standardization is OK:**
 
-We standardize listing inputs (pagination, sorting, search) in the Controller before calling the Use Case:
+We standardize listing inputs (pagination, sorting, search) in the Controller before calling the Use Case. This is **transport validation**, not business logic:
 
 ```typescript
 // ✅ OK - Standardizing pagination inputs (not business logic)
@@ -631,7 +1013,7 @@ async create(@Req() { body }: ApiRequest): Promise<CatCreateOutput> {
 
 ### Core: Avoid External Libraries
 
-The `core/` folder must remain **pure and framework-agnostic**. Never import external libraries directly into entities or use cases.
+The `core/` folder must remain **pure and framework-agnostic**. **Avoid** importing external libraries directly into entities or use cases — but understand this is a principle, not an absolute dogma.
 
 | ❌ Avoid in Core                       | ✅ Prefer                                |
 | -------------------------------------- | ---------------------------------------- |
@@ -676,7 +1058,7 @@ export class GetExternalDataUseCase implements IUsecase {
 
 **Allowed in Core:**
 
-- ✅ Zod (validation is part of domain logic)
+- ✅ Zod (validation is part of domain logic — see the conscious exception below)
 - ✅ Native Node.js/JavaScript APIs
 - ✅ Your own `utils/` functions
 
@@ -719,6 +1101,31 @@ export class MyUseCase implements IUsecase {
 - Easier to mock in tests
 - Controls which functions are exposed
 - Documents which external libs are used in the project
+
+#### Conscious Exceptions: When Breaking the Rule Pays Off
+
+"Avoid external libraries in Core" is a **principle**, not a dogma. There are cases where the gain outweighs the coupling — and those cases are allowed, provided they are **conscious, documented, and justified**.
+
+**The criterion for a conscious exception:**
+
+1. **The library solves more than one problem.** Zod is not only a validator — it also generates Input/Output types via `z.infer` and enables automatic mock generation from schemas. That is three problems solved by one dependency.
+2. **The library is mature and actively maintained.** Check release cadence, open issues, maintainer responsiveness, and adoption. A library with 1 maintainer and 6 months of inactivity is not a safe exception.
+3. **The coupling is contained.** If the library is swapped tomorrow, the blast radius is known and bounded (schemas live in `core/`, mechanics live in `utils/`).
+4. **The alternative is worse.** Writing a custom validator + type generator + mock generator would be more code, more bugs, and more maintenance.
+
+**Current conscious exceptions in this project:**
+
+| Library | Where                    | Why it is allowed                                                                                                     |
+| ------- | ------------------------ | --------------------------------------------------------------------------------------------------------------------- |
+| **Zod** | `core/` (schemas, types) | Generates validation, types (`z.infer`), and mocks from a single schema. Mature, widely adopted, actively maintained. |
+
+**What is _not_ a conscious exception:**
+
+- Adding a library because "it's convenient" without analyzing the trade-off
+- Adding a library with unknown maintenance status
+- Adding a library that solves only one problem when a wrapper in `utils/` would suffice
+
+**How to propose a new exception:** open an issue describing (1) which problem it solves, (2) why the existing patterns are insufficient, (3) the maintenance status of the library, and (4) the blast radius if it is later removed. If approved, add it to the table above.
 
 ---
 
@@ -918,71 +1325,90 @@ const calculateTotal = (items: OrderItem[]): number => {
 
 ---
 
-### Aggregates: Multiple Entities in the Same Folder
+## Entities, Sub-entities, and Value Objects
 
-In DDD, an **Aggregate** is a cluster of related entities that are treated as a single unit. When entities belong to the same aggregate, they can live together in the same folder.
+This project **does not have separate `value-objects/` or `aggregates/` folders**. Everything lives in `core/{domain}/entity/`, and the distinction between types is made by base class, class suffix, and identity management.
 
-**Example: User Aggregate**
+### The Three Types
 
-If `User` and `Address` are always created/updated together and `Address` has no meaning without a `User`, they belong to the same aggregate:
+| Type                             | File pattern              | Class pattern                    | Base class        | Calls `ensureID()`? | Has `id`? |
+| -------------------------------- | ------------------------- | -------------------------------- | ----------------- | ------------------- | --------- |
+| **Root Entity** (Aggregate Root) | `{domain}.ts`             | `{Domain}Entity`                 | `BaseEntity`      | Yes                 | Yes       |
+| **Sub-entity**                   | `{domain}-{subdomain}.ts` | `{Domain}{Subdomain}Entity`      | `BaseEntity`      | Yes                 | Yes       |
+| **Value Object**                 | `{domain}-{subdomain}.ts` | `{Domain}{Subdomain}ValueObject` | `BaseValueObject` | No                  | No        |
 
-```
-core/
-└── user/
-    ├── entity/
-    │   ├── user.ts           # Aggregate Root
-    │   └── address.ts        # Belongs to User aggregate
-    ├── repository/
-    │   ├── user.ts           # Main repository
-    │   └── address.ts        # Can have its own repository if needed
-    └── use-cases/
-        ├── user-create.ts    # May create User + Address together
-        └── address-update.ts # Can update Address independently
-```
+**The decisive rule:**
 
-**When to use aggregates:**
+- **Root Entity:** Represents the aggregate root and generates its own `id` through `ensureID()`.
+- **Sub-entity:** Has its own identity within the aggregate and also generates its `id` through `ensureID()`. Unlike the Root Entity, it is not the aggregate root.
+- **Value Object:** Has no identity or `id`. It is defined entirely by its attributes, extends `BaseValueObject`, and its class name **ends with `ValueObject`**. Two Value Objects with the same attributes are equal (`equals()`).
 
-| Scenario                            | Same Folder (Aggregate) | Separate Folders |
-| ----------------------------------- | ----------------------- | ---------------- |
-| Entities always created together    | ✅                      | —                |
-| Child has no meaning without parent | ✅                      | —                |
-| Shared business rules               | ✅                      | —                |
-| Entities are independent            | —                       | ✅               |
-| Different lifecycles                | —                       | ✅               |
+### Examples
 
-**Key rules:**
+- `UserEntity`: Root Entity. Generates its own `id`.
+- `UserPasswordEntity`: Sub-entity. Generates its own `id`.
+- `RolePermissionValueObject`: Value Object. Extends `BaseValueObject`. Has no `id`.
 
-1. **Aggregate Root** — One entity is the "root" (e.g., `User`). External access should go through it
-2. **Transactional consistency** — Operations within an aggregate should be atomic
-3. **Own rules** — Each entity can still have its own validation and behavior
-4. **Separate repositories are OK** — `Address` can have its own repository for specific queries
+### The Convention
 
-**Practical example:**
+Start with a single Root Entity per domain. Introduce Sub-entities when a concept needs its own identity within the aggregate, and Value Objects when a concept has no identity and is defined entirely by its attributes.
+
+Both Sub-entities and Value Objects live in `{domain}-{subdomain}.ts`. Their base class and suffix distinguish their roles: `BaseEntity` + `Entity` for entities, `BaseValueObject` + `ValueObject` for Value Objects.
+
+The suffix goes on the **class name only**, never on the file name. `RolePermissionValueObject` lives in `role-permission.ts`, not `role-permission-value-object.ts`, just as `UserPasswordEntity` lives in `user-password.ts`.
+
+**In short:** Root Entities and Sub-entities extend `BaseEntity`, have identity, and call `ensureID()`. Value Objects extend `BaseValueObject`, have no identity, and are compared by value.
+
+### How Validation Works
+
+The **child's schema is imported into the parent's schema**. The child is validated as part of the parent's schema when the parent is parsed.
+
+This allows the parent to validate its entire structure, including nested entities and Value Objects, in a single operation.
+
+### Why This Simplification Exists
+
+Classical DDD has separate folders for `entities/`, `value-objects/`, and `aggregates/`. This project unifies everything in `entity/` because:
+
+1. **Less folder complexity.** Developers only need to know where to put the file and how to name it.
+2. **The distinction is explicit.** Entities extend `BaseEntity`, have an `id`, and call `ensureID()`. Value Objects extend `BaseValueObject` and end with `ValueObject`.
+3. **The Root Entity is the aggregate root.** There is no separate `AggregateRoot` class. The root entity encapsulates the aggregate, and its sub-entities and Value Objects belong to it.
+
+**Don't over-engineer:** Not every domain needs Sub-entities or Value Objects. Start with a single Root Entity. Introduce other types only when the domain model requires them.
+
+### How Validation Works
+
+The **child's schema is imported into the parent's schema**. The child does **not** validate itself in isolation — it is validated when the parent schema is parsed:
 
 ```typescript
-// user-create.ts - Creates User with Address in same transaction
-import { IUsecase } from '@/utils/usecase'
+// In user.ts — the parent schema includes the child schema
+const Password = UserPasswordEntitySchema
 
-export class UserCreateUseCase implements IUsecase {
-  constructor(
-    private readonly userRepository: IUserRepository,
-    private readonly addressRepository: IAddressRepository
-  ) {}
-
-  async execute(input: UserCreateInput): Promise<UserCreateOutput> {
-    // Create both as part of the same aggregate operation
-    const user = new UserEntity(input.user)
-    const address = new AddressEntity({ ...input.address, userId: user.id })
-
-    await this.userRepository.create(user)
-    await this.addressRepository.create(address)
-
-    return new UserCreateOutput(user)
-  }
-}
+export const UserEntitySchema = InputValidator.object({
+  // ...
+  password: Password.optional() // ← child validation happens here
+})
 ```
 
-**Don't over-engineer:** Not everything needs to be an aggregate. Start simple — if you notice entities are always manipulated together, then group them.
+This means:
+
+- `UserPasswordEntitySchema` can be used standalone, if needed.
+- When a `UserEntity` is validated, its `password` field is validated **as part of the parent's schema**.
+- The child schema does not need a separate parsing step when it is already included in the parent's schema.
+
+### Why This Simplification Exists
+
+Classical DDD commonly separates `entities/`, `value-objects/`, and `aggregates/`. This project keeps everything in `entity/` to reduce folder complexity and make the conventions explicit.
+
+1. **Simple organization.** Developers only need to know:
+   - Where to put the file → `entity/`
+   - How to name it → `{domain}.ts` for the Root Entity and `{domain}-{subdomain}.ts` for Sub-entities and Value Objects.
+   - How identity works → Root Entities and Sub-entities extend `BaseEntity`, have an `id`, and call `ensureID()`. Value Objects extend `BaseValueObject` and have no `id`.
+
+2. **Explicit distinction.** The presence or absence of identity determines whether a class is an Entity or a Value Object. The Root Entity is distinguished from a Sub-entity by its role in the aggregate, not by ID generation.
+
+3. **The Root Entity is the Aggregate Root.** There is no separate `AggregateRoot` class. The Root Entity encapsulates the aggregate, while Sub-entities and Value Objects belong to it.
+
+**Don't over-engineer:** Not every domain needs Sub-entities or Value Objects. Start with a single Root Entity. Introduce a Sub-entity when a concept needs its own identity within the aggregate, or a Value Object when a concept is defined entirely by its attributes.
 
 ---
 
@@ -1059,8 +1485,10 @@ The use case never knows if data goes to PostgreSQL, MongoDB, or a mock. It only
 ```
 src/
 ├── core/                    # 🧠 Business Logic (Framework-agnostic)
-│   └── [module]/
+│   └── [domain]/
 │       ├── entity/          # Domain entities with Zod validation
+│       │   ├── {domain}.ts              # Root entity (extends BaseEntity, ensureID)
+│       │   └── {domain}-{subdomain}.ts  # Sub-entity (BaseEntity) or Value Object (BaseValueObject)
 │       ├── repository/      # Repository interfaces (contracts)
 │       └── use-cases/       # Business rules and operations
 │           └── __tests__/   # Unit tests for use cases
@@ -1088,10 +1516,10 @@ src/
 │   └── metrics/             # Prometheus metrics
 │
 └── utils/                   # 🛠️ Utility Functions
-    ├── decorators/          # Custom decorators
-    ├── middlewares/         # HTTP middlewares
-    ├── interceptors/        # NestJS interceptors
-    └── filters/             # Exception filters
+    ├── decorators/          # Custom decorators (including @ValidateSchema)
+    ├── middlewares/         # HTTP middlewares, guards, interceptors, filters
+    ├── entity/              # BaseEntity and entity utilities
+    └── validator/           # Zod-based InputValidator
 ```
 
 ### Folder Responsibilities
@@ -1102,7 +1530,7 @@ src/
 | `modules/` | NestJS controllers, dependency injection, route handling       | `core/`, `infra/`, `libs/` |
 | `infra/`   | External services, databases, cache, HTTP clients              | `core/` (interfaces only)  |
 | `libs/`    | Reusable libraries, framework-agnostic utilities               | Nothing from `src/`        |
-| `utils/`   | Helper functions, decorators, middlewares                      | Anything                   |
+| `utils/`   | Helper functions, decorators, entity utilities, validators     | Anything                   |
 
 ---
 
@@ -1173,9 +1601,9 @@ The following diagram illustrates how a request flows through the system:
 **Flow explanation:**
 
 1. **Client** sends HTTP request
-2. **Controller** receives and validates input
+2. **Controller** receives and validates transport input
 3. **Adapter** transforms request and calls use case
-4. **Use Case** executes business logic
+4. **Use Case** validates business input (`@ValidateSchema`) and executes business logic
 5. **Repository** (via interface) persists/retrieves data
 6. **Response** flows back through the same layers
 
@@ -1296,15 +1724,17 @@ Deployment and CI/CD documentation.
 
 Utility functions and helpers.
 
-| Guide                                    | Description          |
-| ---------------------------------------- | -------------------- |
-| [Pagination](guides/utils/pagination.md) | Pagination utilities |
-| [Exception](guides/utils/exception.md)   | Exception handling   |
-| [Crypto](guides/utils/crypto.md)         | Encryption utilities |
-| [Date](guides/utils/date.md)             | Date manipulation    |
-| [Validator](guides/utils/validator.md)   | Validation helpers   |
-| [Collection](guides/utils/collection.md) | Array utilities      |
-| [Search](guides/utils/search.md)         | Search utilities     |
+| Guide                                        | Description               |
+| -------------------------------------------- | ------------------------- |
+| [Pagination](guides/utils/pagination.md)     | Pagination utilities      |
+| [Exception](guides/utils/exception.md)       | Exception handling        |
+| [Crypto](guides/utils/crypto.md)             | Encryption utilities      |
+| [Date](guides/utils/date.md)                 | Date manipulation         |
+| [Validator](guides/utils/validator.md)       | Validation helpers        |
+| [Collection](guides/utils/collection.md)     | Array utilities           |
+| [Search](guides/utils/search.md)             | Search utilities          |
+| [Entity](guides/utils/entity.md)             | BaseEntity utilities      |
+| [Value Object](guides/utils/value-object.md) | BaseValueObject utilities |
 
 ---
 
