@@ -1,0 +1,505 @@
+openapi: 3.0.0
+info:
+  title: Health
+  version: '1.0'
+tags:
+  - name: Health
+paths:
+  /:
+    get:
+      operationId: RootHealthController_root
+      description: Liveness probe (root) - checks if application process is alive
+      parameters: []
+      responses:
+        '200':
+          description: Simple status indicating if the application process is running
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LivenessOutput'
+      tags:
+        - Health
+  /health/live:
+    get:
+      operationId: HealthController_liveness
+      description: Liveness probe - checks if application process is alive
+      parameters: []
+      responses:
+        '200':
+          description: Simple status indicating if the application process is running
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LivenessOutput'
+      tags:
+        - Health
+  /health/ready:
+    get:
+      operationId: HealthController_readiness
+      description: Readiness probe - checks if application can handle requests
+      parameters: []
+      responses:
+        '200':
+          description: Complete system health status with dependencies and metrics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthOutput'
+      tags:
+        - Health
+  /health/startup:
+    get:
+      operationId: HealthController_startup
+      description: Startup probe - checks if application has finished initializing
+      parameters: []
+      responses:
+        '200':
+          description: Basic connection status without heavy I/O operations
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StartupOutput'
+      tags:
+        - Health
+components:
+  schemas:
+    EventLoopLagOutput:
+      type: object
+      required:
+        - meanMs
+        - maxMs
+        - p99Ms
+      properties:
+        meanMs:
+          type: number
+          format: decimal
+          description: Mean event loop delay in milliseconds over the sampling window
+        maxMs:
+          type: number
+          format: decimal
+          description: Maximum event loop delay in milliseconds over the sampling window
+        p99Ms:
+          type: number
+          format: decimal
+          description: 99th percentile event loop delay in milliseconds over the sampling window
+      description: event loop lag metrics
+    HealthOutput:
+      type: object
+      required:
+        - server
+        - version
+        - mongo
+        - postgres
+        - redisState
+        - network
+        - memory
+        - cpu
+      properties:
+        server:
+          type: string
+          description: 'application status: **UP** | **DOWN**'
+        version:
+          type: string
+          description: application version
+        mongo:
+          type: object
+          properties:
+            status:
+              type: string
+              description: 'MongoDB status: **UP** | **DOWN**'
+            connection:
+              type: object
+              allOf:
+                - $ref: '#/components/schemas/MongoConnectionOutput'
+              nullable: true
+              description: MongoDB connection pool metrics; null when unavailable
+            memory:
+              allOf:
+                - $ref: '#/components/schemas/MongoCacheMemoryOutput'
+              description: MongoDB WiredTiger cache metrics; values may be null when unsupported or unavailable
+          required:
+            - status
+            - connection
+            - memory
+          description: mongo information
+        postgres:
+          type: object
+          properties:
+            status:
+              type: string
+              description: 'PostgreSQL status: **UP** | **DOWN**'
+            connection:
+              type: object
+              allOf:
+                - $ref: '#/components/schemas/PostgresConnectionOutput'
+              nullable: true
+              description: PostgreSQL connection metrics; null when unavailable
+            databaseSizeBytes:
+              type: string
+              nullable: true
+              description: Total PostgreSQL database size in bytes; null when unavailable
+          required:
+            - status
+            - connection
+            - databaseSizeBytes
+          description: postgres information
+        redisState:
+          type: string
+          description: 'redis status: **UP** | **DOWN**'
+        network:
+          type: object
+          properties:
+            latency:
+              type: string
+              description: |2-
+                  -- representing the network latency --
+                  latency: ** <20  ** status: ** Excellent **
+
+                  latency: ** <100 ** status: ** Acceptable **
+
+                  latency: ** <300 ** status: ** Poor **
+
+                  latency: ** >300 ** status: ** Critical **
+            connections:
+              type: integer
+              format: int32
+              nullable: true
+              description: representing the active connections count
+          required:
+            - latency
+            - connections
+          description: network information
+        memory:
+          allOf:
+            - $ref: '#/components/schemas/MemoryOutput'
+          description: memory usage
+        cpu:
+          type: object
+          properties:
+            cpus:
+              type: integer
+              format: int16
+              description: max healthy limit/total cpus
+            globalAverage:
+              type: object
+              properties:
+                lastMinute:
+                  allOf:
+                    - $ref: '#/components/schemas/HealthOutputLoad'
+                  description: cpu load average on last minute
+                lastFiveMinutes:
+                  allOf:
+                    - $ref: '#/components/schemas/HealthOutputLoad'
+                  description: cpu load average on five minute
+                lastFifteenMinutes:
+                  allOf:
+                    - $ref: '#/components/schemas/HealthOutputLoad'
+                  description: cpu load average on fifteen minute
+              required:
+                - lastMinute
+                - lastFiveMinutes
+                - lastFifteenMinutes
+              description: cpu load average
+            cores:
+              type: array
+              items:
+                type: object
+                properties:
+                  core:
+                    type: integer
+                    format: int16
+                    description: cpu core number
+                  load:
+                    type: string
+                    description: cpu core load
+                required:
+                  - core
+                  - load
+              description: cpu cores
+          required:
+            - cpus
+            - globalAverage
+            - cores
+          description: cpu usage
+        eventLoopLag:
+          allOf:
+            - $ref: '#/components/schemas/EventLoopLagOutput'
+          description: event loop lag metrics; omitted when the runtime does not expose them
+      description: health output
+    HealthOutputLoad:
+      type: object
+      required:
+        - load
+        - status
+      properties:
+        load:
+          type: number
+          format: decimal
+          description: load average
+        status:
+          type: string
+          description: 'load average status: **healthy** | **overloaded**'
+      description: load average
+    HeapSpaceOutput:
+      type: object
+      required:
+        - name
+        - size
+        - used
+        - available
+      properties:
+        name:
+          type: string
+          description: V8 space name, e.g. new_space, old_space, large_object_space
+        size:
+          type: string
+          description: Total size of the space
+        used:
+          type: string
+          description: Used size of the space
+        available:
+          type: string
+          description: Available size of the space
+      description: V8 heap space metrics
+    LivenessOutput:
+      type: object
+      required:
+        - status
+        - timestamp
+        - uptime
+      properties:
+        status:
+          type: string
+          description: 'Application status: **UP** | **DOWN**'
+        timestamp:
+          type: string
+          description: Timestamp of the health check
+        uptime:
+          type: number
+          format: decimal
+          description: Application uptime in seconds
+      description: Liveness probe response model
+    MemoryOutput:
+      type: object
+      required:
+        - process
+        - v8
+        - heapSpaces
+      properties:
+        process:
+          type: object
+          properties:
+            usedRam:
+              type: string
+              description: Total memory allocated by the process, including heap, buffers, and native code.
+            heapTotal:
+              type: string
+              description: Total heap memory allocated by V8.
+            heapUsed:
+              type: string
+              description: Heap memory currently used by V8.
+            external:
+              type: string
+              description: Memory allocated outside the V8 heap (e.g., buffers, native bindings).
+            arrayBuffers:
+              type: string
+              description: ArrayBuffer memory currently allocated, a subset of `external`.
+          required:
+            - usedRam
+            - heapTotal
+            - heapUsed
+            - external
+            - arrayBuffers
+          description: process memory
+        v8:
+          type: object
+          properties:
+            totalHeapSize:
+              type: string
+              description: Total heap size managed by V8.
+            usedHeapSize:
+              type: string
+              description: Heap size actually being used; redundant with process.heapUsed.
+            executableHeapSize:
+              type: string
+              description: Heap size reserved for compiled JavaScript code.
+            heapSizeLimit:
+              type: string
+              description: Maximum heap size before memory allocation fails; compare against the container memory limit.
+          required:
+            - totalHeapSize
+            - usedHeapSize
+            - executableHeapSize
+            - heapSizeLimit
+          description: v8 memory
+        heapSpaces:
+          type: array
+          items:
+            $ref: '#/components/schemas/HeapSpaceOutput'
+          description: |2-
+              Per-space heap breakdown from v8.getHeapSpaceStatistics(). A long-lived leak
+              surfaces in `old_space`; large strings/arrays in `large_object_space`; a busy
+              but flat `new_space` is allocation churn, not a leak.
+      description: memory usage
+    MongoCacheMemoryOutput:
+      type: object
+      required:
+        - used
+        - limit
+      properties:
+        used:
+          type: string
+          nullable: true
+          description: Bytes currently in the cache
+        limit:
+          type: string
+          nullable: true
+          description: Maximum bytes configured for the cache
+      description: MongoDB WiredTiger cache metrics; values may be null when unsupported or unavailable
+    MongoConnectionOutput:
+      type: object
+      required:
+        - active
+        - available
+        - current
+        - totalCreated
+      properties:
+        active:
+          type: integer
+          format: int64
+          description: Number of active connections currently in use
+        available:
+          type: integer
+          format: int64
+          description: Number of connection slots available for new clients
+        current:
+          type: integer
+          format: int64
+          description: Total number of current connections
+        totalCreated:
+          type: integer
+          format: int64
+          description: Total number of connections created since server start
+        rejected:
+          type: integer
+          format: int64
+          description: Connections rejected by the server; present on newer MongoDB versions
+        queuedForEstablishment:
+          type: integer
+          format: int64
+          description: Connections queued for establishment
+        establishmentRateLimit:
+          type: object
+          properties:
+            rejected:
+              type: integer
+              format: int64
+            exempted:
+              type: integer
+              format: int64
+            interruptedDueToClientDisconnect:
+              type: integer
+              format: int64
+          required:
+            - rejected
+            - exempted
+            - interruptedDueToClientDisconnect
+          description: Connection establishment rate limit counters
+        threaded:
+          type: integer
+          format: int64
+          description: Number of threaded connections
+        exhaustIsMaster:
+          type: integer
+          format: int64
+          description: Number of exhaust isMaster connections
+        exhaustHello:
+          type: integer
+          format: int64
+          description: Number of exhaust hello connections
+        awaitingTopologyChanges:
+          type: integer
+          format: int64
+          description: Number of connections awaiting topology changes
+      description: MongoDB connection pool metrics
+    PostgresConnectionOutput:
+      type: object
+      required:
+        - active
+        - available
+        - current
+      properties:
+        active:
+          type: integer
+          format: int64
+          description: Number of active client backends
+        available:
+          type: integer
+          format: int64
+          description: Number of connection slots available for new clients
+        current:
+          type: integer
+          format: int64
+          description: Total number of client backends
+      description: PostgreSQL connection metrics
+    RootHealthOutput:
+      type: object
+      required:
+        - status
+        - timestamp
+        - uptime
+      properties:
+        status:
+          type: string
+          description: 'Application status: **UP** | **DOWN**'
+        timestamp:
+          type: string
+          description: Timestamp of the health check
+        uptime:
+          type: number
+          format: decimal
+          description: Application uptime in seconds
+      description: Root health response model
+    StartupOutput:
+      type: object
+      required:
+        - status
+        - timestamp
+        - phase
+        - message
+      properties:
+        status:
+          type: string
+          description: 'Application startup status: **UP** | **DOWN**'
+        timestamp:
+          type: string
+          description: Timestamp of the health check
+        phase:
+          type: string
+          description: Health check phase identifier
+        connections:
+          type: object
+          properties:
+            mongo:
+              type: string
+              description: 'MongoDB connection status: **connected** | **disconnected**'
+            postgres:
+              type: string
+              description: 'PostgreSQL connection status: **connected** | **disconnected**'
+            redis:
+              type: string
+              description: 'Redis connection status: **connected** | **disconnected**'
+          required:
+            - mongo
+            - postgres
+            - redis
+          description: |2-
+              Basic connection status for each service.
+              Omitted when startup fails before connections are checked.
+        message:
+          type: string
+          description: Human-readable status message
+        error:
+          type: string
+          description: Optional error message if startup fails
+      description: Startup probe response model

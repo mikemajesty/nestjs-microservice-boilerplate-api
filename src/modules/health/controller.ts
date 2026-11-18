@@ -9,7 +9,16 @@ import { Public } from '@/utils/decorators'
 
 import { version } from '../../../package.json'
 import { IHealthAdapter } from './service'
-import { HealthOutput, HealthStatus } from './types'
+import {
+  CpuCoreLoad,
+  EventLoopLagOutput,
+  HealthOutput,
+  HealthStatus,
+  LivenessOutput,
+  PercentFormatted,
+  RootHealthOutput,
+  StartupOutput
+} from './types'
 
 @Controller('health')
 @Public()
@@ -19,6 +28,7 @@ export class HealthController {
   @Get('ready')
   async getReadiness(@Res({ passthrough: true }) reply: FastifyReply): Promise<HealthOutput> {
     const memory = this.service.getMemoryUsageInMB()
+    const eventLoopLag: EventLoopLagOutput = this.service.getEventLoopLag()
 
     const numCpus = os.cpus().length
     const [lastMinute, lastFiveMinutes, lastFifteenMinutes] = os.loadavg()
@@ -47,19 +57,21 @@ export class HealthController {
       this.service.getHttpConnections(reply.server.server)
     ])
 
-    const cpuStatus = []
-    for (const [index, core] of cpuList.cpus.entries()) {
-      cpuStatus.push({ core: index + 1, load: `${core.load.toFixed(2)}%` })
-    }
+    const cores: CpuCoreLoad[] = cpuList.cpus.map((core, index) => ({
+      core: index + 1,
+      // `core.load` comes from systeminformation as a number (0–100).
+      // PercentFormatted is `${number}%`, so build the template literal explicitly.
+      load: `${core.load.toFixed(2)}%` as PercentFormatted
+    }))
 
     const cpu = {
       cpus: numCpus,
-      globalAvarage: {
+      globalAverage: {
         lastMinute: this.service.getLoadAvarage(lastMinute, numCpus),
         lastFiveMinutes: this.service.getLoadAvarage(lastFiveMinutes, numCpus),
         lastFifteenMinutes: this.service.getLoadAvarage(lastFifteenMinutes, numCpus)
       },
-      cores: cpuStatus
+      cores
     }
 
     const isReady =
@@ -69,7 +81,7 @@ export class HealthController {
       reply.code(503)
     }
 
-    const output = {
+    const output: HealthOutput = {
       server: isReady ? HealthStatus.UP : HealthStatus.DOWN,
       version,
       mongo: {
@@ -84,18 +96,20 @@ export class HealthController {
       },
       redisState,
       network: {
-        latency: String(latency),
+        // getLatency already returns LatencyFormatted; String() was redundant.
+        latency,
         connections
       },
       memory,
-      cpu
+      cpu,
+      eventLoopLag
     }
 
     return output
   }
 
   @Get(['live'])
-  async getLiveness() {
+  async getLiveness(): Promise<LivenessOutput> {
     return {
       status: HealthStatus.UP,
       timestamp: new Date().toISOString(),
@@ -104,7 +118,7 @@ export class HealthController {
   }
 
   @Get('startup')
-  async getStartup(@Res({ passthrough: true }) reply: FastifyReply) {
+  async getStartup(@Res({ passthrough: true }) reply: FastifyReply): Promise<StartupOutput> {
     try {
       const [mongoState, postgresState, redisState] = await Promise.all([
         this.service.getMongoStatus(),
@@ -118,7 +132,7 @@ export class HealthController {
         reply.code(503)
       }
 
-      const output = {
+      const output: StartupOutput = {
         status: basicSystemsConnected ? HealthStatus.UP : HealthStatus.DOWN,
         timestamp: new Date().toISOString(),
         phase: 'startup',
@@ -133,13 +147,17 @@ export class HealthController {
       return output
     } catch {
       reply.code(503)
-      return {
+      // `connections` is intentionally omitted here: the check failed before
+      // connection states were determined. StartupOutput declares it optional.
+      const output: StartupOutput = {
         status: HealthStatus.DOWN,
         timestamp: new Date().toISOString(),
         phase: 'startup',
         error: 'Startup check failed - initialization incomplete',
         message: 'Application still initializing'
       }
+
+      return output
     }
   }
 }
@@ -148,7 +166,7 @@ export class HealthController {
 @Public()
 export class RootHealthController {
   @Get()
-  async getRootHealth() {
+  async getRootHealth(): Promise<RootHealthOutput> {
     return {
       status: HealthStatus.UP,
       timestamp: new Date().toISOString(),

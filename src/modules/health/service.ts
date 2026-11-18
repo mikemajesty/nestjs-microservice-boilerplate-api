@@ -1,4 +1,5 @@
 import type { Server } from 'node:net'
+import { monitorEventLoopDelay } from 'node:perf_hooks'
 
 import { Redis } from 'ioredis'
 import { Connection } from 'mongoose'
@@ -14,10 +15,15 @@ import { ByteSize } from '@/utils/byte-size'
 
 import { ApiInternalServerException } from './../../utils/exception'
 import {
-  CacheMemoryOutput,
+  ByteSizeFormatted,
+  EventLoopLagOutput,
   HealthStatus,
+  HeapSpaceOutput,
+  LatencyFormatted,
   Load,
+  LoadStatus,
   MemoryOutput,
+  MongoCacheMemoryOutput,
   MongoConnectionOutput,
   PostgresConnectionOutput
 } from './types'
@@ -27,10 +33,14 @@ export class HealthService implements IHealthAdapter {
   mongo!: Connection
   redis!: ICacheAdapter<Redis>
 
+  private readonly eventLoopHistogram = monitorEventLoopDelay({ resolution: 20 })
+
   constructor(
     private readonly logger: ILoggerAdapter,
     private readonly secrets: ISecretsAdapter
-  ) {}
+  ) {
+    this.eventLoopHistogram.enable()
+  }
 
   async getPostgresDatabaseSize(): Promise<string | null> {
     try {
@@ -46,7 +56,7 @@ export class HealthService implements IHealthAdapter {
     }
   }
 
-  async getMongoMemory(): Promise<CacheMemoryOutput> {
+  async getMongoMemory(): Promise<MongoCacheMemoryOutput> {
     try {
       if (this.mongo.readyState !== 1 || !this.mongo.db) {
         return { used: null, limit: null }
@@ -63,8 +73,10 @@ export class HealthService implements IHealthAdapter {
         throw new ApiInternalServerException('WiredTiger cache not available - check MongoDB version/config')
       }
 
-      const formatMemory = (bytes: unknown): string | null =>
-        typeof bytes === 'number' && Number.isFinite(bytes) ? `${ByteSize.toMegabytes(bytes).toFixed(2)} MB` : null
+      const formatMemory = (bytes: unknown): ByteSizeFormatted | null =>
+        typeof bytes === 'number' && Number.isFinite(bytes)
+          ? (`${ByteSize.toMegabytes(bytes).toFixed(2)} MB` as ByteSizeFormatted)
+          : null
 
       return {
         used: formatMemory(cache['bytes currently in the cache']),
@@ -123,33 +135,73 @@ export class HealthService implements IHealthAdapter {
     }
   }
 
-  getMemoryUsageInMB() {
+  getMemoryUsageInMB(): MemoryOutput {
     const processMemory = process.memoryUsage()
     const heapStats = v8.getHeapStatistics()
+    const heapSpaces = v8.getHeapSpaceStatistics()
+
+    const toMb = (bytes: number): ByteSizeFormatted =>
+      `${ByteSize.toMegabytes(bytes).toFixed(2)} MB` as ByteSizeFormatted
+
     return {
       process: {
-        usedRam: `${ByteSize.toMegabytes(processMemory.rss).toFixed(2)} MB`,
-        heapTotal: `${ByteSize.toMegabytes(processMemory.heapTotal).toFixed(2)} MB`,
-        heapUsed: `${ByteSize.toMegabytes(processMemory.heapUsed).toFixed(2)} MB`,
-        external: `${ByteSize.toMegabytes(processMemory.external).toFixed(2)} MB`
+        // rss — total process memory. If it grows while heapUsed is flat, look outside
+        // the JS heap: Buffers, unread streams, native modules.
+        usedRam: toMb(processMemory.rss),
+        // Memory reserved by V8 for the heap. Follows heapUsed up and recedes slowly.
+        heapTotal: toMb(processMemory.heapTotal),
+        // Memory held by live JS objects. Leaks in application code surface here.
+        heapUsed: toMb(processMemory.heapUsed),
+        // Native memory outside the JS heap (Buffers, etc.).
+        external: toMb(processMemory.external),
+        // Subset of `external`: ArrayBuffers currently allocated.
+        arrayBuffers: toMb(processMemory.arrayBuffers)
       },
       v8: {
-        totalHeapSize: `${ByteSize.toMegabytes(heapStats.total_heap_size).toFixed(2)} MB`,
-        usedHeapSize: `${ByteSize.toMegabytes(heapStats.used_heap_size).toFixed(2)} MB`,
-        executableHeapSize: `${ByteSize.toMegabytes(heapStats.total_heap_size_executable).toFixed(2)} MB`,
-        heapSizeLimit: `${ByteSize.toMegabytes(heapStats.heap_size_limit).toFixed(2)} MB`
-      }
+        totalHeapSize: toMb(heapStats.total_heap_size),
+        // Redundant with process.heapUsed, kept for compatibility.
+        usedHeapSize: toMb(heapStats.used_heap_size),
+        executableHeapSize: toMb(heapStats.total_heap_size_executable),
+        // Effective V8 ceiling. Compare against the container memory limit:
+        // if the container limit is lower, the kernel kills the process (OOMKilled)
+        // instead of V8 raising a catchable heap-limit error.
+        heapSizeLimit: toMb(heapStats.heap_size_limit)
+      },
+      // Per-space breakdown. A long-lived leak shows up in `old_space`;
+      // large strings/arrays in `large_object_space`; a busy but flat `new_space`
+      // is just allocation churn, not a leak.
+      heapSpaces: heapSpaces.map<HeapSpaceOutput>((space) => ({
+        name: space.space_name,
+        size: toMb(space.space_size),
+        used: toMb(space.space_used_size),
+        available: toMb(space.space_available_size)
+      }))
     }
   }
 
+  getEventLoopLag(): EventLoopLagOutput {
+    // Values are in nanoseconds; convert to milliseconds for the output.
+    // Reset after reading so each snapshot reflects a recent window.
+    const toMs = (ns: number): number => Number((ns / 1_000_000).toFixed(2))
+
+    const output: EventLoopLagOutput = {
+      meanMs: toMs(this.eventLoopHistogram.mean),
+      maxMs: toMs(this.eventLoopHistogram.max),
+      p99Ms: toMs(this.eventLoopHistogram.percentile(99))
+    }
+
+    this.eventLoopHistogram.reset()
+    return output
+  }
+
   getLoadAvarage(time: number, numCpus: number): Load {
-    const getStatus = (percentage: number) => {
-      const thresholds = [
+    const getStatus = (percentage: number): LoadStatus => {
+      const thresholds: { limit: number; status: LoadStatus }[] = [
         { limit: 60, status: 'healthy 🟢' },
         { limit: 80, status: 'warning ⚠️' },
         { limit: Infinity, status: 'overloaded 🔴' }
       ]
-      return thresholds.find((t) => percentage < t.limit)?.status || 'overloaded 🔴'
+      return thresholds.find((t) => percentage < t.limit)?.status ?? 'overloaded 🔴'
     }
 
     const percentage = (time / numCpus) * 100
@@ -182,7 +234,7 @@ export class HealthService implements IHealthAdapter {
     })
   }
 
-  async getLatency(host = '8.8.8.8') {
+  async getLatency(host = '8.8.8.8'): Promise<LatencyFormatted> {
     try {
       const res = await ping.promise.probe(host, { timeout: 1 })
       if (!res.alive || !res.time) {
@@ -200,7 +252,7 @@ export class HealthService implements IHealthAdapter {
     }
   }
 
-  async getCPUCore() {
+  async getCPUCore(): Promise<{ cpus: { load: number }[] }> {
     try {
       return await systeminformation.currentLoad()
     } catch (error) {
@@ -209,7 +261,7 @@ export class HealthService implements IHealthAdapter {
     }
   }
 
-  async getPostgresStatus() {
+  async getPostgresStatus(): Promise<HealthStatus> {
     try {
       const result = await this.postgres.query('SELECT 1')
 
@@ -234,7 +286,7 @@ export class HealthService implements IHealthAdapter {
     }
   }
 
-  async getRedisStatus() {
+  async getRedisStatus(): Promise<HealthStatus> {
     try {
       const status = await this.redis.ping()
       return status === 'PONG' ? HealthStatus.UP : HealthStatus.DOWN
@@ -254,10 +306,6 @@ export class HealthService implements IHealthAdapter {
   }
 }
 
-/**
- * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/modules/adapter.md
- */
-
 export abstract class IHealthAdapter {
   abstract mongo: Connection
   abstract postgres: DataSource
@@ -266,12 +314,13 @@ export abstract class IHealthAdapter {
   abstract getRedisStatus(): Promise<HealthStatus>
   abstract getPostgresStatus(): Promise<HealthStatus>
   abstract getMemoryUsageInMB(): MemoryOutput
+  abstract getEventLoopLag(): EventLoopLagOutput
   abstract getLoadAvarage(time: number, numCpus: number): Load
   abstract getHttpConnections(server: Server): Promise<number | null>
-  abstract getLatency(host?: string): Promise<string>
+  abstract getLatency(host?: string): Promise<LatencyFormatted>
   abstract getMongoConnections(): Promise<MongoConnectionOutput | null>
   abstract getPostgresConnections(): Promise<PostgresConnectionOutput | null>
   abstract getPostgresDatabaseSize(): Promise<string | null>
-  abstract getMongoMemory(): Promise<CacheMemoryOutput>
+  abstract getMongoMemory(): Promise<MongoCacheMemoryOutput>
   abstract getCPUCore(): Promise<{ cpus: { load: number }[] }>
 }

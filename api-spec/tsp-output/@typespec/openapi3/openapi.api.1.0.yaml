@@ -1599,6 +1599,26 @@ components:
               description: default error model
           description: When input is invalid.
       description: When input is invalid
+    Health.EventLoopLagOutput:
+      type: object
+      required:
+        - meanMs
+        - maxMs
+        - p99Ms
+      properties:
+        meanMs:
+          type: number
+          format: decimal
+          description: Mean event loop delay in milliseconds over the sampling window
+        maxMs:
+          type: number
+          format: decimal
+          description: Maximum event loop delay in milliseconds over the sampling window
+        p99Ms:
+          type: number
+          format: decimal
+          description: 99th percentile event loop delay in milliseconds over the sampling window
+      description: event loop lag metrics
     Health.HealthOutput:
       type: object
       required:
@@ -1613,7 +1633,7 @@ components:
       properties:
         server:
           type: string
-          description: 'application status: **UP** | **DOWN** '
+          description: 'application status: **UP** | **DOWN**'
         version:
           type: string
           description: application version
@@ -1630,17 +1650,8 @@ components:
               nullable: true
               description: MongoDB connection pool metrics; null when unavailable
             memory:
-              type: object
-              properties:
-                used:
-                  type: string
-                  nullable: true
-                limit:
-                  type: string
-                  nullable: true
-              required:
-                - used
-                - limit
+              allOf:
+                - $ref: '#/components/schemas/Health.MongoCacheMemoryOutput'
               description: MongoDB WiredTiger cache metrics; values may be null when unsupported or unavailable
           required:
             - status
@@ -1670,21 +1681,21 @@ components:
           description: postgres information
         redisState:
           type: string
-          description: 'redis status: **UP** | **DOWN** '
+          description: 'redis status: **UP** | **DOWN**'
         network:
           type: object
           properties:
             latency:
               type: string
               description: |2-
-                    -- representing the network latency --
+                  -- representing the network latency --
                   latency: ** <20  ** status: ** Excellent **
 
                   latency: ** <100 ** status: ** Acceptable **
 
                   latency: ** <300 ** status: ** Poor **
 
-                  latency: ** >300 ** status: ** Critical ** 
+                  latency: ** >300 ** status: ** Critical **
             connections:
               type: integer
               format: int32
@@ -1695,53 +1706,8 @@ components:
             - connections
           description: network information
         memory:
-          type: object
-          properties:
-            process:
-              type: object
-              properties:
-                usedRam:
-                  type: string
-                  description: Total memory allocated by the process, including heap, buffers, and native code.
-                heapTotal:
-                  type: string
-                  description: Total heap memory allocated by V8.
-                heapUsed:
-                  type: string
-                  description: Heap memory currently used by V8.
-                external:
-                  type: string
-                  description: Memory allocated outside the V8 heap (e.g., buffers, native bindings).
-              required:
-                - usedRam
-                - heapTotal
-                - heapUsed
-                - external
-              description: process memory
-            v8:
-              type: object
-              properties:
-                totalHeapSize:
-                  type: string
-                  description: Total heap size managed by V8.
-                usedHeapSize:
-                  type: string
-                  description: Heap size actually being used.
-                executableHeapSize:
-                  type: string
-                  description: Heap size reserved for compiled JavaScript code.
-                heapSizeLimit:
-                  type: string
-                  description: Maximum heap size before memory allocation fails.
-              required:
-                - totalHeapSize
-                - usedHeapSize
-                - executableHeapSize
-                - heapSizeLimit
-              description: v8 memory
-          required:
-            - process
-            - v8
+          allOf:
+            - $ref: '#/components/schemas/Health.MemoryOutput'
           description: memory usage
         cpu:
           type: object
@@ -1750,7 +1716,7 @@ components:
               type: integer
               format: int16
               description: max healthy limit/total cpus
-            globalAvarage:
+            globalAverage:
               type: object
               properties:
                 lastMinute:
@@ -1788,9 +1754,13 @@ components:
               description: cpu cores
           required:
             - cpus
-            - globalAvarage
+            - globalAverage
             - cores
           description: cpu usage
+        eventLoopLag:
+          allOf:
+            - $ref: '#/components/schemas/Health.EventLoopLagOutput'
+          description: event loop lag metrics; omitted when the runtime does not expose them
       description: health output
     Health.HealthOutputLoad:
       type: object
@@ -1801,11 +1771,32 @@ components:
         load:
           type: number
           format: decimal
-          description: load avererage
+          description: load average
         status:
           type: string
-          description: load avererage status **healthy** | **overloaded**
-      description: load avererage
+          description: 'load average status: **healthy** | **overloaded**'
+      description: load average
+    Health.HeapSpaceOutput:
+      type: object
+      required:
+        - name
+        - size
+        - used
+        - available
+      properties:
+        name:
+          type: string
+          description: V8 space name, e.g. new_space, old_space, large_object_space
+        size:
+          type: string
+          description: Total size of the space
+        used:
+          type: string
+          description: Used size of the space
+        available:
+          type: string
+          description: Available size of the space
+      description: V8 heap space metrics
     Health.LivenessOutput:
       type: object
       required:
@@ -1824,6 +1815,83 @@ components:
           format: decimal
           description: Application uptime in seconds
       description: Liveness probe response model
+    Health.MemoryOutput:
+      type: object
+      required:
+        - process
+        - v8
+        - heapSpaces
+      properties:
+        process:
+          type: object
+          properties:
+            usedRam:
+              type: string
+              description: Total memory allocated by the process, including heap, buffers, and native code.
+            heapTotal:
+              type: string
+              description: Total heap memory allocated by V8.
+            heapUsed:
+              type: string
+              description: Heap memory currently used by V8.
+            external:
+              type: string
+              description: Memory allocated outside the V8 heap (e.g., buffers, native bindings).
+            arrayBuffers:
+              type: string
+              description: ArrayBuffer memory currently allocated, a subset of `external`.
+          required:
+            - usedRam
+            - heapTotal
+            - heapUsed
+            - external
+            - arrayBuffers
+          description: process memory
+        v8:
+          type: object
+          properties:
+            totalHeapSize:
+              type: string
+              description: Total heap size managed by V8.
+            usedHeapSize:
+              type: string
+              description: Heap size actually being used; redundant with process.heapUsed.
+            executableHeapSize:
+              type: string
+              description: Heap size reserved for compiled JavaScript code.
+            heapSizeLimit:
+              type: string
+              description: Maximum heap size before memory allocation fails; compare against the container memory limit.
+          required:
+            - totalHeapSize
+            - usedHeapSize
+            - executableHeapSize
+            - heapSizeLimit
+          description: v8 memory
+        heapSpaces:
+          type: array
+          items:
+            $ref: '#/components/schemas/Health.HeapSpaceOutput'
+          description: |2-
+              Per-space heap breakdown from v8.getHeapSpaceStatistics(). A long-lived leak
+              surfaces in `old_space`; large strings/arrays in `large_object_space`; a busy
+              but flat `new_space` is allocation churn, not a leak.
+      description: memory usage
+    Health.MongoCacheMemoryOutput:
+      type: object
+      required:
+        - used
+        - limit
+      properties:
+        used:
+          type: string
+          nullable: true
+          description: Bytes currently in the cache
+        limit:
+          type: string
+          nullable: true
+          description: Maximum bytes configured for the cache
+      description: MongoDB WiredTiger cache metrics; values may be null when unsupported or unavailable
     Health.MongoConnectionOutput:
       type: object
       required:
@@ -1835,22 +1903,27 @@ components:
         active:
           type: integer
           format: int64
+          description: Number of active connections currently in use
         available:
           type: integer
           format: int64
+          description: Number of connection slots available for new clients
         current:
           type: integer
           format: int64
+          description: Total number of current connections
         totalCreated:
           type: integer
           format: int64
+          description: Total number of connections created since server start
         rejected:
           type: integer
           format: int64
-          description: Additional metrics reported by MongoDB versions that expose them
+          description: Connections rejected by the server; present on newer MongoDB versions
         queuedForEstablishment:
           type: integer
           format: int64
+          description: Connections queued for establishment
         establishmentRateLimit:
           type: object
           properties:
@@ -1867,18 +1940,23 @@ components:
             - rejected
             - exempted
             - interruptedDueToClientDisconnect
+          description: Connection establishment rate limit counters
         threaded:
           type: integer
           format: int64
+          description: Number of threaded connections
         exhaustIsMaster:
           type: integer
           format: int64
+          description: Number of exhaust isMaster connections
         exhaustHello:
           type: integer
           format: int64
+          description: Number of exhaust hello connections
         awaitingTopologyChanges:
           type: integer
           format: int64
+          description: Number of connections awaiting topology changes
       description: MongoDB connection pool metrics
     Health.PostgresConnectionOutput:
       type: object
@@ -1890,20 +1968,40 @@ components:
         active:
           type: integer
           format: int64
+          description: Number of active client backends
         available:
           type: integer
           format: int64
+          description: Number of connection slots available for new clients
         current:
           type: integer
           format: int64
+          description: Total number of client backends
       description: PostgreSQL connection metrics
+    Health.RootHealthOutput:
+      type: object
+      required:
+        - status
+        - timestamp
+        - uptime
+      properties:
+        status:
+          type: string
+          description: 'Application status: **UP** | **DOWN**'
+        timestamp:
+          type: string
+          description: Timestamp of the health check
+        uptime:
+          type: number
+          format: decimal
+          description: Application uptime in seconds
+      description: Root health response model
     Health.StartupOutput:
       type: object
       required:
         - status
         - timestamp
         - phase
-        - connections
         - message
       properties:
         status:
@@ -1920,18 +2018,20 @@ components:
           properties:
             mongo:
               type: string
-              description: MongoDB connection status
+              description: 'MongoDB connection status: **connected** | **disconnected**'
             postgres:
               type: string
-              description: PostgreSQL initialization status
+              description: 'PostgreSQL connection status: **connected** | **disconnected**'
             redis:
               type: string
-              description: Redis client ready status
+              description: 'Redis connection status: **connected** | **disconnected**'
           required:
             - mongo
             - postgres
             - redis
-          description: Basic connection status for each service
+          description: |2-
+              Basic connection status for each service.
+              Omitted when startup fails before connections are checked.
         message:
           type: string
           description: Human-readable status message
