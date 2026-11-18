@@ -65,7 +65,7 @@ For infrastructure setup and deployment instructions, see the
 
 ## Architecture Overview
 
-This project implements a **pragmatic architecture** that combines the best ideas from Clean Architecture, Domain-Driven Design (DDD), and Hexagonal Architecture. Rather than strictly following one pattern, it takes a practical approach: **powerful enough for enterprise applications, yet simple enough for any developer to understand and maintain**.
+This project implements a **pragmatic architecture** that combines the best ideas from Clean Architecture, Onion Architecture, Domain-Driven Design (DDD), and Hexagonal Architecture. Rather than strictly following one pattern, it takes a practical approach: **powerful enough for enterprise applications, yet simple enough for any developer to understand and maintain**.
 
 ### The Core Philosophy
 
@@ -77,14 +77,14 @@ The architecture is built around one fundamental principle: **protect your busin
 
 ## Architectural Identity
 
-**This project is not a copy of Clean Architecture, DDD, or Hexagonal Architecture.** It is a **pragmatic synthesis** that borrows concepts from all three, but makes its own decisions where the classical patterns do not pay for their cost.
+**This project is not a copy of Clean Architecture, Onion Architecture, DDD, or Hexagonal Architecture.** It is a **pragmatic synthesis** that borrows concepts from all of them, but makes its own decisions where the classical patterns do not pay for their cost.
 
 Every deviation is deliberate, documented, and falsifiable. If you are looking for a textbook implementation of Clean Architecture, this is not it. If you are looking for a foundation that uses the best ideas from those patterns without their ceremony, you are in the right place.
 
 ### What This Project Is
 
 - A foundation that **protects business logic** from frameworks, databases, and external services
-- A synthesis that **uses the best ideas** from Clean Architecture, DDD, and Hexagonal — without their ceremony
+- A synthesis that **uses the best ideas** from Clean Architecture, Onion, DDD, and Hexagonal — without their ceremony
 - A codebase where **every deviation is declared, documented, and falsifiable**
 
 ### What This Project Is Not
@@ -95,17 +95,17 @@ Every deviation is deliberate, documented, and falsifiable. If you are looking f
 
 ### The Decisions That Define This Project
 
-| Decision                   | Classical pattern says               | This project does                                                  | Why                                                                           |
-| -------------------------- | ------------------------------------ | ------------------------------------------------------------------ | ----------------------------------------------------------------------------- |
-| Where "Adapter" lives      | On the implementation class          | On the contract (interface)                                        | The class has no identity without the contract                                |
-| Validation location        | Controller / Validator layer         | Use Case (via `@ValidateSchema`)                                   | Validation is business logic; must be unit-testable                           |
-| Service layer              | Domain Service + Application Service | Unified in `UseCase`                                               | The split adds boilerplate without benefit here                               |
-| Value Objects              | Separate classes in `value-objects/` | Live in `entity/{domain}-{subdomain}.ts`, extend `BaseValueObject` | No separate folder; the base class and the `ValueObject` suffix mark the role |
-| Aggregates                 | Separate `aggregates/` folder        | The root entity **is** the aggregate                               | One less folder; the root entity encapsulates the cluster                     |
-| Repository contract        | Interface                            | Abstract class                                                     | NestJS DI needs runtime tokens                                                |
-| Interface naming           | Port / Adapter                       | `I*Adapter` / `I*Repository` / `I{Domain}{Operation}`              | Each suffix declares architectural role                                       |
-| `middlewares/` folder      | Split by concern                     | Unified                                                            | No better name found; all wrap HTTP lifecycle                                 |
-| External libraries in Core | Never                                | Zod allowed (conscious exception)                                  | Solves validation + types + mocks in one dependency                           |
+| Decision                   | Classical pattern says                                      | This project does                                                                                        | Why                                                                                                 |
+| -------------------------- | ----------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Where "Adapter" lives      | On the implementation class                                 | On the contract (interface)                                                                              | The class has no identity without the contract                                                      |
+| Validation location        | Controller / Validator layer                                | Use Case (via `@ValidateSchema`)                                                                         | Validation is business logic; must be unit-testable                                                 |
+| Service layer              | Domain Service + Application Service                        | Unified in `UseCase`                                                                                     | The split adds boilerplate without benefit here                                                     |
+| Value Objects              | Separate classes in `value-objects/`, even without behavior | Live in `entity/{domain}-{subdomain}.ts`, extend `BaseValueObject`, **only when the value has behavior** | The Zod schema already covers validation; the base class and the `ValueObject` suffix mark the role |
+| Aggregates                 | Separate `aggregates/` folder                               | The root entity **is** the aggregate                                                                     | One less folder; the root entity encapsulates the cluster                                           |
+| Repository contract        | Interface                                                   | Abstract class                                                                                           | NestJS DI needs runtime tokens                                                                      |
+| Interface naming           | Port / Adapter                                              | `I*Adapter` / `I*Repository` / `I{Domain}{Operation}`                                                    | Each suffix declares architectural role                                                             |
+| `middlewares/` folder      | Split by concern                                            | Unified                                                                                                  | No better name found; all wrap HTTP lifecycle                                                       |
+| External libraries in Core | Never                                                       | Zod allowed (conscious exception)                                                                        | Solves validation + types + mocks in one dependency                                                 |
 
 ### The Unifying Criterion
 
@@ -143,6 +143,7 @@ This means:
 | -------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------ |
 | Validation                 | Business rules inside Use Case via `@ValidateSchema` | Transport format (query, sort, pagination) validated in Controller |
 | Entities                   | Single root entity per domain                        | Sub-entities and Value Objects in `{domain}-{subdomain}.ts`        |
+| Value Objects              | Field validated by the Zod schema + `InferSchema`    | `BaseValueObject` when the value has behavior of its own           |
 | `any`                      | Never used                                           | `eslint-disable` with justification comment                        |
 | External libraries in Core | Avoided                                              | Zod is a conscious exception (see below)                           |
 | Domain Services            | Logic in Entity or Use Case                          | — (not needed in this architecture)                                |
@@ -160,6 +161,7 @@ This is not a rejection of Clean Architecture, DDD, or Hexagonal. It is **applyi
 | `any` with `eslint-disable`                         | > 5 occurrences     | Revisit typing or create a wrapper                   |
 | `I*Adapter` interfaces with a single implementation | > 6 months          | Evaluate whether the contract is premature           |
 | External libraries in Core                          | > 1 (currently Zod) | Require an ADR for each addition                     |
+| Same helper function around a schema field          | > 2 Use Cases       | Move the behavior into a Value Object                |
 
 **The principle:** an exception is allowed, but it must be **visible**. If a threshold is crossed, the architecture is revisited — not silently patched.
 
@@ -182,6 +184,20 @@ Clean Architecture organizes code into concentric circles where dependencies poi
 
 - No explicit Interactors or Presenters
 - No input/output boundary classes
+
+### Onion Architecture
+
+[Onion Architecture](https://jeffreypalermo.com/2008/07/the-onion-architecture-part-1/) was proposed by Jeffrey Palermo in 2008. The Domain Model sits at the center, surrounded by the **Application Core**, and infrastructure lives on the outer edge. All coupling points toward the center.
+
+**How we implement it:**
+
+- **The `core/` folder is the Application Core.** The name comes from Palermo: it holds the domain model and the contracts, and nothing in it depends on the outside.
+- **Repository interfaces live in the core, implementations live at the edge.** `core/*/repository` declares the contracts; `modules/` and `infra/` implement them. This is the central point of Onion: only the interface belongs to the core, because saving objects involves a database.
+- **The database is external.** The application uses a database through an implementation of a core contract; it is not built around it.
+
+**What we simplified:**
+
+- **No Domain Services and Application Services layers inside the core.** Palermo's core has both around the Domain Model. We unify them in the `UseCase` (see [Service Layer Comparison](#service-layer-comparison-ddd-vs-this-architecture)), for the same reason we do it for DDD: the boundary between them is blurry and does not change the code.
 
 ### Domain-Driven Design (DDD)
 
@@ -717,6 +733,22 @@ An **anemic entity** is just a data container with no behavior — essentially a
 
 ---
 
+### Value Objects: Avoid Anemic Models
+
+The same rule applies to Value Objects. **A Value Object exists for behavior, not for validation.** The Zod schema already centralizes validation and normalization, and `InferSchema` gives you the type. A Value Object that only validates is anemic: it duplicates the schema and adds ceremony.
+
+| ❌ Avoid                                     | ✅ Prefer                                     |
+| -------------------------------------------- | --------------------------------------------- |
+| Value Object that only validates a field     | Zod schema in the entity + `InferSchema`      |
+| Value Object to reuse a validation           | Reuse the schema (`EntitySchema.shape.field`) |
+| Helper functions around a field in use cases | Value Object with that behavior as methods    |
+
+**Ask yourself:** "Does this value have actions of its own (format, compare, calculate, combine)?" If not, the schema is enough.
+
+📖 **See the full criterion:** [Value Object Guide](guides/utils/value-object.md#when-to-create-a-value-object)
+
+---
+
 ### Entities and Value Objects: Use the Right Base Class
 
 **The root entity of every domain must extend `BaseEntity`.** This is mandatory. Sub-entities **may** extend `BaseEntity` (if they need `toData()`, `clone()`, `merge()`, etc.). **Value Objects must extend `BaseValueObject`**, never `BaseEntity`, because they have no identity, no lifecycle (`createdAt`, `deletedAt`) and no domain events.
@@ -791,6 +823,11 @@ export class RolePermissionValueObject extends BaseValueObject<RolePermission>(R
   constructor(value: RolePermission) {
     super(value) // validates against the schema and assigns the properties
     this.freeze() // optional: makes the instance immutable
+  }
+
+  // Behavior is what justifies a Value Object; without it, the schema is enough
+  allows(action: RolePermission['action'], resource: RolePermission['resource']): boolean {
+    return this.action === action && this.resource === resource
   }
 }
 

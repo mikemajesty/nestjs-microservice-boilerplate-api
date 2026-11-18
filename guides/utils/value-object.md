@@ -4,6 +4,143 @@ Base class for domain Value Objects. A Value Object has **no identity**: it is d
 
 Use it for concepts like a permission (`action` + `resource`), an address, a money amount, or a date range. If the concept needs an `id`, a lifecycle (`createdAt`, `deletedAt`), or domain events, it is an entity: use [BaseEntity](./entity.md) instead.
 
+## When to Create a Value Object
+
+**In this project, a Value Object exists for behavior, not for validation.**
+
+The Zod schema already centralizes validation and normalization. It is reusable (`EntitySchema.shape.field`) and gives you the type through `InferSchema`. So a Value Object that only validates duplicates what the schema already does, and adds a class, an instance, and a conversion for nothing. That is an **anemic Value Object**, and we avoid it for the same reason we avoid anemic entities.
+
+| The value needs...                                                              | Use                                           |
+| ------------------------------------------------------------------------------- | --------------------------------------------- |
+| Only validation and normalization                                               | Zod schema in the entity + `InferSchema`      |
+| The same validation in another entity or use case                               | Reuse the schema (`EntitySchema.shape.field`) |
+| Its own behavior (format, compare, calculate, combine)                          | Value Object                                  |
+| Several fields that only make sense together, with a rule involving all of them | Value Object with several fields              |
+
+```typescript
+// ❌ Anemic Value Object: only validation, the schema already does this
+export class PermissionNameValueObject extends BaseValueObject<PermissionName>(PermissionNameValueObjectSchema) {
+  declare readonly value: PermissionName['value']
+}
+
+// ✅ Keep it in the entity schema, and reuse the schema where needed
+const Name = InputValidator.string()
+  .transform((value) => value.trim().replace(/ /g, '_').toLowerCase())
+  .refine((val) => val.includes(':'), { message: "permission must contains ':'" })
+
+export const RoleAddPermissionSchema = InputValidator.object({
+  permissions: InputValidator.array(PermissionEntitySchema.shape.name)
+})
+
+// ✅ Value Object: the value has behavior of its own
+export class OrderAmountValueObject extends BaseValueObject<OrderAmount>(OrderAmountValueObjectSchema) {
+  declare readonly amount: OrderAmount['amount']
+  declare readonly currency: OrderAmount['currency']
+
+  constructor(value: OrderAmount) {
+    super(value)
+    this.freeze()
+  }
+
+  add(other: OrderAmountValueObject): OrderAmountValueObject {
+    if (this.currency !== other.currency) {
+      throw new ApiUnprocessableEntityException('currencyMismatch')
+    }
+    return new OrderAmountValueObject({ amount: this.amount + other.amount, currency: this.currency })
+  }
+}
+```
+
+### Example: The User's Address
+
+The same concept can be a schema or a Value Object. What decides is whether it has behavior.
+
+**Step 1: only validation → schema.** The `User` aggregate has an address, and all you need is to validate it. The schema solves it, with no Value Object:
+
+```typescript
+// core/user/entity/user.ts
+const Address = InputValidator.object({
+  street: InputValidator.string().trim().min(1),
+  number: InputValidator.string().trim().min(1),
+  city: InputValidator.string().trim().min(1),
+  zipCode: InputValidator.string().regex(/^\d{5}-?\d{3}$/)
+})
+
+export const UserEntitySchema = InputValidator.object({
+  // ...
+  address: Address.optional()
+})
+```
+
+**Step 2: the address gains behavior.** Now you need to format the address as a single line. The tempting place is the aggregate:
+
+```typescript
+// ❌ Address behavior inside the User aggregate
+export class UserEntity extends BaseEntity<UserEntity>() {
+  formatAddress(): string {
+    const { street, number, city, zipCode } = this.address
+    return `${street}, ${number} - ${city}, ${zipCode}`
+  }
+}
+```
+
+This works, but it has two problems:
+
+1. **Coupling.** To format an address, you need a complete `UserEntity`. The address is a concept of its own, but it is stuck to an owner.
+2. **No reuse.** If an `Order` gets a shipping address, you either duplicate `formatAddress()` in `OrderEntity` or build a `UserEntity` just to format it.
+
+**Signal:** `formatAddress()` reads only the address fields and nothing else from `User`. A method in the aggregate that only uses one field, or one group of fields, is usually a Value Object waiting to be extracted.
+
+**Step 3: extract the Value Object.** The behavior moves to the concept it belongs to:
+
+```typescript
+// ✅ core/user/entity/user-address.ts
+export const UserAddressValueObjectSchema = InputValidator.object({
+  street: InputValidator.string().trim().min(1),
+  number: InputValidator.string().trim().min(1),
+  city: InputValidator.string().trim().min(1),
+  zipCode: InputValidator.string().regex(/^\d{5}-?\d{3}$/)
+})
+
+type UserAddress = InferSchema<typeof UserAddressValueObjectSchema>
+
+export class UserAddressValueObject extends BaseValueObject<UserAddress>(UserAddressValueObjectSchema) {
+  declare readonly street: UserAddress['street']
+  declare readonly number: UserAddress['number']
+  declare readonly city: UserAddress['city']
+  declare readonly zipCode: UserAddress['zipCode']
+
+  constructor(value: UserAddress) {
+    super(value)
+    this.freeze()
+  }
+
+  format(): string {
+    return `${this.street}, ${this.number} - ${this.city}, ${this.zipCode}`
+  }
+}
+
+// core/user/entity/user.ts: the schema of the Value Object is reused in the entity schema
+export const UserEntitySchema = InputValidator.object({
+  // ...
+  address: UserAddressValueObjectSchema.optional()
+})
+```
+
+Now `format()` works with only an address, can be tested without a `User`, and `OrderEntity` can reuse `UserAddressValueObjectSchema` and `UserAddressValueObject` instead of duplicating the logic.
+
+| Situation                                      | Where it goes                                 |
+| ---------------------------------------------- | --------------------------------------------- |
+| Address only needs validation                  | `Address` schema inside `user.ts`             |
+| Address needs `format()` (or any other action) | `UserAddressValueObject` in `user-address.ts` |
+| `user.formatAddress()` already exists          | Extract it into the Value Object              |
+
+**Ask yourself:** "Does this value have actions of its own?" If not, a Zod schema with `InferSchema` is enough.
+
+`equals()` and `freeze()` are how a Value Object works, not reasons to create one.
+
+> **A deliberate decision, not a universal DDD rule.** Classical DDD (the _Whole Value_ pattern) accepts Value Objects without behavior, because in codebases without schemas the Value Object is the natural place to centralize validation and to name the concept. Here the Zod schema already plays that role, so we follow the [Pragmatic Principle](../../README.md#the-pragmatic-principle): the common case (validation only) stays in the schema, and the Value Object is the exception that needs a concrete reason. The signal to revisit it is tracked in [When Exceptions Become the Rule](../../README.md#when-exceptions-become-the-rule).
+
 ## Why in Utils?
 
 Like `BaseEntity`, this is domain functionality, but it is **shared tooling** that every domain can use. It lives next to `BaseEntity` in `src/utils/domain/` and is exported from `@/utils/domain`.

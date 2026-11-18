@@ -153,4 +153,39 @@ describe(RoleAddPermissionUsecase.name, () => {
     await expect(usecase.execute({ ...input, permissions: ['user:create'] })).resolves.toBeUndefined()
     expect(repository.create).toHaveBeenCalled()
   })
+
+  test('when permission name is not normalized, should normalize it before searching', async () => {
+    const existingPermission = permissionMock.generate({
+      overrides: { name: 'user:create' },
+      factory: (data) => new PermissionEntity(data)
+    })
+    repository.findOne = TestUtils.mockResolvedValue<RoleEntity>(
+      new RoleEntity({
+        ...role,
+        permissions: []
+      })
+    )
+    permissionRepository.findIn = TestUtils.mockResolvedValue<PermissionEntity[]>([existingPermission])
+    repository.create = TestUtils.mockResolvedValue<CreatedModel>()
+
+    await expect(usecase.execute({ ...input, permissions: [' User:Create '] })).resolves.toBeUndefined()
+    expect(permissionRepository.findIn).toHaveBeenCalledWith({ name: ['user:create'] })
+    expect(repository.create).toHaveBeenCalledWith(
+      expect.objectContaining({ permissions: [expect.objectContaining({ id: existingPermission.id })] })
+    )
+  })
+
+  test('when permission name does not contain ":", should expect an error', async () => {
+    await TestUtils.expectZodError(
+      () => usecase.execute({ ...input, permissions: ['usercreate'] }),
+      (issues: ZodExceptionIssue[]) => {
+        expect(issues).toEqual([
+          {
+            message: "permission must contains ':'",
+            path: TestUtils.nameOf<RoleAddPermissionInput>('permissions')
+          }
+        ])
+      }
+    )
+  })
 })

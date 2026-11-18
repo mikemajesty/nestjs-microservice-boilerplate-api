@@ -1,7 +1,7 @@
 /**
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/core/usecase.md
  */
-import { PermissionEntity } from '@/core/permission/entity/permission'
+import { PermissionEntity, PermissionEntitySchema } from '@/core/permission/entity/permission'
 import { IPermissionRepository } from '@/core/permission/repository/permission'
 import { ICacheAsideAdapter } from '@/infra/cache/aside'
 import { ValidateSchema } from '@/utils/decorators'
@@ -16,7 +16,7 @@ import { IRoleRepository } from '../repository/role'
 
 export const RoleAddPermissionSchema = RoleEntitySchema.pick({
   id: true
-}).and(InputValidator.object({ permissions: InputValidator.array(InputValidator.string()) }))
+}).and(InputValidator.object({ permissions: InputValidator.array(PermissionEntitySchema.shape.name) }))
 
 export class RoleAddPermissionUsecase implements IUsecase {
   constructor(

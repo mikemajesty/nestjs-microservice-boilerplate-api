@@ -1,11 +1,11 @@
-import js from '@eslint/js';
-import pluginJest from 'eslint-plugin-jest';
-import pluginPrettier from 'eslint-plugin-prettier';
-import pluginSecurity from 'eslint-plugin-security';
-import simpleImportSort from 'eslint-plugin-simple-import-sort';
-import pluginYouDontNeedLodash from 'eslint-plugin-you-dont-need-lodash-underscore';
-import globals from 'globals';
-import tseslint from 'typescript-eslint';
+import js from '@eslint/js'
+import pluginJest from 'eslint-plugin-jest'
+import pluginPrettier from 'eslint-plugin-prettier'
+import pluginSecurity from 'eslint-plugin-security'
+import simpleImportSort from 'eslint-plugin-simple-import-sort'
+import pluginYouDontNeedLodash from 'eslint-plugin-you-dont-need-lodash-underscore'
+import globals from 'globals'
+import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
   {
