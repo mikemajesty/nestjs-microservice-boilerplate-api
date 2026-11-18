@@ -1,0 +1,1000 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>Health · Dashboard</title>
+    <style nonce="{{nonce}}">
+      :root {
+        --bg: #0a0a0a;
+        --card: #111111;
+        --border: #1f1f1f;
+        --track: #1c1c1c;
+        --text: #e5e5e5;
+        --muted: #7a7a7a;
+        --ok: #22c55e;
+        --warn: #eab308;
+        --bad: #ef4444;
+        --accent: #a3a3a3;
+        --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font:
+          14px/1.45 system-ui,
+          -apple-system,
+          'Segoe UI',
+          Roboto,
+          sans-serif;
+      }
+      main {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 24px 20px 48px;
+      }
+      header {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 24px;
+      }
+      h1 {
+        font-size: 18px;
+        font-weight: 600;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      h2 {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin: 28px 0 10px;
+      }
+      .sub {
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 400;
+      }
+      .controls {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      select,
+      button {
+        background: var(--card);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 6px 10px;
+        font: inherit;
+        cursor: pointer;
+      }
+      button:hover,
+      select:hover {
+        border-color: #333;
+      }
+      .grid {
+        display: grid;
+        gap: 12px;
+      }
+      .g3 {
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      }
+      .g4 {
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 16px;
+        min-width: 0;
+      }
+      .card-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+        gap: 8px;
+      }
+      .card-title {
+        font-weight: 600;
+      }
+      .card-head a {
+        color: var(--muted);
+        font: 12px var(--mono);
+        text-decoration: none;
+      }
+      .card-head a:hover {
+        color: var(--text);
+      }
+      .dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: var(--muted);
+        display: inline-block;
+        flex: none;
+      }
+      .dot.ok {
+        background: var(--ok);
+        box-shadow: 0 0 8px var(--ok);
+      }
+      .dot.warn {
+        background: var(--warn);
+        box-shadow: 0 0 8px var(--warn);
+      }
+      .dot.bad {
+        background: var(--bad);
+        box-shadow: 0 0 8px var(--bad);
+      }
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font: 600 12px var(--mono);
+        padding: 3px 8px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        color: var(--muted);
+      }
+      .pill.ok {
+        color: var(--ok);
+        border-color: #14532d;
+      }
+      .pill.warn {
+        color: var(--warn);
+        border-color: #713f12;
+      }
+      .pill.bad {
+        color: var(--bad);
+        border-color: #7f1d1d;
+      }
+      .kv {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 4px 12px;
+        font-size: 13px;
+      }
+      .kv dt {
+        color: var(--muted);
+      }
+      .kv dd {
+        margin: 0;
+        text-align: right;
+        font-family: var(--mono);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .big {
+        font: 600 26px var(--mono);
+        letter-spacing: -0.02em;
+      }
+      .big small {
+        font-size: 13px;
+        color: var(--muted);
+        font-weight: 400;
+        margin-left: 4px;
+      }
+      .bar {
+        height: 6px;
+        background: var(--track);
+        border-radius: 3px;
+        overflow: hidden;
+        margin: 6px 0 10px;
+      }
+      .bar > span {
+        display: block;
+        height: 100%;
+        width: 0;
+        background: var(--accent);
+        border-radius: 3px;
+        transition: width 0.4s ease;
+      }
+      .bar > span.ok {
+        background: var(--ok);
+      }
+      .bar > span.warn {
+        background: var(--warn);
+      }
+      .bar > span.bad {
+        background: var(--bad);
+      }
+      .row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 13px;
+        gap: 8px;
+      }
+      .row .v {
+        font-family: var(--mono);
+      }
+      .muted {
+        color: var(--muted);
+      }
+      .hint {
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 8px;
+      }
+      /* Each card spans two rows of the section grid (body + footer) and shares them via
+         subgrid, so footers start at the same height even when one wraps to more lines. */
+      .align-footer > .card {
+        display: grid;
+        grid-row: span 2;
+        grid-template-rows: subgrid;
+        row-gap: 0;
+      }
+      .align-footer > .card > .hint {
+        margin: 0;
+        padding-top: 8px;
+      }
+      svg.spark {
+        width: 100%;
+        height: 36px;
+        display: block;
+        margin-top: 8px;
+      }
+      svg.spark polyline {
+        fill: none;
+        stroke: var(--accent);
+        stroke-width: 1.5;
+        vector-effect: non-scaling-stroke;
+      }
+      .cores {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(42px, 1fr));
+        gap: 6px;
+        margin-top: 12px;
+      }
+      .core {
+        text-align: center;
+        font: 11px var(--mono);
+        color: var(--muted);
+      }
+      .core .col {
+        height: 44px;
+        background: var(--track);
+        border-radius: 4px;
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 4px;
+      }
+      .core .col > span {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: var(--accent);
+        transition: height 0.4s ease;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      th {
+        text-align: left;
+        color: var(--muted);
+        font-weight: 500;
+        font-size: 12px;
+        padding: 0 8px 8px;
+        border-bottom: 1px solid var(--border);
+      }
+      td {
+        padding: 8px;
+        border-bottom: 1px solid var(--border);
+        font-family: var(--mono);
+      }
+      td.name {
+        font-family: inherit;
+      }
+      td.num,
+      th.num {
+        text-align: right;
+      }
+      td .bar {
+        margin: 0;
+        min-width: 80px;
+      }
+      tr:last-child td {
+        border-bottom: 0;
+      }
+      .mt12 {
+        margin-top: 12px;
+      }
+      .mt10 {
+        margin-top: 10px;
+      }
+      .caption {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .banner {
+        display: none;
+        background: #1a0b0b;
+        border: 1px solid #7f1d1d;
+        color: #fca5a5;
+        border-radius: 8px;
+        padding: 10px 14px;
+        margin-bottom: 16px;
+        font-size: 13px;
+      }
+      .banner.show {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>
+          <span class="dot" id="overall-dot"></span>
+          <span id="overall-text">Loading…</span>
+          <span class="sub" id="version"></span>
+        </h1>
+        <div class="controls">
+          <span id="updated">—</span>
+          <select id="interval" aria-label="Refresh interval">
+            <option value="2000">2s</option>
+            <option value="5000">5s</option>
+            <option value="10000">10s</option>
+            <option value="30000" selected>30s</option>
+            <option value="0">Paused</option>
+          </select>
+          <button id="refresh" type="button">Refresh</button>
+        </div>
+      </header>
+
+      <div class="banner" id="banner"></div>
+
+      <h2>Probes</h2>
+      <section class="grid g3">
+        <article class="card" data-probe="live">
+          <div class="card-head">
+            <span class="card-title">Liveness</span>
+            <a href="/health/live" target="_blank" rel="noopener">/health/live ↗</a>
+          </div>
+          <span class="pill" data-field="status">—</span>
+          <dl class="kv mt12">
+            <dt>HTTP</dt>
+            <dd data-field="http">—</dd>
+            <dt>Response time</dt>
+            <dd data-field="time">—</dd>
+            <dt>Uptime</dt>
+            <dd data-field="detail">—</dd>
+          </dl>
+        </article>
+        <article class="card" data-probe="startup">
+          <div class="card-head">
+            <span class="card-title">Startup</span>
+            <a href="/health/startup" target="_blank" rel="noopener">/health/startup ↗</a>
+          </div>
+          <span class="pill" data-field="status">—</span>
+          <dl class="kv mt12">
+            <dt>HTTP</dt>
+            <dd data-field="http">—</dd>
+            <dt>Response time</dt>
+            <dd data-field="time">—</dd>
+            <dt>Message</dt>
+            <dd data-field="detail">—</dd>
+          </dl>
+        </article>
+        <article class="card" data-probe="ready">
+          <div class="card-head">
+            <span class="card-title">Readiness</span>
+            <a href="/health/ready" target="_blank" rel="noopener">/health/ready ↗</a>
+          </div>
+          <span class="pill" data-field="status">—</span>
+          <dl class="kv mt12">
+            <dt>HTTP</dt>
+            <dd data-field="http">—</dd>
+            <dt>Response time</dt>
+            <dd data-field="time">—</dd>
+            <dt>Dependencies</dt>
+            <dd data-field="detail">—</dd>
+          </dl>
+        </article>
+      </section>
+
+      <h2>Dependencies</h2>
+      <section class="grid g4">
+        <article class="card">
+          <div class="card-head">
+            <span class="card-title">MongoDB</span>
+            <span class="pill" id="mongo-status">—</span>
+          </div>
+          <dl class="kv">
+            <dt>Ping latency</dt>
+            <dd id="mongo-latency">—</dd>
+            <dt>Connections (server)</dt>
+            <dd id="mongo-conn">—</dd>
+            <dt>Active</dt>
+            <dd id="mongo-active">—</dd>
+            <dt>Rejected</dt>
+            <dd id="mongo-rejected">—</dd>
+          </dl>
+          <div class="row mt10">
+            <span class="muted">WiredTiger cache</span><span class="v" id="mongo-cache">—</span>
+          </div>
+          <div class="bar"><span id="mongo-cache-bar"></span></div>
+        </article>
+        <article class="card">
+          <div class="card-head">
+            <span class="card-title">PostgreSQL</span>
+            <span class="pill" id="pg-status">—</span>
+          </div>
+          <dl class="kv">
+            <dt>Query latency</dt>
+            <dd id="pg-latency">—</dd>
+            <dt>Connections (app DB)</dt>
+            <dd id="pg-conn">—</dd>
+            <dt>Active</dt>
+            <dd id="pg-active">—</dd>
+            <dt>Free slots (server)</dt>
+            <dd id="pg-free">—</dd>
+            <dt>Database size</dt>
+            <dd id="pg-size">—</dd>
+          </dl>
+        </article>
+        <article class="card">
+          <div class="card-head">
+            <span class="card-title">Redis</span>
+            <span class="pill" id="redis-status">—</span>
+          </div>
+          <dl class="kv">
+            <dt>PING latency</dt>
+            <dd id="redis-latency">—</dd>
+            <dt>Clients</dt>
+            <dd id="redis-clients">—</dd>
+            <dt>Evicted keys</dt>
+            <dd id="redis-evicted">—</dd>
+          </dl>
+          <div class="row mt10"><span class="muted">Memory</span><span class="v" id="redis-mem">—</span></div>
+          <div class="bar"><span id="redis-mem-bar"></span></div>
+        </article>
+        <article class="card">
+          <div class="card-head">
+            <span class="card-title">Instance</span>
+            <span class="muted" id="inst-env"></span>
+          </div>
+          <dl class="kv">
+            <dt>Host</dt>
+            <dd id="inst-host">—</dd>
+            <dt>Node</dt>
+            <dd id="inst-node">—</dd>
+            <dt>PID</dt>
+            <dd id="inst-pid">—</dd>
+            <dt>Uptime</dt>
+            <dd id="inst-uptime">—</dd>
+            <dt>Open HTTP sockets</dt>
+            <dd id="inst-sockets">—</dd>
+          </dl>
+        </article>
+      </section>
+
+      <h2>Process</h2>
+      <section class="grid g3 align-footer">
+        <article class="card">
+          <div class="card-body">
+            <div class="card-head">
+              <span class="card-title">Memory</span>
+              <span class="muted" id="mem-limit"></span>
+            </div>
+            <div class="big" id="mem-heap">—</div>
+            <div class="caption">heap used</div>
+            <div class="bar"><span id="mem-heap-bar"></span></div>
+            <div class="row"><span class="muted">RSS</span><span class="v" id="mem-rss">—</span></div>
+            <div class="row"><span class="muted">Heap committed</span><span class="v" id="mem-heap-total">—</span></div>
+            <div class="row"><span class="muted">External</span><span class="v" id="mem-external">—</span></div>
+            <div class="row"><span class="muted">ArrayBuffers</span><span class="v" id="mem-ab">—</span></div>
+            <div class="row mt10">
+              <span class="muted">RSS vs container limit</span><span class="v" id="mem-container">—</span>
+            </div>
+            <div class="bar"><span id="mem-container-bar"></span></div>
+            <div class="row"><span class="muted">old_space trend</span><span class="v" id="mem-old">—</span></div>
+            <svg class="spark" viewBox="0 0 100 36" preserveAspectRatio="none"><polyline id="spark-old" /></svg>
+          </div>
+          <p class="hint">old_space rising steadily across refreshes suggests a leak.</p>
+        </article>
+        <article class="card">
+          <div class="card-body">
+            <div class="card-head">
+              <span class="card-title">Event loop lag</span>
+              <span class="pill" id="el-status">—</span>
+            </div>
+            <div class="big" id="el-p99">—</div>
+            <div class="caption" id="el-window">p99 since last refresh</div>
+            <dl class="kv mt12">
+              <dt>Mean</dt>
+              <dd id="el-mean">—</dd>
+              <dt>Max</dt>
+              <dd id="el-max">—</dd>
+              <dt>GC runs</dt>
+              <dd id="gc-count">—</dd>
+              <dt>GC pause (total / max)</dt>
+              <dd id="gc-pause">—</dd>
+            </dl>
+            <svg class="spark" viewBox="0 0 100 36" preserveAspectRatio="none"><polyline id="spark-el" /></svg>
+          </div>
+          <p class="hint">Frequent major GCs or long pauses usually explain spikes in max lag.</p>
+        </article>
+        <article class="card">
+          <div class="card-body">
+            <div class="card-head">
+              <span class="card-title">CPU</span>
+              <span class="muted" id="cpu-count"></span>
+            </div>
+            <div class="big" id="cpu-process">—</div>
+            <div class="caption">this process (100% = one core)</div>
+            <dl class="kv mt12">
+              <dt>Host load 1 min</dt>
+              <dd id="cpu-l1">—</dd>
+              <dt>Host load 5 min</dt>
+              <dd id="cpu-l5">—</dd>
+              <dt>Host load 15 min</dt>
+              <dd id="cpu-l15">—</dd>
+            </dl>
+            <div class="cores" id="cpu-cores"></div>
+          </div>
+          <p class="hint">Load and cores are host-wide (all processes on the machine).</p>
+        </article>
+      </section>
+
+      <h2>V8 heap spaces</h2>
+      <section class="card">
+        <table>
+          <thead>
+            <tr>
+              <th>Space</th>
+              <th class="num">Used</th>
+              <th class="num">Size</th>
+              <th class="num">Available</th>
+              <th>Usage</th>
+            </tr>
+          </thead>
+          <tbody id="heap-spaces"></tbody>
+        </table>
+        <p class="hint">Spaces with zero size are hidden.</p>
+      </section>
+    </main>
+
+    <script nonce="{{nonce}}">
+      ;(() => {
+        'use strict'
+
+        const TIMEOUT_MS = 8000
+        const HISTORY = 60
+        const history = { old: [], el: [] }
+        let timer = null
+        let inFlight = false
+
+        const $ = (id) => document.getElementById(id)
+        const probeCard = (name) => document.querySelector(`[data-probe="${name}"]`)
+        const field = (card, name) => card.querySelector(`[data-field="${name}"]`)
+
+        const mb = (value) => {
+          const n = Number.parseFloat(value)
+          return Number.isFinite(n) ? n : null
+        }
+        const fmtMb = (n) => {
+          if (n === null || n === undefined) return '—'
+          return n >= 1024 ? `${(n / 1024).toFixed(2)} GB` : `${n.toFixed(1)} MB`
+        }
+        const fmtUptime = (seconds) => {
+          const s = Math.floor(seconds)
+          const d = Math.floor(s / 86400)
+          const h = Math.floor((s % 86400) / 3600)
+          const m = Math.floor((s % 3600) / 60)
+          if (d) return `${d}d ${h}h ${m}m`
+          if (h) return `${h}h ${m}m`
+          return `${m}m ${s % 60}s`
+        }
+        const isUp = (status) => typeof status === 'string' && status.startsWith('UP')
+        const levelOf = (status) => {
+          if (typeof status !== 'string') return ''
+          if (status.startsWith('UP') || status.startsWith('healthy')) return 'ok'
+          if (status.startsWith('warning')) return 'warn'
+          return 'bad'
+        }
+        const levelByThreshold = (value, warn, bad) => (value >= bad ? 'bad' : value >= warn ? 'warn' : 'ok')
+
+        const setText = (node, text) => {
+          if (node) node.textContent = text ?? '—'
+        }
+        const setPill = (node, label, level) => {
+          node.className = `pill ${level}`
+          node.textContent = ''
+          const dot = document.createElement('span')
+          dot.className = `dot ${level}`
+          node.append(dot, document.createTextNode(label))
+        }
+        const setBar = (node, ratio, level) => {
+          const pct = Math.max(0, Math.min(1, ratio || 0)) * 100
+          node.style.width = `${pct}%`
+          // Any non-zero usage stays visible, even when it rounds to less than a pixel.
+          node.style.minWidth = pct > 0 ? '4px' : '0'
+          node.className = level || ''
+        }
+        // Usage-vs-limit bar: hidden when there is no limit, since there is no ratio to draw.
+        const setLimitBar = (node, ratio, level) => {
+          const hasLimit = typeof ratio === 'number' && Number.isFinite(ratio)
+          node.parentElement.hidden = !hasLimit
+          if (hasLimit) setBar(node, ratio, level)
+        }
+        const fmtPct = (ratio) => {
+          const pct = ratio * 100
+          return `${pct > 0 && pct < 1 ? pct.toFixed(2) : pct.toFixed(1)}%`
+        }
+        const pushHistory = (list, value) => {
+          if (value === null || value === undefined) return
+          list.push(value)
+          if (list.length > HISTORY) list.shift()
+        }
+        const drawSpark = (node, values) => {
+          if (values.length < 2) {
+            node.setAttribute('points', '')
+            return
+          }
+          const min = Math.min(...values)
+          const max = Math.max(...values)
+          const span = max - min || 1
+          const step = 100 / (HISTORY - 1)
+          const offset = (HISTORY - values.length) * step
+          const points = values
+            .map((v, i) => `${(offset + i * step).toFixed(2)},${(33 - ((v - min) / span) * 30).toFixed(2)}`)
+            .join(' ')
+          node.setAttribute('points', points)
+        }
+
+        const fetchProbe = async (path) => {
+          const controller = new AbortController()
+          const abort = setTimeout(() => controller.abort(), TIMEOUT_MS)
+          const started = performance.now()
+          try {
+            const res = await fetch(path, { cache: 'no-store', signal: controller.signal })
+            const ms = performance.now() - started
+            const body = await res.json().catch(() => null)
+            return { ok: res.ok, code: res.status, ms, body }
+          } catch (error) {
+            return { ok: false, code: null, ms: performance.now() - started, body: null, error }
+          } finally {
+            clearTimeout(abort)
+          }
+        }
+
+        const renderProbe = (name, result, detail) => {
+          const card = probeCard(name)
+          const status = result.body?.status ?? result.body?.server
+          if (result.code === null) {
+            setPill(field(card, 'status'), 'UNREACHABLE', 'bad')
+          } else {
+            const up = result.ok && isUp(status)
+            setPill(field(card, 'status'), up ? 'UP' : 'DOWN', up ? 'ok' : 'bad')
+          }
+          setText(field(card, 'http'), result.code ?? 'no response')
+          setText(field(card, 'time'), `${result.ms.toFixed(0)} ms`)
+          setText(field(card, 'detail'), detail)
+        }
+
+        const latencyLevel = (ms) => levelByThreshold(ms ?? 0, 50, 200)
+        const setDependency = (prefix, check) => {
+          const up = isUp(check?.status)
+          setPill($(`${prefix}-status`), check ? (up ? 'UP' : 'DOWN') : '—', check ? (up ? 'ok' : 'bad') : '')
+          const node = $(`${prefix}-latency`)
+          node.textContent = ''
+          if (typeof check?.latencyMs !== 'number') {
+            node.textContent = '—'
+            return
+          }
+          const dot = document.createElement('span')
+          dot.className = `dot ${up ? latencyLevel(check.latencyMs) : 'bad'}`
+          dot.style.marginRight = '8px'
+          node.append(dot, document.createTextNode(`${check.latencyMs.toFixed(1)} ms`))
+        }
+
+        const renderReadiness = (r) => {
+          setDependency('mongo', r?.dependencies?.mongo)
+          setDependency('pg', r?.dependencies?.postgres)
+          setDependency('redis', r?.dependencies?.redis)
+        }
+
+        const renderDependencyMetrics = (m) => {
+          const mc = m.mongo?.connection
+          setText($('mongo-conn'), mc ? `${mc.current} open` : '—')
+          setText($('mongo-active'), mc?.active)
+          setText($('mongo-rejected'), mc?.rejected)
+          const used = mb(m.mongo?.memory?.used)
+          const limit = mb(m.mongo?.memory?.limit)
+          const cacheRatio = used !== null && limit ? used / limit : null
+          setText(
+            $('mongo-cache'),
+            cacheRatio !== null ? `${fmtMb(used)} / ${fmtMb(limit)} (${fmtPct(cacheRatio)})` : 'n/a'
+          )
+          setLimitBar($('mongo-cache-bar'), cacheRatio)
+
+          const pc = m.postgres?.connection
+          setText($('pg-conn'), pc ? `${pc.current} open` : '—')
+          setText($('pg-active'), pc?.active)
+          setText($('pg-free'), pc?.available)
+          const bytes = Number(m.postgres?.databaseSizeBytes)
+          setText($('pg-size'), Number.isFinite(bytes) && bytes > 0 ? fmtMb(bytes / 1024 / 1024) : '—')
+
+          const redis = m.redis
+          setText($('redis-clients'), redis?.connectedClients)
+          setText($('redis-evicted'), redis?.evictedKeys)
+          const rUsed = mb(redis?.usedMemory)
+          const rMax = mb(redis?.maxMemory)
+          const redisRatio = rUsed !== null && rMax ? rUsed / rMax : null
+          setText(
+            $('redis-mem'),
+            redis
+              ? redisRatio !== null
+                ? `${fmtMb(rUsed)} / ${fmtMb(rMax)} (${fmtPct(redisRatio)})`
+                : `${fmtMb(rUsed)} (no limit)`
+              : '—'
+          )
+          setLimitBar(
+            $('redis-mem-bar'),
+            redisRatio,
+            redisRatio !== null ? levelByThreshold(redisRatio, 0.75, 0.9) : ''
+          )
+        }
+
+        const renderInstance = (m) => {
+          const p = m.process
+          setText($('inst-env'), p?.environment ? String(p.environment).toUpperCase() : '')
+          setText($('inst-host'), p?.hostname)
+          $('inst-host').title = p?.hostname ?? ''
+          setText($('inst-node'), p?.nodeVersion)
+          setText($('inst-pid'), p?.pid)
+          setText($('inst-uptime'), typeof p?.uptimeSeconds === 'number' ? fmtUptime(p.uptimeSeconds) : '—')
+          setText($('inst-sockets'), m.network?.connections)
+        }
+
+        const renderMemory = (m) => {
+          const heapUsed = mb(m?.process?.heapUsed)
+          const limit = mb(m?.v8?.heapSizeLimit)
+          $('mem-heap').textContent = ''
+          $('mem-heap').append(document.createTextNode(fmtMb(heapUsed)))
+          const small = document.createElement('small')
+          small.textContent = limit ? `${((heapUsed / limit) * 100).toFixed(1)}%` : ''
+          $('mem-heap').append(small)
+          setText($('mem-limit'), limit ? `V8 heap limit ${fmtMb(limit)}` : '')
+          setBar(
+            $('mem-heap-bar'),
+            limit ? heapUsed / limit : 0,
+            levelByThreshold(limit ? heapUsed / limit : 0, 0.7, 0.85)
+          )
+          setText($('mem-rss'), fmtMb(mb(m?.process?.usedRam)))
+          setText($('mem-heap-total'), fmtMb(mb(m?.process?.heapTotal)))
+          setText($('mem-external'), fmtMb(mb(m?.process?.external)))
+          setText($('mem-ab'), fmtMb(mb(m?.process?.arrayBuffers)))
+          const containerLimit = mb(m?.container?.limit)
+          const rssPercent = m?.container?.rssPercent
+          setText(
+            $('mem-container'),
+            containerLimit ? `${rssPercent.toFixed(1)}% of ${fmtMb(containerLimit)}` : 'no limit (not in a container)'
+          )
+          setLimitBar(
+            $('mem-container-bar'),
+            containerLimit ? rssPercent / 100 : null,
+            containerLimit ? levelByThreshold(rssPercent, 75, 90) : ''
+          )
+
+          const spaces = Array.isArray(m?.heapSpaces) ? m.heapSpaces : []
+          const old = spaces.find((s) => s.name === 'old_space')
+          const oldUsed = mb(old?.used)
+          pushHistory(history.old, oldUsed)
+          setText($('mem-old'), fmtMb(oldUsed))
+          drawSpark($('spark-old'), history.old)
+
+          const tbody = $('heap-spaces')
+          tbody.textContent = ''
+          spaces
+            .filter((s) => mb(s.size) > 0)
+            .sort((a, b) => mb(b.used) - mb(a.used))
+            .forEach((s) => {
+              const tr = document.createElement('tr')
+              const cells = [
+                ['name', s.name],
+                ['num', fmtMb(mb(s.used))],
+                ['num', fmtMb(mb(s.size))],
+                ['num', fmtMb(mb(s.available))]
+              ]
+              cells.forEach(([cls, text]) => {
+                const td = document.createElement('td')
+                td.className = cls
+                td.textContent = text
+                tr.append(td)
+              })
+              const td = document.createElement('td')
+              const bar = document.createElement('div')
+              bar.className = 'bar'
+              const fill = document.createElement('span')
+              bar.append(fill)
+              td.append(bar)
+              tr.append(td)
+              setBar(fill, mb(s.used) / mb(s.size))
+              tbody.append(tr)
+            })
+        }
+
+        const renderRuntime = (m) => {
+          const el = m.eventLoopLag
+          if (!el) {
+            setPill($('el-status'), 'N/A', '')
+            return
+          }
+          const level = levelByThreshold(el.p99Ms, 50, 100)
+          setPill($('el-status'), { ok: 'SMOOTH', warn: 'SLOW', bad: 'BLOCKED' }[level], level)
+          $('el-p99').textContent = ''
+          $('el-p99').append(document.createTextNode(el.p99Ms.toFixed(1)))
+          const small = document.createElement('small')
+          small.textContent = 'ms'
+          $('el-p99').append(small)
+          setText($('el-window'), `p99 over the last ${Math.round(m.window?.seconds ?? 0)}s`)
+          setText($('el-mean'), `${el.meanMs.toFixed(1)} ms`)
+          setText($('el-max'), `${el.maxMs.toFixed(1)} ms`)
+          pushHistory(history.el, el.p99Ms)
+          drawSpark($('spark-el'), history.el)
+
+          const gc = m.gc
+          // `count` also includes incremental and weak-callback GCs, which are neither minor nor major.
+          setText($('gc-count'), gc ? `${gc.major} major · ${gc.minor} minor · ${gc.count} total` : '—')
+          $('gc-count').title = 'Total also counts incremental marking and weak-callback GCs'
+          setText($('gc-pause'), gc ? `${gc.totalPauseMs.toFixed(1)} / ${gc.maxPauseMs.toFixed(1)} ms` : '—')
+
+          const cpuPct = m.process?.cpu?.usagePercent
+          const cpuNode = $('cpu-process')
+          cpuNode.textContent = ''
+          if (typeof cpuPct === 'number') {
+            cpuNode.append(document.createTextNode(cpuPct.toFixed(1)))
+            const pct = document.createElement('small')
+            pct.textContent = '%'
+            cpuNode.append(pct)
+          } else {
+            cpuNode.textContent = '—'
+          }
+        }
+
+        const renderCpu = (cpu) => {
+          if (!cpu) return
+          setText($('cpu-count'), `${cpu.cpus} cores`)
+          const loads = [
+            ['cpu-l1', cpu.globalAverage?.lastMinute],
+            ['cpu-l5', cpu.globalAverage?.lastFiveMinutes],
+            ['cpu-l15', cpu.globalAverage?.lastFifteenMinutes]
+          ]
+          loads.forEach(([id, load]) => {
+            const node = $(id)
+            node.textContent = ''
+            if (!load) return
+            const dot = document.createElement('span')
+            dot.className = `dot ${levelOf(load.status)}`
+            dot.style.marginRight = '8px'
+            node.append(
+              dot,
+              document.createTextNode(`${load.load.toFixed(2)} (${((load.load / cpu.cpus) * 100).toFixed(0)}%)`)
+            )
+          })
+
+          const container = $('cpu-cores')
+          container.textContent = ''
+          ;(cpu.cores || []).forEach((c) => {
+            const pct = mb(c.load) ?? 0
+            const wrap = document.createElement('div')
+            wrap.className = 'core'
+            wrap.title = `Core ${c.core}: ${c.load}`
+            const col = document.createElement('div')
+            col.className = 'col'
+            const fill = document.createElement('span')
+            fill.style.height = `${Math.min(100, pct)}%`
+            const level = levelByThreshold(pct, 70, 90)
+            fill.style.background = `var(--${level === 'ok' ? 'accent' : level})`
+            col.append(fill)
+            wrap.append(col, document.createTextNode(`${pct.toFixed(0)}%`))
+            container.append(wrap)
+          })
+        }
+
+        const renderOverall = (live, startup, ready) => {
+          const all = [live, startup, ready]
+          const unreachable = all.every((r) => r.code === null)
+          const healthy = all.every((r) => r.ok)
+          const dot = $('overall-dot')
+          dot.className = `dot ${unreachable ? 'bad' : healthy ? 'ok' : 'warn'}`
+          setText($('overall-text'), unreachable ? 'API unreachable' : healthy ? 'All systems operational' : 'Degraded')
+          setText($('version'), ready.body?.version ? `v${ready.body.version}` : '')
+          document.title = `${unreachable ? '🔴' : healthy ? '🟢' : '🟡'} Health · Dashboard`
+        }
+
+        const showBanner = (message) => {
+          const banner = $('banner')
+          banner.textContent = message ?? ''
+          banner.classList.toggle('show', Boolean(message))
+        }
+
+        const refresh = async () => {
+          if (inFlight) return
+          inFlight = true
+          $('refresh').disabled = true
+          try {
+            const [live, startup, ready, metrics] = await Promise.all([
+              fetchProbe('/health/live'),
+              fetchProbe('/health/startup'),
+              fetchProbe('/health/ready'),
+              fetchProbe('/health/metrics')
+            ])
+
+            renderProbe('live', live, typeof live.body?.uptime === 'number' ? fmtUptime(live.body.uptime) : '—')
+            renderProbe('startup', startup, startup.body?.message ?? startup.body?.error ?? '—')
+
+            const deps = Object.values(ready.body?.dependencies ?? {})
+            const upCount = deps.filter((d) => isUp(d.status)).length
+            renderProbe('ready', ready, deps.length ? `${upCount} / ${deps.length} up` : '—')
+            renderOverall(live, startup, ready)
+            renderReadiness(ready.body)
+
+            const m = metrics.ok ? metrics.body : null
+            if (m) {
+              renderDependencyMetrics(m)
+              renderInstance(m)
+              renderMemory(m.memory)
+              renderRuntime(m)
+              renderCpu(m.cpu)
+            }
+
+            if ([live, startup, ready].every((r) => r.code === null)) {
+              showBanner('Could not reach the API. Retrying on the next refresh.')
+            } else if (!m) {
+              showBanner(`/health/metrics failed (${metrics.code ?? 'no response'}). Showing probe data only.`)
+            } else {
+              showBanner(null)
+            }
+            setText($('updated'), `Updated ${new Date().toLocaleTimeString()}`)
+          } finally {
+            inFlight = false
+            $('refresh').disabled = false
+          }
+        }
+
+        const schedule = () => {
+          clearInterval(timer)
+          timer = null
+          const ms = Number($('interval').value)
+          if (ms > 0 && document.visibilityState === 'visible') {
+            timer = setInterval(refresh, ms)
+          }
+        }
+
+        $('refresh').addEventListener('click', refresh)
+        $('interval').addEventListener('change', schedule)
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'visible') refresh()
+          schedule()
+        })
+
+        refresh()
+        schedule()
+      })()
+    </script>
+  </body>
+</html>

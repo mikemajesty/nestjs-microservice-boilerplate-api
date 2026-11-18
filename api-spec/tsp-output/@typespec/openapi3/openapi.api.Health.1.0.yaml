@@ -19,6 +19,20 @@ paths:
                 $ref: '#/components/schemas/LivenessOutput'
       tags:
         - Health
+  /health/dashboard:
+    get:
+      operationId: HealthController_dashboard
+      description: HTML dashboard that polls /health/live, /health/startup, /health/ready and /health/metrics
+      parameters: []
+      responses:
+        '200':
+          description: HTML page
+          content:
+            text/html:
+              schema:
+                type: string
+      tags:
+        - Health
   /health/live:
     get:
       operationId: HealthController_liveness
@@ -33,18 +47,43 @@ paths:
                 $ref: '#/components/schemas/LivenessOutput'
       tags:
         - Health
-  /health/ready:
+  /health/metrics:
     get:
-      operationId: HealthController_readiness
-      description: Readiness probe - checks if application can handle requests
+      operationId: HealthController_metrics
+      description: |2-
+          Process, runtime and dependency metrics for dashboards and troubleshooting.
+          Does not decide readiness. Event loop, GC and process CPU cover the window since the previous call, then reset.
       parameters: []
       responses:
         '200':
-          description: Complete system health status with dependencies and metrics
+          description: Metrics snapshot
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HealthOutput'
+                $ref: '#/components/schemas/MetricsOutput'
+      tags:
+        - Health
+  /health/ready:
+    get:
+      operationId: HealthController_readiness
+      description: |2-
+          Readiness probe - checks if the application can handle requests.
+          Only pings MongoDB, PostgreSQL and Redis (2s timeout each), so it stays cheap for orchestrators.
+          Answers **503** when any dependency is DOWN.
+      parameters: []
+      responses:
+        '200':
+          description: Overall status and the result of each dependency check
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadinessOutput'
+        '503':
+          description: Overall status and the result of each dependency check
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadinessOutput'
       tags:
         - Health
   /health/startup:
@@ -63,6 +102,20 @@ paths:
         - Health
 components:
   schemas:
+    DependencyCheck:
+      type: object
+      required:
+        - status
+        - latencyMs
+      properties:
+        status:
+          type: string
+          description: 'Dependency status: **UP** | **DOWN**'
+        latencyMs:
+          type: number
+          format: decimal
+          description: Time the check took in milliseconds; on failure, time until the error or the 2s timeout
+      description: result of a single dependency check
     EventLoopLagOutput:
       type: object
       required:
@@ -73,159 +126,46 @@ components:
         meanMs:
           type: number
           format: decimal
-          description: Mean event loop delay in milliseconds over the sampling window
+          description: Mean event loop delay in milliseconds over the window; the sampler resolution is already subtracted
         maxMs:
           type: number
           format: decimal
-          description: Maximum event loop delay in milliseconds over the sampling window
+          description: Maximum event loop delay in milliseconds over the window; the sampler resolution is already subtracted
         p99Ms:
           type: number
           format: decimal
-          description: 99th percentile event loop delay in milliseconds over the sampling window
+          description: 99th percentile event loop delay in milliseconds over the window; the sampler resolution is already subtracted
       description: event loop lag metrics
-    HealthOutput:
+    GcOutput:
       type: object
       required:
-        - server
-        - version
-        - mongo
-        - postgres
-        - redisState
-        - network
-        - memory
-        - cpu
+        - count
+        - minor
+        - major
+        - totalPauseMs
+        - maxPauseMs
       properties:
-        server:
-          type: string
-          description: 'application status: **UP** | **DOWN**'
-        version:
-          type: string
-          description: application version
-        mongo:
-          type: object
-          properties:
-            status:
-              type: string
-              description: 'MongoDB status: **UP** | **DOWN**'
-            connection:
-              type: object
-              allOf:
-                - $ref: '#/components/schemas/MongoConnectionOutput'
-              nullable: true
-              description: MongoDB connection pool metrics; null when unavailable
-            memory:
-              allOf:
-                - $ref: '#/components/schemas/MongoCacheMemoryOutput'
-              description: MongoDB WiredTiger cache metrics; values may be null when unsupported or unavailable
-          required:
-            - status
-            - connection
-            - memory
-          description: mongo information
-        postgres:
-          type: object
-          properties:
-            status:
-              type: string
-              description: 'PostgreSQL status: **UP** | **DOWN**'
-            connection:
-              type: object
-              allOf:
-                - $ref: '#/components/schemas/PostgresConnectionOutput'
-              nullable: true
-              description: PostgreSQL connection metrics; null when unavailable
-            databaseSizeBytes:
-              type: string
-              nullable: true
-              description: Total PostgreSQL database size in bytes; null when unavailable
-          required:
-            - status
-            - connection
-            - databaseSizeBytes
-          description: postgres information
-        redisState:
-          type: string
-          description: 'redis status: **UP** | **DOWN**'
-        network:
-          type: object
-          properties:
-            latency:
-              type: string
-              description: |2-
-                  -- representing the network latency --
-                  latency: ** <20  ** status: ** Excellent **
-
-                  latency: ** <100 ** status: ** Acceptable **
-
-                  latency: ** <300 ** status: ** Poor **
-
-                  latency: ** >300 ** status: ** Critical **
-            connections:
-              type: integer
-              format: int32
-              nullable: true
-              description: representing the active connections count
-          required:
-            - latency
-            - connections
-          description: network information
-        memory:
-          allOf:
-            - $ref: '#/components/schemas/MemoryOutput'
-          description: memory usage
-        cpu:
-          type: object
-          properties:
-            cpus:
-              type: integer
-              format: int16
-              description: max healthy limit/total cpus
-            globalAverage:
-              type: object
-              properties:
-                lastMinute:
-                  allOf:
-                    - $ref: '#/components/schemas/HealthOutputLoad'
-                  description: cpu load average on last minute
-                lastFiveMinutes:
-                  allOf:
-                    - $ref: '#/components/schemas/HealthOutputLoad'
-                  description: cpu load average on five minute
-                lastFifteenMinutes:
-                  allOf:
-                    - $ref: '#/components/schemas/HealthOutputLoad'
-                  description: cpu load average on fifteen minute
-              required:
-                - lastMinute
-                - lastFiveMinutes
-                - lastFifteenMinutes
-              description: cpu load average
-            cores:
-              type: array
-              items:
-                type: object
-                properties:
-                  core:
-                    type: integer
-                    format: int16
-                    description: cpu core number
-                  load:
-                    type: string
-                    description: cpu core load
-                required:
-                  - core
-                  - load
-              description: cpu cores
-          required:
-            - cpus
-            - globalAverage
-            - cores
-          description: cpu usage
-        eventLoopLag:
-          allOf:
-            - $ref: '#/components/schemas/EventLoopLagOutput'
-          description: event loop lag metrics; omitted when the runtime does not expose them
-      description: health output
+        count:
+          type: integer
+          format: int32
+          description: Garbage collections in the window
+        minor:
+          type: integer
+          format: int32
+          description: Young-generation collections (Scavenge); frequent and cheap
+        major:
+          type: integer
+          format: int32
+          description: Full collections (Mark-Compact); frequent major GCs indicate memory pressure
+        totalPauseMs:
+          type: number
+          format: decimal
+          description: Sum of GC pause durations in milliseconds
+        maxPauseMs:
+          type: number
+          format: decimal
+          description: Longest single GC pause in milliseconds
+      description: garbage collection metrics over the window
     HealthOutputLoad:
       type: object
       required:
@@ -238,7 +178,7 @@ components:
           description: load average
         status:
           type: string
-          description: 'load average status: **healthy** | **overloaded**'
+          description: 'load average status: **healthy** | **warning** | **overloaded**'
       description: load average
     HeapSpaceOutput:
       type: object
@@ -284,6 +224,7 @@ components:
       required:
         - process
         - v8
+        - container
         - heapSpaces
       properties:
         process:
@@ -291,10 +232,12 @@ components:
           properties:
             usedRam:
               type: string
-              description: Total memory allocated by the process, including heap, buffers, and native code.
+              description: |2-
+                  RSS: physical memory resident for the process. Can be lower than heapTotal, because
+                  committed-but-untouched pages and (on macOS) compressed pages are not counted.
             heapTotal:
               type: string
-              description: Total heap memory allocated by V8.
+              description: Heap memory committed by V8.
             heapUsed:
               type: string
               description: Heap memory currently used by V8.
@@ -332,6 +275,24 @@ components:
             - executableHeapSize
             - heapSizeLimit
           description: v8 memory
+        container:
+          type: object
+          properties:
+            limit:
+              type: string
+              nullable: true
+              description: Memory limit; null when the process has no constraint (e.g. local machine)
+            rssPercent:
+              type: number
+              format: decimal
+              nullable: true
+              description: RSS as a percentage of the limit; null when there is no limit
+          required:
+            - limit
+            - rssPercent
+          description: |2-
+              Memory limit imposed by the OS (cgroup in containers), from process.constrainedMemory().
+              When RSS reaches it, the kernel kills the process (OOMKilled) instead of V8 raising an error.
         heapSpaces:
           type: array
           items:
@@ -341,6 +302,156 @@ components:
               surfaces in `old_space`; large strings/arrays in `large_object_space`; a busy
               but flat `new_space` is allocation churn, not a leak.
       description: memory usage
+    MetricsOutput:
+      type: object
+      required:
+        - version
+        - timestamp
+        - window
+        - process
+        - memory
+        - eventLoopLag
+        - gc
+        - network
+        - cpu
+        - mongo
+        - postgres
+        - redis
+      properties:
+        version:
+          type: string
+          description: application version
+        timestamp:
+          type: string
+          description: Timestamp of the snapshot
+        window:
+          type: object
+          properties:
+            seconds:
+              type: number
+              format: decimal
+              description: Length of the window in seconds
+          required:
+            - seconds
+          description: |2-
+              Event loop, GC and process CPU are aggregated since the previous call to this endpoint, then reset.
+              HTTP request rate and latency are exported via OpenTelemetry, not here.
+        process:
+          allOf:
+            - $ref: '#/components/schemas/ProcessOutput'
+          description: process information
+        memory:
+          allOf:
+            - $ref: '#/components/schemas/MemoryOutput'
+          description: memory usage
+        eventLoopLag:
+          allOf:
+            - $ref: '#/components/schemas/EventLoopLagOutput'
+          description: event loop lag over the window
+        gc:
+          allOf:
+            - $ref: '#/components/schemas/GcOutput'
+          description: garbage collection over the window
+        network:
+          type: object
+          properties:
+            connections:
+              type: integer
+              format: int32
+              nullable: true
+              description: Open TCP sockets on the HTTP server, keep-alive included; null when unavailable
+          required:
+            - connections
+          description: network information
+        cpu:
+          type: object
+          properties:
+            cpus:
+              type: integer
+              format: int16
+              description: number of logical CPUs
+            globalAverage:
+              type: object
+              properties:
+                lastMinute:
+                  allOf:
+                    - $ref: '#/components/schemas/HealthOutputLoad'
+                  description: cpu load average on last minute
+                lastFiveMinutes:
+                  allOf:
+                    - $ref: '#/components/schemas/HealthOutputLoad'
+                  description: cpu load average on five minute
+                lastFifteenMinutes:
+                  allOf:
+                    - $ref: '#/components/schemas/HealthOutputLoad'
+                  description: cpu load average on fifteen minute
+              required:
+                - lastMinute
+                - lastFiveMinutes
+                - lastFifteenMinutes
+              description: cpu load average
+            cores:
+              type: array
+              items:
+                type: object
+                properties:
+                  core:
+                    type: integer
+                    format: int16
+                    description: cpu core number
+                  load:
+                    type: string
+                    description: cpu core load
+                required:
+                  - core
+                  - load
+              description: cpu cores
+          required:
+            - cpus
+            - globalAverage
+            - cores
+          description: host CPU; machine-wide values, all processes included
+        mongo:
+          type: object
+          properties:
+            connection:
+              type: object
+              allOf:
+                - $ref: '#/components/schemas/MongoConnectionOutput'
+              nullable: true
+              description: MongoDB serverStatus.connections (server-wide, all clients); null when unavailable
+            memory:
+              allOf:
+                - $ref: '#/components/schemas/MongoCacheMemoryOutput'
+              description: MongoDB WiredTiger cache metrics; values may be null when unsupported or unavailable
+          required:
+            - connection
+            - memory
+          description: mongo metrics
+        postgres:
+          type: object
+          properties:
+            connection:
+              type: object
+              allOf:
+                - $ref: '#/components/schemas/PostgresConnectionOutput'
+              nullable: true
+              description: PostgreSQL connection metrics; null when unavailable
+            databaseSizeBytes:
+              type: string
+              nullable: true
+              description: Size of the application database (current_database()) in bytes; null when unavailable
+          required:
+            - connection
+            - databaseSizeBytes
+          description: postgres metrics
+        redis:
+          type: object
+          allOf:
+            - $ref: '#/components/schemas/RedisInfoOutput'
+          nullable: true
+          description: Redis INFO metrics; null when Redis is unreachable or INFO failed
+      description: metrics output; does not decide readiness
     MongoCacheMemoryOutput:
       type: object
       required:
@@ -421,7 +532,7 @@ components:
           type: integer
           format: int64
           description: Number of connections awaiting topology changes
-      description: MongoDB connection pool metrics
+      description: MongoDB serverStatus.connections; server-wide, all clients included
     PostgresConnectionOutput:
       type: object
       required:
@@ -432,16 +543,120 @@ components:
         active:
           type: integer
           format: int64
-          description: Number of active client backends
+          description: Client backends active on the application database
         available:
           type: integer
           format: int64
-          description: Number of connection slots available for new clients
+          description: Connection slots left on the server, all databases considered
         current:
           type: integer
           format: int64
-          description: Total number of client backends
+          description: Client backends connected to the application database
       description: PostgreSQL connection metrics
+    ProcessOutput:
+      type: object
+      required:
+        - hostname
+        - pid
+        - nodeVersion
+        - environment
+        - uptimeSeconds
+        - cpu
+      properties:
+        hostname:
+          type: string
+          description: Machine or pod name; in Kubernetes it identifies which pod answered
+        pid:
+          type: integer
+          format: int32
+          description: Process id
+        nodeVersion:
+          type: string
+          description: Node.js version
+        environment:
+          type: string
+          description: Application environment
+        uptimeSeconds:
+          type: integer
+          format: int32
+          description: Process uptime in seconds
+        cpu:
+          type: object
+          properties:
+            usagePercent:
+              type: number
+              format: decimal
+              description: CPU time over wall time in the window; 100% = one full core, like `top`
+            userMs:
+              type: number
+              format: decimal
+              description: User CPU time in the window, in milliseconds
+            systemMs:
+              type: number
+              format: decimal
+              description: System CPU time in the window, in milliseconds
+          required:
+            - usagePercent
+            - userMs
+            - systemMs
+          description: CPU used by this process only (process.cpuUsage())
+      description: process information
+    ReadinessOutput:
+      type: object
+      required:
+        - status
+        - version
+        - timestamp
+        - dependencies
+      properties:
+        status:
+          type: string
+          description: '**UP** only when every dependency is UP; the endpoint answers 503 otherwise'
+        version:
+          type: string
+          description: application version
+        timestamp:
+          type: string
+          description: Timestamp of the check
+        dependencies:
+          type: object
+          properties:
+            mongo:
+              $ref: '#/components/schemas/DependencyCheck'
+            postgres:
+              $ref: '#/components/schemas/DependencyCheck'
+            redis:
+              $ref: '#/components/schemas/DependencyCheck'
+          required:
+            - mongo
+            - postgres
+            - redis
+          description: dependency checks
+      description: readiness probe output
+    RedisInfoOutput:
+      type: object
+      required:
+        - usedMemory
+        - maxMemory
+        - connectedClients
+        - evictedKeys
+      properties:
+        usedMemory:
+          type: string
+          description: Memory used by Redis
+        maxMemory:
+          type: string
+          nullable: true
+          description: Configured maxmemory; null when 0 (no limit)
+        connectedClients:
+          type: integer
+          format: int32
+          description: Connected clients
+        evictedKeys:
+          type: integer
+          format: int64
+          description: Keys evicted because maxmemory was reached, since the Redis server started
+      description: Redis INFO metrics
     RootHealthOutput:
       type: object
       required:

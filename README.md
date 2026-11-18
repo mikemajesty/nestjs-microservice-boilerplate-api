@@ -22,21 +22,18 @@
 
 ## A Complete, Production-Ready Foundation
 
-This repository is more than an application template: it is a complete,
-production-oriented microservice foundation. It includes the application,
-databases, caching, observability, AWS infrastructure, Kubernetes platform,
-GitOps delivery, and operational workflows needed to run a service in a real
-environment.
+This repository ships the application together with everything needed to run
+it in a real environment: databases, caching, observability, AWS
+infrastructure, Kubernetes platform, GitOps delivery, and operational workflows.
 
-The infrastructure is defined as code with Pulumi and is designed to deploy to
-AWS using Amazon EKS, Karpenter, Argo CD, and Kubernetes. It also includes
-secure secret integration, health checks, automated database migrations before
-application rollouts, autoscaling, persistence, and monitoring components.
+The infrastructure is defined as code with Pulumi and deploys to AWS using
+Amazon EKS, Karpenter, Argo CD, and Kubernetes. It also includes secure secret
+integration, health checks, automated database migrations before application
+rollouts, autoscaling, persistence, and monitoring.
 
-This provides a strong production baseline rather than a minimal demo. Before
-using it in a specific production environment, review the AWS account
-permissions, network topology, security policies, domains, observability
-retention, backup strategy, sizing, and environment-specific configuration.
+Before using it in a specific environment, review the AWS account permissions,
+network topology, security policies, domains, observability retention, backup
+strategy, sizing, and environment-specific configuration.
 
 For infrastructure setup and deployment instructions, see the
 [Infrastructure as Code README](IaC/README.md).
@@ -65,7 +62,7 @@ For infrastructure setup and deployment instructions, see the
 
 ## Architecture Overview
 
-This project implements a **pragmatic architecture** that combines the best ideas from Clean Architecture, Onion Architecture, Domain-Driven Design (DDD), and Hexagonal Architecture. Rather than strictly following one pattern, it takes a practical approach: **powerful enough for enterprise applications, yet simple enough for any developer to understand and maintain**.
+This project combines ideas from Clean Architecture, Onion Architecture, Domain-Driven Design (DDD), and Hexagonal Architecture without strictly following any of them. It aims to be **powerful enough for enterprise applications, yet simple enough for any developer to understand and maintain**.
 
 ### The Core Philosophy
 
@@ -77,15 +74,7 @@ The architecture is built around one fundamental principle: **protect your busin
 
 ## Architectural Identity
 
-**This project is not a copy of Clean Architecture, Onion Architecture, DDD, or Hexagonal Architecture.** It is a **pragmatic synthesis** that borrows concepts from all of them, but makes its own decisions where the classical patterns do not pay for their cost.
-
-Every deviation is deliberate, documented, and falsifiable. If you are looking for a textbook implementation of Clean Architecture, this is not it. If you are looking for a foundation that uses the best ideas from those patterns without their ceremony, you are in the right place.
-
-### What This Project Is
-
-- A foundation that **protects business logic** from frameworks, databases, and external services
-- A synthesis that **uses the best ideas** from Clean Architecture, Onion, DDD, and Hexagonal — without their ceremony
-- A codebase where **every deviation is declared, documented, and falsifiable**
+Where the classical patterns do not pay for their cost, this project makes its own decisions. Every deviation is deliberate and documented.
 
 ### What This Project Is Not
 
@@ -109,17 +98,14 @@ Every deviation is deliberate, documented, and falsifiable. If you are looking f
 
 ### The Unifying Criterion
 
-Every decision above follows the same rule: **optimize for what happens most, treat what happens least as an explicit, documented exception.**
-
-This is the [Pragmatic Principle](#the-pragmatic-principle). If a decision cannot be justified by this rule, it does not belong in this project.
+Every decision above follows the [Pragmatic Principle](#the-pragmatic-principle), described in the next section. If a decision cannot be justified by it, it does not belong in this project.
 
 ### How to Disagree
 
-If you believe a decision is wrong, the README gives you the criteria to argue against it. Each decision has:
+If you believe a decision is wrong, the README gives you the criteria to argue against it:
 
-- A **declared position** (what this project does)
-- A **justification** (why it does it)
-- A **falsification criterion** (when the decision should be revisited)
+- The **declared position** and its **justification** are in the table above.
+- The **conditions for revisiting** a decision are in [When Exceptions Become the Rule](#when-exceptions-become-the-rule).
 
 That is the difference between a boilerplate and a dogma.
 
@@ -148,7 +134,7 @@ This means:
 | External libraries in Core | Avoided                                              | Zod is a conscious exception (see below)                           |
 | Domain Services            | Logic in Entity or Use Case                          | — (not needed in this architecture)                                |
 
-This is not a rejection of Clean Architecture, DDD, or Hexagonal. It is **applying them with scoped pragmatism** — the patterns are guides, not mandates.
+The patterns are guides, not mandates.
 
 ### When Exceptions Become the Rule
 
@@ -1672,6 +1658,7 @@ NestJS application layer documentation.
 | [Adapter](guides/modules/adapter.md)       | Use case adapters          |
 | [Repository](guides/modules/repository.md) | Repository implementations |
 | [Test](guides/modules/test.md)             | Module testing             |
+| [Health](guides/modules/health.md)         | Probes, metrics, dashboard |
 
 ### 📂 [Infrastructure](guides/infra/)
 

@@ -12,6 +12,7 @@ import { ICacheAdapter } from '@/infra/cache'
 import { MongoConnectionName } from '@/infra/database'
 import { MongoDatabaseModule } from '@/infra/database/mongo'
 import { ISecretsAdapter } from '@/infra/secrets'
+import { EnvEnum } from '@/infra/secrets/types'
 import { GuardsModule } from '@/middlewares/guards/module'
 import { TestMongoContainer, TestPostgresContainer, TestRedisContainer } from '@/utils/test/e2e/containers'
 import { TestEnd2EndUtils } from '@/utils/test/e2e/utils'
@@ -42,6 +43,7 @@ describe(HealthController.name, () => {
       .useValue(redisService)
       .overrideProvider(ISecretsAdapter)
       .useValue({
+        ENV: EnvEnum.TEST,
         IS_DOCUMENTDB: false,
         IS_LOCAL: false,
         IS_PRODUCTION: false,
@@ -61,49 +63,65 @@ describe(HealthController.name, () => {
     await postgresContainer.close()
   })
 
-  it('/GET /health/ready should return live dependency and process data', async () => {
+  it('/GET /health/ready should report each dependency with its latency', async () => {
     const response = await request(app.getHttpServer()).get('/health/ready').expect(200)
 
-    expect(response.body.server).toBe(HealthStatus.UP)
-    expect(response.body.mongo.status).toBe(HealthStatus.UP)
-    expect(response.body.mongo.connection).toMatchObject({
-      active: expect.any(Number),
-      available: expect.any(Number),
-      current: expect.any(Number),
-      totalCreated: expect.any(Number)
+    const check = { status: HealthStatus.UP, latencyMs: expect.any(Number) }
+    expect(response.body).toEqual({
+      status: HealthStatus.UP,
+      version: expect.any(String),
+      timestamp: expect.any(String),
+      dependencies: { mongo: check, postgres: check, redis: check }
     })
-    expect(response.body.mongo.memory).toMatchObject({
-      used: expect.stringMatching(/^\d+\.\d{2} MB$/),
-      limit: expect.stringMatching(/^\d+\.\d{2} MB$/)
+  })
+
+  it('/GET /health/metrics should return process, runtime and dependency metrics', async () => {
+    const mb = expect.stringMatching(/^\d+\.\d{2} MB$/)
+    const response = await request(app.getHttpServer()).get('/health/metrics').expect(200)
+    const body = response.body
+
+    expect(body.window.seconds).toBeGreaterThan(0)
+    expect(body.process).toMatchObject({
+      hostname: expect.any(String),
+      pid: expect.any(Number),
+      nodeVersion: process.version,
+      environment: EnvEnum.TEST,
+      cpu: { usagePercent: expect.any(Number), userMs: expect.any(Number), systemMs: expect.any(Number) }
     })
 
-    expect(response.body.postgres.status).toBe(HealthStatus.UP)
-    expect(response.body.postgres.connection).toMatchObject({
+    expect(body.memory.process).toMatchObject({ usedRam: mb, heapTotal: mb, heapUsed: mb, external: mb })
+    expect(body.memory.v8).toMatchObject({ totalHeapSize: mb, usedHeapSize: mb, heapSizeLimit: mb })
+    expect(body.memory.container).toHaveProperty('limit')
+    expect(body.memory.heapSpaces.length).toBeGreaterThan(0)
+
+    // The resolution is subtracted, so an idle loop reports values close to 0, not ~20ms.
+    expect(body.eventLoopLag.meanMs).toBeGreaterThanOrEqual(0)
+    expect(body.eventLoopLag.meanMs).toBeLessThan(20)
+    expect(body.gc).toMatchObject({ count: expect.any(Number), minor: expect.any(Number), major: expect.any(Number) })
+
+    expect(body.cpu.cpus).toEqual(expect.any(Number))
+    expect(body.cpu.cores.length).toBeGreaterThan(0)
+    expect(body.network.connections).toEqual(expect.any(Number))
+
+    expect(body.mongo.connection).toMatchObject({ active: expect.any(Number), current: expect.any(Number) })
+    expect(body.mongo.memory).toMatchObject({ used: mb, limit: mb })
+    expect(body.postgres.connection).toMatchObject({
       active: expect.any(Number),
       available: expect.any(Number),
       current: expect.any(Number)
     })
-    expect(Number(response.body.postgres.databaseSizeBytes)).toBeGreaterThan(0)
-    expect(response.body.redisState).toBe(HealthStatus.UP)
+    expect(Number(body.postgres.databaseSizeBytes)).toBeGreaterThan(0)
+    expect(body.redis).toMatchObject({ usedMemory: mb, connectedClients: expect.any(Number) })
+  })
 
-    expect(response.body.network).toMatchObject({
-      latency: expect.any(String),
-      connections: expect.any(Number)
-    })
-    expect(response.body.memory.process).toMatchObject({
-      usedRam: expect.stringMatching(/^\d+\.\d{2} MB$/),
-      heapTotal: expect.stringMatching(/^\d+\.\d{2} MB$/),
-      heapUsed: expect.stringMatching(/^\d+\.\d{2} MB$/),
-      external: expect.stringMatching(/^\d+\.\d{2} MB$/)
-    })
-    expect(response.body.memory.v8).toMatchObject({
-      totalHeapSize: expect.stringMatching(/^\d+\.\d{2} MB$/),
-      usedHeapSize: expect.stringMatching(/^\d+\.\d{2} MB$/),
-      executableHeapSize: expect.stringMatching(/^\d+\.\d{2} MB$/),
-      heapSizeLimit: expect.stringMatching(/^\d+\.\d{2} MB$/)
-    })
-    expect(response.body.cpu.cpus).toEqual(expect.any(Number))
-    expect(response.body.cpu.cores.length).toBeGreaterThan(0)
+  it('/GET /health/dashboard should return the HTML panel with a nonce-based CSP', async () => {
+    const response = await request(app.getHttpServer()).get('/health/dashboard').expect(200)
+
+    expect(response.headers['content-type']).toMatch(/^text\/html/)
+    const nonce = response.headers['content-security-policy']?.match(/'nonce-([^']+)'/)?.[1]
+    expect(nonce).toBeDefined()
+    expect(response.text).toContain(`<script nonce="${nonce}">`)
+    expect(response.text).not.toContain('{{nonce}}')
   })
 
   it('/GET /health/live should return liveness', async () => {

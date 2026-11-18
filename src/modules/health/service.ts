@@ -1,9 +1,10 @@
 import type { Server } from 'node:net'
-import { monitorEventLoopDelay } from 'node:perf_hooks'
+import { constants, monitorEventLoopDelay, performance, PerformanceObserver } from 'node:perf_hooks'
 
+import { OnModuleDestroy } from '@nestjs/common'
 import { Redis } from 'ioredis'
 import { Connection } from 'mongoose'
-import ping from 'ping'
+import os from 'os'
 import systeminformation from 'systeminformation'
 import { DataSource } from 'typeorm'
 import v8 from 'v8'
@@ -12,165 +13,138 @@ import { ICacheAdapter } from '@/infra/cache'
 import { ILoggerAdapter } from '@/infra/logger'
 import { ISecretsAdapter } from '@/infra/secrets'
 import { ByteSize } from '@/utils/byte-size'
+import { ApiInternalServerException } from '@/utils/exception'
 
-import { ApiInternalServerException } from './../../utils/exception'
 import {
   ByteSizeFormatted,
+  CpuCoreLoad,
+  DependencyCheck,
   EventLoopLagOutput,
+  GcOutput,
   HealthStatus,
   HeapSpaceOutput,
-  LatencyFormatted,
+  HostCpuOutput,
   Load,
   LoadStatus,
   MemoryOutput,
   MongoCacheMemoryOutput,
   MongoConnectionOutput,
-  PostgresConnectionOutput
+  PercentFormatted,
+  PostgresConnectionOutput,
+  ProcessOutput,
+  RedisInfoOutput
 } from './types'
 
-export class HealthService implements IHealthAdapter {
+/** Below the 5s timeoutSeconds of the Kubernetes probes, so a slow dependency reports DOWN instead of hanging. */
+const CHECK_TIMEOUT_MS = 2000
+const EVENT_LOOP_RESOLUTION_MS = 20
+
+export type MongoServerStatusOutput = {
+  connection: MongoConnectionOutput | null
+  memory: MongoCacheMemoryOutput
+}
+
+/** Event loop, GC and process CPU aggregated since the previous read. */
+export type RuntimeWindowOutput = {
+  seconds: number
+  eventLoopLag: EventLoopLagOutput
+  gc: GcOutput
+  processCpu: ProcessOutput['cpu']
+}
+
+const toMb = (bytes: number): ByteSizeFormatted => `${ByteSize.toMegabytes(bytes).toFixed(2)} MB` as ByteSizeFormatted
+const round = (value: number): number => Number(value.toFixed(2))
+
+export class HealthService implements IHealthAdapter, OnModuleDestroy {
   postgres!: DataSource
   mongo!: Connection
   redis!: ICacheAdapter<Redis>
 
-  private readonly eventLoopHistogram = monitorEventLoopDelay({ resolution: 20 })
+  private readonly eventLoopHistogram = monitorEventLoopDelay({ resolution: EVENT_LOOP_RESOLUTION_MS })
+  private readonly gcObserver: PerformanceObserver
+  private gc: GcOutput = HealthService.emptyGc()
+  private windowStartedAt = performance.now()
+  private cpuBaseline = process.cpuUsage()
 
   constructor(
     private readonly logger: ILoggerAdapter,
     private readonly secrets: ISecretsAdapter
   ) {
     this.eventLoopHistogram.enable()
+
+    this.gcObserver = new PerformanceObserver((list) => {
+      for (const entry of list.getEntries()) {
+        // GC entries carry `detail.kind`; @types/node does not declare it on PerformanceEntry.
+        const kind = (entry as unknown as { detail?: { kind?: number } }).detail?.kind
+        this.gc.count++
+        if (kind === constants.NODE_PERFORMANCE_GC_MINOR) this.gc.minor++
+        if (kind === constants.NODE_PERFORMANCE_GC_MAJOR) this.gc.major++
+        this.gc.totalPauseMs += entry.duration
+        this.gc.maxPauseMs = Math.max(this.gc.maxPauseMs, entry.duration)
+      }
+    })
+    this.gcObserver.observe({ entryTypes: ['gc'] })
   }
 
-  async getPostgresDatabaseSize(): Promise<string | null> {
-    try {
-      const result = await this.postgres.query(`
-        SELECT COALESCE(SUM(pg_database_size(datname)), 0)::text AS "databaseSizeBytes"
-        FROM pg_database;
-      `)
-
-      return String(result[0].databaseSizeBytes)
-    } catch (error) {
-      this.logError(error, `${HealthService.name}.getPostgresDatabaseSize`)
-      return null
-    }
+  onModuleDestroy(): void {
+    this.eventLoopHistogram.disable()
+    this.gcObserver.disconnect()
   }
 
-  async getMongoMemory(): Promise<MongoCacheMemoryOutput> {
-    try {
-      if (this.mongo.readyState !== 1 || !this.mongo.db) {
-        return { used: null, limit: null }
-      }
+  // -------------------------------------------------------------------------
+  // Dependency checks (readiness)
+  // -------------------------------------------------------------------------
 
-      const status = await this.mongo.db.command({ serverStatus: 1 })
-
-      const cache = status.wiredTiger?.cache
-      if (!cache) {
-        if (this.secrets.IS_DOCUMENTDB) {
-          return { used: null, limit: null }
-        }
-
-        throw new ApiInternalServerException('WiredTiger cache not available - check MongoDB version/config')
-      }
-
-      const formatMemory = (bytes: unknown): ByteSizeFormatted | null =>
-        typeof bytes === 'number' && Number.isFinite(bytes)
-          ? (`${ByteSize.toMegabytes(bytes).toFixed(2)} MB` as ByteSizeFormatted)
-          : null
-
-      return {
-        used: formatMemory(cache['bytes currently in the cache']),
-        limit: formatMemory(cache['maximum bytes configured'])
-      }
-    } catch (error) {
-      this.logError(error, `${HealthService.name}.getMongoMemory`)
-      return { used: null, limit: null }
-    }
+  checkMongo(): Promise<DependencyCheck> {
+    return this.runCheck('checkMongo', async () => {
+      if (this.mongo.readyState !== 1 || !this.mongo.db) return false
+      await this.mongo.db.command({ ping: 1 })
+      return true
+    })
   }
 
-  async getMongoConnections(): Promise<MongoConnectionOutput | null> {
-    try {
-      if (this.mongo.readyState !== 1) {
-        return null
-      }
-
-      if (this.mongo.db) {
-        const status = await this.mongo.db.command({ serverStatus: 1 })
-
-        return status.connections ?? null
-      }
-      return null
-    } catch (error) {
-      this.logError(error, `${HealthService.name}.getMongoConnections`)
-      return null
-    }
+  checkPostgres(): Promise<DependencyCheck> {
+    return this.runCheck('checkPostgres', async () => {
+      const result = await this.postgres.query('SELECT 1')
+      return result.length > 0
+    })
   }
 
-  async getPostgresConnections(): Promise<PostgresConnectionOutput | null> {
-    try {
-      const manager = this.postgres.manager
-      const [connections] = await manager.query(`
-        SELECT
-          COUNT(*) FILTER (WHERE backend_type = 'client backend')::int AS current,
-          COUNT(*) FILTER (
-            WHERE backend_type = 'client backend' AND state = 'active'
-          )::int AS active,
-          GREATEST(
-            current_setting('max_connections')::int -
-            current_setting('superuser_reserved_connections')::int -
-            COUNT(*) FILTER (WHERE backend_type = 'client backend'),
-            0
-          )::int AS available
-        FROM pg_stat_activity;
-      `)
-
-      return {
-        current: Number(connections.current),
-        available: Number(connections.available),
-        active: Number(connections.active)
-      }
-    } catch (error) {
-      this.logError(error, `${HealthService.name}.getPostgresConnections`)
-      return null
-    }
+  checkRedis(): Promise<DependencyCheck> {
+    // CacheRedisService.ping() already applies its own 2s timeout and returns 'DOWN' on failure.
+    return this.runCheck('checkRedis', async () => (await this.redis.ping()) === 'PONG')
   }
 
-  getMemoryUsageInMB(): MemoryOutput {
+  // -------------------------------------------------------------------------
+  // Metrics
+  // -------------------------------------------------------------------------
+
+  getMemory(): MemoryOutput {
     const processMemory = process.memoryUsage()
     const heapStats = v8.getHeapStatistics()
-    const heapSpaces = v8.getHeapSpaceStatistics()
-
-    const toMb = (bytes: number): ByteSizeFormatted =>
-      `${ByteSize.toMegabytes(bytes).toFixed(2)} MB` as ByteSizeFormatted
+    // 0 when there is no constraint; very large values also mean "unlimited".
+    const constrained = process.constrainedMemory()
+    const limit = constrained > 0 && constrained < Number.MAX_SAFE_INTEGER ? constrained : null
 
     return {
       process: {
-        // rss — total process memory. If it grows while heapUsed is flat, look outside
-        // the JS heap: Buffers, unread streams, native modules.
         usedRam: toMb(processMemory.rss),
-        // Memory reserved by V8 for the heap. Follows heapUsed up and recedes slowly.
         heapTotal: toMb(processMemory.heapTotal),
-        // Memory held by live JS objects. Leaks in application code surface here.
         heapUsed: toMb(processMemory.heapUsed),
-        // Native memory outside the JS heap (Buffers, etc.).
         external: toMb(processMemory.external),
-        // Subset of `external`: ArrayBuffers currently allocated.
         arrayBuffers: toMb(processMemory.arrayBuffers)
       },
       v8: {
         totalHeapSize: toMb(heapStats.total_heap_size),
-        // Redundant with process.heapUsed, kept for compatibility.
         usedHeapSize: toMb(heapStats.used_heap_size),
         executableHeapSize: toMb(heapStats.total_heap_size_executable),
-        // Effective V8 ceiling. Compare against the container memory limit:
-        // if the container limit is lower, the kernel kills the process (OOMKilled)
-        // instead of V8 raising a catchable heap-limit error.
         heapSizeLimit: toMb(heapStats.heap_size_limit)
       },
-      // Per-space breakdown. A long-lived leak shows up in `old_space`;
-      // large strings/arrays in `large_object_space`; a busy but flat `new_space`
-      // is just allocation churn, not a leak.
-      heapSpaces: heapSpaces.map<HeapSpaceOutput>((space) => ({
+      container: {
+        limit: limit === null ? null : toMb(limit),
+        rssPercent: limit === null ? null : round((processMemory.rss / limit) * 100)
+      },
+      heapSpaces: v8.getHeapSpaceStatistics().map<HeapSpaceOutput>((space) => ({
         name: space.space_name,
         size: toMb(space.space_size),
         used: toMb(space.space_used_size),
@@ -179,42 +153,68 @@ export class HealthService implements IHealthAdapter {
     }
   }
 
-  getEventLoopLag(): EventLoopLagOutput {
-    // Values are in nanoseconds; convert to milliseconds for the output.
-    // Reset after reading so each snapshot reflects a recent window.
-    const toMs = (ns: number): number => Number((ns / 1_000_000).toFixed(2))
+  /** Reads and resets the event loop histogram, GC counters and CPU baseline together, so all share one window. */
+  getRuntimeWindow(): RuntimeWindowOutput {
+    const now = performance.now()
+    const elapsedMs = Math.max(1, now - this.windowStartedAt)
+    const cpu = process.cpuUsage(this.cpuBaseline)
 
-    const output: EventLoopLagOutput = {
-      meanMs: toMs(this.eventLoopHistogram.mean),
-      maxMs: toMs(this.eventLoopHistogram.max),
-      p99Ms: toMs(this.eventLoopHistogram.percentile(99))
+    // The histogram records the time between timer ticks, which includes the
+    // sampling interval itself. Subtract it to get the actual delay.
+    const lagMs = (ns: number): number =>
+      Number.isFinite(ns) ? round(Math.max(0, ns / 1_000_000 - EVENT_LOOP_RESOLUTION_MS)) : 0
+    const hasSamples = this.eventLoopHistogram.count > 0
+
+    const output: RuntimeWindowOutput = {
+      seconds: round(elapsedMs / 1000),
+      eventLoopLag: {
+        meanMs: hasSamples ? lagMs(this.eventLoopHistogram.mean) : 0,
+        maxMs: hasSamples ? lagMs(this.eventLoopHistogram.max) : 0,
+        p99Ms: hasSamples ? lagMs(this.eventLoopHistogram.percentile(99)) : 0
+      },
+      gc: {
+        ...this.gc,
+        totalPauseMs: round(this.gc.totalPauseMs),
+        maxPauseMs: round(this.gc.maxPauseMs)
+      },
+      processCpu: {
+        usagePercent: round(((cpu.user + cpu.system) / 1000 / elapsedMs) * 100),
+        userMs: round(cpu.user / 1000),
+        systemMs: round(cpu.system / 1000)
+      }
     }
 
     this.eventLoopHistogram.reset()
+    this.gc = HealthService.emptyGc()
+    this.windowStartedAt = now
+    this.cpuBaseline = process.cpuUsage()
     return output
   }
 
-  getLoadAvarage(time: number, numCpus: number): Load {
-    const getStatus = (percentage: number): LoadStatus => {
-      const thresholds: { limit: number; status: LoadStatus }[] = [
-        { limit: 60, status: 'healthy 🟢' },
-        { limit: 80, status: 'warning ⚠️' },
-        { limit: Infinity, status: 'overloaded 🔴' }
-      ]
-      return thresholds.find((t) => percentage < t.limit)?.status ?? 'overloaded 🔴'
+  async getHostCpu(): Promise<HostCpuOutput> {
+    const cpus = os.cpus().length
+    const [lastMinute, lastFiveMinutes, lastFifteenMinutes] = os.loadavg()
+
+    let cores: CpuCoreLoad[] = []
+    try {
+      const load = await systeminformation.currentLoad()
+      cores = load.cpus.map((core, index) => ({
+        core: index + 1,
+        load: `${core.load.toFixed(2)}%` as PercentFormatted
+      }))
+    } catch (error) {
+      this.logError(error, `${HealthService.name}.getHostCpu`)
     }
 
-    const percentage = (time / numCpus) * 100
-    const status = getStatus(percentage)
-
-    if (status !== 'healthy 🟢') {
-      this.logger.warn({
-        message: `CPU ${status} - Load: ${time.toFixed(2)}, CPUs: ${numCpus}, Usage: ${percentage.toFixed(1)}%`,
-        metadata: { context: HealthService.name }
-      })
+    return {
+      cpus,
+      globalAverage: {
+        lastMinute: this.getLoadAverage(lastMinute, cpus),
+        lastFiveMinutes: this.getLoadAverage(lastFiveMinutes, cpus),
+        lastFifteenMinutes: this.getLoadAverage(lastFifteenMinutes, cpus)
+      },
+      cores
     }
-
-    return { load: time, status }
   }
 
   getHttpConnections(server: Server): Promise<number | null> {
@@ -228,71 +228,165 @@ export class HealthService implements IHealthAdapter {
           resolve(null)
           return
         }
-
         resolve(count)
       })
     })
   }
 
-  async getLatency(host = '8.8.8.8'): Promise<LatencyFormatted> {
+  /** One serverStatus call for both connections and WiredTiger cache. */
+  async getMongoServerStatus(): Promise<MongoServerStatusOutput> {
+    const empty: MongoServerStatusOutput = { connection: null, memory: { used: null, limit: null } }
     try {
-      const res = await ping.promise.probe(host, { timeout: 1 })
-      if (!res.alive || !res.time) {
-        return 'N/A'
-      }
-      const latency = [
-        { latency: 20, status: 'Excellent' },
-        { latency: 100, status: 'Acceptable' },
-        { latency: 300, status: 'Poor' }
-      ].find((l) => Number(res.time) < l.latency)
-      return `${res.time}ms ${latency?.status ?? 'Critical'}`
-    } catch (error) {
-      this.logError(error, `${HealthService.name}.getLatency`)
-      return 'Critical'
-    }
-  }
+      if (this.mongo.readyState !== 1 || !this.mongo.db) return empty
 
-  async getCPUCore(): Promise<{ cpus: { load: number }[] }> {
-    try {
-      return await systeminformation.currentLoad()
-    } catch (error) {
-      this.logError(error, `${HealthService.name}.getCPUCore`)
-      return { cpus: [] }
-    }
-  }
+      const db = this.mongo.db
+      const status = await this.withTimeout(db.command({ serverStatus: 1 }), 'Mongo serverStatus')
+      const cache = status.wiredTiger?.cache
 
-  async getPostgresStatus(): Promise<HealthStatus> {
-    try {
-      const result = await this.postgres.query('SELECT 1')
-
-      return result.length > 0 ? HealthStatus.UP : HealthStatus.DOWN
-    } catch (error) {
-      this.logError(error, `${HealthService.name}.getPostgresStatus`)
-      return HealthStatus.DOWN
-    }
-  }
-
-  async getMongoStatus(): Promise<HealthStatus> {
-    try {
-      if (this.mongo.readyState !== 1 || !this.mongo.db) {
-        return HealthStatus.DOWN
+      if (!cache && !this.secrets.IS_DOCUMENTDB) {
+        this.logger.warn({
+          message: 'WiredTiger cache not available - check MongoDB version/config',
+          metadata: { context: HealthService.name }
+        })
       }
 
-      await this.mongo.db.command({ ping: 1 })
-      return HealthStatus.UP
+      const formatMemory = (bytes: unknown): ByteSizeFormatted | null =>
+        typeof bytes === 'number' && Number.isFinite(bytes) ? toMb(bytes) : null
+
+      return {
+        connection: status.connections ?? null,
+        memory: {
+          used: formatMemory(cache?.['bytes currently in the cache']),
+          limit: formatMemory(cache?.['maximum bytes configured'])
+        }
+      }
     } catch (error) {
-      this.logError(error, `${HealthService.name}.getMongoStatus`)
-      return HealthStatus.DOWN
+      this.logError(error, `${HealthService.name}.getMongoServerStatus`)
+      return empty
     }
   }
 
-  async getRedisStatus(): Promise<HealthStatus> {
+  async getPostgresConnections(): Promise<PostgresConnectionOutput | null> {
     try {
-      const status = await this.redis.ping()
-      return status === 'PONG' ? HealthStatus.UP : HealthStatus.DOWN
+      // current/active are scoped to the application database; available is server-wide.
+      const [connections] = await this.withTimeout(
+        this.postgres.query(`
+          SELECT
+            COUNT(*) FILTER (
+              WHERE backend_type = 'client backend' AND datname = current_database()
+            )::int AS current,
+            COUNT(*) FILTER (
+              WHERE backend_type = 'client backend' AND datname = current_database() AND state = 'active'
+            )::int AS active,
+            GREATEST(
+              current_setting('max_connections')::int -
+              current_setting('superuser_reserved_connections')::int -
+              COUNT(*) FILTER (WHERE backend_type = 'client backend'),
+              0
+            )::int AS available
+          FROM pg_stat_activity;
+        `),
+        'Postgres connections'
+      )
+
+      return {
+        current: Number(connections.current),
+        available: Number(connections.available),
+        active: Number(connections.active)
+      }
     } catch (error) {
-      this.logError(error, `${HealthService.name}.getRedisStatus`)
-      return HealthStatus.DOWN
+      this.logError(error, `${HealthService.name}.getPostgresConnections`)
+      return null
+    }
+  }
+
+  async getPostgresDatabaseSize(): Promise<string | null> {
+    try {
+      const [result] = await this.withTimeout(
+        this.postgres.query(`SELECT pg_database_size(current_database())::text AS "databaseSizeBytes"`),
+        'Postgres database size'
+      )
+      return String(result.databaseSizeBytes)
+    } catch (error) {
+      this.logError(error, `${HealthService.name}.getPostgresDatabaseSize`)
+      return null
+    }
+  }
+
+  async getRedisInfo(): Promise<RedisInfoOutput | null> {
+    try {
+      const raw = await this.withTimeout(this.redis.client.info(), 'Redis INFO')
+      const info = new Map(
+        raw
+          .split(/\r?\n/)
+          .filter((line) => line.includes(':') && !line.startsWith('#'))
+          .map((line) => {
+            const index = line.indexOf(':')
+            return [line.slice(0, index), line.slice(index + 1)] as const
+          })
+      )
+      const read = (key: string): number => Number(info.get(key) ?? 0)
+      const maxMemory = read('maxmemory')
+
+      return {
+        usedMemory: toMb(read('used_memory')),
+        maxMemory: maxMemory > 0 ? toMb(maxMemory) : null,
+        connectedClients: read('connected_clients'),
+        evictedKeys: read('evicted_keys')
+      }
+    } catch (error) {
+      this.logError(error, `${HealthService.name}.getRedisInfo`)
+      return null
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // Internals
+  // -------------------------------------------------------------------------
+
+  private getLoadAverage(load: number, cpus: number): Load {
+    const thresholds: { limit: number; status: LoadStatus }[] = [
+      { limit: 60, status: 'healthy 🟢' },
+      { limit: 80, status: 'warning ⚠️' },
+      { limit: Infinity, status: 'overloaded 🔴' }
+    ]
+    const percentage = (load / cpus) * 100
+    const status = thresholds.find((t) => percentage < t.limit)?.status ?? 'overloaded 🔴'
+
+    if (status !== 'healthy 🟢') {
+      this.logger.warn({
+        message: `Host CPU ${status} - Load: ${load.toFixed(2)}, CPUs: ${cpus}, Usage: ${percentage.toFixed(1)}%`,
+        metadata: { context: HealthService.name }
+      })
+    }
+
+    return { load, status }
+  }
+
+  private async runCheck(name: string, check: () => Promise<boolean>): Promise<DependencyCheck> {
+    const startedAt = performance.now()
+    const latencyMs = (): number => round(performance.now() - startedAt)
+    try {
+      const ok = await this.withTimeout(check(), name)
+      return { status: ok ? HealthStatus.UP : HealthStatus.DOWN, latencyMs: latencyMs() }
+    } catch (error) {
+      this.logError(error, `${HealthService.name}.${name}`)
+      return { status: HealthStatus.DOWN, latencyMs: latencyMs() }
+    }
+  }
+
+  private async withTimeout<T>(promise: Promise<T>, label: string): Promise<T> {
+    let timer: NodeJS.Timeout | undefined
+    const timeout = new Promise<never>((_, reject) => {
+      timer = setTimeout(
+        () => reject(new ApiInternalServerException(`${label} timed out after ${CHECK_TIMEOUT_MS}ms`)),
+        CHECK_TIMEOUT_MS
+      )
+    })
+    try {
+      return await Promise.race([promise, timeout])
+    } finally {
+      clearTimeout(timer)
     }
   }
 
@@ -304,23 +398,25 @@ export class HealthService implements IHealthAdapter {
       })
     )
   }
+
+  private static emptyGc(): GcOutput {
+    return { count: 0, minor: 0, major: 0, totalPauseMs: 0, maxPauseMs: 0 }
+  }
 }
 
 export abstract class IHealthAdapter {
   abstract mongo: Connection
   abstract postgres: DataSource
   abstract redis: ICacheAdapter<Redis>
-  abstract getMongoStatus(): Promise<HealthStatus>
-  abstract getRedisStatus(): Promise<HealthStatus>
-  abstract getPostgresStatus(): Promise<HealthStatus>
-  abstract getMemoryUsageInMB(): MemoryOutput
-  abstract getEventLoopLag(): EventLoopLagOutput
-  abstract getLoadAvarage(time: number, numCpus: number): Load
+  abstract checkMongo(): Promise<DependencyCheck>
+  abstract checkPostgres(): Promise<DependencyCheck>
+  abstract checkRedis(): Promise<DependencyCheck>
+  abstract getMemory(): MemoryOutput
+  abstract getRuntimeWindow(): RuntimeWindowOutput
+  abstract getHostCpu(): Promise<HostCpuOutput>
   abstract getHttpConnections(server: Server): Promise<number | null>
-  abstract getLatency(host?: string): Promise<LatencyFormatted>
-  abstract getMongoConnections(): Promise<MongoConnectionOutput | null>
+  abstract getMongoServerStatus(): Promise<MongoServerStatusOutput>
   abstract getPostgresConnections(): Promise<PostgresConnectionOutput | null>
   abstract getPostgresDatabaseSize(): Promise<string | null>
-  abstract getMongoMemory(): Promise<MongoCacheMemoryOutput>
-  abstract getCPUCore(): Promise<{ cpus: { load: number }[] }>
+  abstract getRedisInfo(): Promise<RedisInfoOutput | null>
 }

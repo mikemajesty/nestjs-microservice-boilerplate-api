@@ -13,11 +13,30 @@ export type ByteSizeFormatted = `${number} MB`
 /** Value already formatted for display, e.g. "42.3%". Do not use for aggregation. */
 export type PercentFormatted = `${number}%`
 
-/** Formatted latency, e.g. "18ms Excellent" or "N/A". */
-export type LatencyFormatted = string
-
-/** CPU load classification derived from getLoadAvarage(). */
+/** CPU load classification derived from getLoadAverage(). */
 export type LoadStatus = 'healthy 🟢' | 'warning ⚠️' | 'overloaded 🔴'
+
+// ---------------------------------------------------------------------------
+// Readiness: dependency checks only. Kept cheap because orchestrators call it often.
+// ---------------------------------------------------------------------------
+
+export type DependencyCheck = {
+  status: HealthStatus
+  /** Time the check took, in milliseconds. On failure, time until the error or timeout. */
+  latencyMs: number
+}
+
+export type ReadinessOutput = {
+  /** UP only when every dependency is UP. The endpoint answers 503 otherwise. */
+  status: HealthStatus
+  version: string
+  timestamp: string
+  dependencies: {
+    mongo: DependencyCheck
+    postgres: DependencyCheck
+    redis: DependencyCheck
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Memory
@@ -26,9 +45,12 @@ export type LoadStatus = 'healthy 🟢' | 'warning ⚠️' | 'overloaded 🔴'
 export type MemoryOutput = {
   /** process.memoryUsage() — Node process memory. */
   process: {
-    /** rss — total process memory, heap included. If it grows while heapUsed is flat, look outside the JS heap. */
+    /**
+     * rss — physical memory resident for the process. Can be lower than heapTotal:
+     * committed-but-untouched pages and (on macOS) compressed pages are not counted.
+     */
     usedRam: ByteSizeFormatted
-    /** heapTotal — memory reserved by V8 for the heap. */
+    /** heapTotal — memory committed by V8 for the heap. */
     heapTotal: ByteSizeFormatted
     /** heapUsed — memory held by live JS objects. Leaks in application code surface here. */
     heapUsed: ByteSizeFormatted
@@ -43,8 +65,18 @@ export type MemoryOutput = {
     /** Redundant with process.heapUsed; kept for compatibility. */
     usedHeapSize: ByteSizeFormatted
     executableHeapSize: ByteSizeFormatted
-    /** Effective V8 ceiling. Compare against the container memory limit. */
+    /** Effective V8 ceiling. Compare against `container.limit`. */
     heapSizeLimit: ByteSizeFormatted
+  }
+  /**
+   * process.constrainedMemory() — memory limit imposed by the OS (cgroup in containers).
+   * When RSS reaches it, the kernel kills the process (OOMKilled) instead of V8 raising an error.
+   */
+  container: {
+    /** null when the process has no memory constraint (e.g. local machine). */
+    limit: ByteSizeFormatted | null
+    /** RSS as a percentage of `limit`; null when there is no limit. */
+    rssPercent: number | null
   }
   /**
    * v8.getHeapSpaceStatistics() — per-space heap breakdown.
@@ -64,22 +96,76 @@ export type HeapSpaceOutput = {
 }
 
 // ---------------------------------------------------------------------------
-// Event loop
+// Runtime (values cover the sampling window, see MetricsOutput.window)
 // ---------------------------------------------------------------------------
 
 export type EventLoopLagOutput = {
-  /** Mean event loop delay in milliseconds over the sampling window. */
+  /** Mean event loop delay in milliseconds. The sampler resolution is already subtracted. */
   meanMs: number
-  /** Maximum event loop delay in milliseconds over the sampling window. */
+  /** Maximum event loop delay in milliseconds. The sampler resolution is already subtracted. */
   maxMs: number
-  /** 99th percentile event loop delay in milliseconds over the sampling window. */
+  /** 99th percentile event loop delay in milliseconds. The sampler resolution is already subtracted. */
   p99Ms: number
 }
 
+export type GcOutput = {
+  /** Garbage collections in the window. */
+  count: number
+  /** Young-generation collections (Scavenge). Frequent and cheap. */
+  minor: number
+  /** Full collections (Mark-Compact). Slower; frequent major GCs indicate memory pressure. */
+  major: number
+  /** Sum of GC pause durations in milliseconds. */
+  totalPauseMs: number
+  /** Longest single GC pause in milliseconds. */
+  maxPauseMs: number
+}
+
+export type ProcessOutput = {
+  /** Machine or pod name. In Kubernetes, this identifies which pod answered. */
+  hostname: string
+  pid: number
+  nodeVersion: string
+  environment: string
+  uptimeSeconds: number
+  /** process.cpuUsage() — CPU used by this process only. */
+  cpu: {
+    /** CPU time over wall time in the window. 100% = one full core, like `top`. */
+    usagePercent: number
+    userMs: number
+    systemMs: number
+  }
+}
+
 // ---------------------------------------------------------------------------
-// Connections
+// Host CPU (machine-wide, all processes)
 // ---------------------------------------------------------------------------
 
+export type Load = {
+  load: number
+  status: LoadStatus
+}
+
+export type CpuCoreLoad = {
+  core: number
+  load: PercentFormatted
+}
+
+export type HostCpuOutput = {
+  cpus: number
+  globalAverage: {
+    lastMinute: Load
+    lastFiveMinutes: Load
+    lastFifteenMinutes: Load
+  }
+  cores: CpuCoreLoad[]
+}
+
+// ---------------------------------------------------------------------------
+// Dependencies
+// ---------------------------------------------------------------------------
+
+/** MongoDB serverStatus.connections — server-wide, all clients included. */
 export type MongoConnectionOutput = {
   active: number
   available: number
@@ -100,8 +186,11 @@ export type MongoConnectionOutput = {
 }
 
 export type PostgresConnectionOutput = {
+  /** Client backends active on the application database (includes this query). */
   active: number
+  /** Connection slots left on the server, all databases considered. */
   available: number
+  /** Client backends connected to the application database. */
   current: number
 }
 
@@ -114,18 +203,14 @@ export type MongoCacheMemoryOutput = {
 /** @deprecated use MongoCacheMemoryOutput — the previous name was ambiguous. */
 export type CacheMemoryOutput = MongoCacheMemoryOutput
 
-// ---------------------------------------------------------------------------
-// CPU / load
-// ---------------------------------------------------------------------------
-
-export type Load = {
-  load: number
-  status: LoadStatus
-}
-
-export type CpuCoreLoad = {
-  core: number
-  load: PercentFormatted
+/** Redis INFO metrics. */
+export type RedisInfoOutput = {
+  usedMemory: ByteSizeFormatted
+  /** null when maxmemory is 0 (no limit). */
+  maxMemory: ByteSizeFormatted | null
+  connectedClients: number
+  /** Keys removed because maxmemory was reached, since the Redis server started. */
+  evictedKeys: number
 }
 
 // ---------------------------------------------------------------------------
@@ -159,43 +244,40 @@ export type StartupOutput = {
 }
 
 // ---------------------------------------------------------------------------
-// Aggregated health output
+// Metrics: everything that does not decide readiness. For dashboards and humans.
 // ---------------------------------------------------------------------------
 
-export type HealthOutput = {
-  server: HealthStatus
+export type MetricsOutput = {
   version: string
+  timestamp: string
+  /**
+   * Event loop, GC and process CPU are aggregated since the previous call
+   * to this endpoint, then reset. `seconds` is the length of that window.
+   * HTTP request rate and latency are exported via OpenTelemetry (see main.ts), not here.
+   */
+  window: {
+    seconds: number
+  }
+  process: ProcessOutput
+  memory: MemoryOutput
+  eventLoopLag: EventLoopLagOutput
+  gc: GcOutput
+  network: {
+    /** Open TCP sockets on the HTTP server, keep-alive included; null when unavailable. */
+    connections: number | null
+  }
+  cpu: HostCpuOutput
   mongo: {
-    status: HealthStatus
-    /**
-     * null when the connection is not ready (status DOWN) or the read failed.
-     * May be null even with status UP if serverStatus did not return connections.
-     */
+    /** null when the connection is not ready or serverStatus failed. */
     connection: MongoConnectionOutput | null
     memory: MongoCacheMemoryOutput
   }
   postgres: {
-    status: HealthStatus
-    /** null when the query failed, regardless of status. */
+    /** null when the query failed. */
     connection: PostgresConnectionOutput | null
+    /** Size of the application database (current_database()) in bytes; null when unavailable. */
     databaseSizeBytes: string | null
   }
-  redisState: HealthStatus
-  network: {
-    latency: LatencyFormatted
-    /** Number of HTTP requests in flight at the moment of the snapshot. */
-    connections: number | null
-  }
-  memory: MemoryOutput
-  cpu: {
-    cpus: number
-    globalAverage: {
-      lastMinute: Load
-      lastFiveMinutes: Load
-      lastFifteenMinutes: Load
-    }
-    cores: CpuCoreLoad[]
-  }
-  /** Omitted when the runtime does not expose event loop metrics. */
-  eventLoopLag?: EventLoopLagOutput
+  /** null when Redis is unreachable or INFO failed. */
+  redis: RedisInfoOutput | null
 }

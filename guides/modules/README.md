@@ -68,6 +68,7 @@ The `module.ts` is the glue:
 | **Module** | NestJS wiring, bindings | [module.md](./module.md) |
 | **Repository** | Database implementation | [repository.md](./repository.md) |
 | **Test (E2E)** | Integration tests with Testcontainers | [test.md](./test.md) |
+| **Health** | Probes, metrics and dashboard | [health.md](./health.md) |
 
 ---
 
@@ -154,4 +155,5 @@ The `module.ts` is the glue:
 - [Module](./module.md) — NestJS wiring
 - [Repository](./repository.md) — Database implementation
 - [Test (E2E)](./test.md) — Integration tests with Testcontainers
+- [Health](./health.md) — Probes, metrics and dashboard
 - [Core Layer](../core/README.md) — Business logic (abstractions)
