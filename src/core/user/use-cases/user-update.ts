@@ -37,7 +37,7 @@ export class UserUpdateUsecase implements IUsecase {
       throw new ApiNotFoundException('userNotFound')
     }
 
-    const roles = await this.getRoles(input, user.roles as RoleEntity[])
+    const roles = await this.getRoles(input, user.roles)
 
     user.merge({ ...input, roles })
 

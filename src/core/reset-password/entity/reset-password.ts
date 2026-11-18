@@ -2,7 +2,7 @@
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/core/entity.md
  */
 import { UserEntity, UserEntitySchema } from '@/core/user/entity/user'
-import { BaseEntity } from '@/utils/entity'
+import { BaseEntity } from '@/utils/domain'
 import { InferSchema, InputValidator } from '@/utils/validator'
 
 const ID = InputValidator.uuid()

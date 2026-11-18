@@ -2,7 +2,7 @@
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/core/entity.md
  */
 import { RoleEntity, RoleEntitySchema } from '@/core/role/entity/role'
-import { BaseEntity } from '@/utils/entity'
+import { BaseEntity } from '@/utils/domain'
 import { InferSchema, InputValidator } from '@/utils/validator'
 
 import { UserPasswordEntity, UserPasswordEntitySchema } from './user-password'
@@ -11,7 +11,6 @@ const ID = InputValidator.uuid()
 const Email = InputValidator.email()
 const Name = InputValidator.string()
 const Password = UserPasswordEntitySchema
-const Role = RoleEntitySchema
 const CreatedAt = InputValidator.date().nullish()
 const UpdatedAt = InputValidator.date().nullish()
 const DeletedAt = InputValidator.date().nullish()
@@ -20,7 +19,7 @@ export const UserEntitySchema = InputValidator.object({
   id: ID,
   name: Name,
   email: Email,
-  roles: InputValidator.array(Role.optional()).default([]),
+  roles: InputValidator.array(RoleEntitySchema.optional().optional()).default([]),
   password: Password.optional(),
   createdAt: CreatedAt,
   updatedAt: UpdatedAt,

@@ -2,36 +2,36 @@
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/infra/repository.md
  */
 import {
-  ClientSession,
-  Document,
-  InsertManyOptions,
-  Model,
-  MongooseUpdateQueryOptions,
-  PaginateModel,
-  QueryOptions,
-  SaveOptions,
-  UpdateQuery,
-  UpdateWithAggregationPipeline
+    ClientSession,
+    Document,
+    InsertManyOptions,
+    Model,
+    MongooseUpdateQueryOptions,
+    PaginateModel,
+    QueryOptions,
+    SaveOptions,
+    UpdateQuery,
+    UpdateWithAggregationPipeline
 } from 'mongoose'
 
 import { DateUtils } from '@/utils/date'
 import { NormalizeMongoFilter } from '@/utils/decorators'
-import { IEntity } from '@/utils/entity'
+import { IEntity } from '@/utils/domain'
 import { ApiBadRequestException } from '@/utils/exception'
 import { FilterQuery, MongoRepositoryModelSessionType } from '@/utils/mongoose'
 import { PaginationInput, PaginationOutput, PaginationUtils } from '@/utils/pagination'
 
 import { IRepository } from '../adapter'
 import {
-  CreatedModel,
-  CreatedOrUpdateModel,
-  DatabaseOperationCommand,
-  EntityConstructor,
-  FilterQueryFilter,
-  JoinType,
-  MakePartialFilter,
-  RemovedModel,
-  UpdatedModel
+    CreatedModel,
+    CreatedOrUpdateModel,
+    DatabaseOperationCommand,
+    EntityConstructor,
+    FilterQueryFilter,
+    JoinType,
+    MakePartialFilter,
+    RemovedModel,
+    UpdatedModel
 } from '../types'
 import { validateFindByCommandsFilter, WithDatabaseErrorContext } from '../util'
 

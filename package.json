@@ -9,9 +9,10 @@
   "scripts": {
     "prepare": "husky",
     "build": "nest build",
+    "dev:prestart": "kill O -9 $(lsof -ti :5000) 2>/dev/null || true",
     "start": "node dist/main.js",
-    "start:dev": "npm run migration:run && tsc --noEmit && nest start --watch -b swc",
-    "start:debug": "npm run migration:run && tsc --noEmit && nest start --debug --watch",
+    "start:dev": "npm run dev:prestart && npm run migration:run && tsc --noEmit && nest start --watch -b swc",
+    "start:debug": "npm run dev:prestart && npm run migration:run && tsc --noEmit && nest start --debug --watch",
     "prettier": "prettier --write \"src/**/*.json\"",
     "lint": "eslint \"{src,test}/**/*.{ts,js}\" --fix",
     "lint:check": "eslint \"{src,test}/**/*.{ts,js}\"",

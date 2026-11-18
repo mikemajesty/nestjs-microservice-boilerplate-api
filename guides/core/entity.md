@@ -16,7 +16,7 @@ Entities are the **heart of the domain layer**. They represent business concepts
 
 ```typescript
 // src/core/cat/entity/cat.ts
-import { BaseEntity } from '@/utils/entity'
+import { BaseEntity } from '@/utils/domain'
 import { InferSchema, InputValidator } from '@/utils/validator'
 
 // 1️⃣ Define each field's validation rules

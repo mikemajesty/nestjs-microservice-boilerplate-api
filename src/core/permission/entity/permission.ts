@@ -1,8 +1,8 @@
 /**
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/core/entity.md
  */
-import { RoleEntity, RoleEnum } from '@/core/role/entity/role'
-import { BaseEntity } from '@/utils/entity'
+import { RoleEntity, RoleEntitySchema, RoleEnum } from '@/core/role/entity/role'
+import { BaseEntity } from '@/utils/domain'
 import { InferSchema, InputValidator } from '@/utils/validator'
 
 const ID = InputValidator.uuid()
@@ -14,12 +14,18 @@ const Name = InputValidator.string()
 const CreatedAt = InputValidator.date().nullish().optional()
 const UpdatedAt = InputValidator.date().nullish().optional()
 const DeletedAt = InputValidator.date().nullish().optional()
-const Roles = InputValidator.array(InputValidator.any()).optional()
 
 export const PermissionEntitySchema = InputValidator.object({
   id: ID,
   name: Name,
-  roles: Roles,
+  // Getter defers reading RoleEntitySchema until parse time, avoiding the circular import error
+  // while keeping type inference. `.omit({ permissions: true })` cuts the Permission <-> Role cycle:
+  // without it the mock generator recurses forever. Careful: nested `permissions` are stripped on parse.
+  get roles() {
+    return InputValidator.array(RoleEntitySchema.omit({ permissions: true }))
+      .or(InputValidator.array(InputValidator.enum(RoleEnum)))
+      .optional()
+  },
   createdAt: CreatedAt,
   updatedAt: UpdatedAt,
   deletedAt: DeletedAt

@@ -1,7 +1,7 @@
 import { ClientSession, ObjectId } from 'mongoose'
 import { EntityManager } from 'typeorm'
 
-import { IEntity } from '@/utils/entity'
+import { IEntity } from '@/utils/domain'
 import { FieldQuery, FilterQuery } from '@/utils/mongoose'
 import { AnyFunction } from '@/utils/types'
 
@@ -64,13 +64,15 @@ export type JoinType<T> = {
  * should be handled explicitly by the user via `JoinType<T>` joins.
  */
 export type MakePartialFilter<T> = {
-  [K in keyof T as K extends '_schema'
-    ? never
-    : T[K] extends AnyFunction
+  [
+    K in keyof T as K extends '_schema'
       ? never
-      : JoinValue<T[K]> extends never
-        ? K
-        : never]?: T[K]
+      : T[K] extends AnyFunction
+        ? never
+        : JoinValue<T[K]> extends never
+          ? K
+          : never
+  ]?: T[K]
 }
 
 type RelationKey<T> = {

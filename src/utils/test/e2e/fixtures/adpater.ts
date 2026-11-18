@@ -1,5 +1,5 @@
 import { IRepository } from '@/infra/repository'
-import { IEntity } from '@/utils/entity'
+import { IEntity } from '@/utils/domain'
 
 export interface ITestFixture<T extends IEntity> {
   entity: T | T[]

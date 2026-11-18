@@ -421,7 +421,7 @@ export class CatEntity {
 }
 
 // ✅ CORRECT - Extends BaseEntity
-import { BaseEntity } from '@/utils/entity'
+import { BaseEntity } from '@/utils/domain'
 
 export class CatEntity extends BaseEntity<CatEntity>() {
   name!: Cat['name']
@@ -517,7 +517,7 @@ Every Use Case **must implement** the `IUsecase` interface. This is mandatory in
 | `class MyUseCase { }`                | `class MyUseCase implements IUsecase { }`                |
 | `export class CreateUserUseCase { }` | `export class CreateUserUseCase implements IUsecase { }` |
 
-````typescript
+```typescript
 // ❌ WRONG - Not implementing IUsecase
 export class CatCreateUsecase {
   constructor(private readonly catRepository: ICatRepository) {}
@@ -528,7 +528,7 @@ export class CatCreateUsecase {
 }
 
 // ✅ CORRECT - Implements IUsecase
-import { IUsecase } from '@/utils/usecase';
+import { IUsecase } from '@/utils/usecase'
 
 export class CatCreateUsecase implements IUsecase {
   constructor(private readonly catRepository: ICatRepository) {}
@@ -537,7 +537,7 @@ export class CatCreateUsecase implements IUsecase {
     // ...
   }
 }
-````
+```
 
 **Why this is mandatory:**
 
@@ -548,23 +548,22 @@ export class CatCreateUsecase implements IUsecase {
 
 📖 **See detailed patterns:** [Use Case Guide](guides/core/usecase.md) — includes architecture diagrams and testing patterns
 
-
 ---
 
 ### Repository Interfaces: Avoid Duplicating Generic Methods
 
 The repository interface should **only declare methods that don't exist** in the generic `IRepository<T>`. The generic repository already provides 20+ methods:
 
-| ❌ Avoid | ✅ Prefer |
-|----------|-----------|
+| ❌ Avoid                                       | ✅ Prefer                               |
+| ---------------------------------------------- | --------------------------------------- |
 | Declaring `create()`, `findById()`, `update()` | Already inherited from `IRepository<T>` |
-| Duplicating generic query methods | Only add **domain-specific** queries |
+| Duplicating generic query methods              | Only add **domain-specific** queries    |
 
 ```typescript
 // ❌ Wrong - These already exist in IRepository
 export abstract class ICatRepository extends IRepository<CatEntity> {
-  abstract create(entity: CatEntity): Promise<CatEntity>  // Already exists!
-  abstract findById(id: string): Promise<CatEntity>      // Already exists!
+  abstract create(entity: CatEntity): Promise<CatEntity> // Already exists!
+  abstract findById(id: string): Promise<CatEntity> // Already exists!
 }
 
 // ✅ Correct - Only domain-specific methods
@@ -572,7 +571,7 @@ export abstract class ICatRepository extends IRepository<CatEntity> {
   abstract paginate(input: CatListInput): Promise<CatListOutput>
   abstract findByBreed(breed: string): Promise<CatEntity[]>
 }
-````
+```
 
 📖 **See full method list:** [Repository Guide](guides/core/repository.md) — includes `IRepository<T>` generic methods and examples
 
@@ -1227,29 +1226,29 @@ External services and integrations.
 
 Shared libraries and utilities.
 
-| Guide                             | Description          |
-| --------------------------------- | -------------------- |
-| [Token](guides/libs/token.md)     | JWT management       |
-| [Event](guides/libs/event.md)     | Event emitter system |
-| [i18n](guides/libs/i18n.md)       | Internationalization |
+| Guide                         | Description          |
+| ----------------------------- | -------------------- |
+| [Token](guides/libs/token.md) | JWT management       |
+| [Event](guides/libs/event.md) | Event emitter system |
+| [i18n](guides/libs/i18n.md)   | Internationalization |
 
 ### 📂 [Decorators](guides/decorators/)
 
 Custom decorators for common patterns.
 
-| Guide | Description |
-| --- | --- |
-| [Decorator index](guides/decorators/README.md) | Source-to-guide inventory for all current decorators |
-| [Permission](guides/decorators/permission.md) | Route permission metadata |
-| [Public](guides/decorators/public.md) | Public authentication metadata |
-| [Request Timeout](guides/decorators/request-timeout.md) | Per-route HTTP timeout |
-| [Validate Schema](guides/decorators/validate-schema.md) | Zod input validation |
-| [With Error Context](guides/decorators/with-error-context.md) | Error context enrichment |
-| [Normalize Mongo Filter](guides/decorators/normalize-mongo-filter.md) | Mongo filter normalization |
-| [Transform Mongoose Search](guides/decorators/transform-mongoose-search.md) | Mongoose search conversion |
-| [Normalize TypeORM Filter](guides/decorators/normalize-typeorm-filter.md) | TypeORM soft-delete filter |
-| [Transform TypeORM Search](guides/decorators/transform-type-orm-search.md) | TypeORM search conversion |
-| [Transform Sort](guides/decorators/transform-sort.md) | Repository sort validation |
+| Guide                                                                       | Description                                          |
+| --------------------------------------------------------------------------- | ---------------------------------------------------- |
+| [Decorator index](guides/decorators/README.md)                              | Source-to-guide inventory for all current decorators |
+| [Permission](guides/decorators/permission.md)                               | Route permission metadata                            |
+| [Public](guides/decorators/public.md)                                       | Public authentication metadata                       |
+| [Request Timeout](guides/decorators/request-timeout.md)                     | Per-route HTTP timeout                               |
+| [Validate Schema](guides/decorators/validate-schema.md)                     | Zod input validation                                 |
+| [With Error Context](guides/decorators/with-error-context.md)               | Error context enrichment                             |
+| [Normalize Mongo Filter](guides/decorators/normalize-mongo-filter.md)       | Mongo filter normalization                           |
+| [Transform Mongoose Search](guides/decorators/transform-mongoose-search.md) | Mongoose search conversion                           |
+| [Normalize TypeORM Filter](guides/decorators/normalize-typeorm-filter.md)   | TypeORM soft-delete filter                           |
+| [Transform TypeORM Search](guides/decorators/transform-type-orm-search.md)  | TypeORM search conversion                            |
+| [Transform Sort](guides/decorators/transform-sort.md)                       | Repository sort validation                           |
 
 ### 📂 [Middlewares](guides/middlewares/)
 

@@ -1,7 +1,7 @@
 /**
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/decorators/transform-mongoose-search.md
  */
-import { IEntity } from '@/utils/entity'
+import { IEntity } from '@/utils/domain'
 import { ApiBadRequestException } from '@/utils/exception'
 import { FilterQuery, MongoUtils } from '@/utils/mongoose'
 
@@ -71,13 +71,13 @@ export function TransformMongooseSearch<T>(allowedFilterList: AllowedFilter<T>[]
           const regexFilter = MongoUtils.createRegexFilterText(filters as string | string[])
           if (typeof regexFilter === IS_ARRAY_FILTER) {
             const alternatives = (regexFilter as string[]).map((filter: string) => {
-                return {
-                  [field]: {
-                    $regex: filter,
-                    $options: 'i'
-                  }
+              return {
+                [field]: {
+                  $regex: filter,
+                  $options: 'i'
                 }
-              })
+              }
+            })
             if (alternatives.length) {
               where?.$and?.push({ $or: alternatives })
             }

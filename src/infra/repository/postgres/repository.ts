@@ -2,37 +2,37 @@
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/infra/repository.md
  */
 import {
-  BaseEntity,
-  EntityManager,
-  FindManyOptions,
-  FindOneOptions,
-  FindOptionsOrder,
-  FindOptionsSelect,
-  FindOptionsWhere,
-  In,
-  IsNull,
-  Not,
-  Raw,
-  Repository,
-  SaveOptions
+    BaseEntity,
+    EntityManager,
+    FindManyOptions,
+    FindOneOptions,
+    FindOptionsOrder,
+    FindOptionsSelect,
+    FindOptionsWhere,
+    In,
+    IsNull,
+    Not,
+    Raw,
+    Repository,
+    SaveOptions
 } from 'typeorm'
 
 import { NormalizeTypeOrmFilter } from '@/utils/decorators'
-import { IEntity } from '@/utils/entity'
+import { IEntity } from '@/utils/domain'
 import { ApiInternalServerException } from '@/utils/exception'
 import { PaginationInput, PaginationOutput, PaginationUtils } from '@/utils/pagination'
 import { MakePartial } from '@/utils/types'
 
 import { IRepository } from '../adapter'
 import {
-  CreatedModel,
-  CreatedOrUpdateModel,
-  DatabaseOperationCommand,
-  EntityConstructor,
-  JoinType,
-  MakePartialFilter,
-  RemovedModel,
-  UpdatedModel
+    CreatedModel,
+    CreatedOrUpdateModel,
+    DatabaseOperationCommand,
+    EntityConstructor,
+    JoinType,
+    MakePartialFilter,
+    RemovedModel,
+    UpdatedModel
 } from '../types'
 import { createRelations, WithDatabaseErrorContext } from '../util'
 

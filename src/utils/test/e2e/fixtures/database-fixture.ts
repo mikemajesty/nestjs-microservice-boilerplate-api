@@ -1,7 +1,7 @@
 import { EntityManager, FindOptionsWhere, ObjectLiteral } from 'typeorm'
 
 import { IRepository, RunInTransactionType } from '@/infra/repository'
-import { IEntity } from '@/utils/entity'
+import { IEntity } from '@/utils/domain'
 
 export abstract class DatabaseFixture<TSchema extends ObjectLiteral> {
   protected constructor(private readonly schema: new () => TSchema) {}

@@ -18,7 +18,7 @@ export class insertUser1727655177319 implements MigrationInterface {
     })
     await queryRunner.manager.insert(UserPasswordSchema, password as QueryDeepPartialEntity<UserPasswordSchema>)
 
-    const roles = await queryRunner.manager.find(RoleSchema)
+    const roles = await queryRunner.manager.find<RoleEntity>(RoleSchema)
 
     const entity = new UserEntity({
       id: IDGeneratorUtils.uuid(),

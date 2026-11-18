@@ -3,7 +3,7 @@
  */
 import { FindOperator, In, Raw } from 'typeorm'
 
-import { IEntity } from '@/utils/entity'
+import { IEntity } from '@/utils/domain'
 import { ApiBadRequestException } from '@/utils/exception'
 
 import { AllowedFilter, SearchTypeEnum } from '../../types'

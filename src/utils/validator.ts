@@ -3,7 +3,6 @@
  */
 import { AsyncLocalStorage } from 'node:async_hooks'
 
-import * as validatorBrasil from 'validator-brasil'
 import { z } from 'zod'
 
 import { LoggerService } from '@/infra/logger'
@@ -40,52 +39,11 @@ export const runWithRequestLocale = <T>(locale: SupportedLocale, callback: () =>
   return localeStorage.run(locale, callback)
 }
 
-const validateRG = (rg: string): boolean => {
-  const cleanedRG = rg.replace(/\D/g, '')
-  return cleanedRG.length >= 7 && cleanedRG.length <= 9
-}
-
-const validatePhoneBR = (telefone: string): boolean => {
-  const phone = telefone.replace(/\D/g, '')
-
-  if (phone.length === 11) {
-    return /^[1-9]{2}9[0-9]{8}$/.test(phone)
-  }
-
-  if (phone.length === 10) {
-    return /^[1-9]{2}[2-5][0-9]{7}$/.test(phone)
-  }
-
-  return false
-}
-
-const createBrazilValidator = <T extends string>(validator: (value: string) => boolean, format: T) => {
-  return z
-    .string()
-    .min(1, 'Required field')
-    .transform((val) => val.replace(/\D/g, ''))
-    .refine(validator, {
-      message: `Invalid ${format}`
-    })
-    .meta({ format })
-}
-
 export const InputValidator = {
   ...z,
-  cpf: () => createBrazilValidator(validatorBrasil.isCPF, 'cpf'),
-  cnpj: () => createBrazilValidator(validatorBrasil.isCNPJ, 'cnpj'),
-  rg: () => createBrazilValidator(validateRG, 'rg'),
-  phoneBR: () => createBrazilValidator(validatePhoneBR, 'phoneBR'),
-  cep: () => createBrazilValidator(validatorBrasil.isCEP, 'cep'),
-
-  phone: () =>
-    z
-      .string()
-      .transform((val) => val.replace(/\D/g, ''))
-      .refine((val) => val.length >= 8 && val.length <= 15, {
-        message: 'Invalid phone number'
-      })
-      .meta({ format: 'phone' })
+  custom: () => {
+    throw new Error('InputValidator.custom() is deprecated. Use InputValidator.schema<T>() instead.')
+  }
 }
 
 export const normalizeLocale = (locale: string): SupportedLocale => {

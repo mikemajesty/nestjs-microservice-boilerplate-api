@@ -62,7 +62,7 @@ import { CatListInput, CatListOutput } from '@/core/cat/use-cases/cat-list'
 import { Cat, CatDocument } from '@/infra/database/mongo/schemas/cat'
 import { MongoRepository } from '@/infra/repository'
 import { TransformMongooseSearch, SearchTypeEnum, TransformSort } from '@/utils/decorators'
-import { IEntity } from '@/utils/entity'
+import { IEntity } from '@/utils/domain'
 import { FilterQuery, MongoRepositoryModelSessionType } from '@/utils/mongoose'
 
 @Injectable()
