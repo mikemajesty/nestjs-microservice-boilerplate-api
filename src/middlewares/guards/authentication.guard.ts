@@ -4,12 +4,10 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 
-import { ICacheAdapter } from '@/infra/cache'
+import { ISessionAdapter } from '@/libs/session'
 import { ITokenAdapter } from '@/libs/token'
 import { PUBLIC_GUARD } from '@/utils/decorators'
 import { ApiUnauthorizedException } from '@/utils/exception'
-import { Namespaces } from '@/utils/namespaces'
-import { ObjectUtils } from '@/utils/object'
 import { AppFastifyRequest, ensureTraceId, UserRequest } from '@/utils/request'
 
 import { finishTracingWithError } from './utils'
@@ -19,7 +17,7 @@ export class AuthenticationGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
     private readonly tokenService: ITokenAdapter,
-    private readonly redisService: ICacheAdapter
+    private readonly session: ISessionAdapter
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -27,70 +25,77 @@ export class AuthenticationGuard implements CanActivate {
 
     ensureTraceId(request)
 
-    const isPublic = this.reflector.getAllAndOverride<boolean>(PUBLIC_GUARD, [context.getHandler(), context.getClass()])
-
     const tokenHeader = request.headers.authorization
 
-    if (isPublic) {
-      if (tokenHeader) {
-        await this.validateToken(request, tokenHeader)
-        await this.ensureNotBlacklisted(request)
-      }
-      return true
-    }
-
     if (!tokenHeader) {
-      finishTracingWithError(request, ApiUnauthorizedException.STATUS, 'no token provided')
-      throw new ApiUnauthorizedException('no token provided')
+      return this.allowAnonymous(context, request)
     }
 
-    await this.validateToken(request, tokenHeader)
-    await this.ensureNotBlacklisted(request)
+    await this.authenticate(request, tokenHeader)
 
     return true
   }
 
-  private async validateToken(request: AppFastifyRequest, tokenHeader: string) {
+  private allowAnonymous(context: ExecutionContext, request: AppFastifyRequest): boolean {
+    const isPublic = this.reflector.getAllAndOverride<boolean>(PUBLIC_GUARD, [context.getHandler(), context.getClass()])
+
+    if (!isPublic) {
+      this.reject(request, 'no token provided')
+    }
+
+    return true
+  }
+
+  private async authenticate(request: AppFastifyRequest, tokenHeader: string): Promise<void> {
+    const token = this.extractBearerToken(request, tokenHeader)
+
+    const user = await this.verifyToken(request, token)
+
+    await this.ensureActiveSession(request, user)
+
+    request.user = user
+  }
+
+  private extractBearerToken(request: AppFastifyRequest, tokenHeader: string): string {
     const [scheme, token] = tokenHeader.trim().split(/\s+/)
 
     if (scheme !== 'Bearer' || !token) {
-      finishTracingWithError(request, ApiUnauthorizedException.STATUS, 'malformed authorization header')
-      throw new ApiUnauthorizedException('malformed authorization header')
+      this.reject(request, 'malformed authorization header')
     }
 
+    return token
+  }
+
+  private async verifyToken(request: AppFastifyRequest, token: string): Promise<UserRequest> {
     try {
-      request.user = await this.tokenService.verify<UserRequest>({ token })
+      return await this.tokenService.verify<UserRequest>({ token })
     } catch {
-      finishTracingWithError(request, ApiUnauthorizedException.STATUS, 'invalidToken')
-      throw new ApiUnauthorizedException('invalidToken')
+      this.reject(request, 'invalidToken')
     }
   }
 
-  private async ensureNotBlacklisted(request: AppFastifyRequest) {
-    const userId = ObjectUtils.reach(request, (r) => r.user.id)
-
-    if (!userId) {
-      finishTracingWithError(request, ApiUnauthorizedException.STATUS, 'invalidToken')
-      throw new ApiUnauthorizedException('invalidToken')
+  private async ensureActiveSession(request: AppFastifyRequest, user: UserRequest): Promise<void> {
+    if (!user.sid) {
+      this.reject(request, 'invalidToken')
     }
 
-    const key = Namespaces.blacklist(userId)
+    const active = await this.isSessionActive(request, user)
 
-    const blackListToken = await this.getBlackListToken(key, request)
-
-    if (blackListToken) {
-      finishTracingWithError(request, ApiUnauthorizedException.STATUS, 'you have been logged out')
-      throw new ApiUnauthorizedException('you have been logged out')
+    if (!active) {
+      this.reject(request, 'you have been logged out')
     }
   }
 
-  private async getBlackListToken(key: string, request: AppFastifyRequest) {
+  private async isSessionActive(request: AppFastifyRequest, user: UserRequest): Promise<boolean> {
     try {
-      const blackListToken = await this.redisService.get(key)
-      return blackListToken
+      return await this.session.isActive({ userId: user.id, sessionId: user.sid })
     } catch {
-      finishTracingWithError(request, ApiUnauthorizedException.STATUS, 'unable to verify session')
-      throw new ApiUnauthorizedException('unable to verify session')
+      this.reject(request, 'unable to verify session')
     }
+  }
+
+  private reject(request: AppFastifyRequest, message: string): never {
+    finishTracingWithError(request, ApiUnauthorizedException.STATUS, message)
+    throw new ApiUnauthorizedException(message)
   }
 }

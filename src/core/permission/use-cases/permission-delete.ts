@@ -5,8 +5,8 @@ import { IPermissionRepository } from '@/core/permission/repository/permission'
 import { RoleEntity } from '@/core/role/entity/role'
 import { ValidateSchema } from '@/utils/decorators'
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception'
+import { InferSchema } from '@/utils/schema'
 import { IUsecase } from '@/utils/usecase'
-import { InferSchema } from '@/utils/validator'
 
 import { PermissionEntity, PermissionEntitySchema } from '../entity/permission'
 

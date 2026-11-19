@@ -4,14 +4,14 @@
 import { PermissionEntity } from '@/core/permission/entity/permission'
 import { ValidateSchema } from '@/utils/decorators'
 import { PaginationInput, PaginationOutput, PaginationSchema } from '@/utils/pagination'
+import { Schema } from '@/utils/schema'
 import { SearchSchema } from '@/utils/search'
 import { SortSchema } from '@/utils/sort'
 import { IUsecase } from '@/utils/usecase'
-import { InputValidator } from '@/utils/validator'
 
 import { IPermissionRepository } from '../repository/permission'
 
-export const PermissionListSchema = InputValidator.intersection(PaginationSchema, SortSchema.and(SearchSchema))
+export const PermissionListSchema = Schema.intersection(PaginationSchema, SortSchema.and(SearchSchema))
 
 export class PermissionListUsecase implements IUsecase {
   constructor(private readonly permissionRepository: IPermissionRepository) {}

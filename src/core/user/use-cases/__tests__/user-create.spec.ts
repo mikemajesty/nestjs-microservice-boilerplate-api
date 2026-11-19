@@ -11,8 +11,9 @@ import { CreatedModel } from '@/infra/repository'
 import { EmitEventOutput, IEventAdapter } from '@/libs/event'
 import { IUserCreate } from '@/modules/user/interfaces'
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception'
+import { ZodExceptionIssue } from '@/utils/schema'
 import { MockUtils, TestUtils } from '@/utils/test'
-import { ZodExceptionIssue } from '@/utils/validator'
+import { PasswordFixture } from '@/utils/test/e2e'
 
 import { UserEntity, UserEntitySchema } from '../../entity/user'
 import { UserPasswordEntity, UserPasswordEntitySchema } from '../../entity/user-password'
@@ -118,6 +119,15 @@ describe(UserCreateUsecase.name, () => {
     repository.findOne = TestUtils.mockResolvedValue<UserEntity>(user.clone())
 
     await expect(usecase.execute(input, MockUtils.Tracing())).rejects.toThrow(ApiConflictException)
+  })
+
+  test('when password is already hashed, should expect an error', async () => {
+    roleRepository.findIn = TestUtils.mockResolvedValue<RoleEntity[]>(roles)
+    repository.findOne = TestUtils.mockResolvedValue<UserEntity>(null)
+
+    await expect(
+      usecase.execute({ ...input, password: PasswordFixture.MASKED.hash }, MockUtils.Tracing())
+    ).rejects.toThrow(new ApiConflictException('Password is already hashed'))
   })
 
   test('when user created successfully, should expect a user', async () => {

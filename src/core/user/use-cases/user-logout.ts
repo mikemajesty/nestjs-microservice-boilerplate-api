@@ -1,46 +1,22 @@
 /**
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/core/usecase.md
  */
-import { ICacheAdapter } from '@/infra/cache'
-import { ITokenAdapter } from '@/libs/token'
-import { ValidateSchema } from '@/utils/decorators'
-import { Namespaces } from '@/utils/namespaces'
-import { ObjectUtils } from '@/utils/object'
+import { ISessionAdapter } from '@/libs/session'
 import { ApiTracingInput } from '@/utils/request'
 import { IUsecase } from '@/utils/usecase'
-import { InferSchema, InputValidator } from '@/utils/validator'
-
-export const LogoutSchema = InputValidator.object({ token: InputValidator.string().trim().min(10) })
 
 export class LogoutUsecase implements IUsecase {
-  constructor(
-    private readonly redis: ICacheAdapter,
-    private readonly tokenService: ITokenAdapter
-  ) {}
+  constructor(private readonly session: ISessionAdapter) {}
 
-  @ValidateSchema(LogoutSchema)
-  async execute(input: LogoutInput, { tracing, user }: ApiTracingInput): LogoutOutput {
-    const decoded = this.tokenService.decode<{ exp?: number }>({ token: input.token })
-
-    const exp = ObjectUtils.reach(decoded, (d) => d.exp)
-
-    if (!exp) {
-      return
-    }
-
-    const ttl = exp * 1000 - Date.now()
-
-    if (ttl <= 0) {
-      return
-    }
-
-    const key = Namespaces.blacklist(user.id)
-
-    await this.redis.set(key, input.token, { PX: ttl })
+  /**
+   * Ends the session of the access token used in this request. Its access and refresh
+   * tokens stop working immediately; other sessions of the same user are not affected.
+   */
+  async execute({ tracing, user }: ApiTracingInput): LogoutOutput {
+    await this.session.revoke({ userId: user.id, sessionId: user.sid })
 
     tracing.logEvent('user-logout', { action: 'logout', by: user.id })
   }
 }
 
-export type LogoutInput = InferSchema<typeof LogoutSchema>
 export type LogoutOutput = Promise<void>

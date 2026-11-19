@@ -6,15 +6,16 @@ import { join } from 'node:path'
 
 import { Controller, Get, Res } from '@nestjs/common'
 import type { FastifyReply } from 'fastify'
-import os from 'os'
 
-import { ISecretsAdapter } from '@/infra/secrets'
 import { CryptoUtils } from '@/utils/crypto'
 import { Public } from '@/utils/decorators'
 
 import { version } from '../../../package.json'
-import { IHealthAdapter } from './service'
+import { IHealthAdapter } from './interfaces'
 import {
+  ConnectionState,
+  DependenciesOutput,
+  DependencyCheck,
   HealthStatus,
   LivenessOutput,
   MetricsOutput,
@@ -23,16 +24,18 @@ import {
   StartupOutput
 } from './types'
 
-// Static page, copied to dist by the SWC build (`copyFiles`). Read once at module load.
 const DASHBOARD_TEMPLATE = readFileSync(join(__dirname, 'dashboard.html'), 'utf8')
+
+const buildLivenessOutput = (): LivenessOutput => ({
+  status: HealthStatus.UP,
+  timestamp: new Date().toISOString(),
+  uptime: process.uptime()
+})
 
 @Controller('health')
 @Public()
 export class HealthController {
-  constructor(
-    private readonly service: IHealthAdapter,
-    private readonly secrets: ISecretsAdapter
-  ) {}
+  constructor(private readonly service: IHealthAdapter) {}
 
   @Get('dashboard')
   getDashboard(@Res({ passthrough: true }) reply: FastifyReply): string {
@@ -46,117 +49,64 @@ export class HealthController {
 
   @Get('ready')
   async getReadiness(@Res({ passthrough: true }) reply: FastifyReply): Promise<ReadinessOutput> {
-    const [mongo, postgres, redis] = await Promise.all([
-      this.service.checkMongo(),
-      this.service.checkPostgres(),
-      this.service.checkRedis()
-    ])
+    const { checkedAt, dependencies } = await this.service.checkDependencies()
+    const ready = this.isEveryDependencyUp(dependencies)
 
-    const isReady = [mongo, postgres, redis].every((check) => check.status === HealthStatus.UP)
-    if (!isReady) {
+    if (!ready) {
       reply.code(503)
     }
 
     return {
-      status: isReady ? HealthStatus.UP : HealthStatus.DOWN,
+      status: ready ? HealthStatus.UP : HealthStatus.DOWN,
       version,
       timestamp: new Date().toISOString(),
-      dependencies: { mongo, postgres, redis }
+      checkedAt,
+      dependencies
     }
   }
 
   @Get('metrics')
   async getMetrics(@Res({ passthrough: true }) reply: FastifyReply): Promise<MetricsOutput> {
-    const runtime = this.service.getRuntimeWindow()
-    const memory = this.service.getMemory()
-
-    const [cpu, connections, mongo, postgresConnection, databaseSizeBytes, redis] = await Promise.all([
-      this.service.getHostCpu(),
-      this.service.getHttpConnections(reply.server.server),
-      this.service.getMongoServerStatus(),
-      this.service.getPostgresConnections(),
-      this.service.getPostgresDatabaseSize(),
-      this.service.getRedisInfo()
-    ])
-
     reply.header('Cache-Control', 'no-store')
-    return {
-      version,
-      timestamp: new Date().toISOString(),
-      window: { seconds: runtime.seconds },
-      process: {
-        hostname: os.hostname(),
-        pid: process.pid,
-        nodeVersion: process.version,
-        environment: this.secrets.ENV,
-        uptimeSeconds: Math.round(process.uptime()),
-        cpu: runtime.processCpu
-      },
-      memory,
-      eventLoopLag: runtime.eventLoopLag,
-      gc: runtime.gc,
-      network: { connections },
-      cpu,
-      mongo,
-      postgres: { connection: postgresConnection, databaseSizeBytes },
-      redis
-    }
+    return this.service.getMetrics(reply.server.server)
   }
 
   @Get(['live'])
   async getLiveness(): Promise<LivenessOutput> {
-    return {
-      status: HealthStatus.UP,
-      timestamp: new Date().toISOString(),
-      uptime: process.uptime()
-    }
+    return buildLivenessOutput()
   }
 
   @Get('startup')
   async getStartup(@Res({ passthrough: true }) reply: FastifyReply): Promise<StartupOutput> {
-    try {
-      const [mongo, postgres, redis] = await Promise.all([
-        this.service.checkMongo(),
-        this.service.checkPostgres(),
-        this.service.checkRedis()
-      ])
-      const mongoState = mongo.status
-      const postgresState = postgres.status
-      const redisState = redis.status
-      const basicSystemsConnected =
-        mongoState === HealthStatus.UP && postgresState === HealthStatus.UP && redisState === HealthStatus.UP
+    const { checkedAt, dependencies } = await this.service.checkDependencies()
+    const { mongo, postgres, redis } = dependencies
+    const connected = this.isEveryDependencyUp(dependencies)
 
-      if (!basicSystemsConnected) {
-        reply.code(503)
-      }
-
-      const output: StartupOutput = {
-        status: basicSystemsConnected ? HealthStatus.UP : HealthStatus.DOWN,
-        timestamp: new Date().toISOString(),
-        phase: 'startup',
-        connections: {
-          mongo: mongoState === HealthStatus.UP ? 'connected' : 'disconnected',
-          postgres: postgresState === HealthStatus.UP ? 'connected' : 'disconnected',
-          redis: redisState === HealthStatus.UP ? 'connected' : 'disconnected'
-        },
-        message: basicSystemsConnected ? 'All basic connections established' : 'Missing basic connections'
-      }
-
-      return output
-    } catch {
+    if (!connected) {
       reply.code(503)
-      // `connections` is intentionally omitted here: the check failed before
-      // connection states were determined. StartupOutput declares it optional.
-      const output: StartupOutput = {
-        status: HealthStatus.DOWN,
-        timestamp: new Date().toISOString(),
-        phase: 'startup',
-        error: 'Startup check failed - initialization incomplete',
-        message: 'Application still initializing'
-      }
-
-      return output
     }
+
+    return {
+      status: connected ? HealthStatus.UP : HealthStatus.DOWN,
+      timestamp: new Date().toISOString(),
+      checkedAt,
+      phase: 'startup',
+      connections: {
+        mongo: this.toConnectionState(mongo),
+        postgres: this.toConnectionState(postgres),
+        redis: this.toConnectionState(redis)
+      },
+      message: connected ? 'All basic connections established' : 'Missing basic connections'
+    }
+  }
+
+
+  private isEveryDependencyUp(dependencies: DependenciesOutput): boolean {
+    return Object.values(dependencies).every((check) => check.status === HealthStatus.UP)
+  }
+
+  private toConnectionState(check: DependencyCheck): ConnectionState {
+    return check.status === HealthStatus.UP ? 'connected' : 'disconnected'
   }
 }
 
@@ -165,10 +115,6 @@ export class HealthController {
 export class RootHealthController {
   @Get()
   async getRootHealth(): Promise<RootHealthOutput> {
-    return {
-      status: HealthStatus.UP,
-      timestamp: new Date().toISOString(),
-      uptime: process.uptime()
-    }
+    return buildLivenessOutput()
   }
 }

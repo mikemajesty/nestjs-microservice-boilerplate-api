@@ -19,7 +19,7 @@ export class LoginController {
 The decorator can be applied at controller or handler level. Handler metadata
 takes precedence over controller metadata. Public means authentication is not
 required; when an authorization header is supplied, the guard still validates
-the token and checks its blacklist status.
+the token and checks that its session is still active.
 
 `@Public()` does not grant authorization or bypass other guards such as
 `AuthorizationGuard` when a route also declares `@Permission(...)`.

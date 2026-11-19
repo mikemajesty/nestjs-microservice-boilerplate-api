@@ -6,6 +6,7 @@ import { Injectable } from '@nestjs/common'
 import { ILoggerAdapter } from '@/infra/logger'
 import { ApiInternalServerException } from '@/utils/exception'
 import { JitterUtils } from '@/utils/jitter'
+import { SingleFlight } from '@/utils/single-flight'
 import { AnyType } from '@/utils/types'
 
 import { ICacheAdapter } from '../adapter'
@@ -43,7 +44,7 @@ const INVALIDATE_BY_TAG_SCRIPT = `
 
 @Injectable()
 export class CacheAsideService implements ICacheAsideAdapter {
-  private readonly inFlight = new Map<string, Map<string, Promise<unknown>>>()
+  private readonly singleFlight = new SingleFlight()
 
   constructor(
     private readonly logger: ILoggerAdapter,
@@ -235,28 +236,11 @@ export class CacheAsideService implements ICacheAsideAdapter {
     loader: () => Promise<T> | T,
     options: CacheAsideSingleFlightOptionsInput
   ): Promise<T> {
-    const optionsKey = this.getSingleFlightOptionsKey(options)
-    const inFlightByOptions = this.inFlight.get(key) ?? new Map<string, Promise<unknown>>()
-    const existing = inFlightByOptions.get(optionsKey)
+    // Reads with different options must not share a load, so both are part of the flight key.
+    // JSON keeps the composite unambiguous even when the cache key itself contains separators.
+    const flightKey = JSON.stringify([key, this.getSingleFlightOptionsKey(options)])
 
-    if (existing) {
-      return existing as Promise<T>
-    }
-
-    this.inFlight.set(key, inFlightByOptions)
-
-    const promise = this.loadAndStore(key, loader, options).finally(() => {
-      const currentInFlightByOptions = this.inFlight.get(key)
-      currentInFlightByOptions?.delete(optionsKey)
-
-      if (!currentInFlightByOptions?.size) {
-        this.inFlight.delete(key)
-      }
-    })
-
-    inFlightByOptions.set(optionsKey, promise)
-
-    return promise
+    return this.singleFlight.run({ key: flightKey, operation: () => this.loadAndStore(key, loader, options) })
   }
 
   private getSingleFlightOptionsKey(options: CacheAsideSingleFlightOptionsInput): string {
@@ -269,18 +253,12 @@ export class CacheAsideService implements ICacheAsideAdapter {
     }
 
     try {
-      const optionsKey = JSON.stringify([
+      return JSON.stringify([
         options.ttlSeconds,
         cacheNullResults,
         cacheNullResults ? (options.nullTtlSeconds ?? DEFAULT_NULL_TTL_SECONDS) : null,
         options.tags?.map(({ key, ttlSeconds }) => [key, ttlSeconds]) ?? []
       ])
-
-      if (optionsKey === undefined) {
-        throw new Error('JSON.stringify returned undefined')
-      }
-
-      return optionsKey
     } catch (error) {
       throw new ApiInternalServerException('Unable to serialize cache options for single-flight coordination', {
         context: `${CacheAsideService.name}.getSingleFlightOptionsKey`,

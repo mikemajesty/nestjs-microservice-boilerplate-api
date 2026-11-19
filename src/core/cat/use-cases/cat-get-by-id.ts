@@ -4,8 +4,8 @@
 import { CatEntitySchema } from '@/core/cat/entity/cat'
 import { ValidateSchema } from '@/utils/decorators'
 import { ApiNotFoundException } from '@/utils/exception'
+import { InferSchema } from '@/utils/schema'
 import { IUsecase } from '@/utils/usecase'
-import { InferSchema } from '@/utils/validator'
 
 import { CatEntity } from '../entity/cat'
 import { ICatRepository } from '../repository/cat'

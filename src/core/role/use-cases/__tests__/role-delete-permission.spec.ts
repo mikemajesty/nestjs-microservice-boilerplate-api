@@ -11,15 +11,15 @@ import { CreatedModel } from '@/infra/repository'
 import { IRoleDeletePermission } from '@/modules/role/interfaces'
 import { ApiNotFoundException } from '@/utils/exception'
 import { IDGeneratorUtils } from '@/utils/id-generator'
+import { ZodExceptionIssue } from '@/utils/schema'
 import { TestUtils } from '@/utils/test/utils'
-import { ZodExceptionIssue } from '@/utils/validator'
 
 import { RoleEntity, RoleEnum } from '../../entity/role'
 import { IRoleRepository } from '../../repository/role'
 import {
-  RoleDeletePermissionInput,
-  RoleDeletePermissionSchema,
-  RoleDeletePermissionUsecase
+    RoleDeletePermissionInput,
+    RoleDeletePermissionSchema,
+    RoleDeletePermissionUsecase
 } from '../role-delete-permission'
 
 describe(RoleDeletePermissionUsecase.name, () => {

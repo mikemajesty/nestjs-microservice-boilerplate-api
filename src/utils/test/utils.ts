@@ -1,9 +1,10 @@
 /**
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/tests/util.md
  */
+import { AssertionError } from 'node:assert'
 
 import { ApiBadRequestException, BaseException } from '@/utils/exception'
-import { ZodException, ZodExceptionIssue } from '@/utils/validator'
+import { ZodException, ZodExceptionIssue } from '@/utils/schema'
 import { Provider } from '@nestjs/common'
 import { AnyFunction } from '../types'
 
@@ -77,6 +78,22 @@ export class TestUtils {
     jest.clearAllMocks()
   }
 
+  static assertionError(message: string): AssertionError {
+    return new AssertionError({ message })
+  }
+
+  /**
+   * An error the application did not create, like one thrown by a driver or library: a plain `Error`,
+   * not a `BaseException`. Use it to test code that must map foreign errors into application exceptions.
+   */
+  static thirdPartyError(message: string): Error {
+    return new Error(message)
+  }
+
+  static fail(message: string): never {
+    throw TestUtils.assertionError(message)
+  }
+
   static restoreMocks(): void {
     jest.restoreAllMocks()
   }
@@ -92,7 +109,7 @@ export class TestUtils {
       return
     }
 
-    throw new Error('Expected callback to throw a ZodException')
+    TestUtils.fail('Expected callback to throw a ZodException')
   }
 
   static nameOf<T>(name: keyof T) {

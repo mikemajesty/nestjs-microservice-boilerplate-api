@@ -1,15 +1,16 @@
 /**
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/core/usecase.md
  */
-import { ITokenAdapter } from '@/libs/token'
+import { ISessionAdapter } from '@/libs/session'
 import { ValidateSchema } from '@/utils/decorators'
-import { ApiNotFoundException } from '@/utils/exception'
-import { ApiTracingInput, UserRequest } from '@/utils/request'
+import { ApiUnauthorizedException } from '@/utils/exception'
+import { PasswordUtils } from '@/utils/password'
+import { ApiTracingInput } from '@/utils/request'
+import { InferSchema } from '@/utils/schema'
 import { IUsecase } from '@/utils/usecase'
-import { InferSchema } from '@/utils/validator'
 
 import { UserEntitySchema } from '../entity/user'
-import { UserPasswordEntity, UserPasswordEntitySchema } from '../entity/user-password'
+import { UserPasswordEntitySchema } from '../entity/user-password'
 import { IUserRepository } from '../repository/user'
 
 export const LoginSchema = UserEntitySchema.pick({
@@ -19,7 +20,7 @@ export const LoginSchema = UserEntitySchema.pick({
 export class LoginUsecase implements IUsecase {
   constructor(
     private readonly userRepository: IUserRepository,
-    private readonly tokenService: ITokenAdapter
+    private readonly session: ISessionAdapter
   ) {}
 
   @ValidateSchema(LoginSchema)
@@ -31,30 +32,15 @@ export class LoginUsecase implements IUsecase {
       { password: true }
     )
 
-    if (!user) {
-      throw new ApiNotFoundException('userNotFound')
+    const passwordMatches = await PasswordUtils.compare(input.password, user?.password.password)
+
+    if (!user || !passwordMatches) {
+      throw new ApiUnauthorizedException('invalidCredentials')
     }
-
-    const passwordEntity = new UserPasswordEntity(user.password)
-
-    passwordEntity.matchesPassword(input.password)
 
     tracing.logEvent('user-login', { action: 'login', by: user.id, entity: user.id })
 
-    const { token } = this.tokenService.sign({
-      body: {
-        email: user.email,
-        name: user.name,
-        id: user.id
-      } as UserRequest
-    })
-
-    const { token: refreshToken } = this.tokenService.sign({
-      body: { userId: user.id },
-      secret: this.tokenService.refreshSecret
-    })
-
-    return { accessToken: token, refreshToken }
+    return this.session.start(user)
   }
 }
 

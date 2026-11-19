@@ -6,8 +6,8 @@ import { Test } from '@nestjs/testing'
 
 import { ICatGetById } from '@/modules/cat/interfaces'
 import { ApiNotFoundException } from '@/utils/exception'
+import { ZodExceptionIssue } from '@/utils/schema'
 import { MockUtils, TestUtils } from '@/utils/test'
-import { ZodExceptionIssue } from '@/utils/validator'
 
 import { CatEntity, CatEntitySchema } from '../../entity/cat'
 import { ICatRepository } from '../../repository/cat'

@@ -6,14 +6,14 @@ import { Injectable } from '@nestjs/common'
 import { ValidateSchema } from '@/utils/decorators'
 import { ApiInternalServerException } from '@/utils/exception'
 import { IDGeneratorUtils } from '@/utils/id-generator'
-import { InferSchema, InputValidator } from '@/utils/validator'
+import { InferSchema, Schema } from '@/utils/schema'
 
 import { ICacheAdapter } from '../cache'
 import { IDistributedLockAdapter } from './adapter'
 
-const DistributedLockSchema = InputValidator.object({
-  key: InputValidator.string().trim().min(1),
-  ttlSeconds: InputValidator.number().int().positive()
+const DistributedLockSchema = Schema.object({
+  key: Schema.string().trim().min(1),
+  ttlSeconds: Schema.number().int().positive()
 })
 
 const ACQUIRE_LOCK_SCRIPT = `

@@ -23,9 +23,9 @@ data:
   DATE_FORMAT: 'dd/MM/yyyy HH:mm:ss'
   TZ: America/Sao_Paulo
   
-  # Tokens (expiration format, keys in Secret)
-  TOKEN_EXPIRATION: 1h
-  REFRESH_TOKEN_EXPIRATION: 1d
+  # Tokens: expiration in seconds (the secrets schema parses numbers; "1h" would become NaN). Keys in Secret.
+  TOKEN_EXPIRATION: '3600'
+  REFRESH_TOKEN_EXPIRATION: '86400'
   
   # PostgreSQL (connection string in Secret as POSTGRES_URL)
   POSTGRES_DATABASE: nestjs_microservice

@@ -3,7 +3,7 @@
  */
 import { AxiosRequestConfig } from 'axios'
 
-import { BaseZodType, InferSchema } from '@/utils/validator'
+import { BaseZodType, InferSchema } from '@/utils/schema'
 
 import { HttpData, HttpRetryInput } from './types'
 

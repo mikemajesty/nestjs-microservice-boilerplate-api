@@ -8,16 +8,16 @@ import { Observable } from 'rxjs'
 import { catchError } from 'rxjs/operators'
 
 import {
-  ApiBadRequestException,
-  ApiExternalRequestException,
-  ApiInternalServerException,
-  ApiTimeoutException
+    ApiBadRequestException,
+    ApiExternalRequestException,
+    ApiInternalServerException,
+    ApiTimeoutException
 } from '@/utils/exception'
 import { NETWORK_RETRY_CODES } from '@/utils/http-status'
 import { ObjectUtils } from '@/utils/object'
 import { AppFastifyRequest, TRACEID_HEADER } from '@/utils/request'
+import { ZodException } from '@/utils/schema'
 import { AnyType } from '@/utils/types'
-import { ZodException } from '@/utils/validator'
 
 @Injectable()
 export class ExceptionHandlerInterceptor implements NestInterceptor {

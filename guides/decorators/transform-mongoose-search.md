@@ -30,7 +30,7 @@ export class CatRepository {
       // ❌ Manual validation - error prone!
       Object.keys(input.search).forEach(key => {
         if (!allowedFilterFields.includes(key)) {
-          throw new Error(`Filter '${key}' not allowed`)
+          throw new ApiBadRequestException(`Filter '${key}' not allowed`)
         }
       })
       

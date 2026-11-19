@@ -9,8 +9,8 @@ import { ValidateSchema } from '@/utils/decorators'
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception'
 import { Namespaces } from '@/utils/namespaces'
 import { ApiTracingInput } from '@/utils/request'
+import { InferSchema, Schema } from '@/utils/schema'
 import { IUsecase } from '@/utils/usecase'
-import { InferSchema, InputValidator } from '@/utils/validator'
 
 import { UserEntity, UserEntitySchema } from '../entity/user'
 import { IUserRepository } from '../repository/user'
@@ -19,7 +19,7 @@ export const UserUpdateSchema = UserEntitySchema.pick({
   id: true
 })
   .and(UserEntitySchema.pick({ name: true, email: true }).partial())
-  .and(InputValidator.object({ roles: InputValidator.array(InputValidator.enum(RoleEnum)).optional() }))
+  .and(Schema.object({ roles: Schema.array(Schema.enum(RoleEnum)).optional() }))
 
 export class UserUpdateUsecase implements IUsecase {
   constructor(
@@ -39,13 +39,9 @@ export class UserUpdateUsecase implements IUsecase {
 
     const roles = await this.getRoles(input, user.roles)
 
+    await this.verifyEmailChanged(input, user)
+
     user.merge({ ...input, roles })
-
-    const userExists = await this.userRepository.existsOnUpdate({ email: user.email }, user.id)
-
-    if (userExists) {
-      throw new ApiConflictException('userExists')
-    }
 
     await this.userRepository.create(user.toData())
     await this.cacheAside.invalidate(Namespaces.userById(user.id))
@@ -57,6 +53,16 @@ export class UserUpdateUsecase implements IUsecase {
     tracing.logEvent('user-updated', { action: 'updated', by: userData.id, entity: updated!.id })
 
     return updated!.toData()
+  }
+
+  private async verifyEmailChanged(input: UserUpdateInput, user: UserEntity) {
+    if (input.email && input.email !== user.email) {
+      const userExists = await this.userRepository.existsOnUpdate({ email: input.email }, user.id)
+
+      if (userExists) {
+        throw new ApiConflictException('userExists')
+      }
+    }
   }
 
   private async getRoles(input: UserUpdateInput, currentRoles: RoleEntity[]): Promise<RoleEntity[]> {
@@ -74,5 +80,5 @@ export class UserUpdateUsecase implements IUsecase {
   }
 }
 
-export type UserUpdateInput = Partial<InferSchema<typeof UserUpdateSchema>>
+export type UserUpdateInput = InferSchema<typeof UserUpdateSchema>
 export type UserUpdateOutput = UserEntity

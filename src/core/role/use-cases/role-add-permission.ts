@@ -8,15 +8,15 @@ import { ValidateSchema } from '@/utils/decorators'
 import { ApiNotFoundException } from '@/utils/exception'
 import { IDGeneratorUtils } from '@/utils/id-generator'
 import { Namespaces } from '@/utils/namespaces'
+import { InferSchema, Schema } from '@/utils/schema'
 import { IUsecase } from '@/utils/usecase'
-import { InferSchema, InputValidator } from '@/utils/validator'
 
 import { RoleEntitySchema } from '../entity/role'
 import { IRoleRepository } from '../repository/role'
 
 export const RoleAddPermissionSchema = RoleEntitySchema.pick({
   id: true
-}).and(InputValidator.object({ permissions: InputValidator.array(PermissionEntitySchema.shape.name) }))
+}).and(Schema.object({ permissions: Schema.array(PermissionEntitySchema.shape.name) }))
 
 export class RoleAddPermissionUsecase implements IUsecase {
   constructor(

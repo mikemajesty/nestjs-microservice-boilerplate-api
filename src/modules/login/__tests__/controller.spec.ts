@@ -5,19 +5,17 @@
  */
 import { INestApplication } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
+import jwt from 'jsonwebtoken'
 import request from 'supertest'
 
 import { IRoleRepository } from '@/core/role/repository/role'
 import { IUserRepository } from '@/core/user/repository/user'
 import { LoginOutput } from '@/core/user/use-cases/user-login'
-import { RefreshTokenOutput } from '@/core/user/use-cases/user-refresh-token'
+import { RefreshTokenInput, RefreshTokenOutput } from '@/core/user/use-cases/user-refresh-token'
 import { ICacheAdapter } from '@/infra/cache'
-import { BaseException } from '@/utils/exception'
+import { ApiUnauthorizedException, BaseException } from '@/utils/exception'
 import { TestUtils } from '@/utils/test'
-import { TestPostgresContainer, TestRedisContainer } from '@/utils/test/e2e/containers'
-import { RoleFixture } from '@/utils/test/e2e/fixtures/role'
-import { UserFixture } from '@/utils/test/e2e/fixtures/user'
-import { TestEnd2EndUtils } from '@/utils/test/e2e/utils'
+import { RoleFixture, TestEnd2EndUtils, TestPostgresContainer, TestRedisContainer, UserFixture } from '@/utils/test/e2e'
 
 import { LoginController } from '../controller'
 import { LoginModule } from '../module'
@@ -81,7 +79,7 @@ describe(LoginController.name, () => {
       const res = await request(app.getHttpServer())
         .post('/login')
         .send({ email: userFixture.entity.email, password: 'wrongpass' })
-      expect([400, 401]).toContain(res.status)
+      expect(res.status).toBe(ApiUnauthorizedException.STATUS)
       expect(res.body).toHaveProperty(TestUtils.nameOf<BaseException>('message'))
     })
 
@@ -89,30 +87,93 @@ describe(LoginController.name, () => {
       const res = await request(app.getHttpServer())
         .post('/login')
         .send({ email: 'notfound@example.com', password: 'admin' })
-      expect([400, 401, 404]).toContain(res.status)
+      expect(res.status).toBe(ApiUnauthorizedException.STATUS)
       expect(res.body).toHaveProperty(TestUtils.nameOf<BaseException>('message'))
+    })
+
+    it('should answer unknown email and wrong password with the same error', async () => {
+      const unknown = await request(app.getHttpServer())
+        .post('/login')
+        .send({ email: 'notfound@example.com', password: 'admin' })
+      const wrongPassword = await request(app.getHttpServer())
+        .post('/login')
+        .send({ email: userFixture.entity.email, password: 'wrongpass' })
+
+      expect(unknown.status).toBe(wrongPassword.status)
+      expect(unknown.body.message).toEqual(wrongPassword.body.message)
     })
   })
 
   describe('/POST /refresh', () => {
-    it('should refresh tokens for a user with roles', async () => {
+    const login = async () => {
+      const res = await request(app.getHttpServer())
+        .post('/login')
+        .send({ email: userFixture.entity.email, password: 'admin' })
+        .expect(201)
+      return res.body as LoginOutput
+    }
+    const refresh = (refreshToken: string) =>
+      request(app.getHttpServer())
+        .post('/refresh')
+        .send({ refreshToken } as RefreshTokenInput)
+
+    beforeEach(async () => {
       await userFixture.down(userRepository)
       await roleFixture.up(roleRepository)
       userFixture.entity.roles = [roleFixture.entity[0]]
       await userFixture.up(userRepository)
+    })
 
-      const login = await request(app.getHttpServer())
-        .post('/login')
-        .send({ email: userFixture.entity.email, password: 'admin' })
-        .expect(201)
+    it('should refresh tokens for a user with roles', async () => {
+      const tokens = await login()
 
-      const response = await request(app.getHttpServer())
-        .post('/refresh')
-        .send({ refreshToken: login.body.refreshToken })
-        .expect(201)
+      const response = await refresh(tokens.refreshToken).expect(201)
 
       expect(response.body).toHaveProperty(TestUtils.nameOf<RefreshTokenOutput>('accessToken'))
       expect(response.body).toHaveProperty(TestUtils.nameOf<RefreshTokenOutput>('refreshToken'))
+    })
+
+    it('should issue a refresh token that outlives the access token', async () => {
+      const tokens = await login()
+      const lifetime = (token: string) => {
+        const { exp, iat } = jwt.decode(token) as { exp: number; iat: number }
+        return exp - iat
+      }
+
+      expect(lifetime(tokens.refreshToken)).toBe(Number(process.env.REFRESH_TOKEN_EXPIRATION))
+      expect(lifetime(tokens.accessToken)).toBe(Number(process.env.TOKEN_EXPIRATION))
+    })
+
+    it('should reject a refresh token that was already used (rotation)', async () => {
+      const tokens = await login()
+      await refresh(tokens.refreshToken).expect(201)
+
+      await refresh(tokens.refreshToken).expect(ApiUnauthorizedException.STATUS)
+    })
+
+    it('should revoke the whole session when an old refresh token is reused', async () => {
+      const tokens = await login()
+      const rotated = (await refresh(tokens.refreshToken).expect(201)).body as RefreshTokenOutput
+
+      await refresh(tokens.refreshToken).expect(ApiUnauthorizedException.STATUS)
+
+      await refresh(rotated.refreshToken).expect(ApiUnauthorizedException.STATUS)
+    })
+
+    it('should keep other sessions working when one is revoked', async () => {
+      const first = await login()
+      const second = await login()
+
+      await refresh(first.refreshToken).expect(201)
+      await refresh(first.refreshToken).expect(ApiUnauthorizedException.STATUS)
+
+      await refresh(second.refreshToken).expect(201)
+    })
+
+    it('should reject an access token used as refresh token', async () => {
+      const tokens = await login()
+
+      await refresh(tokens.accessToken).expect(ApiUnauthorizedException.STATUS)
     })
   })
 })

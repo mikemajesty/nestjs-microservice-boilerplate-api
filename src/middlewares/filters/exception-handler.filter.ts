@@ -11,8 +11,8 @@ import { ApiBadRequestException, ApiErrorType, ApiInternalServerException, BaseE
 import { DefaultErrorMessage } from '@/utils/http-status'
 import { ObjectUtils } from '@/utils/object'
 import { AppFastifyRequest, TRACEID_HEADER } from '@/utils/request'
+import { ZodException } from '@/utils/schema'
 import { AnyType } from '@/utils/types'
-import { ZodException } from '@/utils/validator'
 
 @Catch()
 export class ExceptionHandlerFilter implements AppExceptionFilter {

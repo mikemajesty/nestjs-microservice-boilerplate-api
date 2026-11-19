@@ -199,6 +199,74 @@ MongooseModule.forFeature([{ name: Cat.name, schema: CatSchema }])
 
 ---
 
+## Same Adapter, Different Implementations
+
+Some adapters have more than one implementation behind the **same token**. `ICacheAdapter` is the
+example: `CacheRedisModule` and `CacheMemoryModule` both export it. A module that needs **both** cannot
+import both modules: they provide the same token, and which one wins depends on the import order.
+
+Instead of adding a new token to the shared infra module, create a **module-scoped token** that reuses
+the shared contract.
+
+### 1. Declare the token in the module's `interfaces.ts`
+
+```typescript
+// src/modules/health/interfaces.ts
+export abstract class IHealthCacheAdapter {
+  abstract get: ICacheAdapter['get']
+  abstract set: ICacheAdapter['set']
+}
+```
+
+- **Properties typed with `ICacheAdapter['method']`** reuse the shared signatures: nothing is redeclared,
+  and a change in `ICacheAdapter` reaches this contract automatically.
+- **Only the methods the module uses** are exposed, so the contract does not promise methods the
+  implementation lacks.
+- **Name it by role, not by implementation** (`IHealthCacheAdapter`, not `IHealthCacheMemory`): the
+  module needs "a cache"; the binding decides which one.
+
+### 2. Bind it with `useFactory`, creating the instance
+
+```typescript
+// src/modules/health/module.ts
+@Module({
+  imports: [CacheRedisModule /* ICacheAdapter = Redis, for the dependency checks */],
+  providers: [
+    {
+      provide: IHealthCacheAdapter,
+      useFactory: (logger: ILoggerAdapter): IHealthCacheAdapter => {
+        const cache = new CacheMemoryService(logger)
+        cache.connect()
+        return cache
+      },
+      inject: [ILoggerAdapter]
+    }
+  ]
+})
+```
+
+The module now has both: `ICacheAdapter` (Redis, from the import) and `IHealthCacheAdapter` (memory,
+its own instance).
+
+### Pitfalls
+
+| Don't | Why |
+|-------|-----|
+| `abstract class IHealthCacheAdapter extends ICacheAdapter` | Inherits **every** abstract method (`eval`, `multiExec`...). The implementation lacks some of them, so it only fits with a cast |
+| `abstract class X {}` + `interface X extends Pick<ICacheAdapter, ...>` | Class/interface declaration merging is rejected by `@typescript-eslint/no-unsafe-declaration-merging` |
+| `{ provide: IHealthCacheAdapter, useExisting: ICacheAdapter }` | Inside this module `ICacheAdapter` resolves to whatever was imported (here, **Redis**), not to the implementation you wanted |
+| Import `CacheMemoryModule` to get the memory instance | Brings back the token clash this pattern avoids |
+
+### When to use it
+
+- A module needs **two implementations** of the same shared adapter at once.
+- A module needs an **isolated instance** of a shared implementation (its own keys, its own lifecycle),
+  without touching the infra module or the other consumers of the shared token.
+
+When a module needs only one implementation, import its module and inject the shared token as usual.
+
+---
+
 ## Complete Example: MongoDB
 
 ```typescript

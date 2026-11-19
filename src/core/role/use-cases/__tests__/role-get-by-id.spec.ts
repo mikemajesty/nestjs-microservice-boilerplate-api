@@ -6,8 +6,8 @@ import { Test } from '@nestjs/testing'
 
 import { IRoleGetById } from '@/modules/role/interfaces'
 import { ApiNotFoundException } from '@/utils/exception'
+import { ZodExceptionIssue } from '@/utils/schema'
 import { TestUtils } from '@/utils/test/utils'
-import { ZodExceptionIssue } from '@/utils/validator'
 
 import { IRoleRepository } from '../../repository/role'
 import { RoleGetByIdInput, RoleGetByIdSchema, RoleGetByIdUsecase } from '../role-get-by-id'

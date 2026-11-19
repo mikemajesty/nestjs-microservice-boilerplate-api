@@ -10,11 +10,14 @@ import { UserSchema } from '../schemas/user'
 import { UserPasswordSchema } from '../schemas/user-password'
 import { userPermissions } from './1727654555722-insertPermissions'
 
+// bcrypt hash (cost 12) of the seed password "admin".
+const ADMIN_PASSWORD_HASH = '$2b$12$qubqo1HK6pMFU5B.7kEJUOtdr/85Mw5q0LuU/on6nydgbykL8kVrm'
+
 export class insertUser1727655177319 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const password = new UserPasswordEntity({
       id: IDGeneratorUtils.uuid(),
-      password: '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918'
+      password: ADMIN_PASSWORD_HASH
     })
     await queryRunner.manager.insert(UserPasswordSchema, password as QueryDeepPartialEntity<UserPasswordSchema>)
 
@@ -54,7 +57,7 @@ export class insertUser1727655177319 implements MigrationInterface {
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.manager.delete(UserPasswordSchema, {
-      password: '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918'
+      password: ADMIN_PASSWORD_HASH
     })
     await queryRunner.manager.delete(UserSchema, { email: 'admin@admin.com' })
     await queryRunner.query(`Delete from permissions_roles`)

@@ -18,21 +18,24 @@ interface ISecretsAdapter {
   ENV: string
   HTTP_REQUEST_TIMEOUT_MS: number
   HOST: string
-  IS_LOCAL?: boolean  // Optional field
+  IS_LOCAL?: boolean // Optional field
   IS_PRODUCTION: boolean
 }
 
 // Create Zod schema that matches the interface
-const SecretsSchema = InputValidator.object<ZodInferSchema<ISecretsAdapter>>({
-  ENV: InputValidator.enum(EnvEnum),
-  HTTP_REQUEST_TIMEOUT_MS: InputValidator.number().or(InputValidator.string()).transform(p => Number(p)),
-  HOST: InputValidator.string(),
-  IS_LOCAL: InputValidator.boolean(),  // Automatically handles optionality
-  IS_PRODUCTION: InputValidator.boolean()
+const SecretsSchema = Schema.object<ZodInferSchema<ISecretsAdapter>>({
+  ENV: Schema.enum(EnvEnum),
+  HTTP_REQUEST_TIMEOUT_MS: Schema.number()
+    .or(Schema.string())
+    .transform((p) => Number(p)),
+  HOST: Schema.string(),
+  IS_LOCAL: Schema.boolean(), // Automatically handles optionality
+  IS_PRODUCTION: Schema.boolean()
 })
 ```
 
 #### Benefits
+
 - **Type Safety**: Ensures Zod schema matches interface structure
 - **Automatic Optionality**: Correctly handles optional vs required fields
 - **Refactoring Safe**: Changes to interface automatically reflect in schema type checking
@@ -49,7 +52,7 @@ This type **might not be actively used** in your current application. Consider t
 // API updates where all fields are optional
 interface User {
   name: string
-  email: string  
+  email: string
   profile: {
     bio: string
     age: number
@@ -76,10 +79,13 @@ These are implementation details and should not be used directly in application 
 ## Usage Recommendations
 
 ### Keep ZodInferSchema
+
 This type is **actively used** in your secrets module and provides real value for type-safe configuration validation.
 
 ### Review MakePartial
+
 This type appears **unused** in your current codebase. Consider:
+
 - Searching for actual usage patterns
 - Removing if unused to reduce complexity
 - Replacing with built-in `Partial<T>` if shallow partial types are sufficient
@@ -95,5 +101,5 @@ export type MakePartial<T> = {
 }
 
 // Keep this - actively used:
-export type ZodInferSchema<T extends object> = { /* ... */ }
+export type ZodInferSchema<T extends object> = {/* ... */}
 ```

@@ -11,16 +11,17 @@ Without centralized secrets management:
 @Injectable()
 export class PaymentService {
   async charge() {
-    const apiKey = process.env.PAYMENT_API_KEY  // Typo? Missing? Who knows!
+    const apiKey = process.env.PAYMENT_API_KEY // Typo? Missing? Who knows!
     const timeout = process.env.HTTP_REQUEST_TIMEOUT_MS // String "30000" not number 30000
-    const apiUrl = process.env.PAYMENT_URL      // Is it a valid URL? 🤷
-    
+    const apiUrl = process.env.PAYMENT_URL // Is it a valid URL? 🤷
+
     // App starts fine, then CRASHES in production when this code runs
   }
 }
 ```
 
 **Common issues:**
+
 - Typos in env names discovered only at runtime
 - Missing envs cause crashes in production
 - No type safety (everything is `string | undefined`)
@@ -34,12 +35,12 @@ export class PaymentService {
 @Injectable()
 export class PaymentService {
   constructor(private readonly secrets: ISecretsAdapter) {}
-  
+
   async charge() {
-    const apiKey = this.secrets.PAYMENT.API_KEY  // ✅ Type-safe
+    const apiKey = this.secrets.PAYMENT.API_KEY // ✅ Type-safe
     const timeout = this.secrets.HTTP_REQUEST_TIMEOUT_MS // ✅ Already a number
-    const apiUrl = this.secrets.PAYMENT.URL       // ✅ Validated as URL
-    
+    const apiUrl = this.secrets.PAYMENT.URL // ✅ Validated as URL
+
     // If any env is missing, app FAILS TO START with clear error
   }
 }
@@ -87,12 +88,12 @@ export class PaymentService {
 
 ## Files Overview
 
-| File | Purpose |
-|------|---------|
-| `adapter.ts` | Abstract class defining the **interface** (types) |
-| `service.ts` | **Builder** - maps env vars into a configuration object |
-| `schema.ts` | **Validation schema** - defines conversion and validation rules |
-| `module.ts` | **Provider** - builds, validates, freezes, and exposes the configuration |
+| File         | Purpose                                                                  |
+| ------------ | ------------------------------------------------------------------------ |
+| `adapter.ts` | Abstract class defining the **interface** (types)                        |
+| `service.ts` | **Builder** - maps env vars into a configuration object                  |
+| `schema.ts`  | **Validation schema** - defines conversion and validation rules          |
+| `module.ts`  | **Provider** - builds, validates, freezes, and exposes the configuration |
 
 ## Adding a New Environment Variable
 
@@ -104,7 +105,7 @@ Let's add a new `PAYMENT` config with `API_KEY` and `WEBHOOK_URL`:
 // src/infra/secrets/adapter.ts
 export abstract class ISecretsAdapter {
   // ... existing properties
-  
+
   PAYMENT!: {
     API_KEY: string
     WEBHOOK_URL: string
@@ -136,14 +137,14 @@ export class SecretsService {
 ```typescript
 // src/infra/secrets/schema.ts
 export const SecretsSchema = () =>
-  InputValidator.object<ZodInferSchema<ISecretsAdapter>>({
-  // ... existing validations
+  Schema.object<ZodInferSchema<ISecretsAdapter>>({
+    // ... existing validations
 
-  PAYMENT: InputValidator.object({
-    API_KEY: InputValidator.string().min(1),
-    WEBHOOK_URL: InputValidator.string().url()
+    PAYMENT: Schema.object({
+      API_KEY: Schema.string().min(1),
+      WEBHOOK_URL: Schema.string().url()
+    })
   })
-})
 ```
 
 ### Step 4: Add to .env
@@ -160,12 +161,12 @@ PAYMENT_WEBHOOK_URL=https://myapp.com/webhooks/payment
 @Injectable()
 export class PaymentService {
   constructor(private readonly secrets: ISecretsAdapter) {}
-  
+
   async createCharge() {
     const response = await axios.post('https://api.payment.com/charges', data, {
-      headers: { 'Authorization': `Bearer ${this.secrets.PAYMENT.API_KEY}` }
+      headers: { Authorization: `Bearer ${this.secrets.PAYMENT.API_KEY}` }
     })
-    
+
     // Webhook URL for callbacks
     await this.registerWebhook(this.secrets.PAYMENT.WEBHOOK_URL)
   }
@@ -178,18 +179,18 @@ export class PaymentService {
 
 ```typescript
 // Required (default) - app crashes if missing
-API_KEY: InputValidator.string()
+API_KEY: Schema.string()
 
 // Optional - uses default if missing
-DEBUG_MODE: InputValidator.boolean().optional().default(false)
+DEBUG_MODE: Schema.boolean().optional().default(false)
 ```
 
 ### Type Transformation
 
 ```typescript
 // String from env → Number in code
-PORT: InputValidator.number()
-  .or(InputValidator.string())
+PORT: Schema.number()
+  .or(Schema.string())
   .transform((p) => Number(p))
 
 // Result: PORT=3000 in .env becomes this.secrets.PORT === 3000 (number)
@@ -199,23 +200,23 @@ PORT: InputValidator.number()
 
 ```typescript
 // Must be valid URL
-WEBHOOK_URL: InputValidator.string().url()
+WEBHOOK_URL: Schema.string().url()
 
-// Must be valid email  
-FROM: InputValidator.string().email()
+// Must be valid email
+FROM: Schema.string().email()
 
 // Must be one of allowed values
-ENV: InputValidator.enum(EnvEnum)  // 'local' | 'dev' | 'hml' | 'prd'
-LOG_LEVEL: InputValidator.enum(LogLevelEnum)  // 'debug' | 'info' | 'warn' | 'error'
+ENV: Schema.enum(EnvEnum) // 'local' | 'dev' | 'hml' | 'prd'
+LOG_LEVEL: Schema.enum(LogLevelEnum) // 'debug' | 'info' | 'warn' | 'error'
 ```
 
 ### Nested Objects
 
 ```typescript
-MONGO: InputValidator.object({
-  MONGO_URL: InputValidator.string(),
-  MONGO_DATABASE: InputValidator.string(),
-  MONGO_EXPRESS_URL: InputValidator.string().url()
+MONGO: Schema.object({
+  MONGO_URL: Schema.string(),
+  MONGO_DATABASE: Schema.string(),
+  MONGO_EXPRESS_URL: Schema.string().url()
 })
 ```
 
@@ -226,13 +227,14 @@ When validation fails, you get **clear, actionable errors**:
 ```
 ❌ App startup failed:
 
-ApiInternalServerException: 
+ApiInternalServerException:
   SecretsService.PAYMENT.API_KEY: Required,
   SecretsService.EMAIL.FROM: Invalid email,
   SecretsService.WEBHOOK_URL: Invalid url
 ```
 
 Each error tells you:
+
 - **Which service** (SecretsService)
 - **Which property** (PAYMENT.API_KEY)
 - **What's wrong** (Required, Invalid email, etc.)
@@ -266,6 +268,7 @@ build(): ISecretsAdapter {
 ```
 
 Usage:
+
 ```typescript
 if (this.secrets.IS_PRODUCTION) {
   // Production-only logic
@@ -283,12 +286,13 @@ The magic of `ZodInferSchema<ISecretsAdapter>` ensures the validation schema **m
 // If you add a property to ISecretsAdapter but forget to add validation,
 // TypeScript will show an error in schema.ts!
 
-const SecretsSchema = () => InputValidator.object<ZodInferSchema<ISecretsAdapter>>({
-  // TypeScript: "Property 'PAYMENT' is missing"
-})
+const SecretsSchema = () =>
+  Schema.object<ZodInferSchema<ISecretsAdapter>>({
+    // TypeScript: "Property 'PAYMENT' is missing"
+  })
 ```
 
 ## Related
 
-- [InputValidator](../utils/validator.md) — Zod wrapper for validation
+- [Schema](../utils/validator.md) — Zod wrapper for validation
 - [ZodInferSchema](../utils/types.md) — Type utility for schema inference

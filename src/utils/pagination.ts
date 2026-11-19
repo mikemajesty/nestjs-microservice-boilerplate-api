@@ -1,15 +1,15 @@
 /**
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/utils/pagination.md
  */
+import { InferSchema, Schema } from './schema'
 import { SearchInput } from './search'
 import { SortInput } from './sort'
-import { InferSchema, InputValidator } from './validator'
 
 const maxLimit = (limit: number) => (limit > 100 ? 100 : limit)
 
-export const PaginationSchema = InputValidator.object({
-  page: InputValidator.union([InputValidator.number(), InputValidator.string(), InputValidator.nan()]).default(1),
-  limit: InputValidator.union([InputValidator.number(), InputValidator.string(), InputValidator.nan()]).default(10)
+export const PaginationSchema = Schema.object({
+  page: Schema.union([Schema.number(), Schema.string(), Schema.nan()]).default(1),
+  limit: Schema.union([Schema.number(), Schema.string(), Schema.nan()]).default(10)
 })
   .transform((pagination) => {
     let limit = Number(pagination.limit)

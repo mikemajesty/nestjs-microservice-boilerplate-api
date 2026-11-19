@@ -82,7 +82,7 @@ await TestUtils.expectZodError(
 )
 ```
 
-Import `ZodExceptionIssue` from `@/utils/validator`; import `TestUtils`,
+Import `ZodExceptionIssue` from `@/utils/schema`; import `TestUtils`,
 `MockUtils`, and `ZodMockSchema` from `@/utils/test`. Match issue order and
 messages to the actual schema. If exact wording is not part of the contract,
 use a message matcher but still assert the expected field paths.

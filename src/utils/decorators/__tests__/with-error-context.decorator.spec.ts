@@ -3,7 +3,7 @@
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/decorators/with-error-context.md
  */
 
-import { ApiInternalServerException, BaseException } from '@/utils/exception'
+import { ApiInternalServerException, BaseException, toError } from '@/utils/exception'
 import { TestUtils } from '@/utils/test/utils'
 
 import { WithErrorContext } from '../with-error-context.decorator'
@@ -15,9 +15,9 @@ describe(WithErrorContext.name, () => {
   })
 
   it('should map an error and add the declaring method context to the mapped error', async () => {
-    const cause = new Error('database connection failed')
+    const cause = TestUtils.thirdPartyError('database connection failed')
     const map = TestUtils.mockImplementation<ApiDatabaseException>((error: unknown) => {
-      const cause = error instanceof Error ? error : new Error(String(error))
+      const cause = toError(error)
       return new ApiDatabaseException(cause.message, { cause })
     })
 
@@ -44,7 +44,7 @@ describe(WithErrorContext.name, () => {
     class TestService {
       @WithErrorContext({ map: () => mappedError })
       async execute(): Promise<never> {
-        throw new Error('original error')
+        throw TestUtils.thirdPartyError('original error')
       }
     }
 
@@ -52,7 +52,7 @@ describe(WithErrorContext.name, () => {
   })
 
   it('should preserve the original error and add context when no mapper is provided', async () => {
-    const error = new Error('operation failed')
+    const error = TestUtils.thirdPartyError('operation failed')
 
     class TestService {
       @WithErrorContext()

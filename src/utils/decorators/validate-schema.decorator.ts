@@ -3,7 +3,7 @@
  */
 
 import { ApiBadRequestException } from '../exception'
-import { BaseZodType, ZodExceptionIssue } from '../validator'
+import { BaseZodType, ZodExceptionIssue } from '../schema'
 
 export function ValidateSchema(...schemas: BaseZodType[]) {
   if (schemas?.length === 0 || !schemas) {

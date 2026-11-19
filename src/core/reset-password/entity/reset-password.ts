@@ -3,16 +3,16 @@
  */
 import { UserEntity, UserEntitySchema } from '@/core/user/entity/user'
 import { BaseEntity } from '@/utils/domain'
-import { InferSchema, InputValidator } from '@/utils/validator'
+import { InferSchema, Schema } from '@/utils/schema'
 
-const ID = InputValidator.uuid()
-const Token = InputValidator.string().min(1).trim()
+const ID = Schema.uuid()
+const Token = Schema.string().min(1).trim()
 const User = UserEntitySchema
-const CreatedAt = InputValidator.date().nullish()
-const UpdatedAt = InputValidator.date().nullish()
-const DeletedAt = InputValidator.date().nullish()
+const CreatedAt = Schema.date().nullish()
+const UpdatedAt = Schema.date().nullish()
+const DeletedAt = Schema.date().nullish()
 
-export const ResetPasswordEntitySchema = InputValidator.object({
+export const ResetPasswordEntitySchema = Schema.object({
   id: ID,
   token: Token,
   user: User.optional(),

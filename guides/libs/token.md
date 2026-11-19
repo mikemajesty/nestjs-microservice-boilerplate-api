@@ -31,7 +31,7 @@ The Token Service provides a clean abstraction over JWT operations, ensuring con
 2. **Client Request** → JWT sent in Authorization header
 3. **Guard Verification** → `TokenService.verify()` validates token
 4. **Token Expiration** → After `TOKEN_EXPIRATION` (default: `1h`), token becomes invalid
-5. **User Logout** → Token added to blacklist in Redis
+5. **User Logout** → The token's session is ended in Redis (see [Session](./session.md))
 
 ## API Reference
 
@@ -48,10 +48,12 @@ const { token } = this.tokenService.sign({
 ```
 
 **Parameters:**
+
 - `model` - User data to encode in token (email, roles, password hash)
 - `options` - Optional JWT sign options (overrides default expiration)
 
 **Returns:**
+
 - `{ token: string }` - Signed JWT token
 
 ### `verify<T>(token: string): Promise<T>`
@@ -64,23 +66,26 @@ const decoded = await this.tokenService.verify<UserPayload>(token)
 ```
 
 **Parameters:**
+
 - `token` - JWT token string to verify
 
 **Returns:**
+
 - Decoded token payload
 
 **Throws:**
+
 - `ApiUnauthorizedException` - If token is invalid or expired
 
 ## Configuration
 
 ### Environment Variables
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `TOKEN_EXPIRATION` | `1h` | JWT token lifetime |
-| `REFRESH_TOKEN_EXPIRATION` | `1d` | Refresh token lifetime |
-| `JWT_SECRET_KEY` | - | Secret key for signing tokens |
+| Variable                   | Default | Description                   |
+| -------------------------- | ------- | ----------------------------- |
+| `TOKEN_EXPIRATION`         | `1h`    | JWT token lifetime            |
+| `REFRESH_TOKEN_EXPIRATION` | `1d`    | Refresh token lifetime        |
+| `JWT_SECRET_KEY`           | -       | Secret key for signing tokens |
 
 ### Token Payload Schema
 
@@ -88,12 +93,15 @@ const decoded = await this.tokenService.verify<UserPayload>(token)
 const TokenGetSchema = UserEntitySchema.pick({
   email: true,
   roles: true
-}).and(InputValidator.object({ 
-  password: InputValidator.string() 
-}))
+}).and(
+  Schema.object({
+    password: Schema.string()
+  })
+)
 ```
 
 The token payload includes:
+
 - `email` - User's email address
 - `roles` - User's assigned roles (for permission checking)
 - `password` - Hashed password (for validation)
@@ -127,19 +135,19 @@ export class LoginController {
 
 ```typescript
 // src/core/reset-password/use-cases/reset-password-send-email.ts
-export class ResetPasswordSendEmailUsecase {
-  constructor(private readonly token: ITokenAdapter) {}
+const { token } = this.token.sign({ body: { id: user.id, purpose: RESET_PASSWORD_TOKEN_PURPOSE } })
 
-  async execute(input: ResetPasswordInput): Promise<void> {
-    // Generate short-lived token for password reset
-    const { token } = this.token.sign(
-      { email: input.email },
-      { expiresIn: '15m' } // Custom expiration
-    )
-    // Send email with reset link containing token
-  }
-}
+// src/core/reset-password/use-cases/reset-password-confirm.ts
+const token = await this.token.verify<ResetPasswordConfirmVerify>({ token: input.token })
+if (token.purpose !== RESET_PASSWORD_TOKEN_PURPOSE) throw new ApiUnauthorizedException('invalidToken')
 ```
+
+Reset tokens share the access-token secret, so two checks keep the two kinds apart:
+
+- The reset flow requires `purpose: 'password-reset'`, so an access token cannot reset a password.
+- The guard requires `sid`, so a reset token cannot be used as an access token.
+
+The confirm step also accepts only the last token emailed to the user.
 
 ### Auth Guard (Token Verification)
 
@@ -204,12 +212,12 @@ const mockTokenService: ITokenAdapter = {
 
 ## Summary
 
-| Feature | Description |
-|---------|-------------|
-| **Centralized** | Single source of truth for token operations |
-| **Type-Safe** | Full TypeScript support with Zod validation |
-| **Configurable** | Environment-based expiration settings |
-| **Secure** | Blacklist support, short expiration, proper error handling |
-| **Testable** | Adapter pattern enables easy mocking |
+| Feature          | Description                                                |
+| ---------------- | ---------------------------------------------------------- |
+| **Centralized**  | Single source of truth for token operations                |
+| **Type-Safe**    | Full TypeScript support with Zod validation                |
+| **Configurable** | Environment-based expiration settings                      |
+| **Secure**       | Blacklist support, short expiration, proper error handling |
+| **Testable**     | Adapter pattern enables easy mocking                       |
 
-**Token Service** - *Secure, centralized JWT management for authentication.*
+**Token Service** - _Secure, centralized JWT management for authentication._

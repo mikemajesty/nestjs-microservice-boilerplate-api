@@ -5,7 +5,6 @@ import "@typespec/versioning";
 import "../../utils/exceptions.tsp";
 import "../../utils/versioning.tsp";
 import "../../utils/model.tsp";
-import "./model.tsp";
 import "./exception.tsp";
 
 using TypeSpec.Http;
@@ -19,7 +18,10 @@ namespace api.Logout;
 @route("/api/{version}/logout")
 @useAuth(BearerAuth)
 interface LogoutController {
-  @doc("user logout")
-  @returnsDoc("user logout successfully")
-  logout(...VersionParams, @body body: LogoutInput): DefaultSuccessResponse<void, 200> | LogoutValidationException;
+  @doc("""
+    Ends the session of the access token sent in the Authorization header.
+    Its access and refresh tokens stop working immediately; other sessions of the user are kept.
+    """)
+  @returnsDoc("session ended")
+  logout(...VersionParams): DefaultSuccessResponse<void, 204> | LogoutUnauthorizedError;
 }

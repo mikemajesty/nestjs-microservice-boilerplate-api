@@ -1,64 +1,64 @@
 import { LogLevelEnum } from '@/infra/logger'
+import { Schema } from '@/utils/schema'
 import { ZodInferSchema } from '@/utils/types'
-import { InputValidator } from '@/utils/validator'
 
 import { ISecretsAdapter } from './adapter'
 import { EnvEnum } from './types'
 
 export const SecretsSchema = () =>
-  InputValidator.object<ZodInferSchema<ISecretsAdapter>>({
-    ENV: InputValidator.enum(EnvEnum),
-    HTTP_REQUEST_TIMEOUT_MS: InputValidator.number()
-      .or(InputValidator.string())
+  Schema.object<ZodInferSchema<ISecretsAdapter>>({
+    ENV: Schema.enum(EnvEnum),
+    HTTP_REQUEST_TIMEOUT_MS: Schema.number()
+      .or(Schema.string())
       .transform((p) => Number(p))
       .refine((timeout) => Number.isInteger(timeout) && timeout > 0, {
         message: 'timeoutMustBePositiveInteger'
       })
       .default(5000),
-    HOST: InputValidator.string(),
-    IS_LOCAL: InputValidator.boolean(),
-    IS_DOCUMENTDB: InputValidator.boolean().optional(),
-    IS_PRODUCTION: InputValidator.boolean(),
-    JWT_SECRET_KEY: InputValidator.string(),
-    LOG_LEVEL: InputValidator.enum(LogLevelEnum),
-    DATE_FORMAT: InputValidator.string(),
-    MONGO: InputValidator.object({
-      MONGO_URL: InputValidator.string(),
-      MONGO_DATABASE: InputValidator.string(),
-      MONGO_EXPRESS_URL: InputValidator.string().url()
+    HOST: Schema.string(),
+    IS_LOCAL: Schema.boolean(),
+    IS_DOCUMENTDB: Schema.boolean().optional(),
+    IS_PRODUCTION: Schema.boolean(),
+    JWT_SECRET_KEY: Schema.string(),
+    LOG_LEVEL: Schema.enum(LogLevelEnum),
+    DATE_FORMAT: Schema.string(),
+    MONGO: Schema.object({
+      MONGO_URL: Schema.string(),
+      MONGO_DATABASE: Schema.string(),
+      MONGO_EXPRESS_URL: Schema.string().url()
     }),
-    POSTGRES: InputValidator.object({
-      POSTGRES_URL: InputValidator.string().url(),
-      POSTGRES_PGADMIN_URL: InputValidator.string().url()
+    POSTGRES: Schema.object({
+      POSTGRES_URL: Schema.string().url(),
+      POSTGRES_PGADMIN_URL: Schema.string().url()
     }),
-    PORT: InputValidator.number()
-      .or(InputValidator.string())
+    PORT: Schema.number()
+      .or(Schema.string())
       .transform((p) => Number(p)),
-    PROMETHUES_URL: InputValidator.url(),
-    GRAFANA_URL: InputValidator.url(),
-    REDIS_URL: InputValidator.url(),
-    TOKEN_EXPIRATION: InputValidator.number()
-      .or(InputValidator.string())
+    PROMETHUES_URL: Schema.url(),
+    GRAFANA_URL: Schema.url(),
+    REDIS_URL: Schema.url(),
+    TOKEN_EXPIRATION: Schema.number()
+      .or(Schema.string())
       .transform((p) => Number(p)),
-    REFRESH_TOKEN_EXPIRATION: InputValidator.number()
-      .or(InputValidator.string())
+    REFRESH_TOKEN_EXPIRATION: Schema.number()
+      .or(Schema.string())
       .transform((p) => Number(p)),
-    ZIPKIN_URL: InputValidator.url(),
-    EMAIL: InputValidator.object({
-      HOST: InputValidator.string(),
-      PORT: InputValidator.number()
-        .or(InputValidator.string())
+    ZIPKIN_URL: Schema.url(),
+    EMAIL: Schema.object({
+      HOST: Schema.string(),
+      PORT: Schema.number()
+        .or(Schema.string())
         .transform((p) => Number(p)),
-      USER: InputValidator.string(),
-      PASS: InputValidator.string(),
-      FROM: InputValidator.email()
+      USER: Schema.string(),
+      PASS: Schema.string(),
+      FROM: Schema.email()
     }),
-    AUTH: InputValidator.object({
-      GOOGLE: InputValidator.object({
-        CLIENT_ID: InputValidator.string(),
-        CLIENT_SECRET: InputValidator.string(),
-        REDIRECT_URL: InputValidator.url()
+    AUTH: Schema.object({
+      GOOGLE: Schema.object({
+        CLIENT_ID: Schema.string(),
+        CLIENT_SECRET: Schema.string(),
+        REDIRECT_URL: Schema.url()
       })
     }),
-    JWT_REFRESH_SECRET_KEY: InputValidator.string()
+    JWT_REFRESH_SECRET_KEY: Schema.string()
   })

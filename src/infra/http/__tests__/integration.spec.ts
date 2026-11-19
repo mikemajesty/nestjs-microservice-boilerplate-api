@@ -24,9 +24,9 @@ import { TRACEID_HEADER } from '@/utils/request'
 import { runWithRequestContext } from '@/utils/request/context'
 import { Deadline, runWithDeadline } from '@/utils/request/deadline'
 import { TimeoutBudget } from '@/utils/request/timeout-budget'
+import { Schema } from '@/utils/schema'
 import { MockUtils } from '@/utils/test'
 import { TestUtils } from '@/utils/test/utils'
-import { InputValidator } from '@/utils/validator'
 
 import { HttpService } from '../service'
 
@@ -140,7 +140,7 @@ const captureError = async (promise: Promise<unknown>): Promise<BaseException> =
   } catch (error) {
     return error as BaseException
   }
-  throw new Error('expected request to fail')
+  TestUtils.fail('expected request to fail')
 }
 
 const measure = async <T>(callback: () => Promise<T>): Promise<{ result: T; elapsedMs: number }> => {
@@ -594,11 +594,17 @@ describe(HttpService.name, () => {
       expect(curl).toEqual(expect.stringContaining('john'))
       expect(curl).toEqual(expect.stringContaining('page=1'))
       expect(curl).toEqual(expect.stringContaining('visible'))
-      ;['super-secret', '12345678900', 'token-secret', 'header-secret', 'cookie-secret', 'api-key-secret', 'query-secret'].forEach(
-        (secret) => {
-          expect(curl).not.toContain(secret)
-        }
-      )
+      ;[
+        'super-secret',
+        '12345678900',
+        'token-secret',
+        'header-secret',
+        'cookie-secret',
+        'api-key-secret',
+        'query-secret'
+      ].forEach((secret) => {
+        expect(curl).not.toContain(secret)
+      })
     })
   })
 
@@ -726,11 +732,7 @@ describe(HttpService.name, () => {
     test('when the response is below the limit, should accept it', async () => {
       server.alwaysReply({ status: 200, body: bodyOfSize(ByteSize.fromKilobytes(1)) })
 
-      const result = await http
-        .request()
-        .get(server.url)
-        .maxResponseSize(ByteSize.fromKilobytes(2))
-        .execute()
+      const result = await http.request().get(server.url).maxResponseSize(ByteSize.fromKilobytes(2)).execute()
 
       expect(result).toEqual(bodyOfSize(ByteSize.fromKilobytes(1)))
     })
@@ -770,11 +772,7 @@ describe(HttpService.name, () => {
       server.alwaysReply({ status: 200, body: bodyOfSize(ByteSize.fromKilobytes(64)), gzip: true })
 
       const error = await captureError(
-        http
-          .request()
-          .get(server.url)
-          .maxResponseSize(ByteSize.fromKilobytes(16))
-          .execute()
+        http.request().get(server.url).maxResponseSize(ByteSize.fromKilobytes(16)).execute()
       )
 
       expect(error.statusCode).toBe(502)
@@ -785,11 +783,7 @@ describe(HttpService.name, () => {
       server.alwaysReply({ status: 200, body: bodyOfSize(ByteSize.fromKilobytes(4)) })
 
       const instanceError = await captureError(service.request().get(server.url).execute())
-      const result = await service
-        .request()
-        .get(server.url)
-        .maxResponseSize(ByteSize.fromKilobytes(8))
-        .execute()
+      const result = await service.request().get(server.url).maxResponseSize(ByteSize.fromKilobytes(8)).execute()
 
       expect(instanceError.statusCode).toBe(502)
       expect(result).toEqual(bodyOfSize(ByteSize.fromKilobytes(4)))
@@ -799,7 +793,10 @@ describe(HttpService.name, () => {
       server.alwaysReply({ status: 200, body: bodyOfSize(ByteSize.fromKilobytes(4)) })
 
       const error = await captureError(
-        http.request().get(server.url, { maxContentLength: ByteSize.fromKilobytes(1) }).execute()
+        http
+          .request()
+          .get(server.url, { maxContentLength: ByteSize.fromKilobytes(1) })
+          .execute()
       )
 
       expect(error.statusCode).toBe(502)
@@ -873,9 +870,9 @@ describe(HttpService.name, () => {
   })
 
   describe('response schema', () => {
-    const UserSchema = InputValidator.object({
-      id: InputValidator.number(),
-      name: InputValidator.string().transform((name) => name.toUpperCase())
+    const UserSchema = Schema.object({
+      id: Schema.number(),
+      name: Schema.string().transform((name) => name.toUpperCase())
     })
 
     test('when the response matches the schema, should return its transformed value without unknown keys', async () => {
@@ -931,10 +928,7 @@ describe(HttpService.name, () => {
     })
 
     test('when the response schema has async refinements, should validate them', async () => {
-      const AsyncSchema = InputValidator.object({ id: InputValidator.number() }).refine(
-        async ({ id }) => id > 0,
-        'id must be positive'
-      )
+      const AsyncSchema = Schema.object({ id: Schema.number() }).refine(async ({ id }) => id > 0, 'id must be positive')
       server.alwaysReply({ status: 200, body: { id: -1 } })
 
       const error = await captureError(http.request().get(server.url).schema(AsyncSchema).execute())

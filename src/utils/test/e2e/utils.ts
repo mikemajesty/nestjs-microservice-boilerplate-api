@@ -7,6 +7,7 @@ import { DataSourceOptions } from 'typeorm'
 
 import { UserEntity } from '@/core/user/entity/user'
 import { PostgresConnectionName } from '@/infra/database'
+import { ISessionAdapter } from '@/libs/session'
 import { AlertController } from '@/modules/alert/controller'
 import { CatController } from '@/modules/cat/controller'
 import { HealthController } from '@/modules/health/controller'
@@ -67,6 +68,19 @@ export class TestEnd2EndUtils {
   )
 
   static readonly AUTHORIZATION_HEADER: [string, string] = ['Authorization', 'Bearer fake-token']
+
+  /** Session id carried by the mocked access token (`sid` claim). */
+  static readonly SESSION_ID = 'e2e-session'
+
+  static sessionMock(): jest.Mocked<ISessionAdapter> {
+    return {
+      start: jest.fn(),
+      rotate: jest.fn(),
+      isActive: jest.fn().mockResolvedValue(true),
+      revoke: jest.fn().mockResolvedValue(undefined),
+      revokeAll: jest.fn().mockResolvedValue(undefined)
+    }
+  }
 
   static async createApp(moduleRef: TestingModule): Promise<NestFastifyApplication> {
     const app = moduleRef.createNestApplication<NestFastifyApplication>(new FastifyAdapter())

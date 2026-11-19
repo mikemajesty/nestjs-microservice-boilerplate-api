@@ -4,8 +4,8 @@
 import { RoleEntitySchema } from '@/core/role/entity/role'
 import { ValidateSchema } from '@/utils/decorators'
 import { ApiNotFoundException } from '@/utils/exception'
+import { InferSchema } from '@/utils/schema'
 import { IUsecase } from '@/utils/usecase'
-import { InferSchema } from '@/utils/validator'
 
 import { RoleEntity } from '../entity/role'
 import { IRoleRepository } from '../repository/role'

@@ -3,27 +3,27 @@
  */
 import { PermissionEntity, PermissionEntitySchema } from '@/core/permission/entity/permission'
 import { BaseEntity } from '@/utils/domain'
-import { InferSchema, InputValidator } from '@/utils/validator'
+import { InferSchema, Schema } from '@/utils/schema'
 
 export enum RoleEnum {
   USER = 'USER',
   BACKOFFICE = 'BACKOFFICE'
 }
 
-const ID = InputValidator.uuid()
-const Name = InputValidator.string().transform((value) => value.trim().replace(/ /g, '_').toUpperCase())
-const CreatedAt = InputValidator.date().nullish()
-const UpdatedAt = InputValidator.date().nullish()
-const DeletedAt = InputValidator.date().optional().nullish()
+const ID = Schema.uuid()
+const Name = Schema.string().transform((value) => value.trim().replace(/ /g, '_').toUpperCase())
+const CreatedAt = Schema.date().nullish()
+const UpdatedAt = Schema.date().nullish()
+const DeletedAt = Schema.date().optional().nullish()
 
-export const RoleEntitySchema = InputValidator.object({
+export const RoleEntitySchema = Schema.object({
   id: ID,
   name: Name,
   // Getter defers reading PermissionEntitySchema until parse time, avoiding the circular import error
   // while keeping type inference. `.omit({ roles: true })` cuts the Role <-> Permission cycle:
   // without it the mock generator recurses forever. Careful: nested `roles` are stripped on parse.
   get permissions() {
-    return InputValidator.array(PermissionEntitySchema.omit({ roles: true })).optional()
+    return Schema.array(PermissionEntitySchema.omit({ roles: true })).optional()
   },
   createdAt: CreatedAt,
   updatedAt: UpdatedAt,

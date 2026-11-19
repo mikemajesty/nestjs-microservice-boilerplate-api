@@ -8,17 +8,17 @@ import { UserSchema } from '@/infra/database/postgres/schemas/user'
 import { IRepository, RunInTransactionType } from '@/infra/repository'
 import { createRelations } from '@/infra/repository/util'
 import { UserModel } from '@/modules/user/repository'
-import { CryptoUtils } from '@/utils/crypto'
 import { IDGeneratorUtils } from '@/utils/id-generator'
 
 import { MockUtils } from '../../mock'
 import { ITestFixture } from './adpater'
 import { DatabaseFixture } from './database-fixture'
+import { PasswordFixture } from './password'
 
 export class UserFixture extends DatabaseFixture<UserSchema> implements ITestFixture<UserEntity> {
   private password = new UserPasswordEntity({
     id: IDGeneratorUtils.uuid(),
-    password: CryptoUtils.createHash('admin')
+    password: PasswordFixture.ADMIN.hash
   })
 
   public entity = new UserEntity({

@@ -6,7 +6,7 @@ import 'reflect-metadata'
 import { DateUtils } from '../date'
 import { ApiUnprocessableEntityException } from '../exception'
 import { IDGeneratorType, IDGeneratorTypes, IDGeneratorUtils } from '../id-generator'
-import { BaseZodType } from '../validator'
+import { BaseZodType } from '../schema'
 
 const normalizeID = (entity: { _id?: string; id?: string }) => {
   Object.assign(entity, { id: [entity?.id, entity?._id, null].find(Boolean) })

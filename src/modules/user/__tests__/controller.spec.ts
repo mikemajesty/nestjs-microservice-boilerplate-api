@@ -18,25 +18,27 @@ import { UserGetByIdOutput } from '@/core/user/use-cases/user-get-by-id'
 import { UserListOutput } from '@/core/user/use-cases/user-list'
 import { UserUpdateInput, UserUpdateOutput } from '@/core/user/use-cases/user-update'
 import { ICacheAdapter } from '@/infra/cache'
+import { ISessionAdapter } from '@/libs/session'
 import { ITokenAdapter } from '@/libs/token/adapter'
 import { GuardsModule } from '@/middlewares/guards/module'
 import { ApiBadRequestException, ApiNotFoundException, ApiUnauthorizedException } from '@/utils/exception'
 import { Namespaces } from '@/utils/namespaces'
 import { UserRequest } from '@/utils/request'
 import { MockUtils, TestUtils } from '@/utils/test'
-import { TestPostgresContainer, TestRedisContainer } from '@/utils/test/e2e/containers'
-import { PermissionFixture } from '@/utils/test/e2e/fixtures/permission'
-import { RoleFixture } from '@/utils/test/e2e/fixtures/role'
-import { UserFixture } from '@/utils/test/e2e/fixtures/user'
-import { FixtureUtils } from '@/utils/test/e2e/fixtures/utils'
-import { TestEnd2EndUtils } from '@/utils/test/e2e/utils'
+import {
+  FixtureUtils,
+  PermissionFixture,
+  RoleFixture,
+  TestEnd2EndUtils,
+  TestPostgresContainer,
+  TestRedisContainer,
+  UserFixture
+} from '@/utils/test/e2e'
 
 import { UserController } from '../controller'
 import { UserModule } from '../module'
 
 describe(UserController.name, () => {
-  const tokenValue = TestEnd2EndUtils.AUTHORIZATION_HEADER[1].split(' ')[1]
-
   let app: INestApplication
   let redisService: ICacheAdapter<Redis>
   let userRepository: IUserRepository
@@ -46,6 +48,7 @@ describe(UserController.name, () => {
   const redisContainer = new TestRedisContainer()
   const postgresContainer = new TestPostgresContainer()
   const userFixture = new UserFixture()
+  const sessionAdapter = TestEnd2EndUtils.sessionMock()
   const permissionFixture = new PermissionFixture()
   const roleFixture = new RoleFixture()
 
@@ -62,9 +65,12 @@ describe(UserController.name, () => {
         verify: TestUtils.mockResolvedValue<UserRequest>({
           name: userFixture.entity.name,
           email: userFixture.entity.email,
-          id: userFixture.entity.id
+          id: userFixture.entity.id,
+          sid: TestEnd2EndUtils.SESSION_ID
         })
       })
+      .overrideProvider(ISessionAdapter)
+      .useValue(sessionAdapter)
       .overrideProvider(ICacheAdapter)
       .useValue(redisService)
       .compile()
@@ -86,7 +92,6 @@ describe(UserController.name, () => {
     await userFixture.down(userRepository)
     await permissionFixture.down(permissionRepository)
     await roleFixture.down(roleRepository)
-    await redisService.del(Namespaces.blacklist(userFixture.entity.id))
     await redisService.del(Namespaces.userById(userFixture.entity.id))
   })
 
@@ -174,14 +179,18 @@ describe(UserController.name, () => {
     expect(response.body).toHaveProperty(TestUtils.nameOf<UserCreateOutput>('created'), true)
   })
 
-  it(`/POST /v1/users blacklist token error`, async () => {
-    const key = Namespaces.blacklist(userFixture.entity.id)
-    await redisService.set(key, tokenValue, { PX: 3000 })
+  it(`/POST /v1/users with an ended session (logout) should return 401`, async () => {
+    sessionAdapter.isActive.mockResolvedValueOnce(false)
+
     await request(app.getHttpServer())
       .post('/users')
       .set(...TestEnd2EndUtils.AUTHORIZATION_HEADER)
       .send({})
       .expect(ApiUnauthorizedException.STATUS)
+    expect(sessionAdapter.isActive).toHaveBeenCalledWith({
+      userId: userFixture.entity.id,
+      sessionId: TestEnd2EndUtils.SESSION_ID
+    })
   })
 
   it(`/POST /v1/users with missing fields`, async () => {

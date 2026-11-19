@@ -10,18 +10,22 @@ import request from 'supertest'
 import { IPermissionRepository } from '@/core/permission/repository/permission'
 import { IRoleRepository } from '@/core/role/repository/role'
 import { IUserRepository } from '@/core/user/repository/user'
-import { LogoutInput } from '@/core/user/use-cases/user-logout'
+import { LoginOutput } from '@/core/user/use-cases/user-login'
 import { ICacheAdapter } from '@/infra/cache'
 import { GuardsModule } from '@/middlewares/guards/module'
 import { LoginModule } from '@/modules/login/module'
-import { ApiUnauthorizedException, BaseException } from '@/utils/exception'
+import { ApiForbiddenException, ApiUnauthorizedException, BaseException } from '@/utils/exception'
+import { Namespaces } from '@/utils/namespaces'
 import { TestUtils } from '@/utils/test'
-import { TestPostgresContainer, TestRedisContainer } from '@/utils/test/e2e/containers'
-import { PermissionFixture } from '@/utils/test/e2e/fixtures/permission'
-import { RoleFixture } from '@/utils/test/e2e/fixtures/role'
-import { UserFixture } from '@/utils/test/e2e/fixtures/user'
-import { FixtureUtils } from '@/utils/test/e2e/fixtures/utils'
-import { TestEnd2EndUtils } from '@/utils/test/e2e/utils'
+import {
+  FixtureUtils,
+  PermissionFixture,
+  RoleFixture,
+  TestEnd2EndUtils,
+  TestPostgresContainer,
+  TestRedisContainer,
+  UserFixture
+} from '@/utils/test/e2e'
 
 import { LogoutController } from '../controller'
 import { LogoutModule } from '../module'
@@ -38,9 +42,11 @@ describe(LogoutController.name, () => {
 
   const postgresContainer = new TestPostgresContainer()
   const redisContainer = new TestRedisContainer()
+  let redisService: ICacheAdapter
 
   beforeAll(async () => {
     const { postgresConfig } = await postgresContainer.getPostgres()
+    redisService = await redisContainer.getTestRedis()
     const moduleRef = await Test.createTestingModule({
       imports: [
         LoginModule,
@@ -50,7 +56,7 @@ describe(LogoutController.name, () => {
       ]
     })
       .overrideProvider(ICacheAdapter)
-      .useValue(await redisContainer.getTestRedis())
+      .useValue(redisService)
       .compile()
 
     app = await TestEnd2EndUtils.createApp(moduleRef)
@@ -87,26 +93,53 @@ describe(LogoutController.name, () => {
   })
 
   describe('/POST /logout', () => {
-    it('should logout successfully with valid user and permission', async () => {
-      const loginRes = await request(app.getHttpServer())
+    const login = async () => {
+      const res = await request(app.getHttpServer())
         .post('/login')
         .send({ email: userFixture.entity.email, password: 'admin' })
-      expect(loginRes.status).toBe(201)
-      const token = loginRes.body?.accessToken
-      expect(token).toBeDefined()
+      expect(res.status).toBe(201)
+      return res.body as LoginOutput
+    }
+    const logout = (accessToken: string) =>
+      request(app.getHttpServer()).post('/logout').set('Authorization', `Bearer ${accessToken}`)
 
-      const res = await request(app.getHttpServer())
-        .post('/logout')
-        .set('Authorization', `Bearer ${token}`)
-        .send({
-          token
-        } as LogoutInput)
-      expect(res.status).toBe(401)
-      expect(typeof res.body).toBe('object')
+    const refresh = (refreshToken: string) => request(app.getHttpServer()).post('/refresh').send({ refreshToken })
+
+    it('should logout successfully with valid user and permission', async () => {
+      const tokens = await login()
+
+      await logout(tokens.accessToken).expect(204)
+    })
+
+    it('should end the session: its access and refresh tokens stop working', async () => {
+      const tokens = await login()
+      await logout(tokens.accessToken).expect(204)
+
+      await logout(tokens.accessToken).expect(ApiUnauthorizedException.STATUS)
+      await refresh(tokens.refreshToken).expect(ApiUnauthorizedException.STATUS)
+    })
+
+    it('should allow logging in again right after logout', async () => {
+      const first = await login()
+      await logout(first.accessToken).expect(204)
+
+      const second = await login()
+
+      await logout(second.accessToken).expect(204)
+    })
+
+    it('should keep the other sessions of the same user', async () => {
+      const laptop = await login()
+      const phone = await login()
+
+      await logout(laptop.accessToken).expect(204)
+
+      await refresh(phone.refreshToken).expect(201)
     })
 
     it('should fail if not authenticated', async () => {
       const res = await request(app.getHttpServer()).post('/logout')
+
       expect(res.status).toBe(ApiUnauthorizedException.STATUS)
       expect(res.body).toHaveProperty(TestUtils.nameOf<BaseException>('message'))
       expect(typeof res.body.message).toBe('string')
@@ -116,22 +149,13 @@ describe(LogoutController.name, () => {
       const logoutPermission = permissionFixture.entity.find((p) => p.name === 'user:logout')
       expect(logoutPermission).toBeDefined()
       await permissionFixture.removeRole(logoutPermission!, roleFixture.entity, roleRepository)
-      const loginRes = await request(app.getHttpServer())
-        .post('/login')
-        .send({ email: userFixture.entity.email, password: 'admin' })
-      expect(loginRes.status).toBe(201)
-      const token = loginRes.body?.accessToken
-      expect(token).toBeDefined()
+      await redisService.del(roleFixture.entity.map((role) => Namespaces.roleById(role.id)))
 
-      const res = await request(app.getHttpServer())
-        .post('/logout')
-        .set('Authorization', `Bearer ${token}`)
-        .send({
-          token
-        } as LogoutInput)
-      expect([401, 403]).toContain(res.status)
+      const tokens = await login()
+      const res = await logout(tokens.accessToken)
+
+      expect(res.status).toBe(ApiForbiddenException.STATUS)
       expect(res.body).toHaveProperty(TestUtils.nameOf<BaseException>('message'))
-      expect(typeof res.body.message).toBe('string')
     })
   })
 })

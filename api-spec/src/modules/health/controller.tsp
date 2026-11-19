@@ -19,6 +19,7 @@ interface HealthController {
     Readiness probe - checks if the application can handle requests.
     Only pings MongoDB, PostgreSQL and Redis (2s timeout each), so it stays cheap for orchestrators.
     Answers **503** when any dependency is DOWN.
+    The checks are cached for 2s and shared with /health/startup.
   """)
   @returnsDoc("Overall status and the result of each dependency check")
   readiness(): ReadinessOutput | {
@@ -30,7 +31,8 @@ interface HealthController {
   @route("/metrics")
   @doc("""
     Process, runtime and dependency metrics for dashboards and troubleshooting.
-    Does not decide readiness. Event loop, GC and process CPU cover the window since the previous call, then reset.
+    Does not decide readiness. The snapshot is cached for 5s: `timestamp` is when it was collected,
+    and event loop, GC and process CPU cover the window since the previous collection.
   """)
   @returnsDoc("Metrics snapshot")
   metrics(): MetricsOutput;

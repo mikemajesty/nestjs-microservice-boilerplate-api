@@ -3,6 +3,7 @@
 ## Overview
 
 The database layer provides **schema definitions** and **migrations** for both databases:
+
 - **MongoDB** — Document-based, uses Mongoose schemas
 - **PostgreSQL** — Relational, uses TypeORM entities
 
@@ -44,10 +45,10 @@ import { CatEntity } from '@/core/cat/entity/cat'
 export type CatDocument = Document & CatEntity
 
 @Schema({
-  collection: 'cats',           // Collection name
-  autoIndex: true,              // Auto-create indexes
-  timestamps: true,             // Add createdAt/updatedAt
-  toJSON: { virtuals: true },   // Include virtuals in JSON
+  collection: 'cats', // Collection name
+  autoIndex: true, // Auto-create indexes
+  timestamps: true, // Add createdAt/updatedAt
+  toJSON: { virtuals: true }, // Include virtuals in JSON
   toObject: { virtuals: true }
 })
 export class Cat {
@@ -89,15 +90,15 @@ export { CatSchema }
 
 ### Key Patterns
 
-| Pattern | Description |
-|---------|-------------|
-| `@Schema({ collection: 'cats' })` | Explicit collection name |
-| `@Prop({ required: true })` | Field validation |
-| `timestamps: true` | Auto `createdAt`/`updatedAt` |
-| `deletedAt: Date` | Soft delete support |
-| `CatSchema.index(...)` | Performance indexes |
-| `CatSchema.plugin(paginate)` | Pagination support |
-| `virtual('id')` | Maps `_id` → `id` for consistency |
+| Pattern                           | Description                       |
+| --------------------------------- | --------------------------------- |
+| `@Schema({ collection: 'cats' })` | Explicit collection name          |
+| `@Prop({ required: true })`       | Field validation                  |
+| `timestamps: true`                | Auto `createdAt`/`updatedAt`      |
+| `deletedAt: Date`                 | Soft delete support               |
+| `CatSchema.index(...)`            | Performance indexes               |
+| `CatSchema.plugin(paginate)`      | Pagination support                |
+| `virtual('id')`                   | Maps `_id` → `id` for consistency |
 
 ---
 
@@ -250,15 +251,7 @@ PostgreSQL schemas use **TypeORM entities** with decorators.
 
 ```typescript
 // src/infra/database/postgres/schemas/permission.ts
-import {
-  BaseEntity,
-  Column,
-  CreateDateColumn,
-  DeleteDateColumn,
-  Entity,
-  Index,
-  UpdateDateColumn
-} from 'typeorm'
+import { BaseEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, Index, UpdateDateColumn } from 'typeorm'
 
 @Entity({ name: 'permissions' })
 @Index('idx_permissions_name_trgm', ['name'])
@@ -320,8 +313,8 @@ export class UserSchema extends BaseEntity {
   @Column('text')
   email!: string
 
-  @OneToOne(() => UserPasswordSchema, { 
-    cascade: ['insert', 'recover', 'update', 'remove', 'soft-remove'] 
+  @OneToOne(() => UserPasswordSchema, {
+    cascade: ['insert', 'recover', 'update', 'remove', 'soft-remove']
   })
   @JoinColumn()
   password!: Relation<UserPasswordSchema>
@@ -343,17 +336,17 @@ export class UserSchema extends BaseEntity {
 
 ### Key Patterns
 
-| Pattern | Description |
-|---------|-------------|
-| `@Entity({ name: 'users' })` | Table name |
-| `@Column({ type: 'uuid', primary: true })` | UUID primary key |
-| `@Column('text', { unique: true })` | Unique constraint |
-| `@CreateDateColumn()` | Auto timestamp |
-| `@DeleteDateColumn()` | Soft delete support |
-| `@Index('name', ['field'], { where })` | Partial indexes |
-| `@OneToOne`, `@ManyToMany` | Relationships |
-| `cascade: ['insert', 'update', ...]` | Cascade operations |
-| `eager: true` | Auto-load relation |
+| Pattern                                    | Description         |
+| ------------------------------------------ | ------------------- |
+| `@Entity({ name: 'users' })`               | Table name          |
+| `@Column({ type: 'uuid', primary: true })` | UUID primary key    |
+| `@Column('text', { unique: true })`        | Unique constraint   |
+| `@CreateDateColumn()`                      | Auto timestamp      |
+| `@DeleteDateColumn()`                      | Soft delete support |
+| `@Index('name', ['field'], { where })`     | Partial indexes     |
+| `@OneToOne`, `@ManyToMany`                 | Relationships       |
+| `cascade: ['insert', 'update', ...]`       | Cascade operations  |
+| `eager: true`                              | Auto-load relation  |
 
 ---
 
@@ -448,25 +441,23 @@ export const permissions = [
   'cat:delete',
   'user:create',
   'user:update',
-  'user:list',
+  'user:list'
   // ...
 ]
 
 export class insertPermissions1727654555722 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const permissionsPromises = []
-    
+
     for (const permission of permissions) {
-      const entity = new PermissionEntity({ 
-        id: IDGeneratorUtils.uuid(), 
-        name: permission 
+      const entity = new PermissionEntity({
+        id: IDGeneratorUtils.uuid(),
+        name: permission
       })
-      
-      permissionsPromises.push(
-        queryRunner.manager.insert(PermissionSchema, entity.toData())
-      )
+
+      permissionsPromises.push(queryRunner.manager.insert(PermissionSchema, entity.toData()))
     }
-    
+
     await Promise.all(permissionsPromises)
   }
 
@@ -509,7 +500,9 @@ export class AddPerformanceIndexes1734199200000 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    throw new Error('Method not implemented.')
+    await queryRunner.query(`DROP INDEX IF EXISTS "idx_users_roles_role_id"`)
+    await queryRunner.query(`DROP INDEX IF EXISTS "idx_users_name_lower"`)
+    await queryRunner.query(`DROP INDEX IF EXISTS "idx_users_name_trgm"`)
   }
 }
 ```
@@ -547,20 +540,17 @@ const dataSource = new DataSource({
   database: process.env.POSTGRES_DATABASE,
   schema: process.env.POSTGRES_SCHEMA,
   namingStrategy: new SnakeNamingStrategy(), // snake_case columns
-  ssl: process.env.POSTGRES_SSL === 'true' 
-    ? { rejectUnauthorized: false } 
-    : false,
+  ssl: process.env.POSTGRES_SSL === 'true' ? { rejectUnauthorized: false } : false,
   extra: {
     max: 20,
     min: 2,
     connectionTimeoutMillis: 10000,
-    idleTimeoutMillis: 300000,
-    // ...
+    idleTimeoutMillis: 300000
   },
   migrationsTableName: 'migrations',
   migrations: ['src/infra/database/postgres/migrations/*.{ts,js}'],
   entities: ['src/infra/database/postgres/schemas/*.{ts,js}'],
-  synchronize: false, // NEVER true in production!
+  synchronize: false // NEVER true in production!
 })
 ```
 
@@ -572,15 +562,7 @@ const dataSource = new DataSource({
 
 ```typescript
 // src/infra/database/postgres/schemas/product.ts
-import {
-  BaseEntity,
-  Column,
-  CreateDateColumn,
-  DeleteDateColumn,
-  Entity,
-  Index,
-  UpdateDateColumn
-} from 'typeorm'
+import { BaseEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, Index, UpdateDateColumn } from 'typeorm'
 
 @Entity({ name: 'products' })
 @Index('idx_products_name_trgm', ['name'])
@@ -663,30 +645,30 @@ npm run migration-postgres:run
 
 ## Comparison Table
 
-| Feature | MongoDB | PostgreSQL |
-|---------|---------|------------|
-| **Library** | `@nestjs/mongoose` | `typeorm` |
-| **Schema** | `@Schema`, `@Prop` | `@Entity`, `@Column` |
-| **Migration Tool** | `mongo-migrate-ts` | TypeORM CLI |
-| **Soft Delete** | `deletedAt: Date` | `@DeleteDateColumn()` |
-| **Timestamps** | `timestamps: true` | `@CreateDateColumn()` |
-| **Indexes** | `Schema.index()` | `@Index()` decorator |
-| **Pagination** | `mongoose-paginate-v2` | Built-in |
-| **Naming** | camelCase | snake_case (via strategy) |
+| Feature            | MongoDB                | PostgreSQL                |
+| ------------------ | ---------------------- | ------------------------- |
+| **Library**        | `@nestjs/mongoose`     | `typeorm`                 |
+| **Schema**         | `@Schema`, `@Prop`     | `@Entity`, `@Column`      |
+| **Migration Tool** | `mongo-migrate-ts`     | TypeORM CLI               |
+| **Soft Delete**    | `deletedAt: Date`      | `@DeleteDateColumn()`     |
+| **Timestamps**     | `timestamps: true`     | `@CreateDateColumn()`     |
+| **Indexes**        | `Schema.index()`       | `@Index()` decorator      |
+| **Pagination**     | `mongoose-paginate-v2` | Built-in                  |
+| **Naming**         | camelCase              | snake_case (via strategy) |
 
 ---
 
 ## Migration Commands Summary
 
-| Command | Description |
-|---------|-------------|
-| `npm run migration:run` | Run both Mongo + Postgres |
-| `npm run migration-postgres:create` | Create PostgreSQL migration |
-| `npm run migration-postgres:run` | Run PostgreSQL migrations |
-| `npm run migration-postgres:undo` | Revert last PostgreSQL migration |
-| `npm run migration-mongo:create` | Create MongoDB migration |
-| `npm run migration-mongo:run` | Run MongoDB migrations |
-| `npm run migration-mongo:undo` | Revert last MongoDB migration |
+| Command                             | Description                      |
+| ----------------------------------- | -------------------------------- |
+| `npm run migration:run`             | Run both Mongo + Postgres        |
+| `npm run migration-postgres:create` | Create PostgreSQL migration      |
+| `npm run migration-postgres:run`    | Run PostgreSQL migrations        |
+| `npm run migration-postgres:undo`   | Revert last PostgreSQL migration |
+| `npm run migration-mongo:create`    | Create MongoDB migration         |
+| `npm run migration-mongo:run`       | Run MongoDB migrations           |
+| `npm run migration-mongo:undo`      | Revert last MongoDB migration    |
 
 ---
 

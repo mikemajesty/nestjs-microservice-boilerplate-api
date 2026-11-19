@@ -5,16 +5,16 @@ import { ZodMockSchema } from '@mikemajesty/zod-mock-schema'
 import { Test } from '@nestjs/testing'
 
 import {
-  PermissionDeleteInput,
-  PermissionDeleteSchema,
-  PermissionDeleteUsecase
+    PermissionDeleteInput,
+    PermissionDeleteSchema,
+    PermissionDeleteUsecase
 } from '@/core/permission/use-cases/permission-delete'
 import { RoleEntity, RoleEnum } from '@/core/role/entity/role'
 import { CreatedModel } from '@/infra/repository'
 import { IPermissionDelete } from '@/modules/permission/interfaces'
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception'
+import { ZodExceptionIssue } from '@/utils/schema'
 import { TestUtils } from '@/utils/test/utils'
-import { ZodExceptionIssue } from '@/utils/validator'
 
 import { IPermissionRepository } from '../../repository/permission'
 import { PermissionEntity, PermissionEntitySchema } from './../../entity/permission'

@@ -3,23 +3,23 @@
  */
 import { RoleEntity, RoleEntitySchema } from '@/core/role/entity/role'
 import { BaseEntity } from '@/utils/domain'
-import { InferSchema, InputValidator } from '@/utils/validator'
+import { InferSchema, Schema } from '@/utils/schema'
 
 import { UserPasswordEntity, UserPasswordEntitySchema } from './user-password'
 
-const ID = InputValidator.uuid()
-const Email = InputValidator.email()
-const Name = InputValidator.string()
+const ID = Schema.uuid()
+const Email = Schema.email()
+const Name = Schema.string()
 const Password = UserPasswordEntitySchema
-const CreatedAt = InputValidator.date().nullish()
-const UpdatedAt = InputValidator.date().nullish()
-const DeletedAt = InputValidator.date().nullish()
+const CreatedAt = Schema.date().nullish()
+const UpdatedAt = Schema.date().nullish()
+const DeletedAt = Schema.date().nullish()
 
-export const UserEntitySchema = InputValidator.object({
+export const UserEntitySchema = Schema.object({
   id: ID,
   name: Name,
   email: Email,
-  roles: InputValidator.array(RoleEntitySchema.optional().optional()).default([]),
+  roles: Schema.array(RoleEntitySchema.optional().optional()).default([]),
   password: Password.optional(),
   createdAt: CreatedAt,
   updatedAt: UpdatedAt,

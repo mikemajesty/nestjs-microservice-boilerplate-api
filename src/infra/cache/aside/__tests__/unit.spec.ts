@@ -4,6 +4,7 @@
  */
 
 import { ICacheAdapter } from '@/infra/cache'
+import { ApiServiceUnavailableException } from '@/utils/exception'
 import { JitterUtils } from '@/utils/jitter'
 import { MockUtils, TestUtils } from '@/utils/test'
 
@@ -28,7 +29,7 @@ describe(CacheAsideService.name, () => {
   test('when a cache read fails, should load and store the value', async () => {
     const loaded = { id: '1' }
     const loader = TestUtils.mockResolvedValue<typeof loaded>(loaded)
-    cache.get = TestUtils.mockRejectedValue<string | null>(new Error('Redis unavailable'))
+    cache.get = TestUtils.mockRejectedValue<string | null>(new ApiServiceUnavailableException('Redis unavailable'))
     cache.multiExec = TestUtils.mockResolvedValue<void>()
 
     await expect(service.readThrough('role:id:1', loader, { ttlSeconds: 60 })).resolves.toEqual(loaded)
@@ -45,7 +46,7 @@ describe(CacheAsideService.name, () => {
       [keys[1], { id: '2' }]
     ])
     const loader = TestUtils.mockResolvedValue<typeof loaded>(loaded)
-    cache.mGet = TestUtils.mockRejectedValue<(string | null)[]>(new Error('Redis unavailable'))
+    cache.mGet = TestUtils.mockRejectedValue<(string | null)[]>(new ApiServiceUnavailableException('Redis unavailable'))
     cache.multiExec = TestUtils.mockResolvedValue<void>()
 
     await expect(service.readThroughMany(keys, loader, { ttlSeconds: 60 })).resolves.toEqual([
@@ -160,7 +161,7 @@ describe(CacheAsideService.name, () => {
   test('when storing a loaded value fails, should still return the value', async () => {
     const loaded = { id: '1' }
     cache.get = TestUtils.mockResolvedValue<string>(null)
-    cache.multiExec = TestUtils.mockRejectedValue<void>(new Error('Redis unavailable'))
+    cache.multiExec = TestUtils.mockRejectedValue<void>(new ApiServiceUnavailableException('Redis unavailable'))
 
     await expect(service.readThrough('role:id:1', () => loaded, { ttlSeconds: 60 })).resolves.toEqual(loaded)
 
@@ -168,8 +169,8 @@ describe(CacheAsideService.name, () => {
   })
 
   test('when invalidation fails, should tolerate the cache error', async () => {
-    cache.del = TestUtils.mockRejectedValue<void>(new Error('Redis unavailable'))
-    cache.eval = TestUtils.mockRejectedValue<unknown>(new Error('Redis unavailable'))
+    cache.del = TestUtils.mockRejectedValue<void>(new ApiServiceUnavailableException('Redis unavailable'))
+    cache.eval = TestUtils.mockRejectedValue<unknown>(new ApiServiceUnavailableException('Redis unavailable'))
 
     await expect(service.invalidate('role:id:1')).resolves.toBeUndefined()
     await expect(service.invalidateByTag('permission:id:1')).resolves.toBeUndefined()

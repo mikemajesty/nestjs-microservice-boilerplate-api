@@ -8,6 +8,7 @@ process.env.NODE_ENV = EnvEnum.TEST
 process.env.LOG_LEVEL = `silent`
 process.env.JWT_SECRET = 'test-secret'
 process.env.TOKEN_EXPIRATION = String(300)
+process.env.REFRESH_TOKEN_EXPIRATION = String(600)
 process.env.JWT_REFRESH_SECRET_KEY = 'test-refresh-secret'
 process.env.NODE_OPTIONS = '--experimental-vm-modules'
 process.env.HTTP_REQUEST_TIMEOUT_MS = String(5000)

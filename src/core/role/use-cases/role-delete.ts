@@ -7,8 +7,8 @@ import { ValidateSchema } from '@/utils/decorators'
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception'
 import { Namespaces } from '@/utils/namespaces'
 import { ObjectUtils } from '@/utils/object'
+import { InferSchema } from '@/utils/schema'
 import { IUsecase } from '@/utils/usecase'
-import { InferSchema } from '@/utils/validator'
 
 import { RoleEntity, RoleEntitySchema } from '../entity/role'
 

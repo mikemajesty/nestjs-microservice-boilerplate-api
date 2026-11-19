@@ -9,6 +9,7 @@ import { Connection } from 'mongoose'
 import { DataSource } from 'typeorm'
 
 import { ICacheAdapter } from '@/infra/cache'
+import { CacheMemoryService } from '@/infra/cache/memory'
 import { CacheRedisModule } from '@/infra/cache/redis'
 import { MongoConnectionName, PostgresConnectionName } from '@/infra/database'
 import { PostgresDatabaseModule } from '@/infra/database/postgres'
@@ -16,7 +17,8 @@ import { ILoggerAdapter, LoggerModule } from '@/infra/logger'
 import { ISecretsAdapter, SecretsModule } from '@/infra/secrets'
 
 import { HealthController, RootHealthController } from './controller'
-import { HealthService, IHealthAdapter } from './service'
+import { IHealthAdapter, IHealthCacheAdapter } from './interfaces'
+import { HealthService } from './service'
 
 @Module({
   imports: [LoggerModule, PostgresDatabaseModule, CacheRedisModule, SecretsModule],
@@ -27,14 +29,16 @@ import { HealthService, IHealthAdapter } from './service'
       useFactory: async (
         connection: Connection,
         dataSource: DataSource,
-        cache: ICacheAdapter<Redis>,
+        redis: ICacheAdapter<Redis>,
         logger: ILoggerAdapter,
-        secrets: ISecretsAdapter
+        secrets: ISecretsAdapter,
+        cache: IHealthCacheAdapter
       ) => {
         const service = new HealthService(logger, secrets)
         service.postgres = dataSource
         service.mongo = connection
-        service.redis = cache
+        service.redis = redis
+        service.cache = cache
         return service
       },
       inject: [
@@ -42,8 +46,18 @@ import { HealthService, IHealthAdapter } from './service'
         getDataSourceToken(PostgresConnectionName.POSTGRES),
         ICacheAdapter<Redis>,
         ILoggerAdapter,
-        ISecretsAdapter
+        ISecretsAdapter,
+        IHealthCacheAdapter
       ]
+    },
+    {
+      provide: IHealthCacheAdapter,
+      useFactory: (logger: ILoggerAdapter): IHealthCacheAdapter => {
+        const cache = new CacheMemoryService(logger)
+        cache.connect()
+        return cache
+      },
+      inject: [ILoggerAdapter]
     }
   ],
   exports: [IHealthAdapter]

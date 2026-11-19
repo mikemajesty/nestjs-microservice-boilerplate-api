@@ -52,7 +52,8 @@ paths:
       operationId: HealthController_metrics
       description: |2-
           Process, runtime and dependency metrics for dashboards and troubleshooting.
-          Does not decide readiness. Event loop, GC and process CPU cover the window since the previous call, then reset.
+          Does not decide readiness. The snapshot is cached for 5s: `timestamp` is when it was collected,
+          and event loop, GC and process CPU cover the window since the previous collection.
       parameters: []
       responses:
         '200':
@@ -70,6 +71,7 @@ paths:
           Readiness probe - checks if the application can handle requests.
           Only pings MongoDB, PostgreSQL and Redis (2s timeout each), so it stays cheap for orchestrators.
           Answers **503** when any dependency is DOWN.
+          The checks are cached for 2s and shared with /health/startup.
       parameters: []
       responses:
         '200':
@@ -260,9 +262,6 @@ components:
             totalHeapSize:
               type: string
               description: Total heap size managed by V8.
-            usedHeapSize:
-              type: string
-              description: Heap size actually being used; redundant with process.heapUsed.
             executableHeapSize:
               type: string
               description: Heap size reserved for compiled JavaScript code.
@@ -271,7 +270,6 @@ components:
               description: Maximum heap size before memory allocation fails; compare against the container memory limit.
           required:
             - totalHeapSize
-            - usedHeapSize
             - executableHeapSize
             - heapSizeLimit
           description: v8 memory
@@ -607,6 +605,7 @@ components:
         - status
         - version
         - timestamp
+        - checkedAt
         - dependencies
       properties:
         status:
@@ -617,7 +616,10 @@ components:
           description: application version
         timestamp:
           type: string
-          description: Timestamp of the check
+          description: When this response was built
+        checkedAt:
+          type: string
+          description: When the dependency checks ran; they are cached for 2s, so it can be older than `timestamp`
         dependencies:
           type: object
           properties:
@@ -680,7 +682,9 @@ components:
       required:
         - status
         - timestamp
+        - checkedAt
         - phase
+        - connections
         - message
       properties:
         status:
@@ -689,6 +693,9 @@ components:
         timestamp:
           type: string
           description: Timestamp of the health check
+        checkedAt:
+          type: string
+          description: When the dependency checks ran; they are cached for 2s and shared with /health/ready
         phase:
           type: string
           description: Health check phase identifier
@@ -708,13 +715,8 @@ components:
             - mongo
             - postgres
             - redis
-          description: |2-
-              Basic connection status for each service.
-              Omitted when startup fails before connections are checked.
+          description: Connection status for each service
         message:
           type: string
           description: Human-readable status message
-        error:
-          type: string
-          description: Optional error message if startup fails
       description: Startup probe response model

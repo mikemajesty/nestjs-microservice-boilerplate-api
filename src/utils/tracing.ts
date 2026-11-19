@@ -16,7 +16,7 @@ import { NodeSDK, NodeSDKConfiguration } from '@opentelemetry/sdk-node'
 import { LoggerService } from '@/infra/logger'
 
 import { name } from '../../package.json'
-import { ApiBadRequestException } from './exception'
+import { ApiBadRequestException, ApiInternalServerException } from './exception'
 import { IDGeneratorUtils } from './id-generator'
 import { generalizePath, TRACEID_HEADER } from './request'
 
@@ -58,7 +58,9 @@ const updateSpanName = (span: Span, request: IncomingMessage | ClientRequest): s
     const urlPath = request.url?.split('?')[0] || '/'
     return generalizePath(urlPath) || '/'
   }
-  throw new Error('Unsupported request type for span name update')
+  throw new ApiInternalServerException('Unsupported request type for span name update', {
+    context: 'tracing.updateSpanName'
+  })
 }
 
 const httpInstrumentation = new HttpInstrumentation({

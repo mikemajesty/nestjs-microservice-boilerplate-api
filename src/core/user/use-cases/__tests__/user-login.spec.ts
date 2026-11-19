@@ -2,11 +2,12 @@ import { ZodMockSchema } from '@mikemajesty/zod-mock-schema'
 import { Test } from '@nestjs/testing'
 
 import { RoleEntity, RoleEntitySchema } from '@/core/role/entity/role'
-import { ITokenAdapter, TokenLibModule } from '@/libs/token'
+import { ISessionAdapter } from '@/libs/session'
 import { ILogin } from '@/modules/login/interfaces'
-import { ApiBadRequestException, ApiNotFoundException } from '@/utils/exception'
+import { ApiUnauthorizedException } from '@/utils/exception'
+import { ZodExceptionIssue } from '@/utils/schema'
 import { MockUtils, TestUtils } from '@/utils/test'
-import { ZodExceptionIssue } from '@/utils/validator'
+import { PasswordFixture } from '@/utils/test/e2e'
 
 import { UserEntity, UserEntitySchema } from '../../entity/user'
 import { UserPasswordEntity, UserPasswordEntitySchema } from '../../entity/user-password'
@@ -16,24 +17,27 @@ import { LoginInput, LoginOutput, LoginSchema, LoginUsecase } from '../user-logi
 describe(LoginUsecase.name, () => {
   let usecase: ILogin
   let repository: IUserRepository
+  let session: ISessionAdapter
+  const tokens: LoginOutput = { accessToken: 'access', refreshToken: 'refresh' }
 
   beforeEach(async () => {
     const app = await Test.createTestingModule({
-      imports: [TokenLibModule],
       providers: [
         TestUtils.mockProvider(IUserRepository),
+        TestUtils.mockProvider(ISessionAdapter, { start: TestUtils.mockResolvedValue<LoginOutput>(tokens) }),
         {
           provide: ILogin,
-          useFactory: (userRepository: IUserRepository, token: ITokenAdapter) => {
-            return new LoginUsecase(userRepository, token)
+          useFactory: (userRepository: IUserRepository, session: ISessionAdapter) => {
+            return new LoginUsecase(userRepository, session)
           },
-          inject: [IUserRepository, ITokenAdapter]
+          inject: [IUserRepository, ISessionAdapter]
         }
       ]
     }).compile()
 
     usecase = app.get(ILogin)
     repository = app.get(IUserRepository)
+    session = app.get(ISessionAdapter)
   })
 
   test('when no input is specified, should expect an error', async () => {
@@ -62,10 +66,13 @@ describe(LoginUsecase.name, () => {
     }
   })
 
-  test('when user not found, should expect an error', async () => {
+  test('when user not found, should expect the same error as a wrong password', async () => {
     repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(null)
 
-    await expect(usecase.execute(input, MockUtils.Tracing())).rejects.toThrow(ApiNotFoundException)
+    await expect(usecase.execute(input, MockUtils.Tracing())).rejects.toThrow(
+      new ApiUnauthorizedException('invalidCredentials')
+    )
+    expect(session.start).not.toHaveBeenCalled()
   })
 
   const userPasswordMock = new ZodMockSchema(UserPasswordEntitySchema)
@@ -96,16 +103,17 @@ describe(LoginUsecase.name, () => {
   test('when password is incorrect, should expect an error', async () => {
     repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(user.clone())
 
-    await expect(usecase.execute(input, MockUtils.Tracing())).rejects.toThrow(ApiBadRequestException)
+    await expect(usecase.execute(input, MockUtils.Tracing())).rejects.toThrow(
+      new ApiUnauthorizedException('invalidCredentials')
+    )
+    expect(session.start).not.toHaveBeenCalled()
   })
 
   test('when user login successfully, should expect a token', async () => {
-    user.password.password = '69bf0bc46f51b33377c4f3d92caf876714f6bbbe99e7544487327920873f9820'
+    user.password.password = PasswordFixture.MASKED.hash
     repository.findOneWithRelation = TestUtils.mockResolvedValue<UserEntity>(user.clone())
 
-    await expect(usecase.execute(input, MockUtils.Tracing())).resolves.toEqual({
-      accessToken: expect.any(String),
-      refreshToken: expect.any(String)
-    } as LoginOutput)
+    await expect(usecase.execute(input, MockUtils.Tracing())).resolves.toEqual(tokens)
+    expect(session.start).toHaveBeenCalledWith(expect.objectContaining({ id: user.id }))
   })
 })

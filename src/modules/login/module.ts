@@ -8,29 +8,30 @@ import { LoginUsecase } from '@/core/user/use-cases/user-login'
 import { RefreshTokenUsecase } from '@/core/user/use-cases/user-refresh-token'
 import { HttpModule } from '@/infra/http'
 import { SecretsModule } from '@/infra/secrets'
-import { ITokenAdapter, TokenLibModule } from '@/libs/token'
+import { ISessionAdapter, SessionLibModule } from '@/libs/session'
+import { TokenLibModule } from '@/libs/token'
 
 import { UserModule } from '../user/module'
 import { LoginController } from './controller'
 import { ILogin, IRefreshToken } from './interfaces'
 
 @Module({
-  imports: [TokenLibModule, UserModule, SecretsModule, HttpModule, UserModule],
+  imports: [TokenLibModule, SessionLibModule, UserModule, SecretsModule, HttpModule],
   controllers: [LoginController],
   providers: [
     {
       provide: ILogin,
-      useFactory: (repository: IUserRepository, tokenService: ITokenAdapter) => {
-        return new LoginUsecase(repository, tokenService)
+      useFactory: (repository: IUserRepository, session: ISessionAdapter) => {
+        return new LoginUsecase(repository, session)
       },
-      inject: [IUserRepository, ITokenAdapter]
+      inject: [IUserRepository, ISessionAdapter]
     },
     {
       provide: IRefreshToken,
-      useFactory: (repository: IUserRepository, tokenService: ITokenAdapter) => {
-        return new RefreshTokenUsecase(repository, tokenService)
+      useFactory: (repository: IUserRepository, session: ISessionAdapter) => {
+        return new RefreshTokenUsecase(repository, session)
       },
-      inject: [IUserRepository, ITokenAdapter]
+      inject: [IUserRepository, ISessionAdapter]
     }
   ]
 })

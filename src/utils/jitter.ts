@@ -1,25 +1,44 @@
 /**
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/utils/jitter.md
  */
-import { InferSchema, InputValidator } from './validator'
+import { ValidateSchema } from './decorators'
+import { InferSchema, Schema } from './schema'
 
 export const JITTER_DEFAULT_PERCENTAGE = 0.1
 
-export const JitterApplySchema = InputValidator.object({
-  base: InputValidator.number(),
-  percentage: InputValidator.number().optional(),
-  options: InputValidator.object({
-    min: InputValidator.number().optional(),
-    max: InputValidator.number().optional(),
-    integer: InputValidator.boolean().optional()
+export const JitterApplySchema = Schema.object({
+  base: Schema.number(),
+  percentage: Schema.number().optional(),
+  options: Schema.object({
+    min: Schema.number().optional(),
+    max: Schema.number().optional(),
+    integer: Schema.boolean().optional()
+  }).optional()
+})
+
+export const JitterApplyFullSchema = Schema.object({
+  base: Schema.number(),
+  options: Schema.object({
+    min: Schema.number().optional(),
+    max: Schema.number().optional(),
+    integer: Schema.boolean().optional()
   }).optional()
 })
 
 export class JitterUtils {
+  @ValidateSchema(JitterApplySchema)
   static apply({ base, percentage = JITTER_DEFAULT_PERCENTAGE, options }: JitterApplyOptionsInput): number {
     if (base <= 0) return base
 
     const value = JitterUtils.randomBetween(base, percentage)
+    return JitterUtils.finalize(value, options)
+  }
+
+  @ValidateSchema(JitterApplyFullSchema)
+  static applyFull({ base, options }: JitterApplyFullOptionsInput): number {
+    if (base <= 0) return base
+
+    const value = Math.random() * base
     return JitterUtils.finalize(value, options)
   }
 
@@ -59,3 +78,4 @@ export type JitterOptions = {
 }
 
 export type JitterApplyOptionsInput = InferSchema<typeof JitterApplySchema>
+export type JitterApplyFullOptionsInput = InferSchema<typeof JitterApplyFullSchema>

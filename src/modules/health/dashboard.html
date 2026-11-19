@@ -945,7 +945,7 @@
             ])
 
             renderProbe('live', live, typeof live.body?.uptime === 'number' ? fmtUptime(live.body.uptime) : '—')
-            renderProbe('startup', startup, startup.body?.message ?? startup.body?.error ?? '—')
+            renderProbe('startup', startup, startup.body?.message ?? '—')
 
             const deps = Object.values(ready.body?.dependencies ?? {})
             const upCount = deps.filter((d) => isUp(d.status)).length

@@ -7,14 +7,16 @@ import jwt from 'jsonwebtoken'
 import { UserEntitySchema } from '@/core/user/entity/user'
 import { ISecretsAdapter } from '@/infra/secrets'
 import { ApiUnauthorizedException } from '@/utils/exception'
-import { InputValidator } from '@/utils/validator'
+import { Schema } from '@/utils/schema'
 
 import { ITokenAdapter } from './adapter'
 
 export const TokenGetSchema = UserEntitySchema.pick({
   email: true,
   roles: true
-}).and(InputValidator.object({ password: InputValidator.string() }))
+}).and(Schema.object({ password: Schema.string() }))
+
+const TOKEN_ALGORITHM: jwt.Algorithm = 'HS256'
 
 @Injectable()
 export class TokenService implements ITokenAdapter {
@@ -24,25 +26,32 @@ export class TokenService implements ITokenAdapter {
     return this.secret.JWT_REFRESH_SECRET_KEY
   }
 
+  get refreshExpiration(): number {
+    return this.secret.REFRESH_TOKEN_EXPIRATION
+  }
+
   sign(input: TokenSignInput): TokenSignOutput {
-    const token = jwt.sign(
-      input.body as jwt.JwtPayload,
-      input.secret ?? this.secret.JWT_SECRET_KEY,
-      input.options || {
-        expiresIn: this.secret.TOKEN_EXPIRATION as jwt.SignOptions['expiresIn']
-      }
-    )
+    const token = jwt.sign(input.body as jwt.JwtPayload, input.secret ?? this.secret.JWT_SECRET_KEY, {
+      expiresIn: this.secret.TOKEN_EXPIRATION as jwt.SignOptions['expiresIn'],
+      ...input.options,
+      algorithm: TOKEN_ALGORITHM
+    })
 
     return { token }
   }
 
   async verify<T>(input: TokenVerifyInput): Promise<T> {
     return new Promise((res, rej) => {
-      jwt.verify(input.token, input.secret ?? this.secret.JWT_SECRET_KEY, (error, decoded) => {
-        if (error) rej(new ApiUnauthorizedException(error.message))
+      jwt.verify(
+        input.token,
+        input.secret ?? this.secret.JWT_SECRET_KEY,
+        { algorithms: [TOKEN_ALGORITHM] },
+        (error, decoded) => {
+          if (error) return rej(new ApiUnauthorizedException(error.message))
 
-        res(decoded as T)
-      })
+          res(decoded as T)
+        }
+      )
     })
   }
 

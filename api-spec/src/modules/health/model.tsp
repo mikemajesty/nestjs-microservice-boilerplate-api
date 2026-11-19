@@ -20,8 +20,11 @@ model ReadinessOutput {
   @doc("application version")
   version: string;
 
-  @doc("Timestamp of the check")
+  @doc("When this response was built")
   timestamp: string;
+
+  @doc("When the dependency checks ran; they are cached for 2s, so it can be older than `timestamp`")
+  checkedAt: string;
 
   @doc("dependency checks")
   dependencies: {
@@ -215,8 +218,6 @@ model MemoryOutput {
     @doc("Total heap size managed by V8.")
     totalHeapSize: string;
 
-    @doc("Heap size actually being used; redundant with process.heapUsed.")
-    usedHeapSize: string;
 
     @doc("Heap size reserved for compiled JavaScript code.")
     executableHeapSize: string;
@@ -365,14 +366,14 @@ model StartupOutput {
   @doc("Timestamp of the health check")
   timestamp: string;
 
+  @doc("When the dependency checks ran; they are cached for 2s and shared with /health/ready")
+  checkedAt: string;
+
   @doc("Health check phase identifier")
   phase: string;
 
-  @doc("""
-    Basic connection status for each service.
-    Omitted when startup fails before connections are checked.
-  """)
-  connections?: {
+  @doc("Connection status for each service")
+  connections: {
     @doc("MongoDB connection status: **connected** | **disconnected**")
     mongo: string;
 
@@ -385,7 +386,4 @@ model StartupOutput {
 
   @doc("Human-readable status message")
   message: string;
-
-  @doc("Optional error message if startup fails")
-  error?: string;
 }

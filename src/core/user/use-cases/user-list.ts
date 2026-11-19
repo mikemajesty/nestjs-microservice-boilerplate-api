@@ -3,15 +3,15 @@
  */
 import { ValidateSchema } from '@/utils/decorators'
 import { PaginationInput, PaginationOutput, PaginationSchema } from '@/utils/pagination'
+import { Schema } from '@/utils/schema'
 import { SearchSchema } from '@/utils/search'
 import { SortSchema } from '@/utils/sort'
 import { IUsecase } from '@/utils/usecase'
-import { InputValidator } from '@/utils/validator'
 
 import { UserEntity } from '../entity/user'
 import { IUserRepository } from '../repository/user'
 
-export const UserListSchema = InputValidator.intersection(PaginationSchema, SortSchema.and(SearchSchema))
+export const UserListSchema = Schema.intersection(PaginationSchema, SortSchema.and(SearchSchema))
 
 export class UserListUsecase implements IUsecase {
   constructor(private readonly userRepository: IUserRepository) {}

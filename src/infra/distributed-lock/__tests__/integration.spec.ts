@@ -4,7 +4,7 @@
  */
 
 import { ICacheAdapter } from '@/infra/cache'
-import { TestRedisContainer } from '@/utils/test/e2e/containers'
+import { TestRedisContainer } from '@/utils/test/e2e'
 
 import { DistributedLockService } from '../service'
 

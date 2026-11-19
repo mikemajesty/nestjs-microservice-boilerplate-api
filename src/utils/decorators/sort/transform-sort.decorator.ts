@@ -3,11 +3,11 @@
  */
 import { ApiBadRequestException } from '@/utils/exception'
 import { PaginationSchema } from '@/utils/pagination'
+import { InferSchema, Schema } from '@/utils/schema'
 import { SearchSchema } from '@/utils/search'
 import { SortEnum, SortSchema } from '@/utils/sort'
-import { InferSchema, InputValidator } from '@/utils/validator'
 
-export const ListSchema = InputValidator.intersection(PaginationSchema, SortSchema.and(SearchSchema))
+export const ListSchema = Schema.intersection(PaginationSchema, SortSchema.and(SearchSchema))
 
 type AllowedSort<T> = { name: keyof T; map?: string }
 

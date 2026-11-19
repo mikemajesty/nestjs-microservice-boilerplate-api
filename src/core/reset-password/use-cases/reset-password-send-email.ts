@@ -11,11 +11,14 @@ import { ITokenAdapter } from '@/libs/token'
 import { ValidateSchema } from '@/utils/decorators'
 import { ApiNotFoundException } from '@/utils/exception'
 import { IDGeneratorUtils } from '@/utils/id-generator'
+import { InferSchema } from '@/utils/schema'
 import { IUsecase } from '@/utils/usecase'
-import { InferSchema } from '@/utils/validator'
 
 import { ResetPasswordEntity } from '../entity/reset-password'
 import { IResetPasswordRepository } from '../repository/reset-password'
+
+/** Claim that marks a token as a password-reset token, so access tokens cannot be used to reset a password. */
+export const RESET_PASSWORD_TOKEN_PURPOSE = 'password-reset'
 
 export const ResetPasswordSendEmailSchema = UserEntitySchema.pick({
   email: true
@@ -45,7 +48,7 @@ export class ResetPasswordSendEmailUsecase implements IUsecase {
       return
     }
 
-    const hash = this.token.sign({ body: { id: user.id } })
+    const hash = this.token.sign({ body: { id: user.id, purpose: RESET_PASSWORD_TOKEN_PURPOSE } })
     const entity = new ResetPasswordEntity({ id: IDGeneratorUtils.uuid(), token: hash.token, user })
 
     await this.resetPasswordRepository.create(entity.toData())

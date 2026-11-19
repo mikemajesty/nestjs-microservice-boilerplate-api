@@ -10,8 +10,9 @@ import { RoleSchema } from '@/infra/database/postgres/schemas/role'
 import { UserSchema } from '@/infra/database/postgres/schemas/user'
 import { DatabaseOperationEnum } from '@/infra/repository/types'
 import { UserModel } from '@/modules/user/repository'
+import { ApiInternalServerException } from '@/utils/exception'
 import { MockUtils } from '@/utils/test'
-import { TestPostgresContainer } from '@/utils/test/e2e/containers'
+import { TestPostgresContainer } from '@/utils/test/e2e'
 
 import { TypeORMRepository } from '../repository'
 
@@ -203,7 +204,7 @@ describe(TypeORMRepository.name, () => {
           name: 'Rolled back',
           email: `${rolledBackId}@example.com`
         })
-        throw new Error('force rollback')
+        throw new ApiInternalServerException('force rollback')
       })
     ).rejects.toThrow('force rollback')
     await expect(repository.findById(rolledBackId)).resolves.toBeNull()

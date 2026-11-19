@@ -27,6 +27,7 @@ independently of search text, to avoid collisions between conditions.
 ```typescript
 // UGLY: Manual TypeORM WHERE clause construction
 import { FindOperator, In, Raw, Like } from 'typeorm'
+import { ApiBadRequestException } from '@/utils/exception'
 
 export class UserRepository {
   async paginate(input: UserListInput): Promise<UserListOutput> {
@@ -38,7 +39,7 @@ export class UserRepository {
       Object.keys(input.search).forEach(key => {
         // ❌ Manual check for each field
         if (!allowedFilterFields.includes(key)) {
-          throw new Error(`Filter field '${key}' not allowed`)
+          throw new ApiBadRequestException(`Filter field '${key}' not allowed`)
         }
       })
       
@@ -100,7 +101,7 @@ export class UserRepository {
         // Convert string to number with validation
         const age = Number(input.search.age)
         if (isNaN(age)) {
-          throw new Error('Invalid age format')
+          throw new ApiBadRequestException('Invalid age format')
         }
         where.age = age
       }

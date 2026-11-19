@@ -6,28 +6,24 @@ tags:
   - name: Logout
 paths:
   /api/{version}/logout:
-    post:
+    get:
       operationId: LogoutController_logout
-      description: user logout
+      description: |-
+        Ends the session of the access token sent in the Authorization header.
+        Its access and refresh tokens stop working immediately; other sessions of the user are kept.
       parameters:
         - $ref: '#/components/parameters/api.Utils.Versioning.VersionParams'
       responses:
-        '200':
-          description: user logout successfully
-        '400':
-          description: When input is invalid
+        '204':
+          description: session ended
+        '401':
+          description: When the token is missing, invalid or its session was already ended
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/LogoutValidationError'
+                $ref: '#/components/schemas/LogoutUnauthorizedError'
       tags:
         - Logout
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/LogoutInput'
       security:
         - BearerAuth: []
 components:
@@ -40,15 +36,7 @@ components:
       schema:
         $ref: '#/components/schemas/api.Utils.Versioning.ApiVersion'
   schemas:
-    LogoutInput:
-      type: object
-      required:
-        - token
-      properties:
-        token:
-          type: string
-      description: logout input
-    LogoutValidationError:
+    LogoutUnauthorizedError:
       type: object
       allOf:
         - type: object
@@ -68,7 +56,7 @@ components:
                 code:
                   type: number
                   enum:
-                    - 400
+                    - 401
                   description: status code
                 traceid:
                   type: string
@@ -81,7 +69,8 @@ components:
                   items:
                     type: string
                     enum:
-                      - 'token: Required'
+                      - invalidToken
+                      - you have been logged out
                   description: error message
                 timestamp:
                   type: string
@@ -90,8 +79,8 @@ components:
                   type: string
                   description: path error
               description: default error model
-          description: When input is invalid.
-      description: When input is invalid
+          description: When unauthorized occour.
+      description: When the token is missing, invalid or its session was already ended
     api.Utils.Versioning.ApiVersion:
       type: string
       enum:

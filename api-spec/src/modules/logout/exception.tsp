@@ -6,10 +6,8 @@ using api.Utils.Exception;
 
 namespace api.Logout;
 
-@doc("When input is invalid")
+@doc("When the token is missing, invalid or its session was already ended")
 @error
-model LogoutValidationError extends ApiBadRequestException<"token: Required"> {
-  @statusCode statusCode: 400;
+model LogoutUnauthorizedError extends ApiUnauthorizedException<"invalidToken" | "you have been logged out"> {
+  @statusCode statusCode: 401;
 }
-
-alias LogoutValidationException = LogoutValidationError;

@@ -3,69 +3,39 @@
  */
 import { Test } from '@nestjs/testing'
 
-import { ICacheAdapter } from '@/infra/cache'
-import { ITokenAdapter } from '@/libs/token'
+import { ISessionAdapter } from '@/libs/session'
 import { ILogout } from '@/modules/logout/interfaces'
 import { MockUtils, TestUtils } from '@/utils/test'
-import { ZodExceptionIssue } from '@/utils/validator'
 
-import { LogoutInput, LogoutUsecase } from '../user-logout'
+import { LogoutUsecase } from '../user-logout'
 
 describe(LogoutUsecase.name, () => {
   let usecase: ILogout
-  let token: ITokenAdapter
+  let session: ISessionAdapter
 
   beforeEach(async () => {
     const app = await Test.createTestingModule({
-      imports: [],
       providers: [
-        TestUtils.mockProvider(ICacheAdapter, {
-          set: TestUtils.mockResolvedValue()
-        }),
-        TestUtils.mockProvider(ITokenAdapter),
+        TestUtils.mockProvider(ISessionAdapter, { revoke: TestUtils.mockResolvedValue() }),
         {
           provide: ILogout,
-          useFactory: (cache: ICacheAdapter, token: ITokenAdapter) => {
-            return new LogoutUsecase(cache, token)
+          useFactory: (session: ISessionAdapter) => {
+            return new LogoutUsecase(session)
           },
-          inject: [ICacheAdapter, ITokenAdapter]
+          inject: [ISessionAdapter]
         }
       ]
     }).compile()
 
     usecase = app.get(ILogout)
-    token = app.get(ITokenAdapter)
+    session = app.get(ISessionAdapter)
   })
 
-  test('when no input is specified, should expect an error', async () => {
-    await TestUtils.expectZodError(
-      () => usecase.execute({} as LogoutInput, MockUtils.Tracing()),
-      (issues: ZodExceptionIssue[]) => {
-        expect(issues).toEqual([
-          {
-            message: 'Invalid input: expected string, received undefined',
-            path: TestUtils.nameOf<LogoutInput>('token')
-          }
-        ])
-      }
-    )
-  })
+  test('when user logout, should revoke only the session of the current token', async () => {
+    const trace = MockUtils.Tracing()
 
-  test('when decode is missing, should ignore logout', async () => {
-    token.decode = TestUtils.mockImplementation(() => null)
-
-    await expect(usecase.execute({ token: '12345678910' }, MockUtils.Tracing())).resolves.toBeUndefined()
-  })
-
-  test('when token already expired, should ignore logout', async () => {
-    token.decode = TestUtils.mockImplementation<() => { exp: number }>(() => ({ exp: Date.now() / 1000 - 60 }))
-
-    await expect(usecase.execute({ token: '12345678910' }, MockUtils.Tracing())).resolves.toBeUndefined()
-  })
-
-  test('when user logout, should expect set token to blacklist', async () => {
-    token.decode = TestUtils.mockImplementation<() => { exp: number }>(() => ({ exp: Date.now() / 1000 + 60 }))
-
-    await expect(usecase.execute({ token: '12345678910' }, MockUtils.Tracing())).resolves.toBeUndefined()
+    await expect(usecase.execute(trace)).resolves.toBeUndefined()
+    expect(session.revoke).toHaveBeenCalledWith({ userId: trace.user.id, sessionId: trace.user.sid })
+    expect(session.revoke).toHaveBeenCalledTimes(1)
   })
 })

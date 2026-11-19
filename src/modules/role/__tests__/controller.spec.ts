@@ -16,17 +16,13 @@ import { RoleListOutput } from '@/core/role/use-cases/role-list'
 import { RoleUpdateOutput } from '@/core/role/use-cases/role-update'
 import { IUserRepository } from '@/core/user/repository/user'
 import { ICacheAdapter } from '@/infra/cache'
+import { ISessionAdapter } from '@/libs/session'
 import { ITokenAdapter } from '@/libs/token/adapter'
 import { GuardsModule } from '@/middlewares/guards/module'
 import { ApiBadRequestException, ApiConflictException, ApiNotFoundException } from '@/utils/exception'
 import { UserRequest } from '@/utils/request'
 import { MockUtils, TestUtils } from '@/utils/test'
-import { TestPostgresContainer, TestRedisContainer } from '@/utils/test/e2e/containers'
-import { PermissionFixture } from '@/utils/test/e2e/fixtures/permission'
-import { RoleFixture } from '@/utils/test/e2e/fixtures/role'
-import { UserFixture } from '@/utils/test/e2e/fixtures/user'
-import { FixtureUtils } from '@/utils/test/e2e/fixtures/utils'
-import { TestEnd2EndUtils } from '@/utils/test/e2e/utils'
+import { FixtureUtils, PermissionFixture, RoleFixture, TestEnd2EndUtils, TestPostgresContainer, TestRedisContainer, UserFixture } from '@/utils/test/e2e'
 
 import { RoleController } from '../controller'
 import { RoleModule } from '../module'
@@ -44,6 +40,7 @@ describe(RoleController.name, () => {
   const postgresContainer = new TestPostgresContainer()
 
   const userFixture = new UserFixture()
+  const sessionAdapter = TestEnd2EndUtils.sessionMock()
   const roleFixture = new RoleFixture()
   const permissionFixture = new PermissionFixture()
 
@@ -59,9 +56,12 @@ describe(RoleController.name, () => {
         verify: TestUtils.mockResolvedValue<UserRequest>({
           name: userFixture.entity.name,
           email: userFixture.entity.email,
-          id: userFixture.entity.id
+          id: userFixture.entity.id,
+          sid: TestEnd2EndUtils.SESSION_ID
         })
       })
+      .overrideProvider(ISessionAdapter)
+      .useValue(sessionAdapter)
       .overrideProvider(ICacheAdapter)
       .useValue(redisService)
       .compile()

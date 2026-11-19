@@ -8,11 +8,11 @@ paths:
   /api/{version}/login:
     post:
       operationId: LoginController_login
-      description: user login
+      description: user login; opens a new session
       parameters:
         - $ref: '#/components/parameters/api.Utils.Versioning.VersionParams'
       responses:
-        '200':
+        '201':
           description: login successfully
           content:
             application/json:
@@ -23,17 +23,15 @@ paths:
           content:
             application/json:
               schema:
-                anyOf:
-                  - $ref: '#/components/schemas/LoginValidationError'
-                  - $ref: '#/components/schemas/LoginWrongPasswordError'
-        '404':
-          description: When user not found
+                $ref: '#/components/schemas/LoginValidationError'
+        '401':
+          description: |-
+            When the email is unknown or the password is wrong. Both cases answer the same error,
+            so the endpoint does not reveal which emails have an account.
           content:
             application/json:
               schema:
-                anyOf:
-                  - $ref: '#/components/schemas/LoginUserNotFoundError'
-                  - $ref: '#/components/schemas/LoginRoleNotFoundError'
+                $ref: '#/components/schemas/LoginInvalidCredentialsError'
       tags:
         - Login
       requestBody:
@@ -67,16 +65,40 @@ paths:
   /api/{version}/refresh:
     post:
       operationId: LoginController_refresh
-      description: get user refresh token
+      description: |-
+        Exchanges a refresh token for a new access/refresh token pair (rotation).
+        The refresh token sent stops working; always store the new one.
       parameters:
         - $ref: '#/components/parameters/api.Utils.Versioning.VersionParams'
       responses:
-        '200':
-          description: login refresh token successfully
+        '201':
+          description: new token pair
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/RefreshTokenOutput'
+        '400':
+          description: When refresh input is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefreshValidationError'
+        '401':
+          description: |-
+            When the refresh token is invalid, expired, already used, or its session was ended
+            (logout, password change or reset). Reusing an already used refresh token also ends its session.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefreshInvalidTokenError'
+        '404':
+          description: When user not found
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/LoginUserNotFoundError'
+                  - $ref: '#/components/schemas/LoginRoleNotFoundError'
       tags:
         - Login
       requestBody:
@@ -108,6 +130,52 @@ components:
           type: string
           default: admin
       description: login input
+    LoginInvalidCredentialsError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 401
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - invalidCredentials
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When unauthorized occour.
+      description: |-
+        When the email is unknown or the password is wrong. Both cases answer the same error,
+        so the endpoint does not reveal which emails have an account.
     LoginOutput:
       type: object
       required:
@@ -252,7 +320,72 @@ components:
               description: default error model
           description: When input is invalid.
       description: When login input is invalid
-    LoginWrongPasswordError:
+    RefreshInvalidTokenError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 401
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - invalidRefreshToken
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When unauthorized occour.
+      description: |-
+        When the refresh token is invalid, expired, already used, or its session was ended
+        (logout, password change or reset). Reusing an already used refresh token also ends its session.
+    RefreshTokenInput:
+      type: object
+      required:
+        - refreshToken
+      properties:
+        refreshToken:
+          type: string
+      description: login refresh token input
+    RefreshTokenOutput:
+      type: object
+      required:
+        - accessToken
+        - refreshToken
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+      description: login refresh token output
+    RefreshValidationError:
       type: object
       allOf:
         - type: object
@@ -285,7 +418,7 @@ components:
                   items:
                     type: string
                     enum:
-                      - incorrectPassword
+                      - 'refreshToken: Required'
                   description: error message
                 timestamp:
                   type: string
@@ -295,26 +428,7 @@ components:
                   description: path error
               description: default error model
           description: When input is invalid.
-      description: When user password is wrong
-    RefreshTokenInput:
-      type: object
-      required:
-        - refreshToken
-      properties:
-        refreshToken:
-          type: string
-      description: login refresh token input
-    RefreshTokenOutput:
-      type: object
-      required:
-        - accessToken
-        - refreshToken
-      properties:
-        accessToken:
-          type: string
-        refreshToken:
-          type: string
-      description: login refresh token output
+      description: When refresh input is invalid
     api.Role.AddPermissionRoleNotFoundError:
       type: object
       allOf:

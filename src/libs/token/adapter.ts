@@ -5,6 +5,7 @@ import { TokenDecodeInput, TokenSignInput, TokenSignOutput, TokenVerifyInput } f
 
 export abstract class ITokenAdapter {
   abstract refreshSecret: string
+  abstract refreshExpiration: number
   abstract sign(input: TokenSignInput): TokenSignOutput
   abstract verify<T>(input: TokenVerifyInput): Promise<NoInfer<T>>
   abstract decode<T>(input: TokenDecodeInput): T

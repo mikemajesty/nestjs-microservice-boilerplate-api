@@ -11,14 +11,12 @@ import request from 'supertest'
 import { IResetPasswordRepository } from '@/core/reset-password/repository/reset-password'
 import { IUserRepository } from '@/core/user/repository/user'
 import { ICacheAdapter } from '@/infra/cache'
+import { ISessionAdapter } from '@/libs/session'
 import { TokenSignOutput } from '@/libs/token'
 import { ITokenAdapter } from '@/libs/token/adapter'
-import { ApiBadRequestException, ApiNotFoundException } from '@/utils/exception'
+import { ApiBadRequestException, ApiNotFoundException,ApiUnauthorizedException } from '@/utils/exception'
 import { UserRequest } from '@/utils/request'
-import { TestPostgresContainer, TestRedisContainer } from '@/utils/test/e2e/containers'
-import { ResetPasswordFixture } from '@/utils/test/e2e/fixtures/reset-password'
-import { UserFixture } from '@/utils/test/e2e/fixtures/user'
-import { TestEnd2EndUtils } from '@/utils/test/e2e/utils'
+import { ResetPasswordFixture, TestEnd2EndUtils, TestPostgresContainer, TestRedisContainer, UserFixture } from '@/utils/test/e2e'
 import { TestUtils } from '@/utils/test/utils'
 
 import { ResetPasswordController } from '../controller'
@@ -30,6 +28,7 @@ describe(ResetPasswordController.name, () => {
   let resetPasswordRepository: IResetPasswordRepository
 
   const userFixture = new UserFixture()
+  const sessionAdapter = TestEnd2EndUtils.sessionMock()
   const resetPasswordFixture = new ResetPasswordFixture()
   const redisContainer = new TestRedisContainer()
   const postgresContainer = new TestPostgresContainer()
@@ -48,9 +47,12 @@ describe(ResetPasswordController.name, () => {
         verify: TestUtils.mockResolvedValue<UserRequest>({
           name: userFixture.entity.name,
           email: userFixture.entity.email,
-          id: userFixture.entity.id
+          id: userFixture.entity.id,
+          sid: TestEnd2EndUtils.SESSION_ID
         })
       })
+      .overrideProvider(ISessionAdapter)
+      .useValue(sessionAdapter)
       .overrideProvider(ICacheAdapter)
       .useValue(await redisContainer.getTestRedis())
       .compile()
@@ -96,7 +98,7 @@ describe(ResetPasswordController.name, () => {
     await request(app.getHttpServer())
       .put('/reset-password/invalidtoken')
       .send({ password: '123456', confirmPassword: '123456' })
-      .expect(ApiNotFoundException.STATUS)
+      .expect(ApiUnauthorizedException.STATUS)
   })
 
   it('/PUT /reset-password/:token should fail with different passwords', async () => {

@@ -25,7 +25,6 @@ const logger = new LoggerService()
         )
         return {
           ...conn,
-          connectTimeoutMS: 10000,
           logging: false,
           autoLoadEntities: true,
           namingStrategy: new SnakeNamingStrategy(),

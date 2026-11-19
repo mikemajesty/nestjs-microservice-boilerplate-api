@@ -1,10 +1,11 @@
 /**
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/core/usecase.md
  */
+import { ISessionAdapter } from '@/libs/session'
 import { ValidateSchema } from '@/utils/decorators'
 import { ApiBadRequestException, ApiNotFoundException } from '@/utils/exception'
+import { InferSchema, Schema } from '@/utils/schema'
 import { IUsecase } from '@/utils/usecase'
-import { InferSchema, InputValidator } from '@/utils/validator'
 
 import { UserEntitySchema } from '../entity/user'
 import { UserPasswordEntity } from '../entity/user-password'
@@ -13,15 +14,18 @@ import { IUserRepository } from '../repository/user'
 export const UserChangePasswordSchema = UserEntitySchema.pick({
   id: true
 }).and(
-  InputValidator.object({
-    password: InputValidator.string(),
-    newPassword: InputValidator.string(),
-    confirmPassword: InputValidator.string()
+  Schema.object({
+    password: Schema.string(),
+    newPassword: Schema.string(),
+    confirmPassword: Schema.string()
   })
 )
 
 export class UserChangePasswordUsecase implements IUsecase {
-  constructor(private readonly repository: IUserRepository) {}
+  constructor(
+    private readonly repository: IUserRepository,
+    private readonly session: ISessionAdapter
+  ) {}
 
   @ValidateSchema(UserChangePasswordSchema)
   async execute(input: UserChangePasswordInput): Promise<UserChangePasswordOutput> {
@@ -33,15 +37,19 @@ export class UserChangePasswordUsecase implements IUsecase {
 
     const entityPassword = new UserPasswordEntity(user.password)
 
-    entityPassword.matchesPassword(input.password)
+    await entityPassword.verifyPassword(input.password)
 
     if (input.newPassword !== input.confirmPassword) {
       throw new ApiBadRequestException('passwordIsDifferent')
     }
 
-    entityPassword.changePassword(input.newPassword)
+    await entityPassword.changePassword(input.newPassword)
+
+    user.password = entityPassword
 
     await this.repository.create(user)
+
+    await this.session.revokeAll(user.id)
   }
 }
 

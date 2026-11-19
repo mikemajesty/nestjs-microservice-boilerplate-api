@@ -14,17 +14,13 @@ import { PermissionUpdateInput } from '@/core/permission/use-cases/permission-up
 import { IRoleRepository } from '@/core/role/repository/role'
 import { IUserRepository } from '@/core/user/repository/user'
 import { ICacheAdapter } from '@/infra/cache'
+import { ISessionAdapter } from '@/libs/session'
 import { ITokenAdapter } from '@/libs/token'
 import { GuardsModule } from '@/middlewares/guards/module'
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception'
 import { UserRequest } from '@/utils/request'
 import { MockUtils, TestUtils } from '@/utils/test'
-import { TestPostgresContainer, TestRedisContainer } from '@/utils/test/e2e/containers'
-import { PermissionFixture } from '@/utils/test/e2e/fixtures/permission'
-import { RoleFixture } from '@/utils/test/e2e/fixtures/role'
-import { UserFixture } from '@/utils/test/e2e/fixtures/user'
-import { FixtureUtils } from '@/utils/test/e2e/fixtures/utils'
-import { TestEnd2EndUtils } from '@/utils/test/e2e/utils'
+import { FixtureUtils, PermissionFixture, RoleFixture, TestEnd2EndUtils, TestPostgresContainer, TestRedisContainer, UserFixture } from '@/utils/test/e2e'
 
 import { PermissionController } from '../controller'
 import { PermissionModule } from '../module'
@@ -37,6 +33,7 @@ describe(PermissionController.name, () => {
   const permissionFixture = new PermissionFixture()
   const roleFixture = new RoleFixture()
   const userFixture = new UserFixture()
+  const sessionAdapter = TestEnd2EndUtils.sessionMock()
   const redisContainer = new TestRedisContainer()
   const postgresContainer = new TestPostgresContainer()
 
@@ -51,9 +48,12 @@ describe(PermissionController.name, () => {
         verify: TestUtils.mockResolvedValue<UserRequest>({
           name: userFixture.entity.name,
           email: userFixture.entity.email,
-          id: userFixture.entity.id
+          id: userFixture.entity.id,
+          sid: TestEnd2EndUtils.SESSION_ID
         })
       })
+      .overrideProvider(ISessionAdapter)
+      .useValue(sessionAdapter)
       .overrideProvider(ICacheAdapter)
       .useValue(await redisContainer.getTestRedis())
       .compile()

@@ -2,17 +2,17 @@
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/core/entity.md
  */
 import { BaseEntity } from '@/utils/domain'
-import { InferSchema, InputValidator } from '@/utils/validator'
+import { InferSchema, Schema } from '@/utils/schema'
 
-const ID = InputValidator.uuid()
-const Name = InputValidator.string().trim().min(1).max(200)
-const Breed = InputValidator.string().trim().min(1).max(200)
-const Age = InputValidator.int().min(0).max(30)
-const CreatedAt = InputValidator.date().nullish()
-const UpdatedAt = InputValidator.date().nullish()
-const DeletedAt = InputValidator.date().nullish()
+const ID = Schema.uuid()
+const Name = Schema.string().trim().min(1).max(200)
+const Breed = Schema.string().trim().min(1).max(200)
+const Age = Schema.int().min(0).max(30)
+const CreatedAt = Schema.date().nullish()
+const UpdatedAt = Schema.date().nullish()
+const DeletedAt = Schema.date().nullish()
 
-export const CatEntitySchema = InputValidator.object({
+export const CatEntitySchema = Schema.object({
   id: ID,
   name: Name,
   breed: Breed,

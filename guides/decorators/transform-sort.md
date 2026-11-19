@@ -18,7 +18,7 @@ export class UserRepository {
       Object.keys(input.sort).forEach(key => {
         // ❌ Manual check for each field
         if (!allowedSortFields.includes(key)) {
-          throw new Error(`Sort field '${key}' not allowed. Allowed: ${allowedSortFields.join(', ')}`)
+          throw new ApiBadRequestException(`Sort field '${key}' not allowed. Allowed: ${allowedSortFields.join(', ')}`)
         }
         
         // ❌ Manual mapping logic

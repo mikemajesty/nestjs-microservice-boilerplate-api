@@ -39,7 +39,7 @@ export type TracingType = {
   finish: () => void
 } & TraceIdField
 
-export type UserRequest = Pick<UserEntity, 'email' | 'name' | 'id'>
+export type UserRequest = Pick<UserEntity, 'email' | 'name' | 'id'> & { sid: string }
 
 export interface ApiRequest {
   readonly body: AnyType

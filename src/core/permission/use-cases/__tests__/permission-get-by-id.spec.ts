@@ -6,8 +6,8 @@ import { Test } from '@nestjs/testing'
 
 import { IPermissionGetById } from '@/modules/permission/interfaces'
 import { ApiNotFoundException } from '@/utils/exception'
+import { ZodExceptionIssue } from '@/utils/schema'
 import { TestUtils } from '@/utils/test/utils'
-import { ZodExceptionIssue } from '@/utils/validator'
 
 import { IPermissionRepository } from '../../repository/permission'
 import { PermissionGetByIdInput, PermissionGetByIdSchema, PermissionGetByIdUsecase } from '../permission-get-by-id'

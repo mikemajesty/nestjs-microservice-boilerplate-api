@@ -3,12 +3,12 @@ import { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
 
 import { AxiosUtils } from '@/utils/axios'
 import {
-  ApiBadGatewayException,
-  ApiInternalServerException,
-  ApiServiceUnavailableException,
-  ApiTimeoutException,
-  BaseException,
-  exceptionFromStatus
+    ApiBadGatewayException,
+    ApiInternalServerException,
+    ApiServiceUnavailableException,
+    ApiTimeoutException,
+    BaseException,
+    exceptionFromStatus
 } from '@/utils/exception'
 import { CLIENT_TIMEOUT_CODES, CONNECTION_REFUSED_CODE } from '@/utils/http-status'
 import { ObjectUtils } from '@/utils/object'
@@ -16,7 +16,7 @@ import { TRACEID_HEADER } from '@/utils/request'
 import { getCurrentRequestContext, type RequestContext } from '@/utils/request/context'
 import { getCurrentDeadline, REQUEST_DEADLINE_HEADER, type RequestDeadline } from '@/utils/request/deadline'
 import { TimeoutBudget } from '@/utils/request/timeout-budget'
-import { BaseZodType, InferSchema } from '@/utils/validator'
+import { BaseZodType, InferSchema } from '@/utils/schema'
 
 import { IHttpBuilder } from './adapter'
 import { HttpData, HttpMethod, HttpRetryInput } from './types'

@@ -5,8 +5,8 @@ import { IRoleRepository } from '@/core/role/repository/role'
 import { ILoggerAdapter } from '@/infra/logger'
 import { ValidateSchema } from '@/utils/decorators'
 import { ApiNotFoundException } from '@/utils/exception'
+import { InferSchema } from '@/utils/schema'
 import { IUsecase } from '@/utils/usecase'
-import { InferSchema } from '@/utils/validator'
 
 import { RoleEntity, RoleEntitySchema } from './../entity/role'
 

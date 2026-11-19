@@ -10,7 +10,7 @@ import { LoginInput, LoginOutput } from '@/core/user/use-cases/user-login'
 import { RefreshTokenInput, RefreshTokenOutput } from '@/core/user/use-cases/user-refresh-token'
 import { IHttpAdapter } from '@/infra/http'
 import { ISecretsAdapter } from '@/infra/secrets'
-import { ITokenAdapter } from '@/libs/token'
+import { ISessionAdapter } from '@/libs/session'
 import { Public } from '@/utils/decorators'
 import { BaseException } from '@/utils/exception'
 import { ApiRequest } from '@/utils/request'
@@ -26,7 +26,7 @@ export class LoginController {
     private readonly secret: ISecretsAdapter,
     private readonly http: IHttpAdapter,
     private readonly userRepository: IUserRepository,
-    private readonly tokenService: ITokenAdapter
+    private readonly session: ISessionAdapter
   ) {}
 
   @Post('login')
@@ -68,34 +68,22 @@ export class LoginController {
       .headers({ Authorization: `Bearer ${access_token}` })
       .execute()
 
-    const user = await this.userRepository.findOneWithRelation({ email: profile.email }, { password: true })
+    if (!profile.verified_email) {
+      reply.code(403).send({ error: 'Google email is not verified' })
+      return
+    }
+
+    const user = await this.userRepository.findOne({ email: profile.email })
 
     if (!user) {
       reply.code(404).send({ error: `User: ${profile.email} not found` })
       return
     }
 
-    const tokenNewPassword = this.tokenService.sign({
-      body: {
-        email: user.email,
-        name: profile.name
-      }
-    })
+    const { accessToken, refreshToken } = await this.session.start(user)
 
-    if (!user.password) {
-      reply.redirect(`/create-new-password=${tokenNewPassword.token}`)
-      return
-    }
-
-    const tokenAuthorization = this.tokenService.sign({
-      body: {
-        email: user.email as string,
-        name: profile.name,
-        roles: user.roles.map((r) => r.name)
-      }
-    })
-
-    reply.redirect(`/home?token=${tokenAuthorization.token}`)
+    const fragment = new URLSearchParams({ accessToken, refreshToken })
+    reply.redirect(`/home#${fragment}`)
   }
 
   @HttpCircuitBreaker({
@@ -124,4 +112,5 @@ type GoogleTokenResponse = {
 type GoogleProfile = {
   name: string
   email: string
+  verified_email: boolean
 }

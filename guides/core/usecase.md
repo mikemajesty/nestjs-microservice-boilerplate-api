@@ -212,7 +212,7 @@ import { ValidateSchema } from '@/utils/decorators'
 import { IDGeneratorUtils } from '@/utils/id-generator'
 import { ApiTrancingInput } from '@/utils/request'
 import { IUsecase } from '@/utils/usecase'
-import { InferSchema } from '@/utils/validator'
+import { InferSchema } from '@/utils/schema'
 
 // 2️⃣ Internal imports (same domain)
 import { CatEntity, CatEntitySchema } from '../entity/cat'
@@ -393,7 +393,7 @@ export const CatUpdateSchema = CatEntitySchema.pick({
 ### Pagination + Search + Sort (List)
 
 ```typescript
-export const CatListSchema = InputValidator.intersection(PaginationSchema, SortSchema).and(SearchSchema)
+export const CatListSchema = Schema.intersection(PaginationSchema, SortSchema).and(SearchSchema)
 ```
 
 ---
@@ -597,7 +597,7 @@ See [Controller](../modules/controller.md) for details.
 - [ValidateSchema](../decorators/validate-schema.md) — Input validation decorator
 - [Entity](./entity.md) — Domain entity
 - [Repository](./repository.md) — Data access abstraction
-- [Validator](../utils/validator.md) — Zod/InputValidator
+- [Validator](../utils/validator.md) — Zod/Schema
 - [Request](../utils/request.md) — ApiTrancingInput
 - [Adapter](../modules/adapter.md) — Use case contract for DI
 - [Module](../modules/module.md) — Where use case meets adapter

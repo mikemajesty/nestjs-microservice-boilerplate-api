@@ -6,8 +6,8 @@ import { Test } from '@nestjs/testing'
 
 import { ILoggerAdapter } from '@/infra/logger'
 import { IRoleCreate } from '@/modules/role/interfaces'
+import { ZodExceptionIssue } from '@/utils/schema'
 import { MockUtils, TestUtils } from '@/utils/test'
-import { ZodExceptionIssue } from '@/utils/validator'
 
 import { IRoleRepository } from '../../repository/role'
 import { RoleCreateInput, RoleCreateOutput, RoleCreateSchema, RoleCreateUsecase } from '../role-create'

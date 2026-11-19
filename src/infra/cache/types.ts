@@ -1,4 +1,4 @@
-import { InferSchema } from '@/utils/validator'
+import { InferSchema } from '@/utils/schema'
 
 import { CacheMemorySetConfigInput } from './memory'
 import { CacheRedisSetConfigInput, CacheSetNXInputSchema } from './redis'

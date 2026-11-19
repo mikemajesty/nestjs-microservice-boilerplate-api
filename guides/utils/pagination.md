@@ -104,7 +104,7 @@ export type PaginationOutput<T> = InferSchematypeof PaginationSchema> & {
 }
 
 // Use case receives complete pagination context
-export const UserListSchema = InputValidator.intersection(
+export const UserListSchema = Schema.intersection(
   PaginationSchema,
   SortSchema.and(SearchSchema)
 )

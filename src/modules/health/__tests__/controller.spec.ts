@@ -9,21 +9,26 @@ import { Redis } from 'ioredis'
 import request from 'supertest'
 
 import { ICacheAdapter } from '@/infra/cache'
+import { CacheMemoryService } from '@/infra/cache/memory'
 import { MongoConnectionName } from '@/infra/database'
 import { MongoDatabaseModule } from '@/infra/database/mongo'
 import { ISecretsAdapter } from '@/infra/secrets'
 import { EnvEnum } from '@/infra/secrets/types'
 import { GuardsModule } from '@/middlewares/guards/module'
-import { TestMongoContainer, TestPostgresContainer, TestRedisContainer } from '@/utils/test/e2e/containers'
-import { TestEnd2EndUtils } from '@/utils/test/e2e/utils'
+import { TestUtils } from '@/utils/test'
+import { TestEnd2EndUtils, TestMongoContainer, TestPostgresContainer, TestRedisContainer } from '@/utils/test/e2e'
 
 import { HealthController } from '../controller'
+import { IHealthAdapter, IHealthCacheAdapter } from '../interfaces'
 import { HealthModule } from '../module'
+import { HealthService } from '../service'
 import { HealthStatus } from '../types'
 
 describe(HealthController.name, () => {
   let app: Awaited<ReturnType<typeof TestEnd2EndUtils.createApp>>
   let redisService: ICacheAdapter<Redis>
+  let service: HealthService
+  let healthCache: CacheMemoryService
 
   const mongoContainer = new TestMongoContainer()
   const postgresContainer = new TestPostgresContainer()
@@ -54,6 +59,16 @@ describe(HealthController.name, () => {
       .compile()
 
     app = await TestEnd2EndUtils.createApp(moduleRef)
+    service = moduleRef.get(IHealthAdapter) as HealthService
+    healthCache = moduleRef.get(IHealthCacheAdapter) as CacheMemoryService
+  })
+
+  beforeEach(() => {
+    healthCache.client.flushAll()
+  })
+
+  afterEach(() => {
+    TestUtils.restoreMocks()
   })
 
   afterAll(async () => {
@@ -61,6 +76,59 @@ describe(HealthController.name, () => {
     await mongoContainer.close()
     await redisContainer.close()
     await postgresContainer.close()
+  })
+
+  describe('micro-cache', () => {
+    const http = () => request(app.getHttpServer())
+
+    it('/GET /health/metrics twice within the TTL should reuse the same collection', async () => {
+      const first = await http().get('/health/metrics').expect(200)
+      const second = await http().get('/health/metrics').expect(200)
+
+      expect(second.body.timestamp).toBe(first.body.timestamp)
+      expect(second.body.window).toEqual(first.body.window)
+    })
+
+    it('/GET /health/metrics called concurrently should collect once (single flight)', async () => {
+      const collections = TestUtils.spyOn(service, 'getRuntimeWindow')
+
+      const responses = await Promise.all(Array.from({ length: 10 }, () => http().get('/health/metrics').expect(200)))
+
+      expect(collections).toHaveBeenCalledTimes(1)
+      expect(new Set(responses.map((response) => response.body.timestamp)).size).toBe(1)
+    })
+
+    it('/GET /health/ready and /health/startup should share the same dependency checks', async () => {
+      const mongoChecks = TestUtils.spyOn(service, 'checkMongo')
+
+      await Promise.all([http().get('/health/ready').expect(200), http().get('/health/startup').expect(200)])
+      await http().get('/health/ready').expect(200)
+
+      expect(mongoChecks).toHaveBeenCalledTimes(1)
+    })
+
+    it('/GET /health/ready within the TTL should keep checkedAt while timestamp follows each request', async () => {
+      const first = await http().get('/health/ready').expect(200)
+      await new Promise((resolve) => setTimeout(resolve, 20))
+      const second = await http().get('/health/ready').expect(200)
+
+      expect(second.body.checkedAt).toBe(first.body.checkedAt)
+      expect(second.body.timestamp).not.toBe(first.body.timestamp)
+      expect(second.body.dependencies).toEqual(first.body.dependencies)
+    })
+
+    it('/GET /health/ready after the TTL should check the dependencies again', async () => {
+      const mongoChecks = TestUtils.spyOn(service, 'checkMongo')
+
+      await http().get('/health/ready').expect(200)
+      await http().get('/health/ready').expect(200)
+      expect(mongoChecks).toHaveBeenCalledTimes(1)
+
+      await new Promise((resolve) => setTimeout(resolve, 2_100))
+      await http().get('/health/ready').expect(200)
+
+      expect(mongoChecks).toHaveBeenCalledTimes(2)
+    })
   })
 
   it('/GET /health/ready should report each dependency with its latency', async () => {
@@ -71,6 +139,7 @@ describe(HealthController.name, () => {
       status: HealthStatus.UP,
       version: expect.any(String),
       timestamp: expect.any(String),
+      checkedAt: expect.any(String),
       dependencies: { mongo: check, postgres: check, redis: check }
     })
   })
@@ -90,11 +159,11 @@ describe(HealthController.name, () => {
     })
 
     expect(body.memory.process).toMatchObject({ usedRam: mb, heapTotal: mb, heapUsed: mb, external: mb })
-    expect(body.memory.v8).toMatchObject({ totalHeapSize: mb, usedHeapSize: mb, heapSizeLimit: mb })
+    expect(body.memory.v8).toMatchObject({ totalHeapSize: mb, heapSizeLimit: mb })
+    expect(body.memory.v8).not.toHaveProperty('usedHeapSize')
     expect(body.memory.container).toHaveProperty('limit')
     expect(body.memory.heapSpaces.length).toBeGreaterThan(0)
 
-    // The resolution is subtracted, so an idle loop reports values close to 0, not ~20ms.
     expect(body.eventLoopLag.meanMs).toBeGreaterThanOrEqual(0)
     expect(body.eventLoopLag.meanMs).toBeLessThan(20)
     expect(body.gc).toMatchObject({ count: expect.any(Number), minor: expect.any(Number), major: expect.any(Number) })

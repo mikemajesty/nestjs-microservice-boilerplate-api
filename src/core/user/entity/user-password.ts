@@ -1,18 +1,18 @@
 /**
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/core/entity.md
  */
-import { CryptoUtils } from '@/utils/crypto'
 import { BaseEntity } from '@/utils/domain'
-import { ApiBadRequestException } from '@/utils/exception'
-import { InferSchema, InputValidator } from '@/utils/validator'
+import { ApiBadRequestException, ApiConflictException } from '@/utils/exception'
+import { PasswordUtils } from '@/utils/password'
+import { InferSchema, Schema } from '@/utils/schema'
 
-const ID = InputValidator.uuid()
-const Password = InputValidator.string()
-const CreatedAt = InputValidator.date().nullish()
-const UpdatedAt = InputValidator.date().nullish()
-const DeletedAt = InputValidator.date().nullish()
+const ID = Schema.uuid()
+const Password = Schema.string()
+const CreatedAt = Schema.date().nullish()
+const UpdatedAt = Schema.date().nullish()
+const DeletedAt = Schema.date().nullish()
 
-export const UserPasswordEntitySchema = InputValidator.object({
+export const UserPasswordEntitySchema = Schema.object({
   id: ID,
   password: Password,
   createdAt: CreatedAt,
@@ -31,24 +31,25 @@ export class UserPasswordEntity extends BaseEntity<UserPasswordEntity>() {
     this.ensureID()
   }
 
-  createPassword() {
-    this.password = CryptoUtils.createHash(this.password)
-    return this.password
+  async createPassword(): Promise<void> {
+    if (PasswordUtils.isHash(this.password)) {
+      throw new ApiConflictException('Password is already hashed')
+    }
+
+    this.password = await PasswordUtils.hash(this.password)
   }
 
-  verifyPassword(password: string) {
-    if (this.password !== password) {
+  async matchesPassword(plainPassword: string): Promise<boolean> {
+    return PasswordUtils.compare(plainPassword, this.password)
+  }
+
+  async verifyPassword(plainPassword: string): Promise<void> {
+    if (!(await this.matchesPassword(plainPassword))) {
       throw new ApiBadRequestException('incorrectPassword')
     }
   }
 
-  matchesPassword(plainPassword: string) {
-    this.verifyPassword(CryptoUtils.createHash(plainPassword))
-  }
-
-  changePassword(newPassword: string) {
-    this.password = newPassword
-    this.createPassword()
-    return this.password
+  async changePassword(newPassword: string): Promise<void> {
+    this.password = await PasswordUtils.hash(newPassword)
   }
 }

@@ -4,12 +4,13 @@
  */
 
 import { ApiBadRequestException } from '@/utils/exception'
+import { TestUtils } from '@/utils/test'
 
 import { ApiDatabaseException, WithDatabaseErrorContext } from '../util'
 
 describe(WithDatabaseErrorContext.name, () => {
   it('should map unknown errors to database exceptions with method context and original cause', async () => {
-    const cause = new Error('connection failed')
+    const cause = TestUtils.thirdPartyError('connection failed')
 
     class TestRepository {
       @WithDatabaseErrorContext

@@ -2,14 +2,14 @@
  * @see https://github.com/mikemajesty/nestjs-microservice-boilerplate-api/blob/master/guides/utils/sort.md
  */
 
-import { InferSchema, InputValidator } from './validator'
+import { InferSchema, Schema } from './schema'
 
 export enum SortEnum {
   asc = 1,
   desc = -1
 }
 
-export const SortHttpSchema = InputValidator.string()
+export const SortHttpSchema = Schema.string()
   .optional()
   .refine(
     (check) => {
@@ -50,10 +50,8 @@ export const SortHttpSchema = InputValidator.string()
     return Object.fromEntries(sortEntries)
   })
 
-export const SortSchema = InputValidator.object({
-  sort: InputValidator.record(InputValidator.string().trim().min(1), InputValidator.enum(SortEnum))
-    .nullable()
-    .default({})
+export const SortSchema = Schema.object({
+  sort: Schema.record(Schema.string().trim().min(1), Schema.enum(SortEnum)).nullable().default({})
 })
 
 export type SortInput = InferSchema<typeof SortSchema>

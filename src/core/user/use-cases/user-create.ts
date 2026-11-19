@@ -12,8 +12,8 @@ import { ValidateSchema } from '@/utils/decorators'
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception'
 import { IDGeneratorUtils } from '@/utils/id-generator'
 import { ApiTracingInput } from '@/utils/request'
+import { InferSchema, Schema } from '@/utils/schema'
 import { IUsecase } from '@/utils/usecase'
-import { InferSchema, InputValidator } from '@/utils/validator'
 
 import { UserEntity, UserEntitySchema } from '../entity/user'
 import { UserPasswordEntity, UserPasswordEntitySchema } from '../entity/user-password'
@@ -24,7 +24,7 @@ export const UserCreateSchema = UserEntitySchema.pick({
   name: true
 })
   .and(UserPasswordEntitySchema.pick({ password: true }))
-  .and(InputValidator.object({ roles: InputValidator.array(InputValidator.enum(RoleEnum)).min(1) }))
+  .and(Schema.object({ roles: Schema.array(Schema.enum(RoleEnum)).min(1) }))
 
 export class UserCreateUsecase implements IUsecase {
   constructor(
@@ -46,7 +46,7 @@ export class UserCreateUsecase implements IUsecase {
 
     const passwordEntity = new UserPasswordEntity({ id: IDGeneratorUtils.uuid(), password: input.password })
 
-    passwordEntity.createPassword()
+    await passwordEntity.createPassword()
 
     entity.password = passwordEntity
 

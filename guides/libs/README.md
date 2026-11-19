@@ -5,6 +5,7 @@ Shared libraries for cross-cutting concerns. Each lib provides centralized, reus
 | Lib | Purpose | Docs | Code |
 |-----|---------|------|------|
 | **Token** | JWT sign/verify for authentication | [token.md](./token.md) | [service.ts](../../src/libs/token/service.ts) |
+| **Session** | Login sessions, refresh rotation, logout | [session.md](./session.md) | [service.ts](../../src/libs/session/service.ts) |
 | **i18n** | Multi-language internationalization | [i18n.md](./i18n.md) | [service.ts](../../src/libs/i18n/service.ts) |
 | **Event** | Pub/sub event system | [event.md](./event.md) | [service.ts](../../src/libs/event/service.ts) |
 

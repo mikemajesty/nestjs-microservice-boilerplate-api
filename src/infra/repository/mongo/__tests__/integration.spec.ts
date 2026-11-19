@@ -7,7 +7,7 @@ import { Cat, CatDocument } from '@/infra/database/mongo/schemas/cat'
 import { MongoRepository } from '@/infra/repository/mongo/repository'
 import { DatabaseOperationCommand, DatabaseOperationEnum } from '@/infra/repository/types'
 import { MockUtils } from '@/utils/test'
-import { TestMongoContainer } from '@/utils/test/e2e/containers'
+import { TestMongoContainer } from '@/utils/test/e2e'
 
 describe(MongoRepository.name, () => {
   const container = new TestMongoContainer()

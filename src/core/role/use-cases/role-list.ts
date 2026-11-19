@@ -4,14 +4,14 @@
 import { RoleEntity } from '@/core/role/entity/role'
 import { ValidateSchema } from '@/utils/decorators'
 import { PaginationInput, PaginationOutput, PaginationSchema } from '@/utils/pagination'
+import { Schema } from '@/utils/schema'
 import { SearchSchema } from '@/utils/search'
 import { SortSchema } from '@/utils/sort'
 import { IUsecase } from '@/utils/usecase'
-import { InputValidator } from '@/utils/validator'
 
 import { IRoleRepository } from '../repository/role'
 
-export const RoleListSchema = InputValidator.intersection(PaginationSchema, SortSchema.and(SearchSchema))
+export const RoleListSchema = Schema.intersection(PaginationSchema, SortSchema.and(SearchSchema))
 
 export class RoleListUsecase implements IUsecase {
   constructor(private readonly roleRepository: IRoleRepository) {}

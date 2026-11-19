@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 
 import { ApiInternalServerException } from '@/utils/exception'
-import { ZodException, ZodExceptionIssue } from '@/utils/validator'
+import { ZodException, ZodExceptionIssue } from '@/utils/schema'
 
 import { ISecretsAdapter } from './adapter'
 import { SecretsSchema } from './schema'

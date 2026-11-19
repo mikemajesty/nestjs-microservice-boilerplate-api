@@ -1,7 +1,9 @@
 import { IDGeneratorUtils } from '@/utils/id-generator'
 
+import { EnvEnum } from '../secrets/types'
+
 const createConnectionName = (name: string) => {
-  if (process.env.NODE_ENV === 'test') {
+  if (process.env.NODE_ENV === EnvEnum.TEST) {
     return `${name}_${IDGeneratorUtils.generate()}`
   }
   return name

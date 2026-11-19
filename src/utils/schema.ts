@@ -39,11 +39,8 @@ export const runWithRequestLocale = <T>(locale: SupportedLocale, callback: () =>
   return localeStorage.run(locale, callback)
 }
 
-export const InputValidator = {
-  ...z,
-  custom: () => {
-    throw new Error('InputValidator.custom() is deprecated. Use InputValidator.schema<T>() instead.')
-  }
+export const Schema = {
+  ...z
 }
 
 export const normalizeLocale = (locale: string): SupportedLocale => {

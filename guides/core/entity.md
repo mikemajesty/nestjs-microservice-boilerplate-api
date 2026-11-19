@@ -17,19 +17,19 @@ Entities are the **heart of the domain layer**. They represent business concepts
 ```typescript
 // src/core/cat/entity/cat.ts
 import { BaseEntity } from '@/utils/domain'
-import { InferSchema, InputValidator } from '@/utils/validator'
+import { InferSchema, Schema } from '@/utils/schema'
 
 // 1️⃣ Define each field's validation rules
-const ID = InputValidator.uuid()
-const Name = InputValidator.string().trim().min(1).max(200)
-const Breed = InputValidator.string().trim().min(1).max(200)
-const Age = InputValidator.int().min(0).max(30)
-const CreatedAt = InputValidator.date().nullish()
-const UpdatedAt = InputValidator.date().nullish()
-const DeletedAt = InputValidator.date().nullish()
+const ID = Schema.uuid()
+const Name = Schema.string().trim().min(1).max(200)
+const Breed = Schema.string().trim().min(1).max(200)
+const Age = Schema.int().min(0).max(30)
+const CreatedAt = Schema.date().nullish()
+const UpdatedAt = Schema.date().nullish()
+const DeletedAt = Schema.date().nullish()
 
 // 2️⃣ Compose the schema (always: {Domain}EntitySchema)
-export const CatEntitySchema = InputValidator.object({
+export const CatEntitySchema = Schema.object({
   id: ID,
   name: Name,
   breed: Breed,
@@ -62,13 +62,13 @@ export class CatEntity extends BaseEntity<CatEntity>() {
 
 ### 1️⃣ Define Field Validators
 
-Each field has its own validation rules using `InputValidator` (Zod):
+Each field has its own validation rules using `Schema` (Zod):
 
 ```typescript
-const Name = InputValidator.string().trim().min(1).max(200)
-const Age = InputValidator.int().min(0).max(30)
-const Email = InputValidator.string().email()
-const Status = InputValidator.enum(['active', 'inactive'])
+const Name = Schema.string().trim().min(1).max(200)
+const Age = Schema.int().min(0).max(30)
+const Email = Schema.string().email()
+const Status = Schema.enum(['active', 'inactive'])
 ```
 
 ### 2️⃣ Compose the Schema
@@ -76,7 +76,7 @@ const Status = InputValidator.enum(['active', 'inactive'])
 Combine all fields into a single schema:
 
 ```typescript
-export const CatEntitySchema = InputValidator.object({
+export const CatEntitySchema = Schema.object({
   id: ID,
   name: Name
   // ...
@@ -185,14 +185,14 @@ export class OrderEntity extends BaseEntity<OrderEntity>() {
 
   applyDiscount(percentage: number): void {
     if (percentage < 0 || percentage > 100) {
-      throw new Error('Invalid discount percentage')
+      throw new ApiBadRequestException('invalidDiscountPercentage')
     }
     this.total = this.total * (1 - percentage / 100)
   }
 
   markAsShipped(): void {
     if (this.status !== 'confirmed') {
-      throw new Error('Only confirmed orders can be shipped')
+      throw new ApiConflictException('onlyConfirmedOrdersCanBeShipped')
     }
     this.status = 'shipped'
   }
@@ -214,17 +214,17 @@ Add methods to your entity when the logic:
 ### Optional Fields
 
 ```typescript
-const Description = InputValidator.string().nullish() // string | null | undefined
-const DeletedAt = InputValidator.date().nullish()
+const Description = Schema.string().nullish() // string | null | undefined
+const DeletedAt = Schema.date().nullish()
 ```
 
 ### Enums
 
 ```typescript
-const Status = InputValidator.enum(['active', 'inactive', 'pending'])
+const Status = Schema.enum(['active', 'inactive', 'pending'])
 
 // In schema
-export const UserEntitySchema = InputValidator.object({
+export const UserEntitySchema = Schema.object({
   // ...
   status: Status
 })
@@ -233,13 +233,13 @@ export const UserEntitySchema = InputValidator.object({
 ### Nested Objects
 
 ```typescript
-const Address = InputValidator.object({
-  street: InputValidator.string(),
-  city: InputValidator.string(),
-  zipCode: InputValidator.string()
+const Address = Schema.object({
+  street: Schema.string(),
+  city: Schema.string(),
+  zipCode: Schema.string()
 })
 
-export const UserEntitySchema = InputValidator.object({
+export const UserEntitySchema = Schema.object({
   // ...
   address: Address
 })
@@ -248,11 +248,11 @@ export const UserEntitySchema = InputValidator.object({
 ### Arrays
 
 ```typescript
-const Tags = InputValidator.array(InputValidator.string())
-const Items = InputValidator.array(
-  InputValidator.object({
-    productId: InputValidator.uuid(),
-    quantity: InputValidator.int().min(1)
+const Tags = Schema.array(Schema.string())
+const Items = Schema.array(
+  Schema.object({
+    productId: Schema.uuid(),
+    quantity: Schema.int().min(1)
   })
 )
 ```
@@ -284,4 +284,4 @@ Selecting template...
 ## Related Links
 
 - [Entity Utils](../utils/entity.md) — BaseEntity class documentation
-- [Validator](../utils/validator.md) — InputValidator (Zod) documentation
+- [Validator](../utils/validator.md) — Schema (Zod) documentation

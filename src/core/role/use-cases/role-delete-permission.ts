@@ -6,15 +6,15 @@ import { ICacheAsideAdapter } from '@/infra/cache/aside'
 import { ValidateSchema } from '@/utils/decorators'
 import { ApiNotFoundException } from '@/utils/exception'
 import { Namespaces } from '@/utils/namespaces'
+import { InferSchema, Schema } from '@/utils/schema'
 import { IUsecase } from '@/utils/usecase'
-import { InferSchema, InputValidator } from '@/utils/validator'
 
 import { RoleEntitySchema } from '../entity/role'
 import { IRoleRepository } from '../repository/role'
 
 export const RoleDeletePermissionSchema = RoleEntitySchema.pick({
   id: true
-}).and(InputValidator.object({ permissions: InputValidator.array(InputValidator.string()) }))
+}).and(Schema.object({ permissions: Schema.array(Schema.string()) }))
 
 export class RoleDeletePermissionUsecase implements IUsecase {
   constructor(

@@ -4,7 +4,7 @@
 import { isDeepStrictEqual } from 'node:util'
 
 import { ApiUnprocessableEntityException } from '../exception'
-import { BaseZodType } from '../validator'
+import { BaseZodType } from '../schema'
 
 export const BaseValueObject = <T>(schema: BaseZodType) => {
   abstract class ValueObject {

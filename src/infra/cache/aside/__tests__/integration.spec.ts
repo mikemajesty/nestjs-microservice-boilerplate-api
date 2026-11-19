@@ -4,15 +4,11 @@
  */
 
 import { ICacheAdapter } from '@/infra/cache'
-import { MockUtils } from '@/utils/test'
-import { TestRedisContainer } from '@/utils/test/e2e/containers'
+import { ApiServiceUnavailableException } from '@/utils/exception'
+import { MockUtils, TestUtils } from '@/utils/test'
+import { TestRedisContainer } from '@/utils/test/e2e'
 
 import { CacheAsideService } from '../service'
-
-type CachedRole = {
-  id: string
-  permissions: string[]
-}
 
 describe(CacheAsideService.name, () => {
   const redisContainer = new TestRedisContainer()
@@ -46,7 +42,7 @@ describe(CacheAsideService.name, () => {
     const monitor = await redisContainer.client.monitor()
     const monitoredCommands: string[] = []
     const pingObserved = new Promise<void>((resolve, reject) => {
-      const timeout = setTimeout(() => reject(new Error('Redis PING was not observed')), 1_000)
+      const timeout = setTimeout(() => reject(TestUtils.assertionError('Redis PING was not observed')), 1_000)
       monitor.on('monitor', (_timestamp, args) => {
         const command = args[0]?.toLowerCase()
         if (command) {
@@ -197,15 +193,99 @@ describe(CacheAsideService.name, () => {
     const loader = async () => {
       loaderCalls++
       if (loaderCalls === 1) {
-        throw new Error('database unavailable')
+        throw new ApiServiceUnavailableException('database unavailable')
       }
       return loaded
     }
 
-    await expect(service.readThroughSingleFlight(key, loader, { ttlSeconds: 60 })).rejects.toThrow('database unavailable')
+    await expect(service.readThroughSingleFlight(key, loader, { ttlSeconds: 60 })).rejects.toThrow(
+      'database unavailable'
+    )
     await expect(service.readThroughSingleFlight(key, loader, { ttlSeconds: 60 })).resolves.toEqual(loaded)
     expect(loaderCalls).toBe(2)
     expect(await redisContainer.client.get(key)).toBe(JSON.stringify(loaded))
+  })
+
+  test('when a single-flight loader fails, should reject every concurrent read with the same error', async () => {
+    const key = 'role:id:1'
+    let loaderCalls = 0
+    let rejectLoader: (error: Error) => void = () => undefined
+    let signalLoaderStarted: () => void = () => undefined
+    const loaderStarted = new Promise<void>((resolve) => {
+      signalLoaderStarted = resolve
+    })
+    const loader = () =>
+      new Promise<CachedRole>((_resolve, reject) => {
+        loaderCalls++
+        rejectLoader = reject
+        signalLoaderStarted()
+      })
+
+    const first = service.readThroughSingleFlight(key, loader, { ttlSeconds: 60 })
+    const second = service.readThroughSingleFlight(key, loader, { ttlSeconds: 60 })
+
+    await loaderStarted
+    rejectLoader(new ApiServiceUnavailableException('database unavailable'))
+    const [firstResult, secondResult] = await Promise.allSettled([first, second])
+
+    expect(loaderCalls).toBe(1)
+    expect(firstResult).toEqual({
+      status: 'rejected',
+      reason: expect.objectContaining({ message: 'database unavailable' })
+    })
+    expect(secondResult).toEqual(firstResult)
+    expect(await redisContainer.client.get(key)).toBeNull()
+  })
+
+  test('when single-flight reads use different keys, should run one loader per key', async () => {
+    const loaderCalls = new Map<string, number>()
+    const resolvers: Array<() => void> = []
+    let signalBothLoadersStarted: () => void = () => undefined
+    const bothLoadersStarted = new Promise<void>((resolve) => {
+      signalBothLoadersStarted = resolve
+    })
+    const loaderFor = (id: string) => () =>
+      new Promise<CachedRole>((resolve) => {
+        loaderCalls.set(id, (loaderCalls.get(id) ?? 0) + 1)
+        resolvers.push(() => resolve({ id, permissions: ['user:read'] }))
+        if (resolvers.length === 2) {
+          signalBothLoadersStarted()
+        }
+      })
+    // Fails fast instead of hanging until the Jest timeout if the keys end up sharing one loader.
+    const sharedLoaderDetected = new Promise<never>((_resolve, reject) => {
+      setTimeout(() => reject(TestUtils.assertionError('second loader never started: different keys shared one execution')), 1_000)
+    })
+
+    const first = service.readThroughSingleFlight('role:id:1', loaderFor('1'), { ttlSeconds: 60 })
+    const second = service.readThroughSingleFlight('role:id:2', loaderFor('2'), { ttlSeconds: 60 })
+
+    await Promise.race([bothLoadersStarted, sharedLoaderDetected])
+    resolvers.forEach((resolve) => resolve())
+
+    await expect(Promise.all([first, second])).resolves.toEqual([
+      { id: '1', permissions: ['user:read'] },
+      { id: '2', permissions: ['user:read'] }
+    ])
+    expect(Object.fromEntries(loaderCalls)).toEqual({ '1': 1, '2': 1 })
+  })
+
+  test('when a key is invalidated after a single-flight read, should load the fresh value', async () => {
+    const key = 'role:id:1'
+    let version = 0
+    const loader = async (): Promise<CachedRole> => ({ id: '1', permissions: [`v${++version}`] })
+
+    await expect(service.readThroughSingleFlight(key, loader, { ttlSeconds: 60 })).resolves.toEqual({
+      id: '1',
+      permissions: ['v1']
+    })
+    await service.invalidate(key)
+
+    await expect(service.readThroughSingleFlight(key, loader, { ttlSeconds: 60 })).resolves.toEqual({
+      id: '1',
+      permissions: ['v2']
+    })
+    expect(version).toBe(2)
   })
 
   test('when invalidating one or multiple keys, should remove their Redis values', async () => {
@@ -392,3 +472,8 @@ describe(CacheAsideService.name, () => {
     expect(loaderCalls).toBe(0)
   })
 })
+
+type CachedRole = {
+  id: string
+  permissions: string[]
+}

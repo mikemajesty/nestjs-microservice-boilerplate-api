@@ -1,6 +1,6 @@
 # Authentication Guard
 
-Guard that verifies if a request is **authenticated** — i.e., if it carries a valid Bearer token and that token hasn't been blacklisted (logged out). This is the **first guard** in the chain: it runs **before** the Authorization Guard.
+Guard that verifies if a request is **authenticated** — i.e., if it carries a valid Bearer token whose login session is still active (not logged out). This is the **first guard** in the chain: it runs **before** the Authorization Guard.
 
 ## The Problem
 
@@ -13,7 +13,7 @@ Guard that verifies if a request is **authenticated** — i.e., if it carries a 
 ✅ With Authentication Guard:
 - Every protected route requires a valid Bearer token
 - Decoded user is attached to `request.user`
-- Logged-out tokens are rejected via blacklist (Redis)
+- Tokens of ended sessions (logout, password change/reset) are rejected via Redis
 ```
 
 ## How It Works
@@ -24,7 +24,7 @@ Guard that verifies if a request is **authenticated** — i.e., if it carries a 
 │  2. Read Authorization header                                   │
 │  3. Validate scheme is "Bearer" and token is present            │
 │  4. Verify token (JWT) → attach user to request.user            │
-│  5. Check token against blacklist in Redis                      │
+│  5. Check the token's session is still active in Redis          │
 │  6. Allow or deny request                                       │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -56,7 +56,7 @@ Request
    │ Yes
    ▼
 ┌──────────────────────────┐
-│ Token in blacklist?      │──── Yes ───▶ ❌ 401 you have been logged out
+│ Session ended?           │──── Yes ───▶ ❌ 401 you have been logged out
 └──────────────────────────┘
    │ No
    ▼
@@ -96,25 +96,21 @@ export class UserController {
 }
 ```
 
-## Blacklist (Logout)
+## Active Session (Logout)
 
-When a user logs out, the token is stored in Redis with a TTL equal to the token's remaining lifetime:
-
-```typescript
-const key = PrefixUtils.scoped('Blacklist', user.id)
-await this.redis.set(key, input.token, { PX: ttl })
-```
-
-The guard checks this key on every request:
+Every access token carries the id of its login session (`sid`). After verifying the JWT, the guard
+checks that the session still exists in Redis:
 
 ```typescript
-const key = PrefixUtils.scoped('Blacklist', request.user.id)
-const blackListToken = await this.redisService.get(key)
-
-if (blackListToken) {
+const active = await this.session.isActive(request.user.id, request.user.sid)
+if (!active) {
   throw new ApiUnauthorizedException('you have been logged out')
 }
 ```
+
+Logout, password change and password reset end sessions, so their tokens are rejected right away.
+Tokens without `sid` (for example password-reset tokens) are rejected as `invalidToken`.
+See [Session](../libs/session.md).
 
 ## Error Responses
 
@@ -169,8 +165,8 @@ if (blackListToken) {
 | **Decorator** | `@Public()` to skip                              |
 | **Header**    | `Authorization: Bearer <token>`                  |
 | **Verify**    | JWT via `ITokenAdapter`                          |
-| **Blacklist** | Redis key `blacklist:<env>:<userId>`             |
-| **401**       | Missing, malformed, invalid or blacklisted token |
+| **Session**   | Redis key `auth:session:<userId>:<sid>`          |
+| **401**       | Missing, malformed, invalid token or ended session |
 | **Runs**      | Before `AuthorizationGuard`                      |
 
 **Authentication Guard** - _Ensures the request is authenticated._

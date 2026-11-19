@@ -18,16 +18,12 @@ import { IRoleRepository } from '@/core/role/repository/role'
 import { IUserRepository } from '@/core/user/repository/user'
 import { ICacheAdapter } from '@/infra/cache'
 import { Cat } from '@/infra/database/mongo/schemas/cat'
+import { ISessionAdapter } from '@/libs/session'
 import { ITokenAdapter } from '@/libs/token'
 import { GuardsModule } from '@/middlewares/guards/module'
 import { UserRequest } from '@/utils/request'
 import { MockUtils, TestUtils } from '@/utils/test'
-import { TestMongoContainer, TestPostgresContainer, TestRedisContainer } from '@/utils/test/e2e/containers'
-import { PermissionFixture } from '@/utils/test/e2e/fixtures/permission'
-import { RoleFixture } from '@/utils/test/e2e/fixtures/role'
-import { UserFixture } from '@/utils/test/e2e/fixtures/user'
-import { FixtureUtils } from '@/utils/test/e2e/fixtures/utils'
-import { TestEnd2EndUtils } from '@/utils/test/e2e/utils'
+import { FixtureUtils, PermissionFixture, RoleFixture, TestEnd2EndUtils, TestMongoContainer, TestPostgresContainer, TestRedisContainer, UserFixture } from '@/utils/test/e2e'
 
 import { CatController } from '../controller'
 import { CatModule } from '../module'
@@ -46,6 +42,7 @@ describe(CatController.name, () => {
   const mongoContainer = new TestMongoContainer()
 
   const userFixture = new UserFixture()
+  const sessionAdapter = TestEnd2EndUtils.sessionMock()
   const roleFixture = new RoleFixture()
   const permissionFixture = new PermissionFixture()
 
@@ -64,9 +61,12 @@ describe(CatController.name, () => {
         verify: TestUtils.mockResolvedValue<UserRequest>({
           name: userFixture.entity.name,
           email: userFixture.entity.email,
-          id: userFixture.entity.id
+          id: userFixture.entity.id,
+          sid: TestEnd2EndUtils.SESSION_ID
         })
       })
+      .overrideProvider(ISessionAdapter)
+      .useValue(sessionAdapter)
       .overrideProvider(ICacheAdapter)
       .useValue(redisService)
       .compile()

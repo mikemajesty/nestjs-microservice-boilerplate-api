@@ -5,8 +5,8 @@ import { ICatRepository } from '@/core/cat/repository/cat'
 import { ValidateSchema } from '@/utils/decorators'
 import { ApiNotFoundException } from '@/utils/exception'
 import { ApiTracingInput } from '@/utils/request'
+import { InferSchema } from '@/utils/schema'
 import { IUsecase } from '@/utils/usecase'
-import { InferSchema } from '@/utils/validator'
 
 import { CatEntity, CatEntitySchema } from '../entity/cat'
 

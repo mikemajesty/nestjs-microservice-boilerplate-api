@@ -8,8 +8,8 @@ import { ILoggerAdapter } from '@/infra/logger'
 import { ValidateSchema } from '@/utils/decorators'
 import { ApiConflictException, ApiNotFoundException } from '@/utils/exception'
 import { Namespaces } from '@/utils/namespaces'
+import { InferSchema } from '@/utils/schema'
 import { IUsecase } from '@/utils/usecase'
-import { InferSchema } from '@/utils/validator'
 
 import { PermissionEntity, PermissionEntitySchema } from './../entity/permission'
 

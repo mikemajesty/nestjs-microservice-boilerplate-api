@@ -3,7 +3,7 @@ import { DefaultNamingStrategy, FindOptionsRelations, NamingStrategyInterface, T
 
 import { CollectionUtil } from '@/utils/collection'
 import { WithErrorContext } from '@/utils/decorators/with-error-context.decorator'
-import { ApiBadRequestException, BaseException, MessageType, ParametersType } from '@/utils/exception'
+import { ApiBadRequestException, BaseException, MessageType, ParametersType, toError } from '@/utils/exception'
 
 import { DatabaseOperationCommand, DatabaseOperationEnum, JoinType } from './types'
 
@@ -59,7 +59,7 @@ export const WithDatabaseErrorContext = WithErrorContext({
   map: (error) => {
     if (error instanceof BaseException) return error
 
-    const cause = error instanceof Error ? error : new Error(String(error))
+    const cause = toError(error)
     return new ApiDatabaseException(cause.message, { cause })
   }
 })

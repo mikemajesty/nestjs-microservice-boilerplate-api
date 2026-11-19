@@ -3,7 +3,7 @@
  */
 import { Controller, HttpCode, Post, Req, Version } from '@nestjs/common'
 
-import { LogoutInput, LogoutOutput } from '@/core/user/use-cases/user-logout'
+import { LogoutOutput } from '@/core/user/use-cases/user-logout'
 import { Permission } from '@/utils/decorators'
 import { ApiRequest } from '@/utils/request'
 
@@ -14,10 +14,10 @@ export class LogoutController {
   constructor(private readonly logoutUsecase: ILogout) {}
 
   @Post('/logout')
-  @HttpCode(401)
+  @HttpCode(204)
   @Version('1')
   @Permission('user:logout')
-  async logout(@Req() { body, user, tracing }: ApiRequest): Promise<LogoutOutput> {
-    return this.logoutUsecase.execute(body as LogoutInput, { user, tracing })
+  async logout(@Req() { user, tracing }: ApiRequest): Promise<LogoutOutput> {
+    return this.logoutUsecase.execute({ user, tracing })
   }
 }

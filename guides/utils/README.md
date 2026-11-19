@@ -16,6 +16,7 @@ Collection of utility functions and helpers that enhance development experience 
 - [**Mongoose**](./mongoose.md) | [📄 Code](../../src/utils/mongoose.ts) - MongoDB text search utilities with diacritic handling
 - [**ID Generator**](./id-generator.md) | [📄 Code](../../src/utils/id-generator.ts) - Centralized ID generation with multiple algorithm support
 - [**Jitter**](./jitter.md) | [📄 Code](../../src/utils/jitter.ts) - Controlled random variation for TTLs, retries, and scheduled work
+- [**Single Flight**](./single-flight.md) | [📄 Code](../../src/utils/single-flight.ts) - Deduplicates concurrent calls by key, like Go's singleflight
 - [**Http Status**](./http-status.md) | [📄 Code](../../src/utils/http-status.ts) - HTTP status codes and user-friendly error messages
 - [**Namespaces**](./namespaces.md) | [📄 Code](../../src/utils/namespaces.ts) - Stable structured identifiers for cache and external boundaries
 - [**Object**](./object.md) | [📄 Code](../../src/utils/object.ts) - Typed property names, safe nested access, and object helpers

@@ -23,7 +23,7 @@ async list(@Req() { query }: ApiRequest): Promise<UserListOutput> {
     limit: Number(query.limit),
     page: Number(query.page)
   }
-  
+
   return await this.listUsecase.execute(input)
 }
 ```
@@ -105,6 +105,7 @@ the relevant repository decorator when adding a new filter.
 ## Database Translation
 
 ### MongoDB
+
 ```typescript
 // Decorators build MongoDB equality or case-insensitive regex conditions.
 { status: "active" }
@@ -112,6 +113,7 @@ the relevant repository decorator when adding a new filter.
 ```
 
 ### PostgreSQL
+
 ```typescript
 // Repository decorators convert parsed filters to TypeORM operators.
 { status: ["active", "pending"] } → "WHERE status IN ('active', 'pending')"
@@ -128,10 +130,7 @@ export type SearchInput<T> = { search: T | null }
 // Combined with pagination and sort for complete list functionality
 export type PaginationInput<T> = PaginationSchema & SortInput & SearchInput<Partial<T>>
 
-export const UserListSchema = InputValidator.intersection(
-  PaginationSchema, 
-  SortSchema.and(SearchSchema)
-)
+export const UserListSchema = Schema.intersection(PaginationSchema, SortSchema.and(SearchSchema))
 
 export class UserListUsecase implements IUsecase {
   async execute(input: UserListInput): Promise<UserListOutput> {
@@ -159,14 +158,17 @@ export class UserListUsecase implements IUsecase {
 ## Benefits
 
 ### Flexible Filtering
+
 - **Single field, single value**: `name:john`
 - **Single field, multiple values**: `breed:siamese|persian`
 - **Multiple fields**: `name:john,email:john@example.com`
 - **Complex combinations**: `breed:siamese|persian,age:2`
 
 ### Database Agnostic
+
 Core business logic receives standardized search objects, while each repository
 applies the database-specific query syntax and its allowed field list.
 
 ### Consistent API
+
 All list endpoints accept search filters in the same format, making the API predictable and easy to use.

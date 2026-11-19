@@ -92,7 +92,7 @@ test doubles. Follow [Core testing](../core/test.md).
 
 ```typescript
 import { MockUtils, TestUtils } from '@/utils/test'
-import { ZodExceptionIssue } from '@/utils/validator'
+import { ZodExceptionIssue } from '@/utils/schema'
 
 await TestUtils.expectZodError(
   () => usecase.execute({} as CatCreateInput, MockUtils.Tracing()),
@@ -119,6 +119,7 @@ Keep the issue ordering/messages aligned with the actual schema and validator.
 When wording is intentionally not part of the contract, assert messages with
 an appropriate matcher while still checking every relevant path. See
 [TestUtils](./util.md) for the helper's failure behavior.
+
 - Generate entity fixtures from entity schemas. Supply `factory` when the
   tested behavior depends on entity methods. Override relationships and
   values relevant to each scenario; clone when mutation or independent state

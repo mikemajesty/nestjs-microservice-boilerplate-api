@@ -19,6 +19,7 @@ import { PostgresConnectionName } from '@/infra/database'
 import { UserSchema } from '@/infra/database/postgres/schemas/user'
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger'
 import { EventLibModule, IEventAdapter } from '@/libs/event'
+import { ISessionAdapter, SessionLibModule } from '@/libs/session'
 
 import { RoleModule } from '../role/module'
 import { UserController } from './controller'
@@ -31,7 +32,8 @@ import { UserRepository } from './repository'
     EventLibModule,
     TypeOrmModule.forFeature([UserSchema], PostgresConnectionName.POSTGRES),
     RoleModule,
-    CacheAsideModule
+    CacheAsideModule,
+    SessionLibModule
   ],
   controllers: [UserController],
   providers: [
@@ -89,10 +91,10 @@ import { UserRepository } from './repository'
     },
     {
       provide: IUserChangePassword,
-      useFactory: (userRepository: IUserRepository) => {
-        return new UserChangePasswordUsecase(userRepository)
+      useFactory: (userRepository: IUserRepository, session: ISessionAdapter) => {
+        return new UserChangePasswordUsecase(userRepository, session)
       },
-      inject: [IUserRepository]
+      inject: [IUserRepository, ISessionAdapter]
     }
   ],
   exports: [IUserRepository, IUserCreate, IUserUpdate, IUserList, IUserDelete, IUserGetById, IUserChangePassword]

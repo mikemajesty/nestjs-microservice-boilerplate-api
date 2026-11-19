@@ -3,8 +3,8 @@
  */
 import { ValidateSchema } from '@/utils/decorators'
 import { ApiNotFoundException } from '@/utils/exception'
+import { InferSchema } from '@/utils/schema'
 import { IUsecase } from '@/utils/usecase'
-import { InferSchema } from '@/utils/validator'
 
 import { UserEntity, UserEntitySchema } from '../entity/user'
 import { IUserRepository } from '../repository/user'

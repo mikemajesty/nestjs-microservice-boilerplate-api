@@ -36,7 +36,10 @@ const dataSource = new DataSource({
       : false,
   applicationName: name,
   extra: {
-    ...POSTGRES_POOL_OPTIONS
+    ...POSTGRES_POOL_OPTIONS,
+    statement_timeout: 0,
+    query_timeout: 0,
+    lock_timeout: 10_000
   },
   migrationsTableName: 'migrations',
   migrations,

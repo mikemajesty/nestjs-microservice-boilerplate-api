@@ -192,11 +192,11 @@ paths:
   /api/{version}/login:
     post:
       operationId: LoginController_login
-      description: user login
+      description: user login; opens a new session
       parameters:
         - $ref: '#/components/parameters/Utils.Versioning.VersionParams'
       responses:
-        '200':
+        '201':
           description: login successfully
           content:
             application/json:
@@ -207,17 +207,15 @@ paths:
           content:
             application/json:
               schema:
-                anyOf:
-                  - $ref: '#/components/schemas/Login.LoginValidationError'
-                  - $ref: '#/components/schemas/Login.LoginWrongPasswordError'
-        '404':
-          description: When user not found
+                $ref: '#/components/schemas/Login.LoginValidationError'
+        '401':
+          description: |-
+            When the email is unknown or the password is wrong. Both cases answer the same error,
+            so the endpoint does not reveal which emails have an account.
           content:
             application/json:
               schema:
-                anyOf:
-                  - $ref: '#/components/schemas/Login.LoginUserNotFoundError'
-                  - $ref: '#/components/schemas/Login.LoginRoleNotFoundError'
+                $ref: '#/components/schemas/Login.LoginInvalidCredentialsError'
       tags:
         - Login
       requestBody:
@@ -249,28 +247,24 @@ paths:
       tags:
         - Login
   /api/{version}/logout:
-    post:
+    get:
       operationId: LogoutController_logout
-      description: user logout
+      description: |-
+        Ends the session of the access token sent in the Authorization header.
+        Its access and refresh tokens stop working immediately; other sessions of the user are kept.
       parameters:
         - $ref: '#/components/parameters/Utils.Versioning.VersionParams'
       responses:
-        '200':
-          description: user logout successfully
-        '400':
-          description: When input is invalid
+        '204':
+          description: session ended
+        '401':
+          description: When the token is missing, invalid or its session was already ended
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Logout.LogoutValidationError'
+                $ref: '#/components/schemas/Logout.LogoutUnauthorizedError'
       tags:
         - Logout
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Logout.LogoutInput'
       security:
         - BearerAuth: []
   /api/{version}/permissions:
@@ -427,16 +421,40 @@ paths:
   /api/{version}/refresh:
     post:
       operationId: LoginController_refresh
-      description: get user refresh token
+      description: |-
+        Exchanges a refresh token for a new access/refresh token pair (rotation).
+        The refresh token sent stops working; always store the new one.
       parameters:
         - $ref: '#/components/parameters/Utils.Versioning.VersionParams'
       responses:
-        '200':
-          description: login refresh token successfully
+        '201':
+          description: new token pair
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Login.RefreshTokenOutput'
+        '400':
+          description: When refresh input is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Login.RefreshValidationError'
+        '401':
+          description: |-
+            When the refresh token is invalid, expired, already used, or its session was ended
+            (logout, password change or reset). Reusing an already used refresh token also ends its session.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Login.RefreshInvalidTokenError'
+        '404':
+          description: When user not found
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/Login.LoginUserNotFoundError'
+                  - $ref: '#/components/schemas/Login.LoginRoleNotFoundError'
       tags:
         - Login
       requestBody:
@@ -487,11 +505,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/ResetPassword.ConfirmResetPasswordPasswordAreDifferentError'
         '401':
-          description: When password are differents
+          description: When the token is not the last reset-password token sent to the user, or it was already used
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResetPassword.ConfirmResetPasswordTokenWasExpiredError'
+                anyOf:
+                  - $ref: '#/components/schemas/ResetPassword.ConfirmResetPasswordTokenWasExpiredError'
+                  - $ref: '#/components/schemas/ResetPassword.ConfirmResetPasswordInvalidTokenError'
         '404':
           description: When user not found
           content:
@@ -966,7 +986,8 @@ paths:
       operationId: HealthController_metrics
       description: |2-
           Process, runtime and dependency metrics for dashboards and troubleshooting.
-          Does not decide readiness. Event loop, GC and process CPU cover the window since the previous call, then reset.
+          Does not decide readiness. The snapshot is cached for 5s: `timestamp` is when it was collected,
+          and event loop, GC and process CPU cover the window since the previous collection.
       parameters: []
       responses:
         '200':
@@ -984,6 +1005,7 @@ paths:
           Readiness probe - checks if the application can handle requests.
           Only pings MongoDB, PostgreSQL and Redis (2s timeout each), so it stays cheap for orchestrators.
           Answers **503** when any dependency is DOWN.
+          The checks are cached for 2s and shared with /health/startup.
       parameters: []
       responses:
         '200':
@@ -1796,9 +1818,6 @@ components:
             totalHeapSize:
               type: string
               description: Total heap size managed by V8.
-            usedHeapSize:
-              type: string
-              description: Heap size actually being used; redundant with process.heapUsed.
             executableHeapSize:
               type: string
               description: Heap size reserved for compiled JavaScript code.
@@ -1807,7 +1826,6 @@ components:
               description: Maximum heap size before memory allocation fails; compare against the container memory limit.
           required:
             - totalHeapSize
-            - usedHeapSize
             - executableHeapSize
             - heapSizeLimit
           description: v8 memory
@@ -2143,6 +2161,7 @@ components:
         - status
         - version
         - timestamp
+        - checkedAt
         - dependencies
       properties:
         status:
@@ -2153,7 +2172,10 @@ components:
           description: application version
         timestamp:
           type: string
-          description: Timestamp of the check
+          description: When this response was built
+        checkedAt:
+          type: string
+          description: When the dependency checks ran; they are cached for 2s, so it can be older than `timestamp`
         dependencies:
           type: object
           properties:
@@ -2216,7 +2238,9 @@ components:
       required:
         - status
         - timestamp
+        - checkedAt
         - phase
+        - connections
         - message
       properties:
         status:
@@ -2225,6 +2249,9 @@ components:
         timestamp:
           type: string
           description: Timestamp of the health check
+        checkedAt:
+          type: string
+          description: When the dependency checks ran; they are cached for 2s and shared with /health/ready
         phase:
           type: string
           description: Health check phase identifier
@@ -2244,15 +2271,10 @@ components:
             - mongo
             - postgres
             - redis
-          description: |2-
-              Basic connection status for each service.
-              Omitted when startup fails before connections are checked.
+          description: Connection status for each service
         message:
           type: string
           description: Human-readable status message
-        error:
-          type: string
-          description: Optional error message if startup fails
       description: Startup probe response model
     Login.LoginInput:
       type: object
@@ -2267,6 +2289,52 @@ components:
           type: string
           default: admin
       description: login input
+    Login.LoginInvalidCredentialsError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 401
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - invalidCredentials
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When unauthorized occour.
+      description: |-
+        When the email is unknown or the password is wrong. Both cases answer the same error,
+        so the endpoint does not reveal which emails have an account.
     Login.LoginOutput:
       type: object
       required:
@@ -2411,7 +2479,7 @@ components:
               description: default error model
           description: When input is invalid.
       description: When login input is invalid
-    Login.LoginWrongPasswordError:
+    Login.RefreshInvalidTokenError:
       type: object
       allOf:
         - type: object
@@ -2431,7 +2499,7 @@ components:
                 code:
                   type: number
                   enum:
-                    - 400
+                    - 401
                   description: status code
                 traceid:
                   type: string
@@ -2444,7 +2512,7 @@ components:
                   items:
                     type: string
                     enum:
-                      - incorrectPassword
+                      - invalidRefreshToken
                   description: error message
                 timestamp:
                   type: string
@@ -2453,8 +2521,10 @@ components:
                   type: string
                   description: path error
               description: default error model
-          description: When input is invalid.
-      description: When user password is wrong
+          description: When unauthorized occour.
+      description: |-
+        When the refresh token is invalid, expired, already used, or its session was ended
+        (logout, password change or reset). Reusing an already used refresh token also ends its session.
     Login.RefreshTokenInput:
       type: object
       required:
@@ -2474,15 +2544,7 @@ components:
         refreshToken:
           type: string
       description: login refresh token output
-    Logout.LogoutInput:
-      type: object
-      required:
-        - token
-      properties:
-        token:
-          type: string
-      description: logout input
-    Logout.LogoutValidationError:
+    Login.RefreshValidationError:
       type: object
       allOf:
         - type: object
@@ -2515,7 +2577,7 @@ components:
                   items:
                     type: string
                     enum:
-                      - 'token: Required'
+                      - 'refreshToken: Required'
                   description: error message
                 timestamp:
                   type: string
@@ -2525,7 +2587,52 @@ components:
                   description: path error
               description: default error model
           description: When input is invalid.
-      description: When input is invalid
+      description: When refresh input is invalid
+    Logout.LogoutUnauthorizedError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 401
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - invalidToken
+                      - you have been logged out
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When unauthorized occour.
+      description: When the token is missing, invalid or its session was already ended
     Permission.ConflictPermissionExistsError:
       type: object
       allOf:
@@ -3084,6 +3191,50 @@ components:
         confirmPassword:
           type: string
       description: confirm reset password input
+    ResetPassword.ConfirmResetPasswordInvalidTokenError:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              required:
+                - code
+                - traceid
+                - context
+                - message
+                - timestamp
+                - path
+              properties:
+                code:
+                  type: number
+                  enum:
+                    - 401
+                  description: status code
+                traceid:
+                  type: string
+                  description: request traceid
+                context:
+                  type: string
+                  description: class that error occur
+                message:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - invalidToken
+                  description: error message
+                timestamp:
+                  type: string
+                  description: timestamp that error occur
+                path:
+                  type: string
+                  description: path error
+              description: default error model
+          description: When unauthorized occour.
+      description: When the token is invalid, expired, or is not a reset-password token (e.g. an access token)
     ResetPassword.ConfirmResetPasswordPasswordAreDifferentError:
       type: object
       allOf:
@@ -3171,7 +3322,7 @@ components:
                   description: path error
               description: default error model
           description: When unauthorized occour.
-      description: When password are differents
+      description: When the token is not the last reset-password token sent to the user, or it was already used
     ResetPassword.ConfirmResetPasswordUserNotFoundError:
       type: object
       allOf:

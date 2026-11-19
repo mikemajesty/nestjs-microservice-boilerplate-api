@@ -5,7 +5,7 @@
     "body": [
       "import { Test } from '@nestjs/testing'",
       "import { TestUtils, ZodMockSchema } from '@/utils/test'",
-      "import { ZodExceptionIssue } from '@/utils/validator'",
+      "import { ZodExceptionIssue } from '@/utils/schema'",
       "",
       "import { ${TM_FILENAME/([a-zA-Z]+)-?([a-zA-Z]*)-?([a-zA-Z]*)-?([a-zA-Z]*)?-?([a-zA-Z]*)?-?([a-zA-Z]*)?\\.spec\\.ts/${1:/capitalize}${2:/capitalize}${3:/capitalize}${4:/capitalize}${5:/capitalize}${6:/capitalize}/}Input, ${TM_FILENAME/([a-zA-Z]+)-?([a-zA-Z]*)-?([a-zA-Z]*)-?([a-zA-Z]*)?-?([a-zA-Z]*)?-?([a-zA-Z]*)?\\.spec\\.ts/${1:/capitalize}${2:/capitalize}${3:/capitalize}${4:/capitalize}${5:/capitalize}${6:/capitalize}/}InputSchema, ${TM_FILENAME/([a-zA-Z]+)-?([a-zA-Z]*)-?([a-zA-Z]*)-?([a-zA-Z]*)?-?([a-zA-Z]*)?-?([a-zA-Z]*)?\\.spec\\.ts/${1:/capitalize}${2:/capitalize}${3:/capitalize}${4:/capitalize}${5:/capitalize}${6:/capitalize}/}Usecase } from '../${TM_FILENAME/(.*)\\.spec\\.ts/${1}/}'",
       "import { I${TM_FILENAME/^([a-zA-Z]+)(?:-[a-zA-Z]+)*\\.spec\\.ts/${1:/capitalize}/}Repository } from '@/core/${TM_FILENAME/^([a-zA-Z]+)(?:-[a-zA-Z]+)*\\.spec\\.ts/${1}/}/repository/${TM_FILENAME/^([a-zA-Z]+)(?:-[a-zA-Z]+)*\\.spec\\.ts/${1}/}'",

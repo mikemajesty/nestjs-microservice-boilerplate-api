@@ -7,10 +7,12 @@ import { Test } from '@nestjs/testing'
 import { RoleEntity, RoleEntitySchema } from '@/core/role/entity/role'
 import { LoggerModule } from '@/infra/logger'
 import { CreatedModel } from '@/infra/repository'
+import { ISessionAdapter } from '@/libs/session'
 import { IUserChangePassword } from '@/modules/user/interfaces'
 import { ApiBadRequestException, ApiNotFoundException } from '@/utils/exception'
+import { ZodExceptionIssue } from '@/utils/schema'
+import { PasswordFixture } from '@/utils/test/e2e'
 import { TestUtils } from '@/utils/test/utils'
-import { ZodExceptionIssue } from '@/utils/validator'
 
 import { UserEntity, UserEntitySchema } from '../../entity/user'
 import { UserPasswordEntity, UserPasswordEntitySchema } from '../../entity/user-password'
@@ -20,24 +22,27 @@ import { UserChangePasswordInput, UserChangePasswordSchema, UserChangePasswordUs
 describe(UserChangePasswordUsecase.name, () => {
   let usecase: IUserChangePassword
   let repository: IUserRepository
+  let session: ISessionAdapter
 
   beforeEach(async () => {
     const app = await Test.createTestingModule({
       imports: [LoggerModule],
       providers: [
         TestUtils.mockProvider(IUserRepository),
+        TestUtils.mockProvider(ISessionAdapter, { revokeAll: TestUtils.mockResolvedValue() }),
         {
           provide: IUserChangePassword,
-          useFactory: (userRepository: IUserRepository) => {
-            return new UserChangePasswordUsecase(userRepository)
+          useFactory: (userRepository: IUserRepository, session: ISessionAdapter) => {
+            return new UserChangePasswordUsecase(userRepository, session)
           },
-          inject: [IUserRepository]
+          inject: [IUserRepository, ISessionAdapter]
         }
       ]
     }).compile()
 
     usecase = app.get(IUserChangePassword)
     repository = app.get(IUserRepository)
+    session = app.get(ISessionAdapter)
   })
 
   test('when no input is specified, should expect an error', async () => {
@@ -83,7 +88,7 @@ describe(UserChangePasswordUsecase.name, () => {
   const passwordMock = new ZodMockSchema(UserPasswordEntitySchema)
   const password = passwordMock.generate({
     overrides: {
-      password: '69bf0bc46f51b33377c4f3d92caf876714f6bbbe99e7544487327920873f9820'
+      password: PasswordFixture.MASKED.hash
     },
     factory: (data) => new UserPasswordEntity(data)
   })
@@ -123,5 +128,6 @@ describe(UserChangePasswordUsecase.name, () => {
 
     await expect(usecase.execute(input)).resolves.toBeUndefined()
     expect(repository.create).toHaveBeenCalled()
+    expect(session.revokeAll).toHaveBeenCalledWith(user.id)
   })
 })

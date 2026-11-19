@@ -24,12 +24,12 @@ export class PermissionNameValueObject extends BaseValueObject<PermissionName>(P
 }
 
 // ✅ Keep it in the entity schema, and reuse the schema where needed
-const Name = InputValidator.string()
+const Name = Schema.string()
   .transform((value) => value.trim().replace(/ /g, '_').toLowerCase())
   .refine((val) => val.includes(':'), { message: "permission must contains ':'" })
 
-export const RoleAddPermissionSchema = InputValidator.object({
-  permissions: InputValidator.array(PermissionEntitySchema.shape.name)
+export const RoleAddPermissionSchema = Schema.object({
+  permissions: Schema.array(PermissionEntitySchema.shape.name)
 })
 
 // ✅ Value Object: the value has behavior of its own
@@ -59,14 +59,14 @@ The same concept can be a schema or a Value Object. What decides is whether it h
 
 ```typescript
 // core/user/entity/user.ts
-const Address = InputValidator.object({
-  street: InputValidator.string().trim().min(1),
-  number: InputValidator.string().trim().min(1),
-  city: InputValidator.string().trim().min(1),
-  zipCode: InputValidator.string().regex(/^\d{5}-?\d{3}$/)
+const Address = Schema.object({
+  street: Schema.string().trim().min(1),
+  number: Schema.string().trim().min(1),
+  city: Schema.string().trim().min(1),
+  zipCode: Schema.string().regex(/^\d{5}-?\d{3}$/)
 })
 
-export const UserEntitySchema = InputValidator.object({
+export const UserEntitySchema = Schema.object({
   // ...
   address: Address.optional()
 })
@@ -95,11 +95,11 @@ This works, but it has two problems:
 
 ```typescript
 // ✅ core/user/entity/user-address.ts
-export const UserAddressValueObjectSchema = InputValidator.object({
-  street: InputValidator.string().trim().min(1),
-  number: InputValidator.string().trim().min(1),
-  city: InputValidator.string().trim().min(1),
-  zipCode: InputValidator.string().regex(/^\d{5}-?\d{3}$/)
+export const UserAddressValueObjectSchema = Schema.object({
+  street: Schema.string().trim().min(1),
+  number: Schema.string().trim().min(1),
+  city: Schema.string().trim().min(1),
+  zipCode: Schema.string().regex(/^\d{5}-?\d{3}$/)
 })
 
 type UserAddress = InferSchema<typeof UserAddressValueObjectSchema>
@@ -121,7 +121,7 @@ export class UserAddressValueObject extends BaseValueObject<UserAddress>(UserAdd
 }
 
 // core/user/entity/user.ts: the schema of the Value Object is reused in the entity schema
-export const UserEntitySchema = InputValidator.object({
+export const UserEntitySchema = Schema.object({
   // ...
   address: UserAddressValueObjectSchema.optional()
 })
@@ -164,12 +164,12 @@ Example: `RolePermissionValueObject` lives in `core/role/entity/role-permission.
 ```typescript
 // core/role/entity/role-permission.ts
 import { BaseValueObject } from '@/utils/domain'
-import { InferSchema, InputValidator } from '@/utils/validator'
+import { InferSchema, Schema } from '@/utils/schema'
 
-const Action = InputValidator.enum(['read', 'write', 'delete'])
-const Resource = InputValidator.string().min(1)
+const Action = Schema.enum(['read', 'write', 'delete'])
+const Resource = Schema.string().min(1)
 
-export const RolePermissionValueObjectSchema = InputValidator.object({
+export const RolePermissionValueObjectSchema = Schema.object({
   action: Action,
   resource: Resource
 })
@@ -297,10 +297,10 @@ The Value Object's schema is imported into the parent entity's schema, so the pa
 // core/role/entity/role.ts
 import { RolePermissionValueObject, RolePermissionValueObjectSchema } from './role-permission'
 
-export const RoleEntitySchema = InputValidator.object({
-  id: InputValidator.uuid(),
-  name: InputValidator.string(),
-  permissions: InputValidator.array(RolePermissionValueObjectSchema).optional()
+export const RoleEntitySchema = Schema.object({
+  id: Schema.uuid(),
+  name: Schema.string(),
+  permissions: Schema.array(RolePermissionValueObjectSchema).optional()
   // ...
 })
 ```

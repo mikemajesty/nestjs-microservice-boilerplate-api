@@ -37,7 +37,7 @@ const deadline = getCurrentDeadline()
 ## Existing consumers
 
 - [`Deadline`](./deadline.md) — propagates the remaining time budget of the current inbound HTTP request.
-- [`InputValidator`](./validator.md) — propagates the current request's locale for translated validation messages (via its own `AsyncLocalStorage`-based storage, predating this wrapper).
+- [`Schema`](./validator.md) — propagates the current request's locale for translated validation messages (via its own `AsyncLocalStorage`-based storage, predating this wrapper).
 
 ## When not to use it
 

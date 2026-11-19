@@ -43,8 +43,11 @@ export class UserRepository extends TypeORMRepository<UserModel, UserEntity> imp
     }
 
     const queryRunner = this.repository.manager.dataSource.createQueryRunner()
+    const client: PgClientWithParameters = await queryRunner.connect()
+    const previousQueryTimeout = client.connectionParameters.query_timeout
+    client.connectionParameters.query_timeout = timeoutMs + 300
+
     try {
-      await queryRunner.connect()
       await queryRunner.startTransaction()
       await queryRunner.query(`SET LOCAL statement_timeout = ${timeoutMs}`)
 
@@ -60,9 +63,14 @@ export class UserRepository extends TypeORMRepository<UserModel, UserEntity> imp
 
       throw error
     } finally {
+      // Never leak the deadline: the connection goes back to the pool with its original timeout.
+      client.connectionParameters.query_timeout = previousQueryTimeout
       await queryRunner.release()
     }
   }
 }
 
 export type UserModel = UserSchema & UserEntity
+
+/** pg reads `connectionParameters.query_timeout` on every query (pg/lib/client.js); @types/pg does not declare it. */
+type PgClientWithParameters = { connectionParameters: { query_timeout?: number } }

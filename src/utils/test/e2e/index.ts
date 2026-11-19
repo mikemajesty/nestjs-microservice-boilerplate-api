@@ -1,6 +1,11 @@
 export * from './containers'
 export * from './fixtures/adpater'
+export * from './fixtures/database-fixture'
+export * from './fixtures/password'
 export * from './fixtures/permission'
+export * from './fixtures/reset-password'
 export * from './fixtures/role'
 export * from './fixtures/user'
+export * from './fixtures/utils'
 export * from './utils'
+

@@ -1,9 +1,9 @@
 import type { Server } from 'node:net'
-import { constants, monitorEventLoopDelay, performance, PerformanceObserver } from 'node:perf_hooks'
+import { constants, monitorEventLoopDelay, performance, PerformanceEntry, PerformanceObserver } from 'node:perf_hooks'
 
 import { OnModuleDestroy } from '@nestjs/common'
 import { Redis } from 'ioredis'
-import { Connection } from 'mongoose'
+import { Connection, ConnectionStates, mongo } from 'mongoose'
 import os from 'os'
 import systeminformation from 'systeminformation'
 import { DataSource } from 'typeorm'
@@ -14,10 +14,14 @@ import { ILoggerAdapter } from '@/infra/logger'
 import { ISecretsAdapter } from '@/infra/secrets'
 import { ByteSize } from '@/utils/byte-size'
 import { ApiInternalServerException } from '@/utils/exception'
+import { SingleFlight } from '@/utils/single-flight'
 
+import { version } from '../../../package.json'
+import { IHealthAdapter, IHealthCacheAdapter } from './interfaces'
 import {
   ByteSizeFormatted,
   CpuCoreLoad,
+  DependenciesSnapshot,
   DependencyCheck,
   EventLoopLagOutput,
   GcOutput,
@@ -27,6 +31,7 @@ import {
   Load,
   LoadStatus,
   MemoryOutput,
+  MetricsOutput,
   MongoCacheMemoryOutput,
   MongoConnectionOutput,
   PercentFormatted,
@@ -35,30 +40,32 @@ import {
   RedisInfoOutput
 } from './types'
 
-/** Below the 5s timeoutSeconds of the Kubernetes probes, so a slow dependency reports DOWN instead of hanging. */
+// Below the probes' 5s timeoutSeconds: a slow dependency answers DOWN instead of failing the probe.
 const CHECK_TIMEOUT_MS = 2000
 const EVENT_LOOP_RESOLUTION_MS = 20
 
-export type MongoServerStatusOutput = {
-  connection: MongoConnectionOutput | null
-  memory: MongoCacheMemoryOutput
-}
-
-/** Event loop, GC and process CPU aggregated since the previous read. */
-export type RuntimeWindowOutput = {
-  seconds: number
-  eventLoopLag: EventLoopLagOutput
-  gc: GcOutput
-  processCpu: ProcessOutput['cpu']
-}
+// Micro-cache: public health routes cost at most one collection per TTL, however many requests arrive.
+// Readiness stays far below the probes' 10s period, so a failure still shows up almost immediately.
+const DEPENDENCIES_CACHE_TTL_SECONDS = 2
+// Below the dashboard's 30s refresh, so every refresh still gets a new sample.
+const METRICS_CACHE_TTL_SECONDS = 5
 
 const toMb = (bytes: number): ByteSizeFormatted => `${ByteSize.toMegabytes(bytes).toFixed(2)} MB` as ByteSizeFormatted
 const round = (value: number): number => Number(value.toFixed(2))
+
+const toMbOrNull = (bytes: unknown): ByteSizeFormatted | null => (Number.isFinite(bytes) ? toMb(bytes as number) : null)
+
+const MONGO_STATUS_UNAVAILABLE: MongoServerStatusOutput = { connection: null, memory: { used: null, limit: null } }
+
+type GcPerformanceEntry = PerformanceEntry & { detail?: { kind?: number } }
 
 export class HealthService implements IHealthAdapter, OnModuleDestroy {
   postgres!: DataSource
   mongo!: Connection
   redis!: ICacheAdapter<Redis>
+  cache!: IHealthCacheAdapter
+
+  private readonly singleFlight = new SingleFlight()
 
   private readonly eventLoopHistogram = monitorEventLoopDelay({ resolution: EVENT_LOOP_RESOLUTION_MS })
   private readonly gcObserver: PerformanceObserver
@@ -73,9 +80,8 @@ export class HealthService implements IHealthAdapter, OnModuleDestroy {
     this.eventLoopHistogram.enable()
 
     this.gcObserver = new PerformanceObserver((list) => {
-      for (const entry of list.getEntries()) {
-        // GC entries carry `detail.kind`; @types/node does not declare it on PerformanceEntry.
-        const kind = (entry as unknown as { detail?: { kind?: number } }).detail?.kind
+      for (const entry of list.getEntries() as GcPerformanceEntry[]) {
+        const kind = entry.detail?.kind
         this.gc.count++
         if (kind === constants.NODE_PERFORMANCE_GC_MINOR) this.gc.minor++
         if (kind === constants.NODE_PERFORMANCE_GC_MAJOR) this.gc.major++
@@ -91,14 +97,32 @@ export class HealthService implements IHealthAdapter, OnModuleDestroy {
     this.gcObserver.disconnect()
   }
 
-  // -------------------------------------------------------------------------
-  // Dependency checks (readiness)
-  // -------------------------------------------------------------------------
+  checkDependencies(): Promise<DependenciesSnapshot> {
+    return this.cached({
+      key: 'health:dependencies',
+      ttlSeconds: DEPENDENCIES_CACHE_TTL_SECONDS,
+      operation: async () => {
+        const [mongo, postgres, redis] = await Promise.all([this.checkMongo(), this.checkPostgres(), this.checkRedis()])
+        return { checkedAt: new Date().toISOString(), dependencies: { mongo, postgres, redis } }
+      }
+    })
+  }
+
+  getMetrics(server: Server): Promise<MetricsOutput> {
+    return this.cached({
+      key: 'health:metrics',
+      ttlSeconds: METRICS_CACHE_TTL_SECONDS,
+      operation: () => this.collectMetrics(server)
+    })
+  }
 
   checkMongo(): Promise<DependencyCheck> {
     return this.runCheck('checkMongo', async () => {
-      if (this.mongo.readyState !== 1 || !this.mongo.db) return false
-      await this.mongo.db.command({ ping: 1 })
+      const db = this.connectedMongoDb()
+
+      if (!db) return false
+
+      await db.command({ ping: 1 }, { timeoutMS: CHECK_TIMEOUT_MS })
       return true
     })
   }
@@ -111,13 +135,8 @@ export class HealthService implements IHealthAdapter, OnModuleDestroy {
   }
 
   checkRedis(): Promise<DependencyCheck> {
-    // CacheRedisService.ping() already applies its own 2s timeout and returns 'DOWN' on failure.
     return this.runCheck('checkRedis', async () => (await this.redis.ping()) === 'PONG')
   }
-
-  // -------------------------------------------------------------------------
-  // Metrics
-  // -------------------------------------------------------------------------
 
   getMemory(): MemoryOutput {
     const processMemory = process.memoryUsage()
@@ -136,7 +155,6 @@ export class HealthService implements IHealthAdapter, OnModuleDestroy {
       },
       v8: {
         totalHeapSize: toMb(heapStats.total_heap_size),
-        usedHeapSize: toMb(heapStats.used_heap_size),
         executableHeapSize: toMb(heapStats.total_heap_size_executable),
         heapSizeLimit: toMb(heapStats.heap_size_limit)
       },
@@ -153,14 +171,13 @@ export class HealthService implements IHealthAdapter, OnModuleDestroy {
     }
   }
 
-  /** Reads and resets the event loop histogram, GC counters and CPU baseline together, so all share one window. */
+  // Resets the histogram, GC counters and CPU baseline together so they share the same window.
   getRuntimeWindow(): RuntimeWindowOutput {
     const now = performance.now()
     const elapsedMs = Math.max(1, now - this.windowStartedAt)
     const cpu = process.cpuUsage(this.cpuBaseline)
 
-    // The histogram records the time between timer ticks, which includes the
-    // sampling interval itself. Subtract it to get the actual delay.
+    // The histogram measures the time between ticks, sampling interval included: subtract it.
     const lagMs = (ns: number): number =>
       Number.isFinite(ns) ? round(Math.max(0, ns / 1_000_000 - EVENT_LOOP_RESOLUTION_MS)) : 0
     const hasSamples = this.eventLoopHistogram.count > 0
@@ -233,42 +250,24 @@ export class HealthService implements IHealthAdapter, OnModuleDestroy {
     })
   }
 
-  /** One serverStatus call for both connections and WiredTiger cache. */
   async getMongoServerStatus(): Promise<MongoServerStatusOutput> {
-    const empty: MongoServerStatusOutput = { connection: null, memory: { used: null, limit: null } }
+    const db = this.connectedMongoDb()
+
+    if (!db) {
+      return MONGO_STATUS_UNAVAILABLE
+    }
+
     try {
-      if (this.mongo.readyState !== 1 || !this.mongo.db) return empty
-
-      const db = this.mongo.db
       const status = await this.withTimeout(db.command({ serverStatus: 1 }), 'Mongo serverStatus')
-      const cache = status.wiredTiger?.cache
-
-      if (!cache && !this.secrets.IS_DOCUMENTDB) {
-        this.logger.warn({
-          message: 'WiredTiger cache not available - check MongoDB version/config',
-          metadata: { context: HealthService.name }
-        })
-      }
-
-      const formatMemory = (bytes: unknown): ByteSizeFormatted | null =>
-        typeof bytes === 'number' && Number.isFinite(bytes) ? toMb(bytes) : null
-
-      return {
-        connection: status.connections ?? null,
-        memory: {
-          used: formatMemory(cache?.['bytes currently in the cache']),
-          limit: formatMemory(cache?.['maximum bytes configured'])
-        }
-      }
+      return this.toMongoServerStatus(status)
     } catch (error) {
       this.logError(error, `${HealthService.name}.getMongoServerStatus`)
-      return empty
+      return MONGO_STATUS_UNAVAILABLE
     }
   }
 
   async getPostgresConnections(): Promise<PostgresConnectionOutput | null> {
     try {
-      // current/active are scoped to the application database; available is server-wide.
       const [connections] = await this.withTimeout(
         this.postgres.query(`
           SELECT
@@ -340,9 +339,39 @@ export class HealthService implements IHealthAdapter, OnModuleDestroy {
     }
   }
 
-  // -------------------------------------------------------------------------
-  // Internals
-  // -------------------------------------------------------------------------
+  private connectedMongoDb(): mongo.Db | undefined {
+    const connected = this.mongo.readyState === ConnectionStates.connected
+    return connected ? this.mongo.db : undefined
+  }
+
+  private toMongoServerStatus(status: mongo.Document): MongoServerStatusOutput {
+    return {
+      connection: status.connections ?? null,
+      memory: this.toMongoCacheMemory(status.wiredTiger?.cache)
+    }
+  }
+
+  private toMongoCacheMemory(cache: mongo.Document | undefined): MongoCacheMemoryOutput {
+    if (!cache) {
+      this.warnMissingWiredTigerCache()
+      return MONGO_STATUS_UNAVAILABLE.memory
+    }
+
+    return {
+      used: toMbOrNull(cache['bytes currently in the cache']),
+      limit: toMbOrNull(cache['maximum bytes configured'])
+    }
+  }
+
+  // DocumentDB does not expose WiredTiger metrics, so a missing cache is expected there.
+  private warnMissingWiredTigerCache(): void {
+    if (this.secrets.IS_DOCUMENTDB) return
+
+    this.logger.warn({
+      message: 'WiredTiger cache not available - check MongoDB version/config',
+      metadata: { context: HealthService.name }
+    })
+  }
 
   private getLoadAverage(load: number, cpus: number): Load {
     const thresholds: { limit: number; status: LoadStatus }[] = [
@@ -390,6 +419,61 @@ export class HealthService implements IHealthAdapter, OnModuleDestroy {
     }
   }
 
+  private async collectMetrics(server: Server): Promise<MetricsOutput> {
+    const runtime = this.getRuntimeWindow()
+    const memory = this.getMemory()
+
+    const [cpu, connections, mongo, postgresConnection, databaseSizeBytes, redis] = await Promise.all([
+      this.getHostCpu(),
+      this.getHttpConnections(server),
+      this.getMongoServerStatus(),
+      this.getPostgresConnections(),
+      this.getPostgresDatabaseSize(),
+      this.getRedisInfo()
+    ])
+
+    return {
+      version,
+      timestamp: new Date().toISOString(),
+      window: { seconds: runtime.seconds },
+      process: {
+        hostname: os.hostname(),
+        pid: process.pid,
+        nodeVersion: process.version,
+        environment: this.secrets.ENV,
+        uptimeSeconds: Math.round(process.uptime()),
+        cpu: runtime.processCpu
+      },
+      memory,
+      eventLoopLag: runtime.eventLoopLag,
+      gc: runtime.gc,
+      network: { connections },
+      cpu,
+      mongo,
+      postgres: { connection: postgresConnection, databaseSizeBytes },
+      redis
+    }
+  }
+
+  // Cache hit: answer from memory. Miss: concurrent callers share one operation, then the result is stored.
+  // Stored as JSON, so every caller gets its own copy and cannot mutate what others receive.
+  private async cached<T>({ key, ttlSeconds, operation }: HealthCachedInput<T>): Promise<T> {
+    const hit = await this.cache.get(key)
+
+    if (hit) {
+      return JSON.parse(hit) as T
+    }
+
+    return this.singleFlight.run({
+      key,
+      operation: async () => {
+        const value = await operation()
+        await this.cache.set(key, JSON.stringify(value), { ttlSeconds })
+        return value
+      }
+    })
+  }
+
   private logError(error: unknown, context: string): void {
     this.logger.error(
       new ApiInternalServerException('Health check failed', {
@@ -404,19 +488,20 @@ export class HealthService implements IHealthAdapter, OnModuleDestroy {
   }
 }
 
-export abstract class IHealthAdapter {
-  abstract mongo: Connection
-  abstract postgres: DataSource
-  abstract redis: ICacheAdapter<Redis>
-  abstract checkMongo(): Promise<DependencyCheck>
-  abstract checkPostgres(): Promise<DependencyCheck>
-  abstract checkRedis(): Promise<DependencyCheck>
-  abstract getMemory(): MemoryOutput
-  abstract getRuntimeWindow(): RuntimeWindowOutput
-  abstract getHostCpu(): Promise<HostCpuOutput>
-  abstract getHttpConnections(server: Server): Promise<number | null>
-  abstract getMongoServerStatus(): Promise<MongoServerStatusOutput>
-  abstract getPostgresConnections(): Promise<PostgresConnectionOutput | null>
-  abstract getPostgresDatabaseSize(): Promise<string | null>
-  abstract getRedisInfo(): Promise<RedisInfoOutput | null>
+export type MongoServerStatusOutput = {
+  connection: MongoConnectionOutput | null
+  memory: MongoCacheMemoryOutput
+}
+
+export type RuntimeWindowOutput = {
+  seconds: number
+  eventLoopLag: EventLoopLagOutput
+  gc: GcOutput
+  processCpu: ProcessOutput['cpu']
+}
+
+type HealthCachedInput<T> = {
+  key: string
+  ttlSeconds: number
+  operation: () => Promise<T>
 }

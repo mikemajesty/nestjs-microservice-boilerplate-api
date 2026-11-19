@@ -8,6 +8,7 @@ the barrel exports both `TestUtils` and `MockUtils`.
 Use the helper that matches the dependency method's contract:
 
 ```typescript
+import { ApiUnauthorizedException } from '@/utils/exception'
 import { TestUtils } from '@/utils/test'
 
 const find = TestUtils.mockResolvedValue<UserEntity | null>(null)
@@ -15,7 +16,7 @@ const create = TestUtils.mockResolvedValue<CreatedModel>({
   created: true,
   id: 'user-id'
 })
-const verify = TestUtils.mockRejectedValue<UserRequest>(new Error('Invalid token'))
+const verify = TestUtils.mockRejectedValue<UserRequest>(new ApiUnauthorizedException('invalidToken'))
 const emit = TestUtils.mockReturnValue<EmitEventOutput>()
 ```
 

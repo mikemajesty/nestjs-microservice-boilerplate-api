@@ -793,9 +793,9 @@ export class RolePermissionValue extends BaseEntity<RolePermissionValue>() {}
 // ✅ CORRECT - Value Object: extends BaseValueObject and ends with `ValueObject`
 import { BaseValueObject } from '@/utils/domain'
 
-export const RolePermissionValueObjectSchema = InputValidator.object({
-  action: InputValidator.string(),
-  resource: InputValidator.string()
+export const RolePermissionValueObjectSchema = Schema.object({
+  action: Schema.string(),
+  resource: Schema.string()
 })
 
 type RolePermission = InferSchema<typeof RolePermissionValueObjectSchema>
@@ -1278,7 +1278,7 @@ const handleLegacyApi = (response: any): ProcessedData => {
 // ✅ OK - Type assertion after validation
 const processExternalData = (data: unknown): UserData => {
   if (!isValidUserData(data)) {
-    throw new Error('Invalid data')
+    throw new ApiBadGatewayException('invalidUserData')
   }
   return data as UserData
 }
@@ -1406,7 +1406,7 @@ The **child's schema is imported into the parent's schema**. The child does **no
 // In user.ts — the parent schema includes the child schema
 const Password = UserPasswordEntitySchema
 
-export const UserEntitySchema = InputValidator.object({
+export const UserEntitySchema = Schema.object({
   // ...
   password: Password.optional() // ← child validation happens here
 })
@@ -1542,7 +1542,7 @@ src/
     ├── decorators/          # Custom decorators (including @ValidateSchema)
     ├── middlewares/         # HTTP middlewares, guards, interceptors, filters
     ├── entity/              # BaseEntity and entity utilities
-    └── validator/           # Zod-based InputValidator
+    └── validator/           # Zod-based Schema
 ```
 
 ### Folder Responsibilities

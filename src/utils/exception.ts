@@ -5,8 +5,8 @@ import { HttpException, HttpStatus } from '@nestjs/common'
 
 import { ObjectUtils } from './object'
 import { TRACEID_HEADER, TraceIdField } from './request'
+import { ZodExceptionIssue } from './schema'
 import { AnyType } from './types'
-import { ZodExceptionIssue } from './validator'
 
 export class BaseException extends HttpException {
   [TRACEID_HEADER]!: string
@@ -167,6 +167,12 @@ export type ParametersType = {
 }
 
 export type MessageType = string
+
+/**
+ * Normalizes anything thrown into an `Error`, to be used as `cause`. Libraries may throw strings or
+ * plain objects; this is the only place a raw `Error` is created for that.
+ */
+export const toError = (error: unknown): Error => (error instanceof Error ? error : new Error(String(error)))
 
 export const exceptionFromStatus = (input: HttpStatusExceptionInput): BaseException => {
   const ExceptionClass = HTTP_STATUS_EXCEPTION_MAP[input.status] ?? ApiInternalServerException

@@ -15,6 +15,7 @@ import { ResetPasswordSchema } from '@/infra/database/postgres/schemas/reset-pas
 import { LoggerModule } from '@/infra/logger'
 import { ISecretsAdapter, SecretsModule } from '@/infra/secrets'
 import { EventLibModule, IEventAdapter } from '@/libs/event'
+import { ISessionAdapter, SessionLibModule } from '@/libs/session'
 import { ITokenAdapter, TokenLibModule } from '@/libs/token'
 
 import { UserModule } from '../user/module'
@@ -28,7 +29,7 @@ import { ResetPasswordRepository } from './repository'
     SecretsModule,
     LoggerModule,
     UserModule,
-    TokenLibModule,
+    SessionLibModule,
     EventLibModule,
     TypeOrmModule.forFeature([ResetPasswordSchema], PostgresConnectionName.POSTGRES)
   ],
@@ -60,11 +61,12 @@ import { ResetPasswordRepository } from './repository'
         resetpasswordtokenRepository: IResetPasswordRepository,
         userRepository: IUserRepository,
         token: ITokenAdapter,
-        event: IEventAdapter
+        event: IEventAdapter,
+        session: ISessionAdapter
       ) => {
-        return new ResetPasswordConfirmUsecase(resetpasswordtokenRepository, userRepository, token, event)
+        return new ResetPasswordConfirmUsecase(resetpasswordtokenRepository, userRepository, token, event, session)
       },
-      inject: [IResetPasswordRepository, IUserRepository, ITokenAdapter, IEventAdapter]
+      inject: [IResetPasswordRepository, IUserRepository, ITokenAdapter, IEventAdapter, ISessionAdapter]
     }
   ],
   exports: [IResetPasswordRepository, ISendEmailResetPassword]

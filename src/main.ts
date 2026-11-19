@@ -28,7 +28,7 @@ import { name, version } from '../package.json'
 import { AppModule } from './app.module'
 import { ErrorType } from './infra/logger'
 import { EnvEnum } from './infra/secrets/types'
-import { initI18n, normalizeLocale, runWithRequestLocale } from './utils/validator'
+import { initI18n, normalizeLocale, runWithRequestLocale } from './utils/schema'
 
 type LanguageQuery = {
   lang?: string

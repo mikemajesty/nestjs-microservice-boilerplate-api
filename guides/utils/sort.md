@@ -21,7 +21,7 @@ async list(@Req() { query }: ApiRequest): Promise<CatListOutput> {
     limit: Number(query.limit),
     page: Number(query.page)
   }
-  
+
   return await this.listUsecase.execute(input)
 }
 ```
@@ -44,10 +44,12 @@ GET /api/v1/cats  # → Automatically sorted by createdAt:desc
 ```
 
 ### Valid Sort Orders
+
 - `asc` - Ascending order (1, 2, 3... / A, B, C...)
 - `desc` - Descending order (3, 2, 1... / Z, Y, X...)
 
 ### Validation Rules
+
 - Format must be `field:order`.
 - Valid orders are `asc` and `desc`; an order is required for every field.
 - Multiple sorts are separated by commas.
@@ -67,10 +69,7 @@ export enum SortEnum {
 export type SortInput = { sort: Record<string, SortEnum> }
 
 // Core layer - consistent across all domains
-export const UserListSchema = InputValidator.intersection(
-  PaginationSchema, 
-  SortSchema.and(SearchSchema)
-)
+export const UserListSchema = Schema.intersection(PaginationSchema, SortSchema.and(SearchSchema))
 
 // Combined type used in list operations
 export type PaginationInput<T> = PaginationSchema & SortInput & SearchInput<Partial<T>>
@@ -91,7 +90,7 @@ The system transforms HTTP query strings into standardized objects:
 // Input: "name:asc,createdAt:desc"
 // Output: { name: 1, createdAt: -1 }
 
-// Input: "price:desc"  
+// Input: "price:desc"
 // Output: { price: -1, createdAt: -1 }  // Adds a stable tie-breaker
 
 // Input: undefined
@@ -101,12 +100,14 @@ The system transforms HTTP query strings into standardized objects:
 ## Database Compatibility
 
 ### MongoDB
+
 ```typescript
 // Uses numeric values directly
 { name: 1, createdAt: -1 }  // ✅ Works with MongoDB
 ```
 
-### PostgreSQL  
+### PostgreSQL
+
 ```typescript
 // Repository adapters convert to SQL
 { name: 1, createdAt: -1 }  → "ORDER BY name ASC, created_at DESC"
@@ -115,7 +116,9 @@ The system transforms HTTP query strings into standardized objects:
 ## Benefits
 
 ### Consistent API
+
 All list endpoints accept sorting in the same format:
+
 ```bash
 GET /api/v1/users?sort=name:asc
 GET /api/v1/users?sort=email:desc
@@ -123,12 +126,15 @@ GET /api/v1/cats?sort=breed:asc
 ```
 
 ### Framework Agnostic
+
 Core business logic receives standardized sort objects, independent of:
+
 - HTTP framework details
 - Database-specific syntax
 - Query parameter parsing
 
 ### Stable Pagination
+
 Every list sorts by `createdAt:desc` when no sort is specified. When a client
 chooses another field, `createdAt:desc` is appended unless the client included
 `createdAt` explicitly, ensuring predictable ordering for records tied on the

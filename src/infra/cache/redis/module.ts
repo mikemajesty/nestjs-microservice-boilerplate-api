@@ -3,6 +3,8 @@ import Redis from 'ioredis'
 
 import { ILoggerAdapter, LoggerModule } from '@/infra/logger'
 import { ISecretsAdapter, SecretsModule } from '@/infra/secrets'
+import { JitterUtils } from '@/utils/jitter'
+import { TimeoutBudget } from '@/utils/request/timeout-budget'
 
 import { ICacheAdapter } from '../adapter'
 import { CacheRedisService } from './service'
@@ -16,6 +18,16 @@ import { CacheRedisService } from './service'
         const client = new Redis(REDIS_URL, {
           tls: REDIS_URL.startsWith('rediss://') ? {} : undefined,
           maxRetriesPerRequest: 3,
+          connectTimeout: TimeoutBudget.DEPENDENCY_TIMEOUT_MS,
+          commandTimeout: TimeoutBudget.DEPENDENCY_TIMEOUT_MS,
+          retryStrategy: (times) => {
+            const maxDelay = Math.min(50 * 2 ** (times - 1), 5000)
+
+            return JitterUtils.applyFull({
+              base: maxDelay,
+              options: { integer: true }
+            })
+          },
           enableReadyCheck: true,
           lazyConnect: false
         })

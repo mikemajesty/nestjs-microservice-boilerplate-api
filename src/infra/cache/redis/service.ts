@@ -4,17 +4,17 @@ import Redis, { ChainableCommander } from 'ioredis'
 import { ErrorType, ILoggerAdapter } from '@/infra/logger'
 import { WithErrorContext } from '@/utils/decorators'
 import { ApiInternalServerException } from '@/utils/exception'
+import { Schema } from '@/utils/schema'
 import { AnyType } from '@/utils/types'
-import { InputValidator } from '@/utils/validator'
 
 import { ICacheAdapter } from '../adapter'
 import { CacheEvalInput, CacheKeyArgument, CacheKeyValue, CacheSetConfigInput, CacheSetNXInput } from '../types'
 import { CacheRedisKeyArgument, CacheRedisSetConfigInput, CacheRedisValueArgument } from './types'
 
-export const CacheSetNXInputSchema = InputValidator.object({
-  key: InputValidator.string(),
-  value: InputValidator.string(),
-  ttlSeconds: InputValidator.number().positive()
+export const CacheSetNXInputSchema = Schema.object({
+  key: Schema.string(),
+  value: Schema.string(),
+  ttlSeconds: Schema.number().positive()
 })
 
 @Injectable()

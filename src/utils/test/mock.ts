@@ -51,7 +51,7 @@ export class MockUtils {
   }
 
   static User = (): UserRequest => {
-    const user: UserRequest = { email: 'test', name: 'test', id: this.UUID() }
+    const user: UserRequest = { email: 'test', name: 'test', id: this.UUID(), sid: this.UUID() }
     return user
   }
 

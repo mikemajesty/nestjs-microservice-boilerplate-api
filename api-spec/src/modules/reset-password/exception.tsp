@@ -22,13 +22,21 @@ model ConfirmResetPasswordUserNotFoundError extends ApiNotFoundException<"user n
 
 alias ConfirmResetPasswordNotFoundException = ConfirmResetPasswordUserNotFoundError;
 
-@doc("When password are differents")
+@doc("When the token is not the last reset-password token sent to the user, or it was already used")
 @error
 model ConfirmResetPasswordTokenWasExpiredError extends ApiUnauthorizedException<"token was expired"> {
   @statusCode statusCode: 401;
 }
 
-alias ConfirmResetPasswordUnauthorizedException = ConfirmResetPasswordTokenWasExpiredError;
+@doc("When the token is invalid, expired, or is not a reset-password token (e.g. an access token)")
+@error
+model ConfirmResetPasswordInvalidTokenError extends ApiUnauthorizedException<"invalidToken"> {
+  @statusCode statusCode: 401;
+}
+
+alias ConfirmResetPasswordUnauthorizedException =
+  | ConfirmResetPasswordTokenWasExpiredError
+  | ConfirmResetPasswordInvalidTokenError;
 
 @doc("When user not found")
 @error

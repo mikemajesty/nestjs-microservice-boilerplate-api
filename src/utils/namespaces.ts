@@ -4,11 +4,12 @@
 export const NamespacesKeys = {
   roleById: 'role:id:',
   userById: 'user:id:',
-  blacklist: 'auth:blacklist:'
+  session: 'auth:session:'
 }
 
 export const Namespaces = {
-  blacklist: (userId: string) => `${NamespacesKeys.blacklist}${userId.trim()}`,
+  session: (userId: string, sessionId: string) => `${NamespacesKeys.session}${userId.trim()}:${sessionId.trim()}`,
+  sessionsOf: (userId: string) => `${NamespacesKeys.session}${userId.trim()}:*`,
   userById: (userId: string) => `${NamespacesKeys.userById}${userId.trim()}`,
   roleById: (roleId: string) => `${NamespacesKeys.roleById}${roleId.trim()}`
 }

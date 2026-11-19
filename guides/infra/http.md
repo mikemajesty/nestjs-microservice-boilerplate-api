@@ -157,7 +157,7 @@ result from the schema, so the contract with the dependency is checked at the
 boundary instead of in the use case:
 
 ```typescript
-const UserSchema = InputValidator.object({ id: InputValidator.number(), name: InputValidator.string() })
+const UserSchema = Schema.object({ id: Schema.number(), name: Schema.string() })
 
 const user = await this.http.request().get('https://api.example.com/users/1').schema(UserSchema).execute()
 // user: { id: number; name: string }
