@@ -107,14 +107,12 @@ export class AxiosUtils {
           }
         })
 
-        // Same delay already validated against the budget in `canScheduleRetry`.
         const scheduledDelay = axiosError.config?.['axios-retry']?.nextRetryDelayMs
 
         return scheduledDelay ?? this.getRetryDelay(retryCount)
       },
 
       retryCondition: (error: AxiosError | CustomAxiosError) => {
-        // The payload would be just as big on the next attempt.
         if (this.getPayloadLimitExceeded(error)) {
           return false
         }

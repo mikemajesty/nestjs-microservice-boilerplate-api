@@ -30,23 +30,6 @@ import { TestUtils } from '@/utils/test/utils'
 
 import { HttpService } from '../service'
 
-type Reply = {
-  status?: number
-  delayMs?: number
-  body?: unknown
-  gzip?: boolean
-  headers?: Record<string, string>
-  destroySocket?: boolean
-}
-
-type Attempt = {
-  at: number
-  method?: string
-  path?: string
-  headers: IncomingHttpHeaders
-  body: string
-}
-
 /**
  * Local HTTP server with scripted replies. Every request consumes the next reply in the
  * queue and falls back to `fallback` once the queue is empty, so a test can describe
@@ -208,6 +191,24 @@ describe(HttpService.name, () => {
       expect(server.attempts).toHaveLength(1)
     })
 
+    test('when a retry attempt exceeds the remaining inbound deadline, should abort it', async () => {
+      TestUtils.spyOn(Math, 'random').mockReturnValue(0.1)
+
+      server.replyWith({ status: 503, delayMs: 100 }).alwaysReply({ status: 200, delayMs: 2000 })
+
+      const deadlineMs = 1000
+
+      const { result: error, elapsedMs } = await measure(() =>
+        runWithDeadline(Deadline.fromTimeout(deadlineMs), () =>
+          captureError(http.request().get(server.url).retry({ retries: 3 }).execute())
+        )
+      )
+
+      expect(server.attempts).toHaveLength(2)
+      expect(error.statusCode).toBe(408)
+      expect(elapsedMs).toBeLessThan(deadlineMs + TIMING_TOLERANCE_MS)
+    })
+
     test('when retryStatusCodes is configured on the request, should use it instead of the default list', async () => {
       server.replyWith({ status: 418 }, { status: 503 })
 
@@ -278,6 +279,38 @@ describe(HttpService.name, () => {
         expect(attempt.headers.authorization).toBe('Bearer token')
         expect(attempt.headers['x-custom']).toBe('custom')
       })
+    })
+
+    test('when an attempt exceeds the remaining inbound deadline, should abort it', async () => {
+      server.alwaysReply({ status: 200, delayMs: 2000 })
+
+      const deadlineMs = 1000
+
+      const { result: error, elapsedMs } = await measure(() =>
+        runWithDeadline(Deadline.fromTimeout(deadlineMs), () => captureError(http.request().get(server.url).execute()))
+      )
+
+      expect(server.attempts).toHaveLength(1)
+      expect(error.statusCode).toBe(408)
+      expect(elapsedMs).toBeLessThan(deadlineMs + TIMING_TOLERANCE_MS)
+    })
+
+    test('when the next retry delay exceeds the remaining inbound deadline budget, should preserve the upstream error', async () => {
+      TestUtils.spyOn(Math, 'random').mockReturnValue(1)
+
+      server.replyWith({ status: 503, delayMs: 800 }).alwaysReply({ status: 200 })
+
+      const deadlineMs = 1000
+
+      const { result: error, elapsedMs } = await measure(() =>
+        runWithDeadline(Deadline.fromTimeout(deadlineMs), () =>
+          captureError(http.request().get(server.url).retry({ retries: 3 }).execute())
+        )
+      )
+
+      expect(server.attempts).toHaveLength(1)
+      expect(error.statusCode).toBe(503)
+      expect(elapsedMs).toBeLessThan(deadlineMs + TIMING_TOLERANCE_MS)
     })
 
     test('when an attempt hits the client timeout, should retry the request', async () => {
@@ -1001,3 +1034,20 @@ describe(HttpService.name, () => {
     })
   })
 })
+
+type Reply = {
+  status?: number
+  delayMs?: number
+  body?: unknown
+  gzip?: boolean
+  headers?: Record<string, string>
+  destroySocket?: boolean
+}
+
+type Attempt = {
+  at: number
+  method?: string
+  path?: string
+  headers: IncomingHttpHeaders
+  body: string
+}
